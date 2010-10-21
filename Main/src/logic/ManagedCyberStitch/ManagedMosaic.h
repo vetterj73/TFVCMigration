@@ -2,12 +2,19 @@
 
 #pragma once
 
+#include "Mosaic.h"
+
 using namespace System;
-
-namespace MCyberStitch {
-
+namespace MCyberStitch 
+{
 	public ref class ManagedMosaic
 	{
-		// TODO: Add your methods for this class here.
+		public:
+			ManagedMosaic(int rows, int columns, int layers);
+			!ManagedMosaic();
+
+		private:
+			ManagedMosaic(){};
+			CyberStitch::Mosaic *_pMosaic;
 	};
 }
