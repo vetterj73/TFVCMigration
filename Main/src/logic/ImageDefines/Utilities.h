@@ -4,12 +4,15 @@
 
 #pragma once
 
-// Inverse a matrix,
-// inMatrix: input matrix, data stored row by row
-// outMatrix: output Matrix, data stored row by row
-// rows and cols: size of matrix 
+
 void inverse(	
 	const double* inMatrix,
 	double* outMatrix,
 	unsigned int rows,
 	unsigned int cols);
+
+bool MultiProjTrans(
+	const double leftTrans[3][3], 
+	const double rightTrans[3][3], 
+	double outTrans[3][3]);
+

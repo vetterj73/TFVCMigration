@@ -1,6 +1,10 @@
 #include "Utilities.h"
 #include "lsqrpoly.h" 
 
+// Inverse a matrix,
+// inMatrix: input matrix, data stored row by row
+// outMatrix: output Matrix, data stored row by row
+// rows and cols: size of matrix 
 void inverse(	
 	const double* inMatrix,
 	double* outMatrix,
@@ -80,3 +84,41 @@ void inverse(
 	delete [] answer;
 	delete [] b;
 }	
+
+// Multiply two projective transforms 
+// outTrans= leftTrans*rightTrans, outTrans[2][2] = 1
+// leftTrans and rightTrans: input transform
+// outTrans: output transform
+bool MultiProjTrans(
+	const double leftTrans[3][3], 
+	const double rightTrans[3][3], 
+	double outTrans[3][3])
+{
+	if(leftTrans[2][2]!=1 || rightTrans[2][2]!=1)
+		return(false);
+
+	int ix, iy;
+	// Multi two input transforms
+	for(iy = 0; iy < 3; iy++)
+	{
+		for(ix = 0; ix < 3; ix++)
+		{
+			outTrans[iy][ix] = leftTrans[iy][0]*rightTrans[0][ix]
+				+ leftTrans[iy][1]*rightTrans[1][ix]
+				+ leftTrans[iy][2]*rightTrans[2][ix];
+		}
+	}
+
+	if(outTrans[3][3] < 0.01) return(false);
+
+	// Normalize the output transform
+	for(iy = 0; iy < 3; iy++)
+	{
+		for(ix = 0; ix < 3; ix++)
+		{
+			outTrans[iy][ix] /= outTrans[2][2];
+		}
+	}
+
+return(true);
+}
