@@ -21,7 +21,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ManagedMosaic.h">
+    <ClInclude Include="ManagedMosaicSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -32,7 +32,7 @@
     <ClCompile Include="Stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ManagedMosaic.cpp">
+    <ClCompile Include="ManagedMosaicSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
