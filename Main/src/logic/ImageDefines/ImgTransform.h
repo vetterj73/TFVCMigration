@@ -28,6 +28,10 @@ public:
 	void GetInvertMatrix(double dInvT[9]);
 	void GetInvertMatrix(double dInvT[3][3]);
 
+	//Map and inverse map
+	void Map(double dx, double dy, double* pdu, double* pdv);
+	void InverseMap(double du, double dv, double* pdx, double* pdy);
+
 private: 
 	bool CalInverse();
 

@@ -104,6 +104,26 @@ void ImgTransform::GetInvertMatrix(double dInvT[3][3])
 			dInvT[iy][ix] = _dInvT[3*iy+ix];
 }
 
+// Map and inverse map
+void ImgTransform::Map(double dx, double dy, double* pdu, double* pdv)
+{
+	*pdu = dx*_dT[0] + dy*_dT[1] + _dT[2];
+	*pdv = dx*_dT[3] + dy*_dT[4] + _dT[5];
+	double dTemp = dx*_dT[6] + dy*_dT[7] + _dT[8];
+
+	*pdu = *pdu/dTemp;
+	*pdv = *pdv/dTemp;
+}
+
+void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy)
+{
+	*pdx = du*_dInvT[0] + dv*_dInvT[1] + _dInvT[2];
+	*pdy = du*_dInvT[3] + dv*_dInvT[4] + _dInvT[5];
+	double dTemp = du*_dInvT[6] + dv*_dInvT[7] + _dInvT[8];
+
+	*pdx = *pdx/dTemp;
+	*pdy = *pdx/dTemp;
+}
 
 bool ImgTransform::CalInverse()
 {
