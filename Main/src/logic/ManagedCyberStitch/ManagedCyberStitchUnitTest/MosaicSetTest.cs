@@ -11,9 +11,9 @@ namespace ManagedCyberStitchUnitTest
     /// Summary description for UnitTest1
     /// </summary>
     [TestClass]
-    public class UnitTest1
+    public class MosaicSetTest
     {
-        public UnitTest1()
+        public MosaicSetTest()
         {
             //
             // TODO: Add constructor logic here
