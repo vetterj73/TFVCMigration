@@ -30,6 +30,9 @@
     <ClInclude Include="MosaicImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="UIRect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">

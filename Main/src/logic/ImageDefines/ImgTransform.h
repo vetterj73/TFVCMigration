@@ -36,7 +36,7 @@ public:
 	void InverseMap(double du, double dv, double* pdx, double* pdy) const;
 
 private: 
-	bool CalInverse();
+	void CalInverse();
 
 	bool _bHasInverse;	// if the inverse transform Maxtric is valid
 

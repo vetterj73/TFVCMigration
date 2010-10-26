@@ -125,7 +125,7 @@ void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy) co
 	*pdy = *pdx/dTemp;
 }
 
-bool ImgTransform::CalInverse()
+void ImgTransform::CalInverse()
 {
 	inverse(_dT, _dInvT, 3, 3);
 

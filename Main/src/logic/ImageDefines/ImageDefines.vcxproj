@@ -119,6 +119,7 @@
     <ClInclude Include="ImgTransform.h" />
     <ClInclude Include="MosaicImage.h" />
     <ClInclude Include="STL.h" />
+    <ClInclude Include="UIRect.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
