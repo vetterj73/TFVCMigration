@@ -117,12 +117,14 @@
   <ItemGroup>
     <ClInclude Include="Image.h" />
     <ClInclude Include="ImgTransform.h" />
+    <ClInclude Include="MosaicImage.h" />
     <ClInclude Include="STL.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImgTransform.cpp" />
+    <ClCompile Include="MosaicImage.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
