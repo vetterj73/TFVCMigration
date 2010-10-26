@@ -21,17 +21,21 @@ namespace CyberStitch
 			MosaicSet();
 			~MosaicSet();
 
-			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int overlapInMM);
+			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMM);
 			MosaicLayer *AddLayer(double offsetInMM);
 			MosaicLayer *GetLayer(int index);
 
 			void Reset();
 
-			int GetNumRows(){return _rows;}
-			int GetNumColumns(){return _columns;}
-			int GetNumLayers(){return _layerList.size();}
-			int GetImageWidth(){return _imageWidth;}
-			int GetImageHeight(){return _imageHeight;}
+			int GetNumMosaicRows(){return _rows;}
+			int GetNumMosaicColumns(){return _columns;}
+			int GetNumMosaicLayers(){return _layerList.size();}
+			
+			int GetImageWidthInPixels(){return _imageWidth;}
+			int GetImageHeightInPixels(){return _imageHeight;}
+			int GetImageStrideInPixels(){return _imageStride;}
+			int GetImageStrideInBytes(){return _imageStride*_bytesPerPixel;}
+			int GetBytesPerPixel(){return _bytesPerPixel;}
 			int GetOverlapInMM(){return _overlapInMM;}
 
 		private:
@@ -39,6 +43,8 @@ namespace CyberStitch
 			int _columns;
 			int _imageWidth;
 			int _imageHeight;
+			int _imageStride;
+			int _bytesPerPixel;
 			int _overlapInMM;
 			LayerList _layerList;
 	};

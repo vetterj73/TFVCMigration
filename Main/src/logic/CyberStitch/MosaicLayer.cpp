@@ -20,7 +20,7 @@ namespace CyberStitch
 	{
 		_pMosaicSet = pMosaicSet;
 		_offsetInMM = offsetInMM;
-		int numTiles = pMosaicSet->GetNumRows()*pMosaicSet->GetNumColumns();
+		int numTiles = pMosaicSet->GetNumMosaicRows()*pMosaicSet->GetNumMosaicColumns();
 		_pTileArray = new MosaicTile[numTiles];
 
 		for(int i=0; i<numTiles; i++)
@@ -31,9 +31,9 @@ namespace CyberStitch
 
 	MosaicTile* MosaicLayer::GetTile(int row, int column)
 	{
-		if(row<0 || row>=_pMosaicSet->GetNumRows() || column<0 || column>_pMosaicSet->GetNumColumns())
+		if(row<0 || row>=_pMosaicSet->GetNumMosaicRows() || column<0 || column>_pMosaicSet->GetNumMosaicColumns())
 			return NULL;
 
-		return &_pTileArray[row*_pMosaicSet->GetNumColumns()+column];
+		return &_pTileArray[row*_pMosaicSet->GetNumMosaicColumns()+column];
 	}
 }

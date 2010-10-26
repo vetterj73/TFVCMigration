@@ -33,7 +33,7 @@ namespace CyberStitch
 		return pML;
 	}
 
-	void MosaicSet::Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int overlapInMM)
+	void MosaicSet::Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMM)
 	{
 		Reset();
 
@@ -41,6 +41,8 @@ namespace CyberStitch
 		_columns = columns;
 		_imageWidth = imageWidthInPixels;
 		_imageHeight = imageHeightInPixels;
+		_imageStride = imageStrideInPixels;
+		_bytesPerPixel = bytesPerPixel;
 		_overlapInMM = overlapInMM;
 	}
 
@@ -54,6 +56,8 @@ namespace CyberStitch
 		_columns = 0;
 		_imageWidth = 0;
 		_imageHeight = 0;
+		_imageStride = 0;
+		_bytesPerPixel = 0;
 		_overlapInMM = 0;
 	}
 }

@@ -65,7 +65,7 @@ namespace ManagedCyberStitchUnitTest
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet();
 
-            mSet.Initialize(3, 4, 1000, 2000, 4);
+            mSet.Initialize(3, 4, 1000, 2000, 1000, 1, 4);
             mSet.AddLayer(3.0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) == null);

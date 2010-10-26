@@ -21,9 +21,9 @@ namespace MCyberStitch
 				delete _pMosaicSet;
 			}
 			
-			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int overlapInMM)
+			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMM)
 			{
-				_pMosaicSet->Initialize(rows, columns, imageWidthInPixels, imageHeightInPixels, overlapInMM);	
+				_pMosaicSet->Initialize(rows, columns, imageWidthInPixels, imageHeightInPixels, imageStrideInPixels, bytesPerPixel, overlapInMM);	
 			}
 
 			void Reset()
