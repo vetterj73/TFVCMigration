@@ -15,39 +15,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Utilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ImgTransform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Image.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="STL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MosaicImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="UIRect.h">
+    <ClInclude Include="OverlapDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ImgTransform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MosaicImage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UIRect.cpp">
+    <ClCompile Include="OverlapDefines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

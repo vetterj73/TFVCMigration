@@ -19,12 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}</ProjectGuid>
+    <ProjectGuid>{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}</ProjectGuid>
     <SccProjectName>SAK</SccProjectName>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
     <SccProvider>SAK</SccProvider>
-    <RootNamespace>ImageDefines</RootNamespace>
+    <RootNamespace>ImageCorrelation</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -70,7 +70,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -80,7 +80,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,7 +92,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -106,7 +106,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -115,19 +115,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="ImgTransform.h" />
-    <ClInclude Include="MosaicImage.h" />
-    <ClInclude Include="STL.h" />
-    <ClInclude Include="UIRect.h" />
-    <ClInclude Include="Utilities.h" />
+    <ClInclude Include="OverlapDefines.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Image.cpp" />
-    <ClCompile Include="ImgTransform.cpp" />
-    <ClCompile Include="MosaicImage.cpp" />
-    <ClCompile Include="UIRect.cpp" />
-    <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="OverlapDefines.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
