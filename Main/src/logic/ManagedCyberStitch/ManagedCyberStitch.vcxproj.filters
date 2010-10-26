@@ -24,6 +24,12 @@
     <ClInclude Include="ManagedMosaicSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ManagedMosaicLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ManagedMosaicTile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -33,6 +39,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ManagedMosaicSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ManagedMosaicLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ManagedMosaicTile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

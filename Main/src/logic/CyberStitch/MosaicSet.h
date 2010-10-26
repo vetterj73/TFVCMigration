@@ -22,10 +22,10 @@ namespace CyberStitch
 			~MosaicSet();
 
 			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int overlapInMM);
-			void AddLayer(double offsetInMM);
+			MosaicLayer *AddLayer(double offsetInMM);
+			MosaicLayer *GetLayer(int index);
 
 			void Reset();
-			MosaicLayer *GetLayer(int index);
 
 			int GetNumRows(){return _rows;}
 			int GetNumColumns(){return _columns;}
