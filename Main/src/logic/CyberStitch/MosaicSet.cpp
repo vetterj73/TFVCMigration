@@ -60,4 +60,19 @@ namespace CyberStitch
 		_bytesPerPixel = 0;
 		_overlapInMM = 0;
 	}
+
+	int MosaicSet::NumberOfTiles()
+	{
+		return GetNumMosaicRows()*GetNumMosaicColumns();
+	}
+	
+	bool MosaicSet::HasAllImages()
+	{
+		int numTiles = NumberOfTiles();
+		for(int i=0; i<_layerList.size(); i++)
+			if(!_layerList[i]->HasAllImages())
+				return false;
+
+		return true;
+	}
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using MCyberStitch;
+﻿using MCyberStitch;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ManagedCyberStitchUnitTest
@@ -13,14 +9,7 @@ namespace ManagedCyberStitchUnitTest
     [TestClass]
     public class MosaicSetTest
     {
-        public MosaicSetTest()
-        {
-            //
-            // TODO: Add constructor logic here
-            //
-        }
-
-        private TestContext testContextInstance;
+        private TestContext _testContextInstance;
 
         /// <summary>
         ///Gets or sets the test context which provides
@@ -30,11 +19,11 @@ namespace ManagedCyberStitchUnitTest
         {
             get
             {
-                return testContextInstance;
+                return _testContextInstance;
             }
             set
             {
-                testContextInstance = value;
+                _testContextInstance = value;
             }
         }
 
@@ -64,7 +53,6 @@ namespace ManagedCyberStitchUnitTest
         public void BasicMosaicSetTest()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet();
-
             mSet.Initialize(3, 4, 1000, 2000, 1000, 1, 4);
             mSet.AddLayer(3.0);
             Assert.IsTrue(mSet.GetLayer(0) != null);

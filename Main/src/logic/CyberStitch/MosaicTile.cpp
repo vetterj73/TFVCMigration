@@ -5,6 +5,8 @@ namespace CyberStitch
 {
 	MosaicTile::MosaicTile()
 	{
+		_pMosaicLayer = NULL;
+		_pImageBuffer = NULL;
 	}
 
 	MosaicTile::~MosaicTile(void)

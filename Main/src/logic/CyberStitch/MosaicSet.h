@@ -4,7 +4,6 @@
 #include <vector>
 using std::vector;
 
-
 namespace CyberStitch 
 {
 	class MosaicLayer;
@@ -37,6 +36,9 @@ namespace CyberStitch
 			int GetImageStrideInBytes(){return _imageStride*_bytesPerPixel;}
 			int GetBytesPerPixel(){return _bytesPerPixel;}
 			int GetOverlapInMM(){return _overlapInMM;}
+
+			int NumberOfTiles();
+			bool HasAllImages();
 
 		private:
 			int _rows;

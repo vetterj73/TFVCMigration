@@ -3,12 +3,13 @@ using System.IO;
 using System.Threading;
 using MCoreAPI;
 using MCyberStitch;
+using SIMAPI;
 
 namespace CyberStitchTester
 {
     class Program
     {
-        private static ManagedMosaicSet _mosaicSet;
+        private static ManagedMosaicSet _mosaicSet = new ManagedMosaicSet();
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         /// <summary>
@@ -76,6 +77,9 @@ namespace CyberStitchTester
                     }
                 }
             }
+
+            SetupMosaic();
+
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
             {
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
@@ -89,6 +93,37 @@ namespace CyberStitchTester
             Output("All Done!");
         }
 
+        /// <summary>
+        /// Given a SIM setup and a mosaic for stitching, setup the stich...
+        /// </summary>
+        private static void SetupMosaic()
+        {
+            ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+            if(d == null)
+            {
+                Output("No Device Defined");
+                return;
+            }
+
+            ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(0);
+            if(pSpec == null)
+            {
+                Output("No Capture Specs defined");
+                return;
+            }
+
+            int numCameras = 0;
+            for (int i = 0; i < d.NumberOfCameras; i++ )
+                if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
+                    numCameras++;
+            _mosaicSet.Initialize(numCameras, pSpec.NumberOfTriggers, 2592, 1944, 2592, 1, 4);
+
+            for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
+            {
+                _mosaicSet.AddLayer(i*20);
+            }
+        }
+
         private static void OnAcquisitionDone(int device, int status, int count)
         {
             Output("OnAcquisitionDone Called!");
@@ -100,6 +135,11 @@ namespace CyberStitchTester
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
             Output("Got an Image!");
+            ManagedMosaicLayer layer = _mosaicSet.GetLayer(pframe.CaptureSpecIndex());
+            ManagedMosaicTile tile = layer.GetTile(pframe.CameraIndex(), pframe.TriggerIndex());
+            if(tile == null)
+                Output("Tile was NULL!!!!");
+            tile.SetImageBuffer(pframe.BufferPtr());
         }
 
         private static void Output(string str)

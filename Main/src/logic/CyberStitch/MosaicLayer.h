@@ -19,6 +19,9 @@ namespace CyberStitch
 			///@todo - could be private/friend relationship... doesn't need to be public...
 			void Initialize(MosaicSet *pMosaicSet, double offsetInMM);
 			MosaicTile* GetTile(int row, int column);
+			
+			int NumberOfTiles();
+			bool HasAllImages();
 
 		private:
 			MosaicSet *_pMosaicSet;

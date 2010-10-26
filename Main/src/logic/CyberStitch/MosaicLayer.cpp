@@ -20,7 +20,7 @@ namespace CyberStitch
 	{
 		_pMosaicSet = pMosaicSet;
 		_offsetInMM = offsetInMM;
-		int numTiles = pMosaicSet->GetNumMosaicRows()*pMosaicSet->GetNumMosaicColumns();
+		int numTiles = NumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 
 		for(int i=0; i<numTiles; i++)
@@ -35,5 +35,20 @@ namespace CyberStitch
 			return NULL;
 
 		return &_pTileArray[row*_pMosaicSet->GetNumMosaicColumns()+column];
+	}
+
+	int MosaicLayer::NumberOfTiles()
+	{
+		return _pMosaicSet->GetNumMosaicRows()*_pMosaicSet->GetNumMosaicColumns();
+	}
+	
+	bool MosaicLayer::HasAllImages()
+	{
+		int numTiles = NumberOfTiles();
+		for(int i=0; i<numTiles; i++)
+			if(!_pTileArray[i].ContainsImage())
+				return false;
+
+		return true;
 	}
 }

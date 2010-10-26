@@ -1,6 +1,8 @@
 #pragma once
 
+#include "ManagedMosaicTile.h"
 #include "MosaicLayer.h"
+#include "MosaicTile.h"
 
 namespace MCyberStitch 
 {
@@ -10,6 +12,12 @@ namespace MCyberStitch
 			ManagedMosaicLayer(CyberStitch::MosaicLayer *pMosaicLayer)
 			{
 				_pMosaicLayer = pMosaicLayer;
+			}
+
+			ManagedMosaicTile^ GetTile(int row, int column)
+			{
+				CyberStitch::MosaicTile *pTile = _pMosaicLayer->GetTile(row, column);
+				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 
 		private:
