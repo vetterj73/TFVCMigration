@@ -132,7 +132,6 @@ bool ImgTransform::CalInverse()
 	_bHasInverse = true;
 }
 
-
 ImgTransform operator*(const ImgTransform& left, const ImgTransform& right)
 {
 	ImgTransform t;
