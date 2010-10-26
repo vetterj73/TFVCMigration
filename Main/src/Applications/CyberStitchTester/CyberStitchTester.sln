@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetExternalDeps", "..\..\Ge
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic\ImageDefines\ImageDefines.vcxproj", "{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCorrelation", "..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj", "{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7
@@ -47,6 +49,9 @@ Global
 		SccProjectUniqueName5 = ..\\..\\logic\\ImageDefines\\ImageDefines.vcxproj
 		SccProjectName5 = ../../logic/ImageDefines
 		SccLocalPath5 = ..\\..\\logic\\ImageDefines
+		SccProjectUniqueName6 = ..\\..\\logic\\ImageCorrelation\\ImageCorrelation.vcxproj
+		SccProjectName6 = ../../logic/ImageCorrelation
+		SccLocalPath6 = ..\\..\\logic\\ImageCorrelation
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,8 +147,44 @@ Global
 		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}.Release|x64.ActiveCfg = Release|x64
 		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}.Release|x64.Build.0 = Release|x64
 		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}.Release|x86.ActiveCfg = Release|Win32
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|Win32.Build.0 = Debug|Win32
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|x64.ActiveCfg = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|x64.Build.0 = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Debug|x86.ActiveCfg = Debug|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|Any CPU.ActiveCfg = Release|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|Mixed Platforms.Build.0 = Release|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|Win32.ActiveCfg = Release|Win32
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|Win32.Build.0 = Release|Win32
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x64.ActiveCfg = Release|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x64.Build.0 = Release|x64
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 7
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = CyberStitchTester.csproj
+		SccLocalPath1 = .
+		SccProjectUniqueName2 = ..\\..\\logic\\CyberStitch\\CyberStitch.vcxproj
+		SccProjectName2 = ../../logic/CyberStitch
+		SccLocalPath2 = ..\\..\\logic\\CyberStitch
+		SccProjectUniqueName3 = ..\\..\\logic\\ManagedCyberStitch\\ManagedCyberStitch.vcxproj
+		SccProjectName3 = ../../logic/ManagedCyberStitch
+		SccLocalPath3 = ..\\..\\logic\\ManagedCyberStitch
+		SccProjectUniqueName4 = ..\\..\\GetExternalDeps\\GetExternalDeps.vcxproj
+		SccProjectName4 = ../../GetExternalDeps
+		SccLocalPath4 = ..\\..\\GetExternalDeps
+		SccProjectUniqueName5 = ..\\..\\logic\\ImageDefines\\ImageDefines.vcxproj
+		SccProjectName5 = ../../logic/ImageDefines
+		SccLocalPath5 = ..\\..\\logic\\ImageDefines
 	EndGlobalSection
 EndGlobal
