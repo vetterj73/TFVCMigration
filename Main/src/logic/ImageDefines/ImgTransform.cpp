@@ -105,7 +105,7 @@ void ImgTransform::GetInvertMatrix(double dInvT[3][3])
 }
 
 // Map and inverse map
-void ImgTransform::Map(double dx, double dy, double* pdu, double* pdv)
+void ImgTransform::Map(double dx, double dy, double* pdu, double* pdv) const
 {
 	*pdu = dx*_dT[0] + dy*_dT[1] + _dT[2];
 	*pdv = dx*_dT[3] + dy*_dT[4] + _dT[5];
@@ -115,7 +115,7 @@ void ImgTransform::Map(double dx, double dy, double* pdu, double* pdv)
 	*pdv = *pdv/dTemp;
 }
 
-void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy)
+void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy) const
 {
 	*pdx = du*_dInvT[0] + dv*_dInvT[1] + _dInvT[2];
 	*pdy = du*_dInvT[3] + dv*_dInvT[4] + _dInvT[5];

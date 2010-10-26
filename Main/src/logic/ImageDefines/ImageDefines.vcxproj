@@ -115,10 +115,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Image.h" />
     <ClInclude Include="ImgTransform.h" />
+    <ClInclude Include="STL.h" />
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImgTransform.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

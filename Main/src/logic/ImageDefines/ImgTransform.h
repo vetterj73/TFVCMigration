@@ -22,6 +22,9 @@ public:
 	// Get/set functions
 	void GetMatrix(double dT[9]) const;
 	void GetMatrix(double dT[3][3]) const;
+	double GetItem(unsigned int iIndex) const {return(_dT[iIndex]);};
+	double GetItem(unsigned int ix, unsigned int iy) const {return(_dT[iy*3+ix]);};
+
 	void SetMatrix(const double dT[9]);
 	void SetMatrix(const double dT[3][3]);
 
@@ -29,8 +32,8 @@ public:
 	void GetInvertMatrix(double dInvT[3][3]);
 
 	//Map and inverse map
-	void Map(double dx, double dy, double* pdu, double* pdv);
-	void InverseMap(double du, double dv, double* pdx, double* pdy);
+	void Map(double dx, double dy, double* pdu, double* pdv) const;
+	void InverseMap(double du, double dv, double* pdx, double* pdy) const;
 
 private: 
 	bool CalInverse();
