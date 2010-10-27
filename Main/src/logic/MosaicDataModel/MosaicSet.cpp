@@ -61,14 +61,14 @@ namespace MosaicDM
 		_overlapInMM = 0;
 	}
 
-	int MosaicSet::NumberOfTiles()
+	int MosaicSet::NumberOfTilesPerLayer()
 	{
 		return GetNumMosaicRows()*GetNumMosaicColumns();
 	}
 	
 	bool MosaicSet::HasAllImages()
 	{
-		int numTiles = NumberOfTiles();
+		int numTiles = NumberOfTilesPerLayer();
 		for(int i=0; i<_layerList.size(); i++)
 			if(!_layerList[i]->HasAllImages())
 				return false;
