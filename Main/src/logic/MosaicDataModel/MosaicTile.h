@@ -10,6 +10,8 @@ namespace MosaicDM
 	class MosaicTile
 	{
 		public:
+			friend class MosaicLayer;
+
 			///
 			///	Constructor.  Need to call Initialize to setup the object
 			///
@@ -21,11 +23,6 @@ namespace MosaicDM
 			~MosaicTile(void);
 
 			///
-			///	Called by the MosaicLayer class (need not be called from the outside).
-			///
-			void Initialize(MosaicLayer* pMosaicLayer);	
-
-			///
 			///	Gets/Sets the image buffer (assumed to be the size defined by the MosaicSet
 			///
 			unsigned char *	GetImageBuffer(){return _pImageBuffer;};	
@@ -35,6 +32,12 @@ namespace MosaicDM
 			///	returns true is this mosaic contains an image.
 			///
 			bool ContainsImage(){return _pImageBuffer != NULL;}
+
+		protected:
+			///
+			///	Called by the MosaicLayer class.
+			///
+			void Initialize(MosaicLayer* pMosaicLayer);	
 
 		private:
 			MosaicLayer *_pMosaicLayer;

@@ -13,6 +13,8 @@ namespace MosaicDM
 	class MosaicLayer
 	{
 		public:
+			friend class MosaicSet;
+
 			///
 			///	Constructor
 			///
@@ -23,9 +25,6 @@ namespace MosaicDM
 			///
 			~MosaicLayer(void);
 
-			///@todo - could be private/friend relationship... doesn't need to be public...
-			void Initialize(MosaicSet *pMosaicSet, double offsetInMM);
-	
 			///
 			///	Get the tile at a given row and column of the mosaic.
 			/// Returns null if this row or column is out of range.
@@ -41,6 +40,10 @@ namespace MosaicDM
 			///	Does this layer have all of its images?
 			///
 			bool HasAllImages();
+
+		protected:
+			/// Called from MosaicSet when a layer is added.
+			void Initialize(MosaicSet *pMosaicSet, double offsetInMM);
 
 		private:
 			MosaicSet *_pMosaicSet;
