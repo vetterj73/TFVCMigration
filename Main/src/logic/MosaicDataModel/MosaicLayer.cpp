@@ -3,7 +3,7 @@
 #include "MosaicSet.h"
 #include "MosaicTile.h"
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	MosaicLayer::MosaicLayer()
 	{

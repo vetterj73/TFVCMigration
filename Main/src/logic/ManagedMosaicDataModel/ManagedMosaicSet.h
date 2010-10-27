@@ -6,14 +6,14 @@
 #include "ManagedMosaicLayer.h"
 
 using namespace System;
-namespace MCyberStitch 
+namespace MMosaicDM 
 {
 	public ref class ManagedMosaicSet
 	{
 		public:
 			ManagedMosaicSet()
 			{
-				_pMosaicSet = new CyberStitch::MosaicSet();
+				_pMosaicSet = new MosaicDM::MosaicSet();
 			}
 
 			!ManagedMosaicSet()
@@ -33,17 +33,17 @@ namespace MCyberStitch
 
 			ManagedMosaicLayer ^AddLayer(double offsetInMM)
 			{
-				CyberStitch::MosaicLayer* pLayer = _pMosaicSet->AddLayer(offsetInMM);
+				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(offsetInMM);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 
 			ManagedMosaicLayer ^GetLayer(int index)
 			{
-				CyberStitch::MosaicLayer* pLayer = _pMosaicSet->GetLayer(index);
+				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->GetLayer(index);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 
 		private:
-			CyberStitch::MosaicSet *_pMosaicSet;
+			MosaicDM::MosaicSet *_pMosaicSet;
 	};
 }

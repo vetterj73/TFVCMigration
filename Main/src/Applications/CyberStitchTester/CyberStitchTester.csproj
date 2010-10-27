@@ -82,6 +82,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
+      <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
+      <Name>ManagedMosaicDataModel</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

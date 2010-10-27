@@ -1,12 +1,12 @@
 #pragma once
 #include "MosaicTile.h"
 
-namespace MCyberStitch 
+namespace MMosaicDM 
 {
 	public ref class ManagedMosaicTile
 	{
 		public:
-			ManagedMosaicTile(CyberStitch::MosaicTile * pMosaicTile)
+			ManagedMosaicTile(MosaicDM::MosaicTile * pMosaicTile)
 			{
 				_pMosaicTile = pMosaicTile;
 			}
@@ -22,7 +22,7 @@ namespace MCyberStitch
 			}
 
 		private:
-			CyberStitch::MosaicTile *_pMosaicTile;
+			MosaicDM::MosaicTile *_pMosaicTile;
 	};
 }
 

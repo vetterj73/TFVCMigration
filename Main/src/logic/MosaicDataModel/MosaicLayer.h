@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	class MosaicSet;
 	class MosaicTile;

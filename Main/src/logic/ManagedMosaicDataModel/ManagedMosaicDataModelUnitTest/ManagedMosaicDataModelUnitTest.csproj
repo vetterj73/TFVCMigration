@@ -86,7 +86,7 @@
     <Compile Include="MosaicSetTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ManagedCyberStitch.vcxproj">
+    <ProjectReference Include="..\ManagedMosaicDataModel.vcxproj">
       <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
       <Name>ManagedCyberStitch</Name>
     </ProjectReference>

@@ -4,23 +4,23 @@
 #include "MosaicLayer.h"
 #include "MosaicTile.h"
 
-namespace MCyberStitch 
+namespace MMosaicDM 
 {
 	public ref class ManagedMosaicLayer
 	{
 		public:
-			ManagedMosaicLayer(CyberStitch::MosaicLayer *pMosaicLayer)
+			ManagedMosaicLayer(MosaicDM::MosaicLayer *pMosaicLayer)
 			{
 				_pMosaicLayer = pMosaicLayer;
 			}
 
 			ManagedMosaicTile^ GetTile(int row, int column)
 			{
-				CyberStitch::MosaicTile *pTile = _pMosaicLayer->GetTile(row, column);
+				MosaicDM::MosaicTile *pTile = _pMosaicLayer->GetTile(row, column);
 				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 
 		private:
-			CyberStitch::MosaicLayer *_pMosaicLayer;
+			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};
 }

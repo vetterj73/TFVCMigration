@@ -4,7 +4,7 @@
 #include "MosaicSet.h"
 #include "MosaicLayer.h"
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	MosaicSet::MosaicSet()
 	{

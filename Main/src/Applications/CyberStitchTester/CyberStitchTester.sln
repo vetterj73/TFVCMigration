@@ -6,7 +6,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{83A6E92A-C9C4-4634-B1E7-357467A9340E}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\build.proj = ..\..\..\build.proj
-		..\..\..\get_dependencies.proj = ..\..\..\get_dependencies.proj
 		..\..\..\ProjectManifest.xml = ..\..\..\ProjectManifest.xml
 		..\..\..\ProjectManifest.xsl = ..\..\..\ProjectManifest.xsl
 		..\..\..\release_notes.htm = ..\..\..\release_notes.htm
@@ -18,9 +17,15 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCorrelation", "..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj", "{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MosaicDataModel", "..\..\logic\MosaicDataModel\MosaicDataModel.vcxproj", "{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedMosaicDataModel", "..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj", "{84C9E16A-93E3-4105-A3AF-0533131EB43D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedMosaicDataModelUnitTest", "..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModelUnitTest\ManagedMosaicDataModelUnitTest.csproj", "{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 5
+		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -35,6 +40,15 @@ Global
 		SccProjectUniqueName4 = ..\\..\\logic\\ImageCorrelation\\ImageCorrelation.vcxproj
 		SccProjectName4 = ../../logic/ImageCorrelation
 		SccLocalPath4 = ..\\..\\logic\\ImageCorrelation
+		SccProjectUniqueName5 = ..\\..\\logic\\MosaicDataModel\\MosaicDataModel.vcxproj
+		SccProjectName5 = ../../logic/MosaicDataModel
+		SccLocalPath5 = ..\\..\\logic\\MosaicDataModel
+		SccProjectUniqueName6 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModel.vcxproj
+		SccProjectName6 = ../../logic/ManagedMosaicDataModel
+		SccLocalPath6 = ..\\..\\logic\\ManagedMosaicDataModel
+		SccProjectUniqueName7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest\\ManagedMosaicDataModelUnitTest.csproj
+		SccProjectName7 = ../../logic/ManagedMosaicDataModel/ManagedMosaicDataModelUnitTest
+		SccLocalPath7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +128,56 @@ Global
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x64.ActiveCfg = Release|x64
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x64.Build.0 = Release|x64
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}.Release|x86.ActiveCfg = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|Win32.Build.0 = Debug|Win32
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|x64.ActiveCfg = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|x64.Build.0 = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Debug|x86.ActiveCfg = Debug|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|Any CPU.ActiveCfg = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|Mixed Platforms.Build.0 = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|Win32.ActiveCfg = Release|Win32
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|Win32.Build.0 = Release|Win32
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|x64.ActiveCfg = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|x64.Build.0 = Release|x64
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}.Release|x86.ActiveCfg = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|Win32.Build.0 = Debug|Win32
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|x64.ActiveCfg = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|x64.Build.0 = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Debug|x86.ActiveCfg = Debug|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|Any CPU.ActiveCfg = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|Mixed Platforms.Build.0 = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|Win32.ActiveCfg = Release|Win32
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|Win32.Build.0 = Release|Win32
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|x64.ActiveCfg = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|x64.Build.0 = Release|x64
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D}.Release|x86.ActiveCfg = Release|x64
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Win32.ActiveCfg = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|Win32.Build.0 = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|x64.ActiveCfg = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|x64.Build.0 = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|x86.ActiveCfg = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Debug|x86.Build.0 = Debug|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|Mixed Platforms.Build.0 = Release|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|Win32.ActiveCfg = Release|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x64.ActiveCfg = Release|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.ActiveCfg = Release|x86
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

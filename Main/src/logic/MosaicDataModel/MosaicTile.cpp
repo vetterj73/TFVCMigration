@@ -1,7 +1,7 @@
 #include "StdAfx.h"
 #include "MosaicTile.h"
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	MosaicTile::MosaicTile()
 	{

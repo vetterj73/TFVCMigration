@@ -2,7 +2,7 @@
 
 
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	//typedef double[3][3] Transform; 
 	class MosaicLayer;

@@ -4,7 +4,7 @@
 #include <vector>
 using std::vector;
 
-namespace CyberStitch 
+namespace MosaicDM 
 {
 	class MosaicLayer;
 	
