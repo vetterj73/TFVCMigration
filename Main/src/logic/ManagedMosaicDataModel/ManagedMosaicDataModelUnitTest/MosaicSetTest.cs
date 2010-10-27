@@ -52,17 +52,16 @@ namespace ManagedCyberStitchUnitTest
         [TestMethod]
         public void BasicMosaicSetTest()
         {
-            ManagedMosaicSet mSet = new ManagedMosaicSet();
-            mSet.Initialize(3, 4, 1000, 2000, 1000, 1, 4);
+            ManagedMosaicSet mSet = new ManagedMosaicSet
+                (3, .004, 4, .003, 2592, 1944, 2592, 1, .00017, .00017);
+            Assert.IsTrue(mSet.GetLayer(0) == null);
+            Assert.IsTrue(mSet.GetLayer(1) == null);
             mSet.AddLayer(3.0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
             mSet.AddLayer(6.0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) != null);
-            mSet.Reset();
-            Assert.IsTrue(mSet.GetLayer(0) == null);
-            Assert.IsTrue(mSet.GetLayer(1) == null);
         }
     }
 }

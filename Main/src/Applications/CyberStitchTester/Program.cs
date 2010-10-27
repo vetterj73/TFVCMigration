@@ -9,7 +9,7 @@ namespace CyberStitchTester
 {
     class Program
     {
-        private static ManagedMosaicSet _mosaicSet = new ManagedMosaicSet();
+        private static ManagedMosaicSet _mosaicSet = null;
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         /// <summary>
@@ -21,7 +21,6 @@ namespace CyberStitchTester
             int panelWidth = 200;
             int panelHeight = 200;
             string simulationFile = "";
-
 
             for(int i=0; i<args.Length; i++)
             {
@@ -116,7 +115,7 @@ namespace CyberStitchTester
             for (int i = 0; i < d.NumberOfCameras; i++ )
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
-            _mosaicSet.Initialize(numCameras, pSpec.NumberOfTriggers, 2592, 1944, 2592, 1, 4);
+            _mosaicSet = new ManagedMosaicSet(numCameras,  .004, pSpec.NumberOfTriggers, .003, 2592, 1944, 2592, 1, .00017, .00017);
 
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {

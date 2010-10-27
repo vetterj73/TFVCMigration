@@ -19,32 +19,40 @@ namespace MosaicDM
 		public:
 
 			///
-			///	Constructor.  Need to call Initialize to setup the object
+			///	Constructor
 			///
-			MosaicSet();
-
-			///
-			///	Destructor
-			///
-			~MosaicSet();
-
-			///
-			/// This is the main function to setup the entire mosaic data model.
-			///
-			/// \param rows # of rows in the mosaic
-			/// \param columns # of columns in the mosaic
+			/// \param numRowsInMosaic # of rows in the mosaic
+			/// \param rowOverlapInMeters overlap between rows
+			/// \param numColumnsInMosaic # of columns in the mosaic
+			/// \param columnOverlapInMeters overlap between columns
 			/// \param imageWidthInPixels width of each image (tile) in pixels
 			/// \param imageHeightInPixels height of each image (tile) in pixels
 			/// \param imageStrideInPixels stride of each image (tile) in pixels
 			/// \param bytesPerPixel # of bytes for each pixel
 			/// \param overlapInMeters The overlap of each image. specified in meters.
-			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMeters);
-			
+			/// \param pixelSizeXInMeters - size of pixel in X direction.
+			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
+			MosaicSet(int numRowsInMosaic,
+					  double rowOverlapInMeters,
+					  int numColumnsInMosaic,
+					  double columnOverlapInMeters,
+					  int imageWidthInPixels,
+					  int imageHeightInPixels,
+					  int imageStrideInPixels,
+					  int bytesPerPixel,
+					  double pixelSizeXInMeters,
+					  double pixelSizeYInMeters);
+
+			///
+			///	Destructor
+			///
+			~MosaicSet();
+		
 			///
 			/// Adds a layer to a mosaic set
 			///
-			/// \param offsetInMeters - the initial offset (i.e. - where the first 
-			MosaicLayer *AddLayer(double offsetInMM);
+			/// \param offsetInMeters - the initial offset from edge of image 
+			MosaicLayer *AddLayer(double offsetInMeters);
 			
 			///
 			/// Gets a layer from the MosaicSet
@@ -52,11 +60,6 @@ namespace MosaicDM
 			///
 			/// \param index - Zero Based Index... 
 			MosaicLayer *GetLayer(int index);
-
-			///
-			///	Resets everything to pre-initialized form.
-			///
-			void Reset();
 
 			///
 			///	Getters for all basic Attributes
@@ -69,7 +72,8 @@ namespace MosaicDM
 			int GetImageStrideInPixels(){return _imageStride;}
 			int GetImageStrideInBytes(){return _imageStride*_bytesPerPixel;}
 			int GetBytesPerPixel(){return _bytesPerPixel;}
-			int GetOverlapInMM(){return _overlapInMM;}
+			int GetColumnOverlapInMeters(){return _columnOverlap;}
+			int GetRowOverlapInMeters(){return _rowOverlap;}
 			int NumberOfTilesPerLayer();
 
 			///
@@ -84,7 +88,10 @@ namespace MosaicDM
 			int _imageHeight;
 			int _imageStride;
 			int _bytesPerPixel;
-			int _overlapInMM;
+			double _rowOverlap;
+			double _columnOverlap;
+			double _pixelSizeX;
+			double _pixelSizeY;
 			LayerList _layerList;
 	};
 }

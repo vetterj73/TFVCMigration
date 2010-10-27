@@ -16,11 +16,31 @@ namespace MMosaicDM
 		public:
 
 			///
-			///	Constructor
+			///	Constructor - See MosaicSet constructor for details.
 			///
-			ManagedMosaicSet()
+			ManagedMosaicSet(int numRowsInMosaic,
+					  double rowOverlapInMeters,
+					  int numColumnsInMosaic,
+					  double columnOverlapInMeters,
+					  int imageWidthInPixels,
+					  int imageHeightInPixels,
+					  int imageStrideInPixels,
+					  int bytesPerPixel,
+					  double pixelSizeXInMeters,
+					  double pixelSizeYInMeters)
 			{
-				_pMosaicSet = new MosaicDM::MosaicSet();
+				_pMosaicSet = new MosaicDM::MosaicSet(
+						numRowsInMosaic,
+						rowOverlapInMeters,
+						numColumnsInMosaic,
+						columnOverlapInMeters,
+						imageWidthInPixels,
+						imageHeightInPixels,
+						imageStrideInPixels,
+						bytesPerPixel,
+						pixelSizeXInMeters,
+						pixelSizeYInMeters
+					);
 			}
 
 			///
@@ -31,22 +51,6 @@ namespace MMosaicDM
 				delete _pMosaicSet;
 			}
 			
-			///
-			///	Initialize - see unmanaged MosaicSet for details.
-			///
-			void Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMeters)
-			{
-				_pMosaicSet->Initialize(rows, columns, imageWidthInPixels, imageHeightInPixels, imageStrideInPixels, bytesPerPixel, overlapInMeters);	
-			}
-
-			///
-			///	Resets to pre-initialized state.
-			///
-			void Reset()
-			{
-				_pMosaicSet->Reset();
-			}
-
 			///
 			///	Adds a layer (see unmanaged MosaicSet for details)
 			///

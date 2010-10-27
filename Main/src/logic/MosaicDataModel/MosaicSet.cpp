@@ -6,15 +6,35 @@
 
 namespace MosaicDM 
 {
-	MosaicSet::MosaicSet()
+	MosaicSet::MosaicSet(int numRowsInMosaic,
+			  double rowOverlapInMeters,
+			  int numColumnsInMosaic,
+			  double columnOverlapInMeters,
+			  int imageWidthInPixels,
+			  int imageHeightInPixels,
+			  int imageStrideInPixels,
+			  int bytesPerPixel,
+			  double pixelSizeXInMeters,
+			  double pixelSizeYInMeters)
 	{
-		_rows = 0;
-		_columns = 0;
+		_rows = numRowsInMosaic;
+		_columns = numColumnsInMosaic;
+		_rowOverlap = rowOverlapInMeters;
+		_columnOverlap = columnOverlapInMeters;
+		_imageWidth = imageWidthInPixels;
+		_imageHeight = imageHeightInPixels;
+		_imageStride = imageStrideInPixels;
+		_bytesPerPixel = bytesPerPixel;
+		_pixelSizeX = pixelSizeXInMeters;
+		_pixelSizeY = pixelSizeYInMeters;
 	}
 
 	MosaicSet::~MosaicSet()
 	{
-		Reset();
+		for(int i=0; i<_layerList.size(); i++)
+			delete _layerList[i];
+
+		_layerList.clear();
 	}
 
 	MosaicLayer *MosaicSet::GetLayer(int index)
@@ -31,34 +51,6 @@ namespace MosaicDM
 		pML->Initialize(this, offsetInMM);
 		_layerList.push_back(pML);
 		return pML;
-	}
-
-	void MosaicSet::Initialize(int rows, int columns, int imageWidthInPixels, int imageHeightInPixels, int imageStrideInPixels, int bytesPerPixel, int overlapInMM)
-	{
-		Reset();
-
-		_rows = rows;
-		_columns = columns;
-		_imageWidth = imageWidthInPixels;
-		_imageHeight = imageHeightInPixels;
-		_imageStride = imageStrideInPixels;
-		_bytesPerPixel = bytesPerPixel;
-		_overlapInMM = overlapInMM;
-	}
-
-	void MosaicSet::Reset()
-	{
-		for(int i=0; i<_layerList.size(); i++)
-			delete _layerList[i];
-
-		_layerList.clear();
-		_rows = 0;
-		_columns = 0;
-		_imageWidth = 0;
-		_imageHeight = 0;
-		_imageStride = 0;
-		_bytesPerPixel = 0;
-		_overlapInMM = 0;
 	}
 
 	int MosaicSet::NumberOfTilesPerLayer()
