@@ -23,6 +23,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedMosaicDataModel", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedMosaicDataModelUnitTest", "..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModelUnitTest\ManagedMosaicDataModelUnitTest.csproj", "{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{E71E9608-6EDD-4A4D-A173-BF6B337549A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91-C1B1-48D2-89B0-B102895144B7}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 8
@@ -32,6 +36,7 @@ Global
 		SccProjectUniqueName1 = CyberStitchTester.csproj
 		SccLocalPath1 = .
 		SccProjectUniqueName2 = ..\\..\\GetExternalDeps\\GetExternalDeps.vcxproj
+		SccProjectTopLevelParentUniqueName2 = CyberStitchTester.sln
 		SccProjectName2 = ../../GetExternalDeps
 		SccLocalPath2 = ..\\..\\GetExternalDeps
 		SccProjectUniqueName3 = ..\\..\\logic\\ImageDefines\\ImageDefines.vcxproj
@@ -41,12 +46,15 @@ Global
 		SccProjectName4 = ../../logic/ImageCorrelation
 		SccLocalPath4 = ..\\..\\logic\\ImageCorrelation
 		SccProjectUniqueName5 = ..\\..\\logic\\MosaicDataModel\\MosaicDataModel.vcxproj
+		SccProjectTopLevelParentUniqueName5 = CyberStitchTester.sln
 		SccProjectName5 = ../../logic/MosaicDataModel
 		SccLocalPath5 = ..\\..\\logic\\MosaicDataModel
 		SccProjectUniqueName6 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModel.vcxproj
+		SccProjectTopLevelParentUniqueName6 = CyberStitchTester.sln
 		SccProjectName6 = ../../logic/ManagedMosaicDataModel
 		SccLocalPath6 = ..\\..\\logic\\ManagedMosaicDataModel
 		SccProjectUniqueName7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest\\ManagedMosaicDataModelUnitTest.csproj
+		SccProjectTopLevelParentUniqueName7 = CyberStitchTester.sln
 		SccProjectName7 = ../../logic/ManagedMosaicDataModel/ManagedMosaicDataModelUnitTest
 		SccLocalPath7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest
 	EndGlobalSection
@@ -181,6 +189,12 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {83A6E92A-C9C4-4634-B1E7-357467A9340E}
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
+		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
+		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7
