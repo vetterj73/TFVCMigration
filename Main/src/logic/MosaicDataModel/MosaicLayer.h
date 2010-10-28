@@ -26,10 +26,10 @@ namespace MosaicDM
 			~MosaicLayer(void);
 
 			///
-			///	Get the tile at a given row and column of the mosaic.
+			///	Get the tile at a given camera and trigger of the mosaic.
 			/// Returns null if this row or column is out of range.
 			///
-			MosaicTile* GetTile(int row, int column);
+			MosaicTile* GetTile(int cameraIndex, int triggerIndex);
 			
 			///
 			///	Returns the number of tiles in this (or any?) layer.
@@ -43,11 +43,11 @@ namespace MosaicDM
 
 		protected:
 			/// Called from MosaicSet when a layer is added.
-			void Initialize(MosaicSet *pMosaicSet, double offsetInMM);
+			void Initialize(MosaicSet *pMosaicSet, double offsetInMeters);
 
 		private:
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
-			double _offsetInMM;
+			double _offsetInMeters;
 	};
 }

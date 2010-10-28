@@ -18,10 +18,10 @@ namespace MMosaicDM
 			///
 			///	Constructor - See MosaicSet constructor for details.
 			///
-			ManagedMosaicSet(int numTriggers,
-					  double triggerOverlapInMeters,
-					  int numCamerasInMosaic,
+			ManagedMosaicSet(int numCameras,
 					  double cameraOverlapInMeters,
+					  int numTriggers,
+					  double triggerOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
@@ -30,10 +30,10 @@ namespace MMosaicDM
 					  double pixelSizeYInMeters)
 			{
 				_pMosaicSet = new MosaicDM::MosaicSet(
+						numCameras,
+						cameraOverlapInMeters,
 						numTriggers,
 						triggerOverlapInMeters,
-						numCamerasInMosaic,
-						cameraOverlapInMeters,
 						imageWidthInPixels,
 						imageHeightInPixels,
 						imageStrideInPixels,
@@ -54,9 +54,9 @@ namespace MMosaicDM
 			///
 			///	Adds a layer (see unmanaged MosaicSet for details)
 			///
-			ManagedMosaicLayer ^AddLayer(double offsetInMM)
+			ManagedMosaicLayer ^AddLayer(double offsetInMeters)
 			{
-				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(offsetInMM);
+				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(offsetInMeters);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 

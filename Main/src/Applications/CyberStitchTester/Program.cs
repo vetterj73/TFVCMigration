@@ -115,7 +115,7 @@ namespace CyberStitchTester
             for (int i = 0; i < d.NumberOfCameras; i++ )
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
-            _mosaicSet = new ManagedMosaicSet(pSpec.NumberOfTriggers, .004, numCameras, .003, 2592, 1944, 2592, 1, .00017, .00017);
+            _mosaicSet = new ManagedMosaicSet(numCameras, .003, pSpec.NumberOfTriggers, .004, 2592, 1944, 2592, 1, .00017, .00017);
 
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
@@ -135,7 +135,7 @@ namespace CyberStitchTester
         {
             Output("Got an Image!");
             ManagedMosaicLayer layer = _mosaicSet.GetLayer(pframe.CaptureSpecIndex());
-            ManagedMosaicTile tile = layer.GetTile(pframe.CameraIndex(), pframe.TriggerIndex());
+            ManagedMosaicTile tile = layer.GetTile(pframe.TriggerIndex(), pframe.CameraIndex());
             if(tile == null)
                 Output("Tile was NULL!!!!");
             tile.SetImageBuffer(pframe.BufferPtr());

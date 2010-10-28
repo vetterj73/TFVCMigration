@@ -9,6 +9,7 @@ namespace MosaicDM
 	{
 		_pMosaicSet = NULL;
 		_pTileArray = NULL;
+		_offsetInMeters = 0;
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -16,10 +17,10 @@ namespace MosaicDM
 		delete[] _pTileArray;
 	}
 
-	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, double offsetInMM)
+	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, double offsetInMeters)
 	{
 		_pMosaicSet = pMosaicSet;
-		_offsetInMM = offsetInMM;
+		_offsetInMeters = offsetInMeters;
 		int numTiles = NumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 
@@ -29,12 +30,12 @@ namespace MosaicDM
 		}
 	}
 
-	MosaicTile* MosaicLayer::GetTile(int trigger, int camera)
+	MosaicTile* MosaicLayer::GetTile(int cameraIndex, int triggerIndex)
 	{
-		if(trigger<0 || trigger>=_pMosaicSet->GetNumTriggers() || camera<0 || camera>_pMosaicSet->GetNumCameras())
+		if(cameraIndex<0 || cameraIndex>=_pMosaicSet->GetNumCameras() || triggerIndex<0 || triggerIndex>=_pMosaicSet->GetNumTriggers())
 			return NULL;
 
-		return &_pTileArray[trigger*_pMosaicSet->GetNumCameras()+camera];
+		return &_pTileArray[cameraIndex*_pMosaicSet->GetNumTriggers()+triggerIndex];
 	}
 
 	int MosaicLayer::NumberOfTiles()

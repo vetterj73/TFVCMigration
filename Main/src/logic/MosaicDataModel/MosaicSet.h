@@ -21,10 +21,10 @@ namespace MosaicDM
 			///
 			///	Constructor
 			///
-			/// \param numTriggers # of rows in the mosaic
-			/// \param triggerOverlapInMeters overlap between rows
-			/// \param numCamerasInMosaic # of columns in the mosaic
-			/// \param cameraOverlapInMeters overlap between columns
+			/// \param numCameras (columns) in mosaic
+			/// \param cameraOverlapInMeters overlap between cameras
+			/// \param numTriggers # of triggers in the mosaic
+			/// \param triggerOverlapInMeters overlap between triggers
 			/// \param imageWidthInPixels width of each image (tile) in pixels
 			/// \param imageHeightInPixels height of each image (tile) in pixels
 			/// \param imageStrideInPixels stride of each image (tile) in pixels
@@ -32,10 +32,11 @@ namespace MosaicDM
 			/// \param overlapInMeters The overlap of each image. specified in meters.
 			/// \param pixelSizeXInMeters - size of pixel in X direction.
 			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
-			MosaicSet(int numTriggers,
-					  double triggerOverlapInMeters,
-					  int numCamerasInMosaic,
+			MosaicSet(
+					  int numCameras,
 					  double cameraOverlapInMeters,
+					  int numTriggers,
+					  double triggerOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,

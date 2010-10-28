@@ -53,7 +53,7 @@ namespace ManagedCyberStitchUnitTest
         public void BasicMosaicSetTest()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet
-                (3, .004, 4, .003, 2592, 1944, 2592, 1, .00017, .00017);
+                (3, .003, 4, .004, 2592, 1944, 2592, 1, .000017, .000017);
             Assert.IsTrue(mSet.GetLayer(0) == null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
             mSet.AddLayer(3.0);
@@ -62,6 +62,17 @@ namespace ManagedCyberStitchUnitTest
             mSet.AddLayer(6.0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) != null);
+
+            for (int i = 0; i < 1; i++)
+            {
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(0, 0) != null);
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(1, 1) != null);
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(2, 3) != null);
+
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(3, 3) == null);
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(2, 4) == null);
+            }
+
         }
     }
 }
