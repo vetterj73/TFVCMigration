@@ -1,6 +1,7 @@
 #pragma once
 #include "STL.h"
 #include "ImgTransform.h"
+#include "UIRect.h"
 
 /*
 	Describes an image for stitching
@@ -64,13 +65,14 @@ public:
 	unsigned int		PixelRowStride(){return _pixelRowStride;};
 	unsigned int		BufferSizeInBytes(){return ByteRowStride()*Rows();};
 	
+	pair<double,double> ImageCenter( ) const;
 	double				CenterX() const;
 	double				CenterY() const;
 	double				PixelSizeX() const;
 	double				PixelSizeY() const;
 	double				LengthX() const;
 	double				LengthY() const;
-
+	
 	// write all zeros to the buffer
 	void				ZeroBuffer();
 	void				DeleteBufferIfOwner();
@@ -82,7 +84,7 @@ public:
 	pair<double,double> WorldToImage(double dx, double dy ) const;
 	void				WorldToImage(double dx, double dy, double* pdRow, double* pdCol) const;
 
-	pair<double,double> ImageCenter( ) const;
+	DRect				GetBoundBoxInWorld();
 
 protected:
 

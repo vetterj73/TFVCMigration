@@ -35,5 +35,9 @@ private:
 
 	unsigned int _iSizeX;			// The number of images in column
 	unsigned int _iSizeY;			// The number of images in row
+
+	// For mask images
+	bool _bHasMaskImages;
+	Image* _MaskImages;
 };
 

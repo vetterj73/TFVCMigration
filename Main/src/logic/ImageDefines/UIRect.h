@@ -30,5 +30,17 @@ public:
 	unsigned int Columns() const;
 };
 
+/*
+	A Rectnagle in double
+*/
+struct DRect
+{
+	double xMin;
+	double xMax;
+	double yMin;
+	double yMax;
+};
+
+
 
 

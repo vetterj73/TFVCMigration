@@ -139,30 +139,6 @@ void Image::ZeroBuffer()
 #pragma region Transform related
 // transforms map (row, col) in image space to (x, y) in world space
 
-// FOV pixel size in x of world space
-double Image::PixelSizeX() const
-{
-	return(_thisToWorld.GetItem(0,0));
-}
-
-// FOV pixel size in y of world space
-double Image::PixelSizeY() const
-{
-	return(_thisToWorld.GetItem(1,1));
-}
-
-// FOV length in x of world space
-double Image::LengthX() const
-{
-	return _rows*PixelSizeX();
-}
-
-// FOV length in y of world space
- double Image::LengthY() const
-{
-	return _columns*PixelSizeY();
-}
- 
 // Map (row, col) in image space to (x, y) in world space
 pair<double, double> Image::ImageToWorld(double row, double col) const
 {
@@ -209,6 +185,47 @@ double Image::CenterX() const
 double Image::CenterY() const
 {
 	return ImageCenter().second;
+}
+
+// FOV pixel size in x of world space
+double Image::PixelSizeX() const
+{
+	return(_thisToWorld.GetItem(0,0));
+}
+
+// FOV pixel size in y of world space
+double Image::PixelSizeY() const
+{
+	return(_thisToWorld.GetItem(1,1));
+}
+
+// FOV length in x of world space
+double Image::LengthX() const
+{
+	return _rows*PixelSizeX();
+}
+
+// FOV length in y of world space
+ double Image::LengthY() const
+{
+	return _columns*PixelSizeY();
+}
+
+DRect Image::GetBoundBoxInWorld()
+{
+	DRect rect;
+
+	pair<double, double> topLeft = ImageToWorld(0, 0);
+	pair<double, double> topRight = ImageToWorld(0, _columns-1);
+	pair<double, double> bottomLeft = ImageToWorld(_rows-1, 0);
+	pair<double, double> bottomRight = ImageToWorld(_rows-1, _columns-1);
+ 
+	rect.xMin = topLeft.first>topRight.first ? topLeft.first:topRight.first;
+	rect.xMax = bottomLeft.first<bottomRight.first ? bottomLeft.first:bottomRight.first;
+	rect.yMin = topLeft.second>bottomLeft.second ? topLeft.second:bottomLeft.second;
+	rect.yMin = topRight.second<bottomRight.second ? topRight.second:bottomRight.second;
+
+	return rect;
 }
 
 #pragma endregion
