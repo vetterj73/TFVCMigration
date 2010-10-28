@@ -29,17 +29,17 @@ namespace MosaicDM
 		}
 	}
 
-	MosaicTile* MosaicLayer::GetTile(int row, int column)
+	MosaicTile* MosaicLayer::GetTile(int trigger, int camera)
 	{
-		if(row<0 || row>=_pMosaicSet->GetNumMosaicRows() || column<0 || column>_pMosaicSet->GetNumMosaicColumns())
+		if(trigger<0 || trigger>=_pMosaicSet->GetNumTriggers() || camera<0 || camera>_pMosaicSet->GetNumCameras())
 			return NULL;
 
-		return &_pTileArray[row*_pMosaicSet->GetNumMosaicColumns()+column];
+		return &_pTileArray[trigger*_pMosaicSet->GetNumCameras()+camera];
 	}
 
 	int MosaicLayer::NumberOfTiles()
 	{
-		return _pMosaicSet->GetNumMosaicRows()*_pMosaicSet->GetNumMosaicColumns();
+		return _pMosaicSet->GetNumTriggers()*_pMosaicSet->GetNumCameras();
 	}
 	
 	bool MosaicLayer::HasAllImages()

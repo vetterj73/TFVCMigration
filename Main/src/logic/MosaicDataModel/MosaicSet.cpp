@@ -6,10 +6,10 @@
 
 namespace MosaicDM 
 {
-	MosaicSet::MosaicSet(int numRowsInMosaic,
-			  double rowOverlapInMeters,
-			  int numColumnsInMosaic,
-			  double columnOverlapInMeters,
+	MosaicSet::MosaicSet(int numTriggers,
+			  double triggerOverlapInMeters,
+			  int numCamerasInMosaic,
+			  double cameraOverlapInMeters,
 			  int imageWidthInPixels,
 			  int imageHeightInPixels,
 			  int imageStrideInPixels,
@@ -17,10 +17,10 @@ namespace MosaicDM
 			  double pixelSizeXInMeters,
 			  double pixelSizeYInMeters)
 	{
-		_rows = numRowsInMosaic;
-		_columns = numColumnsInMosaic;
-		_rowOverlap = rowOverlapInMeters;
-		_columnOverlap = columnOverlapInMeters;
+		_triggers = numTriggers;
+		_cameras = numCamerasInMosaic;
+		_triggerOverlap = triggerOverlapInMeters;
+		_cameraOverlap = cameraOverlapInMeters;
 		_imageWidth = imageWidthInPixels;
 		_imageHeight = imageHeightInPixels;
 		_imageStride = imageStrideInPixels;
@@ -55,7 +55,7 @@ namespace MosaicDM
 
 	int MosaicSet::NumberOfTilesPerLayer()
 	{
-		return GetNumMosaicRows()*GetNumMosaicColumns();
+		return GetNumTriggers()*GetNumCameras();
 	}
 	
 	bool MosaicSet::HasAllImages()

@@ -21,10 +21,10 @@ namespace MosaicDM
 			///
 			///	Constructor
 			///
-			/// \param numRowsInMosaic # of rows in the mosaic
-			/// \param rowOverlapInMeters overlap between rows
-			/// \param numColumnsInMosaic # of columns in the mosaic
-			/// \param columnOverlapInMeters overlap between columns
+			/// \param numTriggers # of rows in the mosaic
+			/// \param triggerOverlapInMeters overlap between rows
+			/// \param numCamerasInMosaic # of columns in the mosaic
+			/// \param cameraOverlapInMeters overlap between columns
 			/// \param imageWidthInPixels width of each image (tile) in pixels
 			/// \param imageHeightInPixels height of each image (tile) in pixels
 			/// \param imageStrideInPixels stride of each image (tile) in pixels
@@ -32,10 +32,10 @@ namespace MosaicDM
 			/// \param overlapInMeters The overlap of each image. specified in meters.
 			/// \param pixelSizeXInMeters - size of pixel in X direction.
 			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
-			MosaicSet(int numRowsInMosaic,
-					  double rowOverlapInMeters,
-					  int numColumnsInMosaic,
-					  double columnOverlapInMeters,
+			MosaicSet(int numTriggers,
+					  double triggerOverlapInMeters,
+					  int numCamerasInMosaic,
+					  double cameraOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
@@ -64,16 +64,16 @@ namespace MosaicDM
 			///
 			///	Getters for all basic Attributes
 			///
-			int GetNumMosaicRows(){return _rows;}
-			int GetNumMosaicColumns(){return _columns;}
+			int GetNumTriggers(){return _triggers;}
+			int GetNumCameras(){return _cameras;}
 			int GetNumMosaicLayers(){return _layerList.size();}		
 			int GetImageWidthInPixels(){return _imageWidth;}
 			int GetImageHeightInPixels(){return _imageHeight;}
 			int GetImageStrideInPixels(){return _imageStride;}
 			int GetImageStrideInBytes(){return _imageStride*_bytesPerPixel;}
 			int GetBytesPerPixel(){return _bytesPerPixel;}
-			int GetColumnOverlapInMeters(){return _columnOverlap;}
-			int GetRowOverlapInMeters(){return _rowOverlap;}
+			int GetCameraOverlapInMeters(){return _cameraOverlap;}
+			int GetTriggerOverlapInMeters(){return _triggerOverlap;}
 			int NumberOfTilesPerLayer();
 
 			///
@@ -82,14 +82,14 @@ namespace MosaicDM
 			bool HasAllImages();
 
 		private:
-			int _rows;
-			int _columns;
+			int _triggers;
+			int _cameras;
 			int _imageWidth;
 			int _imageHeight;
 			int _imageStride;
 			int _bytesPerPixel;
-			double _rowOverlap;
-			double _columnOverlap;
+			double _triggerOverlap;
+			double _cameraOverlap;
 			double _pixelSizeX;
 			double _pixelSizeY;
 			LayerList _layerList;

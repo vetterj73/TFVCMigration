@@ -18,10 +18,10 @@ namespace MMosaicDM
 			///
 			///	Constructor - See MosaicSet constructor for details.
 			///
-			ManagedMosaicSet(int numRowsInMosaic,
-					  double rowOverlapInMeters,
-					  int numColumnsInMosaic,
-					  double columnOverlapInMeters,
+			ManagedMosaicSet(int numTriggers,
+					  double triggerOverlapInMeters,
+					  int numCamerasInMosaic,
+					  double cameraOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
@@ -30,10 +30,10 @@ namespace MMosaicDM
 					  double pixelSizeYInMeters)
 			{
 				_pMosaicSet = new MosaicDM::MosaicSet(
-						numRowsInMosaic,
-						rowOverlapInMeters,
-						numColumnsInMosaic,
-						columnOverlapInMeters,
+						numTriggers,
+						triggerOverlapInMeters,
+						numCamerasInMosaic,
+						cameraOverlapInMeters,
 						imageWidthInPixels,
 						imageHeightInPixels,
 						imageStrideInPixels,

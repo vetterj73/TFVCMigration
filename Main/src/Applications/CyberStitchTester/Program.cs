@@ -115,7 +115,7 @@ namespace CyberStitchTester
             for (int i = 0; i < d.NumberOfCameras; i++ )
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
-            _mosaicSet = new ManagedMosaicSet(numCameras,  .004, pSpec.NumberOfTriggers, .003, 2592, 1944, 2592, 1, .00017, .00017);
+            _mosaicSet = new ManagedMosaicSet(pSpec.NumberOfTriggers, .004, numCameras, .003, 2592, 1944, 2592, 1, .00017, .00017);
 
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
