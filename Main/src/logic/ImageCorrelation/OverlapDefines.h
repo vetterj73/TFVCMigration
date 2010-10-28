@@ -28,10 +28,9 @@ public:
 };
 
 typedef enum { 
-	Row_To_Row			= 10,
-	Col_To_Col			= 20,
-	CAD					= 30,
-	FID					= 35,
+	Fov_To_Fov			= 10,
+	Cad_To_Fov			= 20,
+	Fid_To_Fov			= 30,
 	NULL_OVERLAP		= 40
 } OverlapType;
 
@@ -89,10 +88,20 @@ public:
 		Image* pImg1, 
 		Image* pImg2,
 		DRect validRect,
-		OverlapType type);
+		OverlapType type,		
+		Image* pMaskImg = NULL);
 
 	Overlap(const Overlap& b);
 	void operator=(const Overlap& b);
+
+	void config(
+		Image* pImg1, 
+		Image* pImg2,
+		DRect validRect,
+		OverlapType type,		
+		Image* pMaskImg = NULL);
+
+	Image* GetFirstImage() {return _pImg1;};
 
 	bool IsValid() {return _bValid;};
 
@@ -108,6 +117,8 @@ private:
 	DRect _validRect;
 	OverlapType _type;
 
+	Image* _pMaskImg;
+
 	bool _bValid;
 
 	CorrelationPair _coarsePair;
@@ -117,29 +128,62 @@ private:
 // Overlap between FOV image FOV image
 class FovFovOverlap: public Overlap
 {
-	MosaicImage*	pMosaic1;
-	MosaicImage*	pMosaic2;
-	pair<unsigned int, unsigned int> ImgPos1;
-	pair<unsigned int, unsigned int> ImgPos2;
+public:
+	FovFovOverlap(
+		MosaicImage*	pMosaic1,
+		MosaicImage*	pMosaic2,
+		pair<unsigned int, unsigned int> ImgPos1,
+		pair<unsigned int, unsigned int> ImgPos2,
+		DRect validRect,
+		bool bHasMask);
+
+	bool IsValid();
+
+private:
+		MosaicImage*	_pMosaic1;
+		MosaicImage*	_pMosaic2;
+		pair<unsigned int, unsigned int> _ImgPos1;
+		pair<unsigned int, unsigned int> _ImgPos2;
+		bool _bHasMask;
 };
 
-class FovCadOverlap: public Overlap
+class CadFovOverlap: public Overlap
 {
-	MosaicImage*	pMosaic;
-	pair<unsigned int, unsigned int> ImgPos;
+public:
+	CadFovOverlap(
+		MosaicImage* pMosaic,
+		pair<unsigned int, unsigned int> ImgPos,
+		Image* pCadImg,
+		DRect validRect);
 
-	Image* pCadImg;
+private:
+	MosaicImage*	_pMosaic;
+	pair<unsigned int, unsigned int> _ImgPos;
+	Image* _pCadImg;
 };
 
 
-class FovFidOverlap: public Overlap
+class FidFovOverlap: public Overlap
 {
-	MosaicImage*	pMosaic;
-	pair<unsigned int, unsigned int> ImgPos;
+public:
+	FidFovOverlap(
+		MosaicImage*	pMosaic,
+		pair<unsigned int, unsigned int> ImgPos,
+		Image* pFidImg,
+		double _dXcenter,
+		double _dYcenter,
+		DRect validRect);
 
-	Image* pFidImg;
+	double GetFiducialXPos() {return _dCenterX;};
+	double GetFiducialYPos() {return _dCenterY;};
 
-	double _dXcenter;
-	double _dYcenter;
+private:
+	MosaicImage*	_pMosaic;
+	pair<unsigned int, unsigned int> _ImgPos;
+
+	Image* _pFidImg;
+
+	double _dCenterX;
+	double _dCenterY;
 };
 

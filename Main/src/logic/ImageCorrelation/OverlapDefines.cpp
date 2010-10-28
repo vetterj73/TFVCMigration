@@ -115,16 +115,10 @@ Overlap::Overlap(
 		Image* pImg1, 
 		Image* pImg2,
 		DRect validRect,
-		OverlapType type)
+		OverlapType type,
+		Image* pMaskImg)
 {
-	_pImg1 = pImg1, 
-	_pImg2 = pImg2, 
-
-	_validRect = validRect;
-
-	_type = type;
-
-	_bValid = CalCoarseCorrPair();
+	config(pImg1, pImg2, validRect, type, pMaskImg);
 }
 
 Overlap::Overlap(const Overlap& overlap) 
@@ -134,8 +128,9 @@ Overlap::Overlap(const Overlap& overlap)
 
 void Overlap::operator=(const Overlap& b)
 {
-	_pImg1 = b._pImg1, 
-	_pImg2 = b._pImg2, 
+	_pImg1 = b._pImg1; 
+	_pImg2 = b._pImg2;
+	_pMaskImg = b._pMaskImg;
 
 	_validRect = b._validRect;
 
@@ -143,6 +138,24 @@ void Overlap::operator=(const Overlap& b)
 
 	_bValid = b._bValid;
 	_coarsePair = b._coarsePair;
+}
+
+void Overlap::config(
+	Image* pImg1, 
+	Image* pImg2,
+	DRect validRect,
+	OverlapType type,		
+	Image* pMaskImg)
+{
+	_pImg1 = pImg1; 
+	_pImg2 = pImg2;
+	_pMaskImg = _pMaskImg;
+
+	_validRect = validRect;
+
+	_type = type;
+
+	_bValid = CalCoarseCorrPair();
 }
 
 // Calculate the coarse correlation pair
@@ -222,13 +235,82 @@ bool Overlap::CalCoarseCorrPair()
 	return(true);
 }
 
+bool Overlap::ChopOverlap()
+{
+}
+
+bool Overlap::DoIt()
+{
+}
 
 #pragma endregion
 
 #pragma region FovFovOverlap
 
+FovFovOverlap::FovFovOverlap(
+	MosaicImage*	pMosaic1,
+	MosaicImage*	pMosaic2,
+	pair<unsigned int, unsigned int> ImgPos1,
+	pair<unsigned int, unsigned int> ImgPos2,
+	DRect validRect,
+	bool bHasMask)
+{
+	_pMosaic1 = pMosaic1;
+	_pMosaic2 = pMosaic2;
+	_ImgPos1 = ImgPos1;
+	_ImgPos2 = ImgPos2;
+	_bHasMask = bHasMask;
+
+	Image* pImg1 = _pMosaic1->GetImagePtr(ImgPos1.first, ImgPos1.second);
+	Image* pImg2 = _pMosaic1->GetImagePtr(ImgPos2.first, ImgPos2.second);
+
+	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
+}
 
 #pragma endregion 
+
+#pragma region CadFovOverlap class
+
+CadFovOverlap::CadFovOverlap(
+	MosaicImage* pMosaic,
+	pair<unsigned int, unsigned int> ImgPos,
+	Image* pCadImg,
+	DRect validRect)
+{
+	_pMosaic = pMosaic;
+	_ImgPos = ImgPos;
+	_pCadImg = pCadImg;
+
+	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
+
+	config(pImg1, _pCadImg, validRect, Cad_To_Fov);
+}
+
+#pragma endregion
+
+#pragma region FidFovOverlap class
+
+FidFovOverlap::FidFovOverlap(
+	MosaicImage*	pMosaic,
+	pair<unsigned int, unsigned int> ImgPos,
+	Image* pFidImg,
+	double dCenterX,
+	double dCenterY,
+	DRect validRect)
+{
+	_pMosaic = pMosaic;
+	_ImgPos = ImgPos;
+	_pFidImg = pFidImg;
+
+	_dCenterX = dCenterX;
+	_dCenterY = dCenterY;
+
+	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
+
+	config(pImg1, _pFidImg, validRect, Fid_To_Fov);
+}
+
+#pragma endregion
 
 
 
