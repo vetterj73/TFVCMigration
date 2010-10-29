@@ -26,7 +26,6 @@ namespace MosaicDM
 			///	Gets/Sets the image buffer (assumed to be the size defined by the MosaicSet
 			///
 			unsigned char *	GetImageBuffer(){return _pImageBuffer;};	
-			void SetImageBuffer(unsigned char* pImageBuffer){_pImageBuffer = pImageBuffer;};
 
 			///
 			///	returns true is this mosaic contains an image.
@@ -34,6 +33,15 @@ namespace MosaicDM
 			bool ContainsImage(){return _pImageBuffer != NULL;}
 
 		protected:
+			bool SetImageBuffer(unsigned char* pImageBuffer)
+			{
+				if(_pImageBuffer != NULL)
+					return false;
+
+				_pImageBuffer = pImageBuffer;
+				return true;
+			};
+
 			///
 			///	Called by the MosaicLayer class.
 			///

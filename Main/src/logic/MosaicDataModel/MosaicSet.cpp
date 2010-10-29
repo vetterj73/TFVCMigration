@@ -27,6 +27,8 @@ namespace MosaicDM
 		_bytesPerPixel = bytesPerPixel;
 		_pixelSizeX = pixelSizeXInMeters;
 		_pixelSizeY = pixelSizeYInMeters;
+		_registeredImageAddedCallback = NULL;
+		_pCallbackContext = NULL;
 	}
 
 	MosaicSet::~MosaicSet()
@@ -66,5 +68,37 @@ namespace MosaicDM
 				return false;
 
 		return true;
+	}
+
+	void MosaicSet::RegisterImageAddedCallback(IMAGEADDED_CALLBACK pCallback, void* pContext)
+	{
+		_registeredImageAddedCallback = pCallback;
+		_pCallbackContext = pContext;
+	}
+
+	void MosaicSet::UnregisterImageAddedCallback()
+	{
+		_registeredImageAddedCallback = NULL;
+		_pCallbackContext = NULL;
+	}
+
+	bool MosaicSet::AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex)
+	{
+		MosaicLayer *pLayer = GetLayer(layerIndex);
+		if(pLayer == NULL)
+			return false;
+
+		if(!pLayer->AddImage(pBuffer, cameraIndex, triggerIndex))
+			return false;
+
+		FireImageAdded(layerIndex, cameraIndex, triggerIndex);
+
+		return true;
+	}
+
+	void MosaicSet::FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex)
+	{
+		if(_registeredImageAddedCallback != NULL)
+			_registeredImageAddedCallback(layerIndex, cameraIndex, triggerIndex, _pCallbackContext);
 	}
 }

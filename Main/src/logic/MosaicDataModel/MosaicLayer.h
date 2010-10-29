@@ -45,6 +45,11 @@ namespace MosaicDM
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, double offsetInMeters);
 
+			///
+			///	Adds an image...
+			///
+			bool AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex);
+
 		private:
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;

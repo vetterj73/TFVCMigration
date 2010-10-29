@@ -10,6 +10,8 @@ namespace MosaicDM
 	typedef vector<MosaicLayer*> LayerList;
 	typedef LayerList::iterator LayerListIterator;
 
+	typedef void (*IMAGEADDED_CALLBACK)(int layerIndex, int cameraIndex, int triggerIndex, void* context);
+
 	///
 	///	MosaicSet is the top level object for Mosaic Data Model.  
 	/// MosaicSet has 1 to N MosaicLayers.
@@ -49,6 +51,9 @@ namespace MosaicDM
 			///
 			~MosaicSet();
 		
+			void RegisterImageAddedCallback(IMAGEADDED_CALLBACK pCallback, void* pContext);
+			void UnregisterImageAddedCallback();
+
 			///
 			/// Adds a layer to a mosaic set
 			///
@@ -82,6 +87,11 @@ namespace MosaicDM
 			///
 			bool HasAllImages();
 
+			///
+			///	Adds an image to the mosaic...
+			///
+			bool AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex);
+
 		private:
 			int _triggers;
 			int _cameras;
@@ -94,5 +104,9 @@ namespace MosaicDM
 			double _pixelSizeX;
 			double _pixelSizeY;
 			LayerList _layerList;
+
+			IMAGEADDED_CALLBACK _registeredImageAddedCallback;
+			void * _pCallbackContext;
+			void FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex);
 	};
 }

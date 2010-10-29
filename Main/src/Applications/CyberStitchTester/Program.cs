@@ -116,11 +116,22 @@ namespace CyberStitchTester
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
             _mosaicSet = new ManagedMosaicSet(numCameras, .003, pSpec.NumberOfTriggers, .004, 2592, 1944, 2592, 1, .00017, .00017);
-
+            _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
                 _mosaicSet.AddLayer(i*20);
             }
+        }
+
+        /// <summary>
+        /// NOTE:  This is not desired in the real application - it is just a way to test the mosaic.
+        /// </summary>
+        /// <param name="layerIndex"></param>
+        /// <param name="cameraIndex"></param>
+        /// <param name="triggerIndex"></param>
+        private static void OnImageAddedToMosaic(int layerIndex, int cameraIndex, int triggerIndex)
+        {
+            Output("Image was added to the Mosaic!!!!!!!");
         }
 
         private static void OnAcquisitionDone(int device, int status, int count)
@@ -134,11 +145,9 @@ namespace CyberStitchTester
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
             Output("Got an Image!");
-            ManagedMosaicLayer layer = _mosaicSet.GetLayer(pframe.CaptureSpecIndex());
-            ManagedMosaicTile tile = layer.GetTile(pframe.TriggerIndex(), pframe.CameraIndex());
-            if(tile == null)
-                Output("Tile was NULL!!!!");
-            tile.SetImageBuffer(pframe.BufferPtr());
+
+            _mosaicSet.AddImage(pframe.BufferPtr(), pframe.CaptureSpecIndex(), pframe.CameraIndex(),
+                                pframe.TriggerIndex());
         }
 
         private static void Output(string str)

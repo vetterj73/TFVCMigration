@@ -6,8 +6,12 @@
 #include "ManagedMosaicLayer.h"
 
 using namespace System;
+using namespace System::Runtime::InteropServices;
 namespace MMosaicDM 
 {
+
+	public delegate void ImageAddedDelegate(int, int, int);
+	
 	///
 	///	Simple Wrapper around unmanaged MosaicSet.  Only exposes what is necessary.
 	///
@@ -41,7 +45,11 @@ namespace MMosaicDM
 						pixelSizeXInMeters,
 						pixelSizeYInMeters
 					);
+
+				_ImageAddedDelegate = gcnew ImageAddedDelegate(this, &MMosaicDM::ManagedMosaicSet::RaiseImageAdded); 
+				_pMosaicSet->RegisterImageAddedCallback((MosaicDM::IMAGEADDED_CALLBACK)Marshal::GetFunctionPointerForDelegate(_ImageAddedDelegate).ToPointer(), NULL);
 			}
+
 
 			///
 			///	Finalizer (deletes the unmanaged pointer).
@@ -69,7 +77,20 @@ namespace MMosaicDM
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 
+			bool AddImage(System::IntPtr pBuffer, int layerIndex, int cameraIndex, int triggerIndex)
+			{
+				return _pMosaicSet->AddImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
+			}
+
+			event ImageAddedDelegate^ OnImageAdded;
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
+			ImageAddedDelegate ^_ImageAddedDelegate;
+		
+			void RaiseImageAdded(int layerIndex, int cameraIndex, int triggerIndex)
+			{
+				OnImageAdded(layerIndex, cameraIndex, triggerIndex);
+			}
 	};
 }

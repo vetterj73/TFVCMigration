@@ -25,14 +25,6 @@ namespace MMosaicDM
 				return (System::IntPtr)_pMosaicTile->GetImageBuffer();
 			}
 
-			///
-			///	SetImageBuffer - sets the image buffer.
-			///
-			void SetImageBuffer(System::IntPtr pImageBuffer)
-			{
-				_pMosaicTile->SetImageBuffer((unsigned char*)(void*)pImageBuffer);
-			}
-
 		private:
 			MosaicDM::MosaicTile *_pMosaicTile;
 	};

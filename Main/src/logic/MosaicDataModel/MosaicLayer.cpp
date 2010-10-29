@@ -52,4 +52,13 @@ namespace MosaicDM
 
 		return true;
 	}
+
+	bool MosaicLayer::AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex)
+	{
+		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
+		if(pTile == NULL)
+			return false;
+
+		return pTile->SetImageBuffer(pBuffer);
+	}
 }
