@@ -27,9 +27,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91-C1B1-48D2-89B0-B102895144B7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bitmap", "..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\proj\Bitmap.vcxproj", "{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 8
+		SccNumberOfProjects = 9
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -45,18 +47,21 @@ Global
 		SccProjectUniqueName4 = ..\\..\\logic\\ImageCorrelation\\ImageCorrelation.vcxproj
 		SccProjectName4 = ../../logic/ImageCorrelation
 		SccLocalPath4 = ..\\..\\logic\\ImageCorrelation
-		SccProjectUniqueName5 = ..\\..\\logic\\MosaicDataModel\\MosaicDataModel.vcxproj
+		SccProjectUniqueName5 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModel.vcxproj
 		SccProjectTopLevelParentUniqueName5 = CyberStitchTester.sln
-		SccProjectName5 = ../../logic/MosaicDataModel
-		SccLocalPath5 = ..\\..\\logic\\MosaicDataModel
-		SccProjectUniqueName6 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModel.vcxproj
+		SccProjectName5 = ../../logic/ManagedMosaicDataModel
+		SccLocalPath5 = ..\\..\\logic\\ManagedMosaicDataModel
+		SccProjectUniqueName6 = ..\\..\\logic\\MosaicDataModel\\MosaicDataModel.vcxproj
 		SccProjectTopLevelParentUniqueName6 = CyberStitchTester.sln
-		SccProjectName6 = ../../logic/ManagedMosaicDataModel
-		SccLocalPath6 = ..\\..\\logic\\ManagedMosaicDataModel
+		SccProjectName6 = ../../logic/MosaicDataModel
+		SccLocalPath6 = ..\\..\\logic\\MosaicDataModel
 		SccProjectUniqueName7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest\\ManagedMosaicDataModelUnitTest.csproj
 		SccProjectTopLevelParentUniqueName7 = CyberStitchTester.sln
 		SccProjectName7 = ../../logic/ManagedMosaicDataModel/ManagedMosaicDataModelUnitTest
 		SccLocalPath7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest
+		SccProjectUniqueName8 = ..\\..\\..\\..\\..\\2D_SPI\\Development\\VS2010\\Bitmap\\proj\\Bitmap.vcxproj
+		SccProjectName8 = ../../../../../2D_SPI/Development/VS2010/Bitmap/proj
+		SccLocalPath8 = ..\\..\\..\\..\\..\\2D_SPI\\Development\\VS2010\\Bitmap\\proj
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -186,6 +191,22 @@ Global
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x64.ActiveCfg = Release|x86
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.ActiveCfg = Release|x86
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.Build.0 = Release|x86
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|Win32.Build.0 = Debug|Win32
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|x64.ActiveCfg = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|x64.Build.0 = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Debug|x86.ActiveCfg = Debug|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|Any CPU.ActiveCfg = Release|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|Mixed Platforms.Build.0 = Release|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|Win32.ActiveCfg = Release|Win32
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|Win32.Build.0 = Release|Win32
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x64.ActiveCfg = Release|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x64.Build.0 = Release|x64
+		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

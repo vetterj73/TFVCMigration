@@ -17,3 +17,5 @@ using std::pair;
 using std::ifstream;
 using std::ofstream;
 using std::stringstream;
+
+typedef unsigned char Byte;
