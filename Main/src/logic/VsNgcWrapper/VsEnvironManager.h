@@ -6,12 +6,20 @@
 class VsEnvironManager
 {
 public:
-	VsEnvironManager(void);
-	~VsEnvironManager(void);
+
+	static VsEnvironManager& Instance(void);
 
 	static VsEnviron getEnv(); // Get environment for calling thread.
 	static void releaseEnv();	// Match every call to get() with one to release().
 	static void disposeEnv();
+
+	// Pass environment point in before an inside environment is created
+	bool SetEnv(VsEnviron& env, DWORD threadId);
+
+protected:
+	VsEnvironManager(void);
+	~VsEnvironManager(void);
+
 private:
 	static VsEnviron& getStaticEnv(); // Get environment for calling thread.
 	static DWORD&     getEnvThread(); // Get thread ID of the owner thread

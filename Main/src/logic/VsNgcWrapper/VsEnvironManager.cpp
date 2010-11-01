@@ -3,14 +3,34 @@
 #include <map>
 using std::map;
 
+//Singleton pattern
+VsEnvironManager& VsEnvironManager::Instance(void)
+{
+	static VsEnvironManager inst;
+	return inst;
+}
+
 VsEnvironManager::VsEnvironManager(void)
 {
 }
 
-VsEnvironManager::~VsEnvironManager(void)
+// Pass environment point in before an inside environment is created
+// return ture if success
+//		false if an inside environment is already created
+bool VsEnvironManager::SetEnv(VsEnviron& env, DWORD threadId)
 {
+	if(getStaticEnv()) return(false);
+
+	getStaticEnv() = env;
+	getEnvThread() = threadId;
+	
+	return(true);
 }
 
+VsEnvironManager::~VsEnvironManager(void)
+{
+	disposeEnv();
+}
 
 VsEnviron& VsEnvironManager::getStaticEnv()
 {
