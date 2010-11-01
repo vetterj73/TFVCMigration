@@ -53,7 +53,7 @@ public:
 	void operator=(const CorrelationPair& b);
 
 	Image* GetFirstImg()  {return _pImg1;};
-	Image* GetSecondIMg() {return _pImg2;};
+	Image* GetSecondImg() {return _pImg2;};
 	UIRect GetFirstRoi()  {return _roi1;};
 	UIRect GetSecondRoi() {return _roi2;};
 
@@ -62,6 +62,19 @@ public:
 	bool GetCorrelationResult(CorrelationResult* pResult);
 
 	OverlapType GetOverlapType() {return _type;};
+
+	unsigned int Columns() {return _roi1.Columns();};
+	unsigned int Rows() {return _roi1.Rows();};
+
+	bool ChopCorrPair(
+		unsigned int iNumBlockX, 
+		unsigned int iNumBlockY, 
+		unsigned int iBlockWidth, 
+		unsigned int iBlockHeight,
+		list<CorrelationPair>* pOutPairList);
+
+	void DumpImg(string);
+	bool DumpImgWithResult(string);
 
 private:
 	Image* _pImg1;

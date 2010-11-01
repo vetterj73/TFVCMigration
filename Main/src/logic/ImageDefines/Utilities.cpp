@@ -14,7 +14,7 @@ void inverse(
 	double* in = new double[rows*cols];
 	
 	// Transpose matrix
-	int ix, iy;
+	unsigned int ix, iy;
 	for(iy=0; iy<rows; iy++)
 		for(ix=0; ix<cols; ix++)
 			in[ix*rows+iy] = inMatrix[iy*cols+ix];
