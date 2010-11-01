@@ -50,6 +50,52 @@ namespace ManagedCyberStitchUnitTest
         #endregion
 
         [TestMethod]
+        public void TestCalFlags()
+        {
+            ManagedMosaicSet mSet = new ManagedMosaicSet
+                (3, .003, 4, .004, 2592, 1944, 2592, 1, .000017, .000017);
+
+            Assert.IsTrue(mSet.GetCorrelationSet(0, 0) == null);
+            Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
+            
+            mSet.AddLayer(.003);
+            Assert.IsTrue(mSet.GetCorrelationSet(0, 0) != null);
+            Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
+
+            ManagedCorrelationFlags mcf = mSet.GetCorrelationSet(0, 0);
+            Assert.IsTrue(mcf.GetCameraToCamera());
+            Assert.IsTrue(mcf.GetTriggerToTrigger());
+            mcf.SetCameraToCamera(false);
+
+            mcf = mSet.GetCorrelationSet(0, 0);
+            Assert.IsTrue(mcf.GetCameraToCamera()==false);
+            Assert.IsTrue(mcf.GetTriggerToTrigger());
+            mcf.SetCameraToCamera(true);
+            mcf.SetTriggerToTrigger(false);
+
+            mcf = mSet.GetCorrelationSet(0, 0);
+            Assert.IsTrue(mcf.GetCameraToCamera());
+            Assert.IsTrue(mcf.GetTriggerToTrigger() == false);
+
+            mSet.AddLayer(.006);
+
+            /// CorrelationFlags 0,1 is same as 1,0
+            mcf = mSet.GetCorrelationSet(0, 1);
+            Assert.IsTrue(mcf.GetCameraToCamera());
+            Assert.IsTrue(mcf.GetTriggerToTrigger());
+            mcf.SetCameraToCamera(false);
+            mcf = mSet.GetCorrelationSet(1, 0);
+            Assert.IsTrue(mcf.GetCameraToCamera()==false);
+            Assert.IsTrue(mcf.GetTriggerToTrigger());
+
+            mSet.AddLayer(.015);
+            mcf = mSet.GetCorrelationSet(1, 2);
+            Assert.IsTrue(mcf.GetCameraToCamera());
+            Assert.IsTrue(mcf.GetTriggerToTrigger());
+
+        }
+
+        [TestMethod]
         public void BasicMosaicSetTest()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet

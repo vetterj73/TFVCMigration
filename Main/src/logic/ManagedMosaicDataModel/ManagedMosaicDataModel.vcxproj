@@ -149,6 +149,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ManagedCorrelationFlags.h" />
     <ClInclude Include="ManagedMosaicLayer.h" />
     <ClInclude Include="ManagedMosaicSet.h" />
     <ClInclude Include="ManagedMosaicTile.h" />
@@ -157,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="ManagedCorrelationFlags.cpp" />
     <ClCompile Include="ManagedMosaicLayer.cpp" />
     <ClCompile Include="ManagedMosaicSet.cpp" />
     <ClCompile Include="ManagedMosaicTile.cpp" />

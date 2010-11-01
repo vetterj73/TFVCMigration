@@ -27,6 +27,9 @@
     <ClInclude Include="MosaicTile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CorrelationFlags.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -39,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MosaicTile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CorrelationFlags.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

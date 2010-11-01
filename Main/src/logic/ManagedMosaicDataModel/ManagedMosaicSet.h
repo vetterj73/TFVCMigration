@@ -4,6 +4,7 @@
 
 #include "MosaicSet.h"
 #include "ManagedMosaicLayer.h"
+#include "ManagedCorrelationFlags.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -75,6 +76,15 @@ namespace MMosaicDM
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->GetLayer(index);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
+			}
+
+			///
+			///	Gets a CorrelationFlags structure to fill in.
+			///
+			ManagedCorrelationFlags ^GetCorrelationSet(int layerX, int layerY)
+			{		
+				MosaicDM::CorrelationFlags* pCF = _pMosaicSet->GetCorrelationFlags(layerX, layerY);
+				return pCF == NULL?nullptr:gcnew ManagedCorrelationFlags(pCF);
 			}
 
 			bool AddImage(System::IntPtr pBuffer, int layerIndex, int cameraIndex, int triggerIndex)

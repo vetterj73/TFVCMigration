@@ -1,14 +1,15 @@
 // CyberStitch.h
 
 #pragma once
-#include <vector>
-using std::vector;
 
 namespace MosaicDM 
 {
 	class MosaicLayer;
 	typedef vector<MosaicLayer*> LayerList;
 	typedef LayerList::iterator LayerListIterator;
+
+	class CorrelationFlags;
+	typedef map< pair< int, int>, CorrelationFlags* > CorrelationFlagsMap;
 
 	typedef void (*IMAGEADDED_CALLBACK)(int layerIndex, int cameraIndex, int triggerIndex, void* context);
 
@@ -82,6 +83,12 @@ namespace MosaicDM
 			int GetTriggerOverlapInMeters(){return _triggerOverlap;}
 			int NumberOfTilesPerLayer();
 
+
+			///
+			///	Get the correlation flags associated with the current layers
+			///
+			CorrelationFlags* GetCorrelationFlags(int layerX, int layerY);
+
 			///
 			///	Are all of the images from all layers collected?
 			///
@@ -91,6 +98,8 @@ namespace MosaicDM
 			///	Adds an image to the mosaic...
 			///
 			bool AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex);
+
+
 
 		private:
 			int _triggers;
@@ -108,5 +117,7 @@ namespace MosaicDM
 			IMAGEADDED_CALLBACK _registeredImageAddedCallback;
 			void * _pCallbackContext;
 			void FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex);
+
+			CorrelationFlagsMap _correlationFlagsMap;
 	};
 }

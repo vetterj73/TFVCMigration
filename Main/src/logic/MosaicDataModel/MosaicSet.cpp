@@ -3,6 +3,7 @@
 #include "stdafx.h"
 #include "MosaicSet.h"
 #include "MosaicLayer.h"
+#include "CorrelationFlags.h"
 
 namespace MosaicDM 
 {
@@ -34,9 +35,18 @@ namespace MosaicDM
 	MosaicSet::~MosaicSet()
 	{
 		for(int i=0; i<_layerList.size(); i++)
-			delete _layerList[i];
+		{
+			for(int j=i; j<_layerList.size(); j++)
+			{
+				pair<int, int> Pair(i, j);
+				delete _correlationFlagsMap[Pair];
+			}
 
+			delete _layerList[i];
+		}	
+		
 		_layerList.clear();
+		_correlationFlagsMap.clear();
 	}
 
 	MosaicLayer *MosaicSet::GetLayer(int index)
@@ -52,7 +62,34 @@ namespace MosaicDM
 		MosaicLayer *pML = new MosaicLayer();
 		pML->Initialize(this, offsetInMM);
 		_layerList.push_back(pML);
+
+		// Setup the default correlation Flags...
+		for(int i=0; i<_layerList.size(); i++)
+		{
+			CorrelationFlags *pFlags = new CorrelationFlags();	
+			pair<int, int> Pair(i, _layerList.size()-1);
+			_correlationFlagsMap[Pair] = pFlags;
+		}
+
 		return pML;
+	}
+
+	CorrelationFlags* MosaicSet::GetCorrelationFlags(int layerX, int layerY)
+	{
+		if(layerX > _layerList.size()-1 || layerY > _layerList.size()-1 ||
+			layerX<0 || layerY<0)
+			return NULL;
+
+		if(layerX > layerY)
+		{
+			int temp = layerX;
+			layerX = layerY;
+			layerY = temp;
+		}
+
+		pair<int, int> Pair(layerX, layerY);
+
+		return _correlationFlagsMap[Pair];
 	}
 
 	int MosaicSet::NumberOfTilesPerLayer()

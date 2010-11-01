@@ -6,4 +6,8 @@
 
 #include "Windows.h"
 
-
+#include <vector>
+#include <map>
+using std::map;
+using std::pair;
+using std::vector;
