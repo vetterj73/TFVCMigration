@@ -25,6 +25,18 @@ namespace MMosaicDM
 				return (System::IntPtr)_pMosaicTile->GetImageBuffer();
 			}
 
+			///
+			///	Sets the parameters needed for transform.  If this function isn't called,
+			/// nominal values will be used.
+			///
+			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
+				double centerOffsetXInMeters, double centerOffsetYInMeters,
+				double rotation)
+			{
+				_pMosaicTile->SetTransformParameters(pixelSizeXInMeters, pixelSizeYInMeters,
+					centerOffsetXInMeters, centerOffsetYInMeters, rotation);
+			}
+
 		private:
 			MosaicDM::MosaicTile *_pMosaicTile;
 	};

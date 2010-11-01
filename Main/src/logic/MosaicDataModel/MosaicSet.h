@@ -82,6 +82,8 @@ namespace MosaicDM
 			int GetCameraOverlapInMeters(){return _cameraOverlap;}
 			int GetTriggerOverlapInMeters(){return _triggerOverlap;}
 			int NumberOfTilesPerLayer();
+			double GetNominalPixelSizeX(){return _pixelSizeX;};
+			double GetNominalPixelSizeY(){return _pixelSizeY;};
 
 
 			///

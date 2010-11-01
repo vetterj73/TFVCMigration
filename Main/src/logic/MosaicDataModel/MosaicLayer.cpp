@@ -26,7 +26,8 @@ namespace MosaicDM
 
 		for(int i=0; i<numTiles; i++)
 		{
-			_pTileArray[i].Initialize(this);
+			// @todo - set X/Y center offsets nominally...
+			_pTileArray[i].Initialize(this, 0.0, 0.0);
 		}
 	}
 

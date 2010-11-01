@@ -41,6 +41,11 @@ namespace MosaicDM
 			///
 			bool HasAllImages();
 
+			///
+			///	Gets the set this layer belongs to
+			///
+			MosaicSet *GetMosaicSet(){return _pMosaicSet;};
+
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, double offsetInMeters);
