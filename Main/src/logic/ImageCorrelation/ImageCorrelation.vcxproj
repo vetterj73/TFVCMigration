@@ -70,7 +70,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -80,7 +80,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -92,7 +92,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -106,7 +106,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\ImageDefines;..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -118,11 +118,13 @@
     <ClInclude Include="CorrelationPair.h" />
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="OverlapDefines.h" />
+    <ClInclude Include="SquareRootCorrelation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorrelationPair.cpp" />
     <ClCompile Include="CorrelationParameters.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
+    <ClCompile Include="SquareRootCorrelation.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -111,6 +111,11 @@ void Image::Configure(
 
 #pragma region buffer operations
 
+unsigned char*	Image::GetBuffer(unsigned int row, unsigned col)
+{
+	return(GetBuffer() + ByteRowStride()*row + GetBytesPerPixel()*col);
+}
+
 void Image::SetBuffer(unsigned char* buf)
 {
 	DeleteBufferIfOwner();

@@ -91,6 +91,13 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_result = b._result;
 }
 
+void CorrelationPair::SetCorrlelationResult(CorrelationResult result)
+{
+	_result = result;
+
+	_bIsProcessed = true;
+}
+
 // Return true if result is available 
 bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult)
 {

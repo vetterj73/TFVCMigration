@@ -60,6 +60,8 @@ public:
 
 	Image* GetMaskImg() {return _pMaskImage;};
 
+	void SetCorrlelationResult(CorrelationResult result);
+
 	bool GetCorrelationResult(CorrelationResult* pResult);
 
 	OverlapType GetOverlapType() {return _type;};

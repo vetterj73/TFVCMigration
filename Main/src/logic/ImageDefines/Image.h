@@ -53,7 +53,8 @@ public:
 	ImgTransform		GetNominalTransform(){return _nominalTrans;};
 	void				SetNorminalTransform(const ImgTransform t) {_nominalTrans = t;};
 
-	unsigned char *		GetBuffer(){return _buffer;};	
+	unsigned char*		GetBuffer(){return _buffer;};	
+	unsigned char*		GetBuffer(unsigned int row, unsigned col);
 	void				SetBuffer(unsigned char* buf);
 
 	bool				HasOwnBuffer() {return _IOwnMyOwnBuffer;};
