@@ -14,7 +14,6 @@ namespace MosaicDM
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
-					  int bytesPerPixel,
 					  double pixelSizeXInMeters,
 					  double pixelSizeYInMeters)
 	{
@@ -25,7 +24,6 @@ namespace MosaicDM
 		_imageWidth = imageWidthInPixels;
 		_imageHeight = imageHeightInPixels;
 		_imageStride = imageStrideInPixels;
-		_bytesPerPixel = bytesPerPixel;
 		_pixelSizeX = pixelSizeXInMeters;
 		_pixelSizeY = pixelSizeYInMeters;
 		_registeredImageAddedCallback = NULL;

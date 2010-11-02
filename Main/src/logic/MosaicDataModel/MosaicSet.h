@@ -31,7 +31,6 @@ namespace MosaicDM
 			/// \param imageWidthInPixels width of each image (tile) in pixels
 			/// \param imageHeightInPixels height of each image (tile) in pixels
 			/// \param imageStrideInPixels stride of each image (tile) in pixels
-			/// \param bytesPerPixel # of bytes for each pixel
 			/// \param overlapInMeters The overlap of each image. specified in meters.
 			/// \param pixelSizeXInMeters - size of pixel in X direction.
 			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
@@ -43,7 +42,6 @@ namespace MosaicDM
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
-					  int bytesPerPixel,
 					  double pixelSizeXInMeters,
 					  double pixelSizeYInMeters);
 
@@ -77,8 +75,7 @@ namespace MosaicDM
 			int GetImageWidthInPixels(){return _imageWidth;}
 			int GetImageHeightInPixels(){return _imageHeight;}
 			int GetImageStrideInPixels(){return _imageStride;}
-			int GetImageStrideInBytes(){return _imageStride*_bytesPerPixel;}
-			int GetBytesPerPixel(){return _bytesPerPixel;}
+			int GetImageStrideInBytes(){return _imageStride;}
 			int GetCameraOverlapInMeters(){return _cameraOverlap;}
 			int GetTriggerOverlapInMeters(){return _triggerOverlap;}
 			int NumberOfTilesPerLayer();
@@ -109,7 +106,6 @@ namespace MosaicDM
 			int _imageWidth;
 			int _imageHeight;
 			int _imageStride;
-			int _bytesPerPixel;
 			double _triggerOverlap;
 			double _cameraOverlap;
 			double _pixelSizeX;

@@ -15,6 +15,7 @@ namespace MMosaicDM
 	
 	///
 	///	Simple Wrapper around unmanaged MosaicSet.  Only exposes what is necessary.
+	/// NOTE:  This only works with 8 bit images!
 	///
 	public ref class ManagedMosaicSet
 	{
@@ -30,7 +31,6 @@ namespace MMosaicDM
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
-					  int bytesPerPixel,
 					  double pixelSizeXInMeters,
 					  double pixelSizeYInMeters)
 			{
@@ -42,7 +42,6 @@ namespace MMosaicDM
 						imageWidthInPixels,
 						imageHeightInPixels,
 						imageStrideInPixels,
-						bytesPerPixel,
 						pixelSizeXInMeters,
 						pixelSizeYInMeters
 					);
