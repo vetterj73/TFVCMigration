@@ -24,6 +24,11 @@ public:
 	bool IsAcquisitionCompleted();
 
 	unsigned int NumImages() {return(_iSizeX * _iSizeY);};
+	unsigned int NumImInX() {return(_iSizeX);};
+	unsigned int NumImInY() {return(_iSizeY);};
+
+	void ImageLineCentersX(double* pdCenX);
+	void ImageLineCentersY(double* pdCenY);
 
 	void Reset();
 
@@ -38,6 +43,6 @@ private:
 
 	// For mask images
 	bool _bHasMaskImages;
-	Image* _MaskImages;
+	Image* _maskImages;
 };
 

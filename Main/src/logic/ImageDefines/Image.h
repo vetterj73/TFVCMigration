@@ -76,6 +76,7 @@ public:
 	
 	// write all zeros to the buffer
 	void				ZeroBuffer();
+	bool				CreateOwnBuffer();
 	void				DeleteBufferIfOwner();
 
 	// Maps (dx,dy) in world space, (Row, col) in image space

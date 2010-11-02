@@ -8,6 +8,8 @@ MosaicImage::MosaicImage(unsigned int iSizeX, unsigned int iSizeY)
 	_ImagePtrs = new Image*[NumImages()];
 	_bImagesAcquired = new bool[NumImages()];
 
+	_maskImages = new Image[NumImages()];
+
 	Reset();
 }
 
@@ -23,6 +25,7 @@ MosaicImage::~MosaicImage(void)
 {
 	delete [] _ImagePtrs;
 	delete [] _bImagesAcquired;
+	delete [] _maskImages;
 }
 
 // Add an image point of certain position to mosaic image
@@ -63,6 +66,34 @@ bool MosaicImage::IsAcquisitionCompleted()
 	else
 		return(false);
 }
+
+// Image line centers in X and y
+void MosaicImage::ImageLineCentersX(double* pdCenX)
+{
+	for(unsigned int ix=0; ix<_iSizeX; ix++)
+	{
+		pdCenX[ix] = 0;
+		for(unsigned int iy=0; iy<_iSizeY; iy++)
+		{
+			pdCenX[ix] += GetImagePtr(ix, iy)->CenterX();
+		}
+		pdCenX[ix] /= _iSizeY;
+	}
+}
+
+void MosaicImage::ImageLineCentersY(double* pdCenY)
+{
+	for(unsigned int iy=0; iy<_iSizeY; iy++)
+	{
+		pdCenY[iy] = 0;
+		for(unsigned int ix=0; ix<_iSizeX; ix++)
+		{
+			pdCenY[iy] += GetImagePtr(ix, iy)->CenterY();
+		}
+		pdCenY[iy] /= _iSizeX;
+	}
+}
+		
 
 
 

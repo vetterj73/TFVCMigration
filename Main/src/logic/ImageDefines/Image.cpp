@@ -122,6 +122,20 @@ void Image::SetBuffer(unsigned char* buf)
 	_buffer = buf;
 }
 
+bool Image::CreateOwnBuffer()
+{
+	if(_IOwnMyOwnBuffer) return true;
+
+	_buffer	= new unsigned char[BufferSizeInBytes()];	
+	if(_buffer == NULL)
+		return false;
+	else
+	{
+		_IOwnMyOwnBuffer = true;
+		return true;
+	}
+}
+
 void Image::DeleteBufferIfOwner()
 {
 	if(_IOwnMyOwnBuffer && _buffer!=NULL)
