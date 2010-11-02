@@ -19,32 +19,32 @@ VsEnvironManager::VsEnvironManager(void)
 //		false if an inside environment is already created
 bool VsEnvironManager::SetEnv(VsEnviron& env, DWORD threadId)
 {
-	if(getStaticEnv()) return(false);
+	if(GetStaticEnv()) return(false);
 
-	getStaticEnv() = env;
-	getEnvThread() = threadId;
+	GetStaticEnv() = env;
+	GetEnvThread() = threadId;
 	
 	return(true);
 }
 
 VsEnvironManager::~VsEnvironManager(void)
 {
-	disposeEnv();
+	DisposeEnv();
 }
 
-VsEnviron& VsEnvironManager::getStaticEnv()
+VsEnviron& VsEnvironManager::GetStaticEnv()
 {
 	static VsEnviron retVal = 0;
 	return retVal;
 }
 
-DWORD& VsEnvironManager::getEnvThread()
+DWORD& VsEnvironManager::GetEnvThread()
 {
 	static DWORD retVal = 0;
 	return retVal;
 }
 
-int VsEnvironManager::getAddEnvUseCount( int add/*=0*/ )
+int VsEnvironManager::GetAddEnvUseCount( int add/*=0*/ )
 {
 	::CRITICAL_SECTION cs;
 	::InitializeCriticalSection(&cs);
@@ -64,21 +64,21 @@ int VsEnvironManager::getAddEnvUseCount( int add/*=0*/ )
 }
 
 
-VsEnviron VsEnvironManager::getEnv()
+VsEnviron VsEnvironManager::GetEnv()
 {
-	VsEnviron& retVal = getStaticEnv();
+	VsEnviron& retVal = GetStaticEnv();
 
 	if (!retVal)
 	{
 		retVal = ::vsCreateSharedVisionEnviron(0, 0);
-		getEnvThread() = ::GetCurrentThreadId();
+		GetEnvThread() = ::GetCurrentThreadId();
 	}
 	
-	DWORD envThread = getEnvThread();
+	DWORD envThread = GetEnvThread();
 
 	if (envThread != ::GetCurrentThreadId() )
 	{
-		int useCount = getAddEnvUseCount(+1);
+		int useCount = GetAddEnvUseCount(+1);
 		if (useCount == 1)
 		{
 			if(vsAttachThread() == -1)
@@ -89,13 +89,13 @@ VsEnviron VsEnvironManager::getEnv()
 }
 
 
-void VsEnvironManager::releaseEnv()
+void VsEnvironManager::ReleaseEnv()
 {
-	DWORD envThread = getEnvThread();
+	DWORD envThread = GetEnvThread();
 
 	if (envThread != ::GetCurrentThreadId() )
 	{
-		int useCount = getAddEnvUseCount(-1);
+		int useCount = GetAddEnvUseCount(-1);
 		if( useCount == 0 )
 		{
 			if (vsDetachThread(NULL) == -1)
@@ -108,10 +108,10 @@ void VsEnvironManager::releaseEnv()
 	}
 }
 
-void VsEnvironManager::disposeEnv()
+void VsEnvironManager::DisposeEnv()
 {
-	VsEnviron& env = getStaticEnv();
-	DWORD envThread = getEnvThread();
+	VsEnviron& env = GetStaticEnv();
+	DWORD envThread = GetEnvThread();
 
 	if (env && envThread == ::GetCurrentThreadId() )
 	{

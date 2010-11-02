@@ -29,9 +29,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Bitmap", "..\..\..\..\..\2D_SPI\Development\VS2010\Bitmap\proj\Bitmap.vcxproj", "{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsNgcWrapper", "..\..\logic\VsNgcWrapper\VsNgcWrapper.vcxproj", "{3890952F-8D06-46A8-8731-5131F30FE9F8}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -62,6 +64,9 @@ Global
 		SccProjectUniqueName8 = ..\\..\\..\\..\\..\\2D_SPI\\Development\\VS2010\\Bitmap\\proj\\Bitmap.vcxproj
 		SccProjectName8 = ../../../../../2D_SPI/Development/VS2010/Bitmap/proj
 		SccLocalPath8 = ..\\..\\..\\..\\..\\2D_SPI\\Development\\VS2010\\Bitmap\\proj
+		SccProjectUniqueName9 = ..\\..\\logic\\VsNgcWrapper\\VsNgcWrapper.vcxproj
+		SccProjectName9 = ../../logic/VsNgcWrapper
+		SccLocalPath9 = ..\\..\\logic\\VsNgcWrapper
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -207,6 +212,22 @@ Global
 		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x64.ActiveCfg = Release|x64
 		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x64.Build.0 = Release|x64
 		{FB3229F3-B6EE-4758-83C5-EC587D6C1CB3}.Release|x86.ActiveCfg = Release|x64
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Win32.Build.0 = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x64.ActiveCfg = Debug|x64
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x64.Build.0 = Debug|x64
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x86.ActiveCfg = Debug|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Any CPU.ActiveCfg = Release|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Win32.ActiveCfg = Release|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Win32.Build.0 = Release|Win32
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.ActiveCfg = Release|x64
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.Build.0 = Release|x64
+		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

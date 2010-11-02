@@ -18,9 +18,15 @@
     <ClInclude Include="VsEnvironManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VsNgcAlignment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VsEnvironManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VsNgcAlignment.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
