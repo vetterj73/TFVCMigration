@@ -154,10 +154,12 @@
   <ItemGroup>
     <ClInclude Include="VsNgcAlignment.h" />
     <ClInclude Include="VsEnvironManager.h" />
+    <ClInclude Include="VsNgcWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="VsNgcAlignment.cpp" />
     <ClCompile Include="VsEnvironManager.cpp" />
+    <ClCompile Include="VsNgcWrapper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

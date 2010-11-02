@@ -1,5 +1,7 @@
 #include "CorrelationPair.h"
 
+#include "VsNgcWrapper.h"
+
 #pragma region CorrelationResult class
 CorrelationResult::CorrelationResult()
 {

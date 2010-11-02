@@ -1,11 +1,19 @@
 #include "VsNgcAlignment.h"
 #include "VsEnvironManager.h"
 
-VsNgcAlignment::VsNgcAlignment(NgcAlignParams params)
+VsNgcAlignment::VsNgcAlignment()
 {
 	// Get environment
 	_oVsEnv = VsEnvironManager::Instance().GetEnv();
+}
 
+VsNgcAlignment::~VsNgcAlignment(void)
+{
+	VsEnvironManager::Instance().ReleaseEnv();
+}
+
+bool VsNgcAlignment::Create(NgcParams params)
+{
 	// Create images
 	_alignSt.oImTemplate = vsCreateCamImageFromBuffer(
 		_oVsEnv, NULL, 
@@ -13,7 +21,7 @@ VsNgcAlignment::VsNgcAlignment(NgcAlignParams params)
 		params.iTemplateImHeight, params.iTemplateImSpan,
 		VS_SINGLE_BUFFER, VS_BUFFER_HOST_BYTE, FALSE);
 	if(_alignSt.oImTemplate == NULL)
-		return;
+		return(false);
 
 	_alignSt.oImSearch = vsCreateCamImageFromBuffer(
 		_oVsEnv, NULL, 
@@ -21,7 +29,7 @@ VsNgcAlignment::VsNgcAlignment(NgcAlignParams params)
 		params.iSearchImHeight, params.iSearchImSpan,
 		VS_SINGLE_BUFFER, VS_BUFFER_HOST_BYTE, FALSE);
 	if(_alignSt.oImSearch == NULL)
-		return;
+		return(false);
 
 	_alignSt.bMask = params.bUseMask;
 	if(_alignSt.bMask)
@@ -32,7 +40,7 @@ VsNgcAlignment::VsNgcAlignment(NgcAlignParams params)
 			params.iTemplateImHeight, params.iTemplateImSpan,
 			VS_SINGLE_BUFFER, VS_BUFFER_HOST_BYTE, FALSE);
 		if(_alignSt.oMaskIm == NULL)
-			return;
+			return(false);
 	}
 
 	// The rectangle for templat and search 
@@ -65,21 +73,22 @@ VsNgcAlignment::VsNgcAlignment(NgcAlignParams params)
 		_alignSt.iDepth = 5;
 	if(iMin>800)
 		_alignSt.iDepth = 6;
+
+	return(true);
 }
 
-VsNgcAlignment::~VsNgcAlignment(void)
+void VsNgcAlignment::Destroy()
 {
 	vsDispose(_alignSt.oImTemplate);
 	vsDispose(_alignSt.oImSearch);
 	vsDispose(_alignSt.oMaskIm);
-	
-	VsEnvironManager::Instance().ReleaseEnv();
 }
 
-
-bool VsNgcAlignment::Align(NgcAlignResults* pResults)
+bool VsNgcAlignment::Align(NgcParams params, NgcResults* pResults)
 {
-	bool bFlag = Align();
+	bool bFlag = Create(params);
+
+	bFlag = Align();
 
 	if(bFlag)
 	{
@@ -88,6 +97,8 @@ bool VsNgcAlignment::Align(NgcAlignResults* pResults)
 		pResults->dCoreScore = _alignSt.dCoreScore;
 		pResults->dAmbigScore= _alignSt.dAmbigScore;
 	}
+
+	Destroy();
 
 	return(bFlag);
 }

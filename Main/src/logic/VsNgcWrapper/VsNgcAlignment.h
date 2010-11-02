@@ -2,48 +2,7 @@
 
 #include "VsEnvironManager.h"
 
-// Input for NGC alignment
-struct NgcAlignParams
-{
-	unsigned char* pcTemplateBuf;
-	unsigned int   iTemplateImWidth;
-	unsigned int   iTemplateImHeight;	
-	unsigned int   iTemplateImSpan;
-	unsigned int   iTemplateLeft;
-	unsigned int   iTemplateRight;	
-	unsigned int   iTemplateTop;
-	unsigned int   iTemplateBottom;
-
-	unsigned char* pcSearchBuf;
-	unsigned int   iSearchImWidth;
-	unsigned int   iSearchImHeight;	
-	unsigned int   iSearchImSpan;
-	unsigned int   iSearchLeft;
-	unsigned int   iSearchRight;	
-	unsigned int   iSearchTop;
-	unsigned int   iSearchBottom;
-
-	bool		   bUseMask;
-	unsigned char* pcMaskBuf;
-};
-
-// Output for NGC alignment
-struct NgcAlignResults
-{
-		// Outputs
-	double dMatchPosX;				// The Matching location in target image after search
-	double dMatchPosY;
-	double dCoreScore;
-	double dAmbigScore;
-
-	NgcAlignResults()
-	{
-		dMatchPosX = 0;
-		dMatchPosY = 0;
-		dCoreScore = 0;
-		dAmbigScore = -1;
-	};
-};
+#include "vsNgcWrapper.h"
 
 // NGC errors
 enum PatchAlignResult {
@@ -100,13 +59,15 @@ struct ImPatchAlignStruct
 class VsNgcAlignment
 {
 public:
-	VsNgcAlignment(NgcAlignParams params);
+	VsNgcAlignment();
 	~VsNgcAlignment(void);
 
-	bool Align(NgcAlignResults* pResult);
+	bool Align(NgcParams params, NgcResults* pResults);
 
 private:
 	bool Align();
+	bool Create(NgcParams params);
+	void Destroy();
 
 	VsEnviron _oVsEnv;
 	ImPatchAlignStruct _alignSt;
