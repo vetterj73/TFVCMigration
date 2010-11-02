@@ -9,7 +9,13 @@ namespace MosaicDM
 	{
 		_pMosaicSet = NULL;
 		_pTileArray = NULL;
-		_offsetInMeters = 0;
+		_cameraOffset = 0;
+		_triggerOffset = 0;
+		_numCameras = 0;
+		_numTriggers = 0;
+		_cameraOverlap = 0;
+		_triggerOverlap = 0;
+
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -17,11 +23,22 @@ namespace MosaicDM
 		delete[] _pTileArray;
 	}
 
-	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, double offsetInMeters)
+	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, 
+									double cameraOffsetInMeters, 
+									double triggerOffsetInMeters,
+        							int numCameras,
+									double cameraOverlapInMeters,
+									int numTriggers,
+									double triggerOverlapInMeters)
 	{
 		_pMosaicSet = pMosaicSet;
-		_offsetInMeters = offsetInMeters;
-		int numTiles = NumberOfTiles();
+		_cameraOffset = cameraOffsetInMeters;
+		_triggerOffset = triggerOffsetInMeters;
+		_numCameras = numCameras;
+		_numTriggers = numTriggers;
+		_cameraOverlap = cameraOverlapInMeters;
+		_triggerOverlap = triggerOverlapInMeters;
+		int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 
 
@@ -34,20 +51,20 @@ namespace MosaicDM
 
 	MosaicTile* MosaicLayer::GetTile(int cameraIndex, int triggerIndex)
 	{
-		if(cameraIndex<0 || cameraIndex>=_pMosaicSet->GetNumCameras() || triggerIndex<0 || triggerIndex>=_pMosaicSet->GetNumTriggers())
+		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())
 			return NULL;
 
-		return &_pTileArray[cameraIndex*_pMosaicSet->GetNumTriggers()+triggerIndex];
+		return &_pTileArray[cameraIndex*GetNumberOfTriggers()+triggerIndex];
 	}
 
-	int MosaicLayer::NumberOfTiles()
+	int MosaicLayer::GetNumberOfTiles()
 	{
-		return _pMosaicSet->GetNumTriggers()*_pMosaicSet->GetNumCameras();
+		return GetNumberOfTriggers()*GetNumberOfCameras();
 	}
 	
 	bool MosaicLayer::HasAllImages()
 	{
-		int numTiles = NumberOfTiles();
+		int numTiles = GetNumberOfTiles();
 		for(int i=0; i<numTiles; i++)
 			if(!_pTileArray[i].ContainsImage())
 				return false;

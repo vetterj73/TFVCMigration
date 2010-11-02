@@ -34,7 +34,7 @@ namespace MosaicDM
 			///
 			///	Returns the number of tiles in this (or any?) layer.
 			///
-			int NumberOfTiles();
+			int GetNumberOfTiles();
 
 			///
 			///	Does this layer have all of its images?
@@ -46,9 +46,22 @@ namespace MosaicDM
 			///
 			MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 
+			int GetNumberOfTriggers(){return _numTriggers;}
+			int GetNumberOfCameras(){return _numCameras;}
+			double GetCameraOverlapInMeters(){return _cameraOverlap;}
+			double GetTriggerOverlapInMeters(){return _triggerOverlap;}
+			double GetCameraOffsetInMeters(){return _cameraOffset;}
+			double GetTriggerOffsetInMeters(){return _triggerOffset;}
+
 		protected:
 			/// Called from MosaicSet when a layer is added.
-			void Initialize(MosaicSet *pMosaicSet, double offsetInMeters);
+			void Initialize(MosaicSet *pMosaicSet, 
+				double cameraOffsetInMeters, 
+				double triggerOffsetInMeters,
+        		int numCameras,
+				double cameraOverlapInMeters,
+				int numTriggers,
+				double triggerOverlapInMeters);
 
 			///
 			///	Adds an image...
@@ -56,8 +69,13 @@ namespace MosaicDM
 			bool AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex);
 
 		private:
+			int _numTriggers;
+			int _numCameras;
+			double _triggerOverlap;
+			double _cameraOverlap;
+			double _triggerOffset;
+			double _cameraOffset;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
-			double _offsetInMeters;
 	};
 }

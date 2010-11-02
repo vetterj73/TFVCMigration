@@ -53,12 +53,12 @@ namespace ManagedCyberStitchUnitTest
         public void TestCalFlags()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet
-                (.2, .25, 3, .003, 4, .004, 2592, 1944, 2592, .000017, .000017);
+                (.2, .25, 2592, 1944, 2592, .000017, .000017);
 
             Assert.IsTrue(mSet.GetCorrelationSet(0, 0) == null);
             Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
             
-            mSet.AddLayer(.003);
+            mSet.AddLayer(.02, .2, 3, .003, 4, .004);
             Assert.IsTrue(mSet.GetCorrelationSet(0, 0) != null);
             Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
 
@@ -77,7 +77,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mcf.GetCameraToCamera());
             Assert.IsTrue(mcf.GetTriggerToTrigger() == false);
 
-            mSet.AddLayer(.006);
+            mSet.AddLayer(.02, .2, 3, .003, 4, .004);
 
             /// CorrelationFlags 0,1 is same as 1,0
             mcf = mSet.GetCorrelationSet(0, 1);
@@ -88,7 +88,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mcf.GetCameraToCamera()==false);
             Assert.IsTrue(mcf.GetTriggerToTrigger());
 
-            mSet.AddLayer(.015);
+            mSet.AddLayer(.02, .2, 3, .003, 4, .004);
             mcf = mSet.GetCorrelationSet(1, 2);
             Assert.IsTrue(mcf.GetCameraToCamera());
             Assert.IsTrue(mcf.GetTriggerToTrigger());
@@ -99,13 +99,13 @@ namespace ManagedCyberStitchUnitTest
         public void BasicMosaicSetTest()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet
-                (.2, .25, 3, .003, 4, .004, 2592, 1944, 2592, .000017, .000017);
+                (.2, .25, 2592, 1944, 2592, .000017, .000017);
             Assert.IsTrue(mSet.GetLayer(0) == null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
-            mSet.AddLayer(3.0);
+            mSet.AddLayer(.02, .2, 3, .003, 4, .004);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
-            mSet.AddLayer(6.0);
+            mSet.AddLayer(.02, .2, 3, .003, 4, .004);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) != null);
 

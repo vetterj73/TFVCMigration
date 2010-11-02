@@ -38,10 +38,6 @@ namespace MosaicDM
 			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
 			MosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
-					  int numCameras,
-					  double cameraOverlapInMeters,
-					  int numTriggers,
-					  double triggerOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
@@ -59,8 +55,18 @@ namespace MosaicDM
 			///
 			/// Adds a layer to a mosaic set
 			///
-			/// \param offsetInMeters - the initial offset from edge of image 
-			MosaicLayer *AddLayer(double offsetInMeters);
+			/// \param cameraOffsetInMeters - offset of object in first camera image
+			/// \param triggerOffsetInMeters - offset of object in first trigger image
+			/// \param numCameras - number of cameras used for this layer
+			/// \param cameraOverlapInMeters - overlap between cameras in this layer
+			/// \param numTriggers - number of triggers used for this layer
+			/// \param triggerOverlapInMeters - overlap between triggers in this layer
+			MosaicLayer *AddLayer(double cameraOffsetInMeters, 
+									double triggerOffsetInMeters,
+        							int numCameras,
+									double cameraOverlapInMeters,
+									int numTriggers,
+									double triggerOverlapInMeters);
 			
 			///
 			/// Gets a layer from the MosaicSet
@@ -72,16 +78,11 @@ namespace MosaicDM
 			///
 			///	Getters for all basic Attributes
 			///
-			int GetNumTriggers(){return _triggers;}
-			int GetNumCameras(){return _cameras;}
 			int GetNumMosaicLayers(){return _layerList.size();}		
 			int GetImageWidthInPixels(){return _imageWidth;}
 			int GetImageHeightInPixels(){return _imageHeight;}
 			int GetImageStrideInPixels(){return _imageStride;}
 			int GetImageStrideInBytes(){return _imageStride;}
-			int GetCameraOverlapInMeters(){return _cameraOverlap;}
-			int GetTriggerOverlapInMeters(){return _triggerOverlap;}
-			int NumberOfTilesPerLayer();
 			double GetNominalPixelSizeX(){return _pixelSizeX;};
 			double GetNominalPixelSizeY(){return _pixelSizeY;};
 			double GetObjectWidthInMeters(){return _objectWidthInMeters;};
@@ -105,23 +106,17 @@ namespace MosaicDM
 
 
 		private:
-			int _triggers;
-			int _cameras;
 			int _imageWidth;
 			int _imageHeight;
 			int _imageStride;
-			double _triggerOverlap;
-			double _cameraOverlap;
 			double _pixelSizeX;
 			double _pixelSizeY;
 			LayerList _layerList;
 			double _objectWidthInMeters;
 			double _objectLengthInMeters;
-
 			IMAGEADDED_CALLBACK _registeredImageAddedCallback;
 			void * _pCallbackContext;
 			void FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex);
-
 			CorrelationFlagsMap _correlationFlagsMap;
 	};
 }

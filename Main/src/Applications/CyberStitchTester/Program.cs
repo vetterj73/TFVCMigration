@@ -115,11 +115,11 @@ namespace CyberStitchTester
             for (int i = 0; i < d.NumberOfCameras; i++ )
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
-            _mosaicSet = new ManagedMosaicSet(.200, .250, numCameras, .003, pSpec.NumberOfTriggers, .004, 2592, 1944, 2592, .00017, .00017);
+            _mosaicSet = new ManagedMosaicSet(.200, .250, 2592, 1944, 2592, .00017, .00017);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
-                _mosaicSet.AddLayer(i*20);
+                _mosaicSet.AddLayer(.2, i*.2, numCameras, .003, pSpec.NumberOfTriggers, .004);
             }
         }
 
