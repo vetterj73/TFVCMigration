@@ -28,6 +28,16 @@ public:
 	void SetCameraToCamera(bool cameraToCamera)
 	{
 		_pCorrelationFlags->SetCameraToCamera(cameraToCamera);
+	}	
+
+	bool GetMaskNeeded()
+	{
+		return _pCorrelationFlags->GetMaskNeeded();
+	}
+	
+	void SetMaskNeeded(bool maskNeeded)
+	{
+		_pCorrelationFlags->SetMaskNeeded(maskNeeded);
 	}
 
 private:

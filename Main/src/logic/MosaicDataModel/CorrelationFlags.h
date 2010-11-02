@@ -12,6 +12,7 @@ namespace MosaicDM
 		{
 			_cameraToCamera = true;
 			_triggerToTrigger = true;
+			_maskNeeded = false;
 		}
 
 		bool GetCameraToCamera(){return _cameraToCamera;};
@@ -20,8 +21,12 @@ namespace MosaicDM
 		bool GetTriggerToTrigger(){return _triggerToTrigger;};
 		void SetTriggerToTrigger(bool tTot){_triggerToTrigger = tTot;};
 
+		bool GetMaskNeeded(){return _maskNeeded;};
+		void SetMaskNeeded(bool maskNeeded){_maskNeeded = maskNeeded;};
+
 	private:
 		bool _cameraToCamera;
 		bool _triggerToTrigger;
+		bool _maskNeeded;
 	};
 }

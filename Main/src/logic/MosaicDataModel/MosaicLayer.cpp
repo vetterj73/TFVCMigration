@@ -24,6 +24,7 @@ namespace MosaicDM
 		int numTiles = NumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 
+
 		for(int i=0; i<numTiles; i++)
 		{
 			// @todo - set X/Y center offsets nominally...
