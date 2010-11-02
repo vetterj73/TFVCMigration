@@ -13,7 +13,7 @@ VsNgcWrapper::~VsNgcWrapper(void)
 	delete _pAlignNgc;
 }
 
-bool VsNgcWrapper::align(NgcParams params, NgcResults* pResults)
+bool VsNgcWrapper::Align(NgcParams params, NgcResults* pResults)
 {
 	return(_pAlignNgc->Align(params, pResults));
 }

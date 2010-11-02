@@ -54,7 +54,7 @@ public:
 	VsNgcWrapper();
 	~VsNgcWrapper(void);
 
-	bool align(NgcParams params, NgcResults* pResults);
+	bool Align(NgcParams params, NgcResults* pResults);
 
 private:
 

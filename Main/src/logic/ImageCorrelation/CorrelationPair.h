@@ -36,6 +36,7 @@ typedef enum {
 } OverlapType;
 
 // The image and ROI pair for correlation (contains result)
+// Mask image must be with the first image now
 class CorrelationPair
 {
 public:
@@ -58,7 +59,7 @@ public:
 	UIRect GetFirstRoi()  {return _roi1;};
 	UIRect GetSecondRoi() {return _roi2;};
 
-	Image* GetMaskImg() {return _pMaskImage;};
+	Image* GetMaskImg() {return _pMaskImg;};
 
 	void SetCorrlelationResult(CorrelationResult result);
 
@@ -68,6 +69,8 @@ public:
 
 	unsigned int Columns() {return _roi1.Columns();};
 	unsigned int Rows() {return _roi1.Rows();};
+
+	bool DoAlignment();
 
 	bool ChopCorrPair(
 		unsigned int iNumBlockX, 
@@ -82,7 +85,7 @@ public:
 private:
 	Image* _pImg1;
 	Image* _pImg2;
-	Image* _pMaskImage;
+	Image* _pMaskImg;
 
 	UIRect _roi1;
 	UIRect _roi2;

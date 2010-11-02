@@ -1,6 +1,8 @@
 #include "CorrelationPair.h"
 
+#include "SquareRootCorrelation.h"
 #include "VsNgcWrapper.h"
+
 
 #pragma region CorrelationResult class
 CorrelationResult::CorrelationResult()
@@ -43,7 +45,7 @@ CorrelationPair::CorrelationPair()
 {
 	_pImg1 = NULL;
 	_pImg2 = NULL;
-	_pMaskImage = NULL;
+	_pMaskImg = NULL;
 	
 	_type = NULL_OVERLAP;
 
@@ -60,7 +62,7 @@ CorrelationPair::CorrelationPair(
 {
 	_pImg1 = pImg1;
 	_pImg2 = pImg2;
-	_pMaskImage = pMaskImg;
+	_pMaskImg = pMaskImg;
 
 	_roi1 = roi1;	
 	_roi2.FirstColumn = topLeftCorner2.first;
@@ -82,7 +84,7 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 {
 	_pImg1 = b._pImg1;
 	_pImg2 = b._pImg2;
-	_pMaskImage = b._pMaskImage;
+	_pMaskImg = b._pMaskImg;
 
 	_roi1 = b._roi1;
 	_roi2 = b._roi2;
@@ -110,6 +112,84 @@ bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult)
 
 	return(true);
 }
+
+bool CorrelationPair::DoAlignment()
+{
+	bool bSRC = true;
+
+	// Check the mask area to decide whehter need to use NGC
+	if(_pMaskImg != NULL && _pMaskImg->GetBuffer() != NULL)
+	{
+		unsigned int iCount = 0;
+		unsigned char* pLineBuf = _pMaskImg->GetBuffer() + 
+			_roi1.FirstRow*_pImg1->ByteRowStride();
+		for(unsigned int iy=_roi1.FirstRow; iy=_roi1.LastRow; iy++)
+		{
+			for(unsigned int ix=_roi1.FirstColumn; ix<_roi1.LastColumn; ix++)
+			{
+				if(pLineBuf[ix] > 0 )
+					iCount++;
+			}
+
+			pLineBuf += _pImg1->ByteRowStride();
+		}
+
+		if(iCount*100/_roi1.Rows()/_roi1.Columns() > 5)
+			bSRC = true;
+	}
+
+	if(bSRC)
+	{	// use SRC/regoff
+		unsigned int decimation_factor = 2;
+		if(_roi1.Columns()>1000 || _roi1.Rows()>1000)
+			decimation_factor = 4;
+		if(_roi1.Columns()>2000 || _roi1.Rows()>2000)
+			decimation_factor = 8;
+
+		SqRtCorrelation(*this, decimation_factor, true);
+	}
+	else
+	{	// Use Ngc
+		// Ngc input parameter
+		NgcParams params;
+		params.pcTemplateBuf	= _pImg1->GetBuffer();
+		params.iTemplateImWidth = _pImg1->Columns();
+		params.iTemplateImHeight= _pImg1->Rows();
+		params.iTemplateImSpan	= _pImg1->PixelRowStride();
+		params.iTemplateLeft	= _roi1.FirstColumn;
+		params.iTemplateRight	= _roi1.LastColumn;
+		params.iTemplateTop		= _roi1.FirstRow;
+		params.iTemplateBottom	= _roi1.LastRow;
+
+		params.pcSearchBuf		= _pImg2->GetBuffer();
+		params.iSearchImWidth	= _pImg2->Columns();
+		params.iSearchImHeight	= _pImg2->Rows();
+		params.iSearchImSpan	= _pImg2->PixelRowStride();
+		params.iSearchLeft		= _roi2.FirstColumn;
+		params.iSearchRight		= _roi2.LastColumn;
+		params.iSearchTop		= _roi2.FirstRow;
+		params.iSearchBottom	= _roi2.LastRow;
+
+		params.bUseMask			= true;
+		params.pcMaskBuf		= _pMaskImg->GetBuffer();
+
+		// Ngc alignment
+		NgcResults results;
+		VsNgcWrapper ngc;
+		ngc.Align(params, &results);
+
+		/** Check this **/
+		// Create result
+		_result.ColOffset = results.dMatchPosX - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
+		_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
+		_result.CorrCoeff = results.dCoreScore;
+		_result.AmbigScore= results.dAmbigScore;
+
+		_bIsProcessed = true;
+	}
+
+}
+
 
 // Chop correlation pair into a list of smaller pairs/blocks
 // iNumBlockX and iNumBlockY: Numbers of smaller blocks in X(columns) and y(rows) direction
