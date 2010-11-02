@@ -24,7 +24,9 @@ namespace MMosaicDM
 			///
 			///	Constructor - See MosaicSet constructor for details.
 			///
-			ManagedMosaicSet(int numCameras,
+			ManagedMosaicSet(double objectWidthInMeters,
+					  double objectLengthInMeters,
+					  int numCameras,
 					  double cameraOverlapInMeters,
 					  int numTriggers,
 					  double triggerOverlapInMeters,
@@ -35,6 +37,8 @@ namespace MMosaicDM
 					  double pixelSizeYInMeters)
 			{
 				_pMosaicSet = new MosaicDM::MosaicSet(
+						objectWidthInMeters,
+						objectLengthInMeters,
 						numCameras,
 						cameraOverlapInMeters,
 						numTriggers,

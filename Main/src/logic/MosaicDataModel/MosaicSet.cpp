@@ -7,16 +7,20 @@
 
 namespace MosaicDM 
 {
-	MosaicSet::MosaicSet(int numCameras,
+	MosaicSet::MosaicSet(double objectWidthInMeters,
+					  double objectLengthInMeters,
+					  int numCameras,
 					  double cameraOverlapInMeters,
 					  int numTriggers,
 					  double triggerOverlapInMeters,
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
-					  double pixelSizeXInMeters,
-					  double pixelSizeYInMeters)
+					  double nominalPixelSizeXInMeters,
+					  double nominalPixelSizeYInMeters)
 	{
+		_objectWidthInMeters = objectWidthInMeters;
+		_objectLengthInMeters = objectLengthInMeters;
 		_cameras = numCameras;
 		_triggers = numTriggers;
 		_triggerOverlap = triggerOverlapInMeters;
@@ -24,8 +28,8 @@ namespace MosaicDM
 		_imageWidth = imageWidthInPixels;
 		_imageHeight = imageHeightInPixels;
 		_imageStride = imageStrideInPixels;
-		_pixelSizeX = pixelSizeXInMeters;
-		_pixelSizeY = pixelSizeYInMeters;
+		_pixelSizeX = nominalPixelSizeXInMeters;
+		_pixelSizeY = nominalPixelSizeYInMeters;
 		_registeredImageAddedCallback = NULL;
 		_pCallbackContext = NULL;
 	}

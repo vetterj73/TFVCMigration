@@ -24,6 +24,8 @@ namespace MosaicDM
 			///
 			///	Constructor
 			///
+			/// \param objectWidthInMeters - how wide is the object we are imaging
+			/// \param objectLengthInMeters what length is the object we are imaging
 			/// \param numCameras (columns) in mosaic
 			/// \param cameraOverlapInMeters overlap between cameras
 			/// \param numTriggers # of triggers in the mosaic
@@ -34,7 +36,8 @@ namespace MosaicDM
 			/// \param overlapInMeters The overlap of each image. specified in meters.
 			/// \param pixelSizeXInMeters - size of pixel in X direction.
 			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
-			MosaicSet(
+			MosaicSet(double objectWidthInMeters,
+					  double objectLengthInMeters,
 					  int numCameras,
 					  double cameraOverlapInMeters,
 					  int numTriggers,
@@ -42,8 +45,8 @@ namespace MosaicDM
 					  int imageWidthInPixels,
 					  int imageHeightInPixels,
 					  int imageStrideInPixels,
-					  double pixelSizeXInMeters,
-					  double pixelSizeYInMeters);
+					  double nominalPixelSizeXInMeters,
+					  double nominalPixelSizeYInMeters);
 
 			///
 			///	Destructor
@@ -81,7 +84,8 @@ namespace MosaicDM
 			int NumberOfTilesPerLayer();
 			double GetNominalPixelSizeX(){return _pixelSizeX;};
 			double GetNominalPixelSizeY(){return _pixelSizeY;};
-
+			double GetObjectWidthInMeters(){return _objectWidthInMeters;};
+			double GetObjectLengthInMeters(){return _objectLengthInMeters;};
 
 			///
 			///	Get the correlation flags associated with the current layers
@@ -111,6 +115,8 @@ namespace MosaicDM
 			double _pixelSizeX;
 			double _pixelSizeY;
 			LayerList _layerList;
+			double _objectWidthInMeters;
+			double _objectLengthInMeters;
 
 			IMAGEADDED_CALLBACK _registeredImageAddedCallback;
 			void * _pCallbackContext;
