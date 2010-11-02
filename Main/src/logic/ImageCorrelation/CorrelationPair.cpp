@@ -188,6 +188,7 @@ bool CorrelationPair::DoAlignment()
 		_bIsProcessed = true;
 	}
 
+	return(true);
 }
 
 
