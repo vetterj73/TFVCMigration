@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ImgTransform.h"
+
 namespace MosaicDM 
 {
 	class MosaicLayer;
@@ -64,5 +66,7 @@ namespace MosaicDM
 			double _centerOffsetX;
 			double _centerOffsetY;
 			double _rotation;
+			ImgTransform _inputTransform;
+			ImgTransform _outputTransform;
 	};
 }
