@@ -1,3 +1,8 @@
+/*
+	#define the classes for Alignment/correlation pair and results
+*/
+
+
 #pragma once
 
 #include "Image.h"

@@ -1,3 +1,7 @@
+/*
+	#define the classes for overlap between Fov and Fov, Cad and Fov, and Fiducial and Fov
+*/
+
 #pragma once
 
 #include "MosaicImage.h"
