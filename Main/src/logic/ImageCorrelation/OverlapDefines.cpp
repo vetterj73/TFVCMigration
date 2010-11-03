@@ -125,7 +125,18 @@ bool Overlap::CalCoarseCorrPair()
 		//G_LOG_0_ERROR("CameraOverlap failed BoundsCheck");
 	}
 
-	CorrelationPair coarsePair(_pImg1, _pImg2, roi1, pair<unsigned int, unsigned int>(roi2.FirstRow, roi2.FirstColumn), _type);
+	unsigned int iDecim = 4;
+	if(roi1.Columns()>1000 && roi1.Rows()>1000)
+		iDecim = 8;
+
+	unsigned int iColSearchExpansion = 50;
+	unsigned int iRowSearchExpansion = 75;
+
+	CorrelationPair coarsePair(
+		_pImg1, _pImg2, 
+		roi1, pair<unsigned int, unsigned int>(roi2.FirstRow, roi2.FirstColumn),
+		iDecim, iColSearchExpansion, iRowSearchExpansion,
+		_type, _pMaskImg);
 	_coarsePair = coarsePair;
 
 	return(true);

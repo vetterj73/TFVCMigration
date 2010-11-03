@@ -47,6 +47,9 @@ public:
 		Image* pImg2, 
 		UIRect roi1, 
 		pair<unsigned int, unsigned int> topLeftCorner2,
+		unsigned int iDecim,
+		unsigned int iColSearchExpansion,
+		unsigned int iRowSearchExpansion,
 		OverlapType type,
 		Image* pMaskImage = NULL);
 
@@ -77,6 +80,9 @@ public:
 		unsigned int iNumBlockY, 
 		unsigned int iBlockWidth, 
 		unsigned int iBlockHeight,
+		unsigned int iBlockDecim,
+		unsigned int iBlockColSearchExpansion,
+		unsigned int iBlockRowSearchExpansion,
 		list<CorrelationPair>* pOutPairList);
 
 	void DumpImg(string sFileName);
@@ -93,6 +99,9 @@ private:
 	OverlapType _type;
 
 	bool _bIsProcessed;
+	unsigned int _iDecim;	// For regoff
+	unsigned int _iColSearchExpansion; // For NGC
+	unsigned int _iRowSearchExpansion;
 
 	CorrelationResult _result;
 };

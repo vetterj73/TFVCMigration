@@ -57,6 +57,9 @@ CorrelationPair::CorrelationPair(
 		Image* pImg2, 
 		UIRect roi1, 
 		pair<unsigned int, unsigned int> topLeftCorner2,
+		unsigned int iDecim,
+		unsigned int iColSearchExpansion,
+		unsigned int iRowSearchExpansion,
 		OverlapType type,
 		Image* pMaskImg)
 {
@@ -69,6 +72,10 @@ CorrelationPair::CorrelationPair(
 	_roi2.FirstRow = topLeftCorner2.second;
 	_roi2.LastColumn = _roi2.FirstColumn + _roi1.Columns() - 1;
 	_roi2.LastRow = _roi2.FirstRow + _roi1.Rows() -1;
+
+	_iDecim = iDecim;
+	_iColSearchExpansion = iColSearchExpansion;
+	_iRowSearchExpansion = iRowSearchExpansion;
 
 	_type = type;
 
@@ -88,6 +95,10 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 
 	_roi1 = b._roi1;
 	_roi2 = b._roi2;
+
+	_iDecim = b._iDecim;
+	_iColSearchExpansion = b._iColSearchExpansion;
+	_iRowSearchExpansion = b._iRowSearchExpansion;
 
 	_type = b._type;
 
@@ -140,26 +151,27 @@ bool CorrelationPair::DoAlignment()
 
 	if(bSRC)
 	{	// use SRC/regoff
-		unsigned int decimation_factor = 2;
-		if(_roi1.Columns()>1000 || _roi1.Rows()>1000)
-			decimation_factor = 4;
-		if(_roi1.Columns()>2000 || _roi1.Rows()>2000)
-			decimation_factor = 8;
 
-		SqRtCorrelation(*this, decimation_factor, true);
+		SqRtCorrelation(*this, _iDecim, true);
 	}
 	else
-	{	// Use Ngc
+	{	
+		// Mask sure ROI size is bigger enough for search
+		if(_roi1.Columns() < 2*_iColSearchExpansion+20 ||
+			_roi1.Rows() < 2*_iRowSearchExpansion+20)
+			return(false);
+
+		// Use Ngc
 		// Ngc input parameter
 		NgcParams params;
 		params.pcTemplateBuf	= _pImg1->GetBuffer();
 		params.iTemplateImWidth = _pImg1->Columns();
 		params.iTemplateImHeight= _pImg1->Rows();
 		params.iTemplateImSpan	= _pImg1->PixelRowStride();
-		params.iTemplateLeft	= _roi1.FirstColumn;
-		params.iTemplateRight	= _roi1.LastColumn;
-		params.iTemplateTop		= _roi1.FirstRow;
-		params.iTemplateBottom	= _roi1.LastRow;
+		params.iTemplateLeft	= _roi1.FirstColumn + _iColSearchExpansion;
+		params.iTemplateRight	= _roi1.LastColumn - _iColSearchExpansion;
+		params.iTemplateTop		= _roi1.FirstRow + _iRowSearchExpansion;
+		params.iTemplateBottom	= _roi1.LastRow - _iRowSearchExpansion;
 
 		params.pcSearchBuf		= _pImg2->GetBuffer();
 		params.iSearchImWidth	= _pImg2->Columns();
@@ -201,6 +213,9 @@ bool CorrelationPair::ChopCorrPair(
 	unsigned int iNumBlockY, 
 	unsigned int iBlockWidth, 
 	unsigned int iBlockHeight,
+	unsigned int iBlockDecim,
+	unsigned int iBlockColSearchExpansion,
+	unsigned int iBlockRowSearchExpansion,
 	list<CorrelationPair>* pOutPairList)
 {
 	// Validation check
@@ -284,6 +299,9 @@ bool CorrelationPair::ChopCorrPair(
 				this->GetSecondImg(),
 				roi1,
 				pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow),
+				iBlockDecim,
+				iBlockColSearchExpansion,
+				iBlockRowSearchExpansion,
 				this->GetOverlapType(),
 				this->GetMaskImg());
 
