@@ -73,6 +73,10 @@ public:
 	unsigned int Columns() {return _roi1.Columns();};
 	unsigned int Rows() {return _roi1.Rows();};
 
+	bool IsProcessed() {return _bIsProcessed;};
+
+	bool AdjustRoiBaseOnResult(CorrelationPair* pPair) const;
+
 	bool DoAlignment();
 
 	bool ChopCorrPair(
@@ -83,10 +87,10 @@ public:
 		unsigned int iBlockDecim,
 		unsigned int iBlockColSearchExpansion,
 		unsigned int iBlockRowSearchExpansion,
-		list<CorrelationPair>* pOutPairList);
+		list<CorrelationPair>* pOutPairList) const;
 
-	void DumpImg(string sFileName);
-	bool DumpImgWithResult(string sFileName);
+	void DumpImg(string sFileName) const;
+	bool DumpImgWithResult(string sFileName) const;
 
 private:
 	Image* _pImg1;
@@ -104,4 +108,6 @@ private:
 	unsigned int _iRowSearchExpansion;
 
 	CorrelationResult _result;
+
+	unsigned int _iMinSize;	// internal setting
 };

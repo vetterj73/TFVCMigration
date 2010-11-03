@@ -125,12 +125,17 @@ bool Overlap::CalCoarseCorrPair()
 		//G_LOG_0_ERROR("CameraOverlap failed BoundsCheck");
 	}
 
-	unsigned int iDecim = 4;
-	if(roi1.Columns()>1000 && roi1.Rows()>1000)
-		iDecim = 8;
-
+	// create coarse correlation pair
+	unsigned int iDecim = 2;
 	unsigned int iColSearchExpansion = 50;
 	unsigned int iRowSearchExpansion = 75;
+	if(_type != Fid_To_Fov)
+	{
+		if(roi1.Columns()>500 && roi1.Rows()>500)
+			iDecim = 4;
+		if(roi1.Columns()>1000 && roi1.Rows()>1000)
+			iDecim = 8;
+	}
 
 	CorrelationPair coarsePair(
 		_pImg1, _pImg2, 
@@ -144,7 +149,58 @@ bool Overlap::CalCoarseCorrPair()
 
 bool Overlap::DoIt()
 {
+	// Do coarse correlation
+	_coarsePair.DoAlignment();
 
+	if(_type != Fov_To_Fov)
+		return(true);
+
+// Fine alignemt (only for Fov and Fov)
+	// Clean fine correlation pair list
+	_finePairList.clear();
+
+	// Adjust ROI base on the coarse results
+	bool bAdjusted = false;
+	CorrelationPair tempPair = _coarsePair;
+	if(_coarsePair.IsProcessed())
+	{
+		bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+	}
+
+	// Create fine correlation pair list
+	unsigned int iBlockWidth = 400;
+	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
+	if(iNumBlockX >3) iNumBlockX = 3;
+	if(iNumBlockX <1) iNumBlockX = 1;
+	if(iBlockWidth <  tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
+
+	unsigned int iBlockHeight = 300;
+	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
+	if(iNumBlockY >3) iNumBlockY = 3;
+	if(iNumBlockY <1) iNumBlockY = 1;
+	if(iBlockHeight < tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
+
+	unsigned int iBlockDecim = 2;
+	unsigned int iBlockColSearchExpansion = 20;
+	unsigned int iBlockRowSearchExpansion = 20;
+	if(!bAdjusted)
+	{
+		iBlockColSearchExpansion = 50;
+		iBlockRowSearchExpansion = 75;
+	}
+
+	tempPair.ChopCorrPair(
+		iNumBlockX, iNumBlockY,
+		iBlockWidth, iBlockHeight,
+		iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
+		&_finePairList);
+
+	// Do fine correlation
+	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+	{
+		i->DoAlignment();
+	}
+	
 	return(true);
 }
 

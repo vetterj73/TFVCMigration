@@ -50,6 +50,8 @@ CorrelationPair::CorrelationPair()
 	_type = NULL_OVERLAP;
 
 	_bIsProcessed=false;
+
+	_iMinSize = 20;
 }
 
 CorrelationPair::CorrelationPair(
@@ -80,6 +82,8 @@ CorrelationPair::CorrelationPair(
 	_type = type;
 
 	_bIsProcessed = false;
+
+	_iMinSize = 20;
 }
 
 CorrelationPair::CorrelationPair(const CorrelationPair& b)
@@ -104,6 +108,8 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 
 	_bIsProcessed = b._bIsProcessed;
 	_result = b._result;
+
+	_iMinSize = b._iMinSize;
 }
 
 void CorrelationPair::SetCorrlelationResult(CorrelationResult result)
@@ -151,14 +157,16 @@ bool CorrelationPair::DoAlignment()
 
 	if(bSRC)
 	{	// use SRC/regoff
+		if(_roi1.Columns()<_iMinSize || _roi1.Rows()<_iMinSize)
+			return(false);
 
 		SqRtCorrelation(*this, _iDecim, true);
 	}
 	else
 	{	
 		// Mask sure ROI size is bigger enough for search
-		if(_roi1.Columns() < 2*_iColSearchExpansion+20 ||
-			_roi1.Rows() < 2*_iRowSearchExpansion+20)
+		if(_roi1.Columns() < 2*_iColSearchExpansion+_iMinSize ||
+			_roi1.Rows() < 2*_iRowSearchExpansion+_iMinSize)
 			return(false);
 
 		// Use Ngc
@@ -216,7 +224,7 @@ bool CorrelationPair::ChopCorrPair(
 	unsigned int iBlockDecim,
 	unsigned int iBlockColSearchExpansion,
 	unsigned int iBlockRowSearchExpansion,
-	list<CorrelationPair>* pOutPairList)
+	list<CorrelationPair>* pOutPairList) const
 {
 	// Validation check
 	if(iNumBlockX<1 || iNumBlockY<1) return(false);	
@@ -225,20 +233,20 @@ bool CorrelationPair::ChopCorrPair(
 	pOutPairList->clear();
 	
 	// Re_adjust of bloc kwidth and height for protection
-	if(iBlockWidth > this->Columns()-iNumBlockX)
-		iBlockWidth = this->Columns()-iNumBlockX;
+	if(iBlockWidth > _roi1.Columns()-iNumBlockX)
+		iBlockWidth = _roi1.Columns()-iNumBlockX;
 
-	if(iBlockHeight > this->Rows()-iNumBlockY)
-		iBlockHeight = this->Rows()-iNumBlockY;
+	if(iBlockHeight > _roi1.Rows()-iNumBlockY)
+		iBlockHeight = _roi1.Rows()-iNumBlockY;
 
 	// Calculate pitches
 	int iPitchX = 0;
 	if(iNumBlockX!=1)
-		iPitchX = (this->Columns()-iBlockWidth)/iNumBlockX;
+		iPitchX = (_roi1.Columns()-iBlockWidth)/iNumBlockX;
 
 	int iPitchY = 0;
 	if(iNumBlockY!=1)
-		iPitchY = (this->Rows()-iBlockHeight)/iNumBlockY;
+		iPitchY = (_roi1.Rows()-iBlockHeight)/iNumBlockY;
 
 	// Calculate blocks
 	UIRect roi1, roi2;
@@ -248,21 +256,21 @@ bool CorrelationPair::ChopCorrPair(
 		unsigned  int iOffsetY; 
 		if(iPitchY == 0)	
 		{	// Center it if there is only one row
-			iOffsetY = (this->Rows() - iBlockHeight)/2;
+			iOffsetY = (_roi1.Rows() - iBlockHeight)/2;
 		}
 		else 
 			iOffsetY = iy * iPitchY;
 
-		roi1.FirstRow = this->GetFirstRoi().FirstRow + iOffsetY;
-		roi1.LastRow = roi1.FirstRow + iBlockHeight - 1;
+		roi1.FirstRow = _roi1.FirstRow + iOffsetY;
+		roi1.LastRow = _roi1.FirstRow + iBlockHeight - 1;
 
-		roi2.FirstRow = this->GetSecondRoi().FirstRow + iOffsetY;
-		roi2.LastRow = roi2.FirstRow + iBlockHeight - 1;
+		roi2.FirstRow = _roi2.FirstRow + iOffsetY;
+		roi2.LastRow = _roi2.FirstRow + iBlockHeight - 1;
 
 		if(roi1.FirstRow < 0 || 
-			roi1.LastRow > this->GetFirstImg()->Rows()-1 ||
+			roi1.LastRow > _pImg1->Rows()-1 ||
 			roi2.FirstRow < 0 || 
-			roi2.LastRow > this->GetSecondImg()->Rows()-1)
+			roi2.LastRow > _pImg2->Rows()-1)
 		{
 			//G_LOG_0_ERROR("dividing image overlap into blocks");
 			return(false);
@@ -274,36 +282,36 @@ bool CorrelationPair::ChopCorrPair(
 			unsigned  int iOffsetX; 
 			if(iPitchX == 0)	
 			{	// Center it if there is only one column
-				iOffsetX = (this->Columns() - iBlockWidth)/2;
+				iOffsetX = (_roi1.Columns() - iBlockWidth)/2;
 			}
 			else 
 				iOffsetX = ix * iPitchX;
 
-			roi1.FirstColumn = this->GetFirstRoi().FirstColumn + iOffsetX;
-			roi1.LastColumn = roi1.FirstColumn + iBlockWidth - 1;
+			roi1.FirstColumn = _roi1.FirstColumn + iOffsetX;
+			roi1.LastColumn = _roi1.FirstColumn + iBlockWidth - 1;
 
-			roi2.FirstColumn = this->GetSecondRoi().FirstColumn + iOffsetX;
-			roi2.LastColumn = roi2.FirstColumn + iBlockWidth - 1;
+			roi2.FirstColumn = _roi2.FirstColumn + iOffsetX;
+			roi2.LastColumn = _roi2.FirstColumn + iBlockWidth - 1;
 
 			if(roi1.FirstColumn < 0 || 
-				roi1.LastColumn > this->GetFirstImg()->Columns()-1 ||
+				roi1.LastColumn > _pImg1->Columns()-1 ||
 				roi2.FirstColumn < 0 || 
-				roi2.LastColumn > this->GetSecondImg()->Columns()-1)
+				roi2.LastColumn > _pImg2->Columns()-1)
 			{
 				//G_LOG_0_ERROR("dividing image overlap into blocks");
 				return(false);
 			}
 
 			CorrelationPair corrPair(
-				this->GetFirstImg(),
-				this->GetSecondImg(),
+				_pImg1,
+				_pImg2,
 				roi1,
 				pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow),
 				iBlockDecim,
 				iBlockColSearchExpansion,
 				iBlockRowSearchExpansion,
-				this->GetOverlapType(),
-				this->GetMaskImg());
+				_type,
+				_pMaskImg);
 
 			pOutPairList->push_back(corrPair);
 		}
@@ -312,7 +320,55 @@ bool CorrelationPair::ChopCorrPair(
 	return(true);
 }
 
-void CorrelationPair::DumpImg(string sFileName)
+bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
+{
+	// Validation check
+	if(_bIsProcessed)
+		return(false);
+
+	double dRoiAdjustTh = 0.03;
+	if(_result.CorrCoeff * (1-_result.AmbigScore) < 0.03)
+		return(false);
+
+	// Adjustment offsets
+	int col_offset = (int)(_result.ColOffset + 0.5);	
+	int row_offset = (int)(_result.RowOffset + 0.5);
+
+	// validation check
+	if(_roi1.Columns() < col_offset+_iMinSize ||
+		_roi1.Rows() < col_offset+_iMinSize)
+		return(false);
+
+	*pPair = *this;
+
+	// Adjust for rois
+	if( col_offset>0 )
+	{
+		pPair->_roi2.FirstColumn += col_offset;
+		pPair->_roi1.LastColumn -= col_offset;
+	}
+	else if( col_offset<0 )
+	{
+		pPair->_roi2.LastColumn += col_offset;
+		pPair->_roi1.FirstColumn -= col_offset;
+	}
+
+	// Adjust for colums 
+	if( row_offset>0 )
+	{
+		pPair->_roi2.FirstRow += row_offset;
+		pPair->_roi1.LastRow -= row_offset;
+	}
+	else if( row_offset<0 )
+	{
+		pPair->_roi2.LastRow += row_offset;
+		pPair->_roi1.FirstRow -= row_offset;
+	}
+
+	return(true);
+}
+
+void CorrelationPair::DumpImg(string sFileName) const
 {
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
@@ -335,7 +391,7 @@ void CorrelationPair::DumpImg(string sFileName)
 	delete rbg;
 }
 
-bool CorrelationPair::DumpImgWithResult(string sFileName)
+bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
 	if(!_bIsProcessed) return(false);
 
