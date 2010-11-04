@@ -32,6 +32,9 @@ public:
 
 	Image* GetFirstImage() {return _pImg1;};
 
+	unsigned int Columns() {return _iColumns;};
+	unsigned int Rows() {return _iRows;};
+
 	bool IsValid() {return _bValid;};
 
 	bool DoIt();
@@ -49,6 +52,9 @@ private:
 	Image* _pMaskImg;
 
 	bool _bValid;
+
+	unsigned int _iColumns;
+	unsigned int _iRows;
 
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;

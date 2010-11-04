@@ -1,9 +1,11 @@
 #include "MosaicImage.h"
 
-MosaicImage::MosaicImage(unsigned int iSizeX, unsigned int iSizeY)
+MosaicImage::MosaicImage(unsigned int iIndex, unsigned int iSizeX, unsigned int iSizeY, bool bUseCad)
 {
+	_iIndex = iIndex;
 	_iSizeX = iSizeX;
 	_iSizeY = iSizeY;
+	_bUseCad = bUseCad;
 
 	_ImagePtrs = new Image*[NumImages()];
 	_bImagesAcquired = new bool[NumImages()];

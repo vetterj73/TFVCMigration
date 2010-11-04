@@ -52,6 +52,12 @@ void Overlap::config(
 	_type = type;
 
 	_bValid = CalCoarseCorrPair();
+
+	if(_bValid)
+	{
+		_iColumns = _coarsePair.Columns();
+		_iRows	  = _coarsePair.Rows();
+	}
 }
 
 // Calculate the coarse correlation pair
@@ -142,6 +148,10 @@ bool Overlap::CalCoarseCorrPair()
 		roi1, pair<unsigned int, unsigned int>(roi2.FirstRow, roi2.FirstColumn),
 		iDecim, iColSearchExpansion, iRowSearchExpansion,
 		_type, _pMaskImg);
+
+	if(!coarsePair.IsValid())
+		return(false);
+
 	_coarsePair = coarsePair;
 
 	return(true);

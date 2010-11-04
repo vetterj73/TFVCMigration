@@ -78,6 +78,8 @@ public:
 	unsigned int Columns() {return _roi1.Columns();};
 	unsigned int Rows() {return _roi1.Rows();};
 
+	bool IsValid() {return _roi1.IsValid();};
+
 	bool IsProcessed() {return _bIsProcessed;};
 
 	bool AdjustRoiBaseOnResult(CorrelationPair* pPair) const;

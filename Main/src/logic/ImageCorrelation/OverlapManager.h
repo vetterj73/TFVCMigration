@@ -13,21 +13,36 @@ using namespace MosaicDM;
 class OverlapManager
 {
 public:
-	OverlapManager(MosaicImage* pMosiacs, CorrelationFlags** pFlags , unsigned int iNumIllumination);
+	OverlapManager(
+		MosaicImage* pMosaics, 
+		CorrelationFlags** pFlags, 
+		unsigned int iNumIllumination,
+		Image* pCadImg, 
+		DRect validRect);
 	~OverlapManager(void);
 
 protected:
-	bool CreateOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
-
+	void CreateFovFovOverlaps();	
+	void CreateCadFovOverlaps();
+	void CreateFidFovOverlaps();
+	
+	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
 private:	
 	MosaicImage* _pMosaics;
-	CorrelationFlags** _pFlags;
+	CorrelationFlags** _pFlags;	
 	unsigned int _iNumIllumination;
+	
+	Image* _pCadImg;
+	DRect _validRect;
+
 	unsigned int _iSizeX;
 	unsigned int _iSizeY;
 	
+	// A[Mosaic Index][Row(y) Index][Column(x) Index]
 	list<FovFovOverlap>*** _fovFovOverlapLists;
 	list<CadFovOverlap>*** _cadFovOverlapLists;
 	list<FidFovOverlap>*** _fidFovOverlapLists;
+
+	unsigned int _iMinOverlapSize;
 };
 
