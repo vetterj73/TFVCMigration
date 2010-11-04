@@ -35,9 +35,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsNgcWrapper", "..\..\logic\VsNgcWrapper\VsNgcWrapper.vcxproj", "{3890952F-8D06-46A8-8731-5131F30FE9F8}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\logic\PanelAlignment\PanelAlignment.vcxproj", "{C71CA433-5C57-43DB-BA7E-1F4CBB229951}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 9
+		SccNumberOfProjects = 10
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -68,6 +70,9 @@ Global
 		SccProjectUniqueName8 = ..\\..\\logic\\VsNgcWrapper\\VsNgcWrapper.vcxproj
 		SccProjectName8 = ../../logic/VsNgcWrapper
 		SccLocalPath8 = ..\\..\\logic\\VsNgcWrapper
+		SccProjectUniqueName9 = ..\\..\\logic\\PanelAlignment\\PanelAlignment.vcxproj
+		SccProjectName9 = ../../logic/PanelAlignment
+		SccLocalPath9 = ..\\..\\logic\\PanelAlignment
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -213,6 +218,21 @@ Global
 		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.ActiveCfg = Release|x64
 		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.Build.0 = Release|x64
 		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x86.ActiveCfg = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Win32.Build.0 = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|x64.ActiveCfg = Debug|x64
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|x64.Build.0 = Debug|x64
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|x86.ActiveCfg = Debug|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|Win32.ActiveCfg = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|Win32.Build.0 = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|x64.ActiveCfg = Release|Win32
+		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
