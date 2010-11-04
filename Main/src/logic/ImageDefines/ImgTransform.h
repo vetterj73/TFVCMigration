@@ -15,6 +15,13 @@ public:
 	ImgTransform(const double dT[9]);
 	ImgTransform(const double dT[3][3]);
 
+	ImgTransform(
+		double dScaleX,
+		double dScaleY,
+		double dRotation, 
+		double dTranslateX,
+		double dTranslateY);
+
 	ImgTransform(const ImgTransform& b);
 
 	void operator=(const ImgTransform& b);
@@ -30,6 +37,8 @@ public:
 
 	void GetInvertMatrix(double dInvT[9]);
 	void GetInvertMatrix(double dInvT[3][3]);
+
+	ImgTransform Inverse();
 
 	//Map and inverse map
 	void Map(double dx, double dy, double* pdu, double* pdv) const;

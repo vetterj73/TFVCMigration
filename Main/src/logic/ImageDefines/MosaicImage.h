@@ -19,17 +19,21 @@ public:
 
 	void AddImagePtr(Image* pImage, unsigned int iPosX, unsigned int iPosY);
 
-	Image* GetImagePtr(unsigned int iPosX, unsigned int iPosY);
-	bool IsImageAcquired(unsigned int iPosX, unsigned int iPosY);
-	bool IsAcquisitionCompleted();
+	Image* GetImagePtr(unsigned int iPosX, unsigned int iPosY) const;
+	bool IsImageAcquired(unsigned int iPosX, unsigned int iPosY) const;
+	bool IsAcquisitionCompleted() const;
 
-	unsigned int NumImages() {return(_iSizeX * _iSizeY);};
-	unsigned int NumImInX() {return(_iSizeX);};
-	unsigned int NumImInY() {return(_iSizeY);};
-	bool UseCad() {return(_bUseCad);};
+	Image* GetMaskImagePtr(unsigned int iPosX, unsigned int iPosY) const;
 
-	void ImageLineCentersX(double* pdCenX);
-	void ImageLineCentersY(double* pdCenY);
+	unsigned int NumImages() const {return(_iSizeX * _iSizeY);};
+	unsigned int NumImInX() const {return(_iSizeX);};
+	unsigned int NumImInY() const {return(_iSizeY);};
+	bool UseCad() const {return(_bUseCad);};
+
+	void ImageLineCentersX(double* pdCenX) const;
+	void ImageLineCentersY(double* pdCenY) const;
+
+	bool PrepareMaskImages();
 
 	void Reset();
 
@@ -45,7 +49,7 @@ private:
 	unsigned int _iNumImageAcquired;// Number of acquired/added images
 
 	// For mask images
-	bool _bHasMaskImages;
+	bool _bIsMaskImgValid;			// Flag of whether mask images are valid to use
 	Image* _maskImages;
 };
 

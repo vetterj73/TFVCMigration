@@ -20,6 +20,8 @@ void MosaicImage::Reset()
 	for(unsigned int i=0; i<NumImages(); i++)
 		_bImagesAcquired[i] = false;
 
+	_bIsMaskImgValid = false;
+
 	_iNumImageAcquired = 0;
 }
 
@@ -47,21 +49,21 @@ void MosaicImage::AddImagePtr(
 }
 
 //Get image point in certain position
-Image* MosaicImage::GetImagePtr(unsigned int iPosX, unsigned int iPosY)
+Image* MosaicImage::GetImagePtr(unsigned int iPosX, unsigned int iPosY) const
 {
 	unsigned int iPos = iPosY*_iSizeX+ iPosX;
 	return(_ImagePtrs[iPos]);
 }
 
 // Return true if a image in certain position is acquired/added
-bool MosaicImage::IsImageAcquired(unsigned int iPosX, unsigned int iPosY)
+bool MosaicImage::IsImageAcquired(unsigned int iPosX, unsigned int iPosY) const
 {
 	unsigned int iPos = iPosY*_iSizeX+ iPosX;
 	return(_bImagesAcquired[iPos]);
 }
 
 // Return true if all images for this mosaic are collected/acquired/added
-bool MosaicImage::IsAcquisitionCompleted()
+bool MosaicImage::IsAcquisitionCompleted() const
 {
 	if(_iNumImageAcquired == NumImages())
 		return(true);
@@ -69,8 +71,8 @@ bool MosaicImage::IsAcquisitionCompleted()
 		return(false);
 }
 
-// Image line centers in X and y
-void MosaicImage::ImageLineCentersX(double* pdCenX)
+// Get average center in X of image Columns
+void MosaicImage::ImageLineCentersX(double* pdCenX) const
 {
 	for(unsigned int ix=0; ix<_iSizeX; ix++)
 	{
@@ -83,7 +85,8 @@ void MosaicImage::ImageLineCentersX(double* pdCenX)
 	}
 }
 
-void MosaicImage::ImageLineCentersY(double* pdCenY)
+// Get average center in Y of image rows
+void MosaicImage::ImageLineCentersY(double* pdCenY) const
 {
 	for(unsigned int iy=0; iy<_iSizeY; iy++)
 	{
@@ -95,6 +98,36 @@ void MosaicImage::ImageLineCentersY(double* pdCenY)
 		pdCenY[iy] /= _iSizeX;
 	}
 }
+
+// Prepare Mask images to use (validate mask images)
+bool MosaicImage::PrepareMaskImages()
+{
+	// Validation check
+	if(!IsAcquisitionCompleted()) return(false);
+
+	for(unsigned int i=0 ; i<NumImages(); i++)
+	{
+		_maskImages[i] = *(_ImagePtrs[i]);
+		_maskImages[i].CreateOwnBuffer();
+	}
+
+	_bIsMaskImgValid = true;
+
+	return true;
+}
+
+// Get a mask image point in certain position
+// return NULL if it is not valid
+Image* MosaicImage::GetMaskImagePtr(unsigned int iPosX, unsigned int iPosY) const
+{
+	// Validation check
+	if(!_bIsMaskImgValid)
+		return NULL;
+
+	unsigned int iPos = iPosY*_iSizeX+ iPosX;
+	return(_ImagePtrs[iPos]);
+}
+
 		
 
 

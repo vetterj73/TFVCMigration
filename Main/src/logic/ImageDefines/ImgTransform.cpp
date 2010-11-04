@@ -1,5 +1,6 @@
 #include "ImgTransform.h"
 #include "Utilities.h"
+#include "math.h"
 
 // Constructors
 ImgTransform::ImgTransform(void)
@@ -29,6 +30,33 @@ ImgTransform::ImgTransform(const double dT[3][3])
 {
 	SetMatrix(dT);
 }
+
+ImgTransform::ImgTransform( 
+	double dScaleX, 
+	double dScaleY,
+	double dRotation, 
+	double dTranslateX,
+	double dTranslateY)
+{
+	_bHasInverse = false;
+
+	double cosTheta = cos(dRotation);
+	double sinTheta = sin(dRotation);
+
+	_dT[0] = dScaleX * cosTheta;
+	// Need double check
+	_dT[1] = -(dScaleX+dScaleY)/2 *sinTheta;
+	_dT[2] = dTranslateX;
+	
+	_dT[3] = -_dT[1];
+	_dT[4] = dScaleY * cosTheta;
+	_dT[5] = dTranslateY;
+
+	_dT[6] = 0;
+	_dT[7] = 0;
+	_dT[8] = 1;
+}
+
 
 ImgTransform::ImgTransform(const ImgTransform& b)
 {
@@ -102,6 +130,15 @@ void ImgTransform::GetInvertMatrix(double dInvT[3][3])
 	for(iy=0; iy<3; iy++)
 		for(ix=0; ix<3; ix++)
 			dInvT[iy][ix] = _dInvT[3*iy+ix];
+}
+
+ImgTransform ImgTransform::Inverse()
+{
+	double dInvT[9];
+	GetInvertMatrix(dInvT);
+	ImgTransform t(dInvT);
+
+	return(t);
 }
 
 // Map and inverse map

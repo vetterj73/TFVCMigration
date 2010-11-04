@@ -48,23 +48,23 @@ public:
 		unsigned char *buffer = NULL);
 
 	// Get/set functions
-	ImgTransform		GetTransform() {return _thisToWorld;};
+	ImgTransform		GetTransform() const {return _thisToWorld;};
 	void				SetTransform(const ImgTransform t) {_thisToWorld = t;};
-	ImgTransform		GetNominalTransform(){return _nominalTrans;};
+	ImgTransform		GetNominalTransform() const {return _nominalTrans;};
 	void				SetNorminalTransform(const ImgTransform t) {_nominalTrans = t;};
 
-	unsigned char*		GetBuffer(){return _buffer;};	
-	unsigned char*		GetBuffer(unsigned int row, unsigned col);
+	unsigned char*		GetBuffer() const {return _buffer;};	
+	unsigned char*		GetBuffer(unsigned int row, unsigned col) const;
 	void				SetBuffer(unsigned char* buf);
 
-	bool				HasOwnBuffer() {return _IOwnMyOwnBuffer;};
+	bool				HasOwnBuffer() const {return _IOwnMyOwnBuffer;};
 
-	short				GetBytesPerPixel(){return _bytesPerPixel;};
-	unsigned int		Rows(){return _rows;};
-	unsigned int		Columns(){return _columns;};
-	unsigned int		ByteRowStride(){return _pixelRowStride*GetBytesPerPixel();};
-	unsigned int		PixelRowStride(){return _pixelRowStride;};
-	unsigned int		BufferSizeInBytes(){return ByteRowStride()*Rows();};
+	short				GetBytesPerPixel()const {return _bytesPerPixel;};
+	unsigned int		Rows() const {return _rows;};
+	unsigned int		Columns() const {return _columns;};
+	unsigned int		ByteRowStride() const {return _pixelRowStride*GetBytesPerPixel();};
+	unsigned int		PixelRowStride() const {return _pixelRowStride;};
+	unsigned int		BufferSizeInBytes() const {return ByteRowStride()*Rows();};
 	
 	pair<double,double> ImageCenter( ) const;
 	double				CenterX() const;
@@ -86,7 +86,8 @@ public:
 	pair<double,double> WorldToImage(double dx, double dy ) const;
 	void				WorldToImage(double dx, double dy, double* pdRow, double* pdCol) const;
 
-	DRect				GetBoundBoxInWorld();
+	DRect				GetBoundBoxInWorld() const;
+	bool				MorphFrom(const Image* pImgIn, UIRect roi);
 
 protected:
 

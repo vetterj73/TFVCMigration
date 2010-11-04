@@ -1,4 +1,5 @@
 #include "Image.h"
+#include "Utilities.h"
 
 #pragma region constructor and configuration
 Image::Image() 
@@ -111,7 +112,7 @@ void Image::Configure(
 
 #pragma region buffer operations
 
-unsigned char*	Image::GetBuffer(unsigned int row, unsigned col)
+unsigned char*	Image::GetBuffer(unsigned int row, unsigned col) const
 {
 	return(GetBuffer() + ByteRowStride()*row + GetBytesPerPixel()*col);
 }
@@ -230,7 +231,7 @@ double Image::LengthX() const
 	return _columns*PixelSizeY();
 }
 
-DRect Image::GetBoundBoxInWorld()
+DRect Image::GetBoundBoxInWorld() const
 {
 	DRect rect;
 
@@ -245,6 +246,58 @@ DRect Image::GetBoundBoxInWorld()
 	rect.yMin = topRight.second<bottomRight.second ? topRight.second:bottomRight.second;
 
 	return rect;
+}
+
+// This image's ROI content is mapped from pImgIn
+bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
+{
+	/*
+
+	[x]			[Row_in]		[Row_out]
+	[y] ~= TIn*	[Col_in] ~=Tout*[Col_out]
+	[1]			[1     ]		[	   1]
+
+	[Row_in]					[Row_out]	[A00 A01 A02]	[Row_out]
+	[Col_in] ~= Inv(TIn)*TOut*	[Col_out] =	[A10 A11 A12] *	[Col_out]
+	[1	   ]					[1		]	[A20 A21 1	]	[1		]
+
+	[Col_in]	[A11 A10 A12]	[Col_out]
+	[Row_in] ~=	[A01 A00 A02] *	[Row_out]
+	[1	   ]	[A21 A20 1	]	[1		]
+	*/
+
+	// Validation check (only for 8-bit image)
+	if(_bytesPerPixel != 1) return(false);
+	
+	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
+	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
+	ImgTransform t = tIn_inv * _thisToWorld;
+	double dTemp[3][3];
+	t.GetMatrix(dTemp);
+	double dT[3][3];
+
+	dT[0][0] = dTemp[1][1];
+	dT[0][1] = dTemp[1][0];
+	dT[0][2] = dTemp[1][2];
+	
+	dT[1][0] = dTemp[0][1];
+	dT[1][1] = dTemp[0][0];
+	dT[1][2] = dTemp[0][2];
+
+	dT[2][0] = dTemp[2][1];
+	dT[2][1] = dTemp[2][0];
+	dT[2][2] = dTemp[2][2];
+
+	// Image morph
+	ImageMorph(
+		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
+		pImgIn->Columns(), pImgIn->Rows(),
+		_buffer, _pixelRowStride,
+		roi.FirstColumn, roi.FirstRow,
+		roi.Columns(), roi.Rows(),
+		dT);
+
+	return(true);
 }
 
 #pragma endregion
