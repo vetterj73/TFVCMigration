@@ -7,4 +7,4 @@
 
 #include "CorrelationPair.h"
 
-bool SqRtCorrelation(CorrelationPair& pCorrPair, unsigned int decimation_factor, bool bEnableNegCorr);
+bool SqRtCorrelation(CorrelationPair* pCorrPair, unsigned int decimation_factor, bool bEnableNegCorr);

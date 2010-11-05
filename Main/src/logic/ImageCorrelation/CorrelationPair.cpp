@@ -174,7 +174,7 @@ bool CorrelationPair::DoAlignment()
 		if(_roi1.Columns()<_iMinSize || _roi1.Rows()<_iMinSize)
 			return(false);
 
-		SqRtCorrelation(*this, _iDecim, true);
+		SqRtCorrelation(this, _iDecim, true);
 	}
 	else
 	{	

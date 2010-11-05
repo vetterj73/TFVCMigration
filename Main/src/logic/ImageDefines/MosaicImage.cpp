@@ -1,6 +1,39 @@
 #include "MosaicImage.h"
 
+MosaicImage::MosaicImage()
+{
+	_images = NULL;
+	_bImagesAcquired = NULL;
+	_maskImages = NULL;
+}
+
 MosaicImage::MosaicImage(
+	unsigned int iIndex, 
+	unsigned int iNumImgX, 
+	unsigned int iNumImgY,
+	unsigned int iImColumns,
+	unsigned int iImRows,
+	unsigned int iImStride,
+	bool bUseCad)
+{
+	Config(
+		iIndex, 
+		iNumImgX, 
+		iNumImgY,
+		iImColumns,
+		iImRows,
+		iImStride,
+		bUseCad);
+}
+
+MosaicImage::~MosaicImage(void)
+{
+	if(_images != NULL) delete [] _images;
+	if(_bImagesAcquired != NULL) delete [] _bImagesAcquired;
+	if(_maskImages != NULL) delete [] _maskImages;
+}
+
+void MosaicImage::Config(
 	unsigned int iIndex, 
 	unsigned int iNumImgX, 
 	unsigned int iNumImgY,
@@ -28,6 +61,9 @@ MosaicImage::MosaicImage(
 	ResetForNextPanel();
 }
 
+
+
+
 // Reset to prepare the next panel alignment
 void MosaicImage::ResetForNextPanel()
 {
@@ -45,12 +81,6 @@ void MosaicImage::ResetForNextPanel()
 	_bIsMaskImgValid = false;
 }
 
-MosaicImage::~MosaicImage(void)
-{
-	delete [] _images;
-	delete [] _bImagesAcquired;
-	delete [] _maskImages;
-}
 
 // Set both nominal and regular transform for an image in certain position
 void MosaicImage::SetImageTransforms(ImgTransform trans, unsigned int iPosX, unsigned int iPosY)

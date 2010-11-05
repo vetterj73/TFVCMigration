@@ -330,6 +330,7 @@ bool OverlapManager::DoAlignmentForFov(
 	return(true);
 }
 
+// Get FovFovOverlap list for certain Fov
 list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
 	unsigned int iMosaicIndex, 
 	unsigned int iRowImIndex,
@@ -338,6 +339,7 @@ list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
 	return(&_fovFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]);
 }
 
+// Get CadFovOverlap list for certain Fov
 list<CadFovOverlap>* OverlapManager::GetCadFovListForFov(
 	unsigned int iMosaicIndex, 
 	unsigned int iRowImIndex,
@@ -346,6 +348,7 @@ list<CadFovOverlap>* OverlapManager::GetCadFovListForFov(
 	return(&_cadFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]);
 }
 
+// Get FidFovOverlap list for certain Fov
 list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
 	unsigned int iMosaicIndex, 
 	unsigned int iRowImIndex,

@@ -3,6 +3,8 @@
 #include "MosaicImage.h"
 #include "OverlapManager.h"
 #include "MosaicSet.h"
+#include "MosaicLayer.h"
+#include "MosaicTile.h"
 
 using namespace MosaicDM;
 
@@ -12,7 +14,17 @@ public:
 	PanelAligner(void);
 	~PanelAligner(void);
 
-	bool SetPanel(MosaicSet set);
-	bool AddImage(unsigned int iLayerIndex, unsigned int iRowIndex, unsigned int iColIndex);
+	bool SetPanel(MosaicSet* pSet);
+	bool AddImage(
+		unsigned int iLayerIndex, 
+		unsigned int iRowIndex, 
+		unsigned int iColIndex,
+		unsigned char* pcBuf);
+
+private:
+	MosaicSet* _pSet;
+	OverlapManager* _pOverlapManager;
+	MosaicImage* _pMosaics;
+	unsigned int _iNumIllumination;
 };
 

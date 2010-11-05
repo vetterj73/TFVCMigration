@@ -12,6 +12,8 @@
 class MosaicImage
 {
 public:
+	MosaicImage();
+
 	MosaicImage(
 		unsigned int iIndex,		// Index of mosaic image
 		unsigned int iNumImgX,		// Number of images in x direction
@@ -20,6 +22,15 @@ public:
 		unsigned int iImRows,		// Rows of each image
 		unsigned int iImStride,		// Stride of each image
 		bool bUseCad);				// Flag of whether Cad is used for alignment
+
+	void Config(
+		unsigned int iIndex,		
+		unsigned int iNumImgX,		
+		unsigned int iNumImgY,		
+		unsigned int iImColumns,	
+		unsigned int iImRows,		
+		unsigned int iImStride,		
+		bool bUseCad);				
 
 	~MosaicImage(void);	
 	
