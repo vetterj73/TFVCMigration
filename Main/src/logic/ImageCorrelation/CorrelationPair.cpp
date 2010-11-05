@@ -7,10 +7,7 @@
 #pragma region CorrelationResult class
 CorrelationResult::CorrelationResult()
 {
-	RowOffset = 0;
-	ColOffset = 0;
-	CorrCoeff = 0;
-	AmbigScore = -1;
+	Default();
 }
 
 CorrelationResult::CorrelationResult(
@@ -36,6 +33,14 @@ void CorrelationResult::operator=(const CorrelationResult& b)
 	ColOffset	= b.ColOffset;
 	CorrCoeff	= b.CorrCoeff;
 	AmbigScore	= b.AmbigScore;
+}
+
+void CorrelationResult::Default()
+{
+	RowOffset = 0;
+	ColOffset = 0;
+	CorrCoeff = 0;
+	AmbigScore = -1;
 }
 #pragma endregion
 
@@ -112,6 +117,15 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_iMinSize = b._iMinSize;
 }
 
+// Reset to the satus before doing alignment
+bool CorrelationPair::Reset()
+{
+	_bIsProcessed = false;
+	_result.Default();
+
+	return(true);
+}
+
 void CorrelationPair::SetCorrlelationResult(CorrelationResult result)
 {
 	_result = result;
@@ -120,7 +134,7 @@ void CorrelationPair::SetCorrlelationResult(CorrelationResult result)
 }
 
 // Return true if result is available 
-bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult)
+bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult) const
 {
 	if(!_bIsProcessed)
 		return(false);
@@ -320,10 +334,12 @@ bool CorrelationPair::ChopCorrPair(
 	return(true);
 }
 
+// Create a copy of correlation pair with ROI are adjust from the correaltion result
+// pPair: output, the created correlation pair if success
 bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 {
 	// Validation check
-	if(_bIsProcessed)
+	if(!_bIsProcessed)
 		return(false);
 
 	double dRoiAdjustTh = 0.03;
@@ -335,8 +351,8 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 	int row_offset = (int)(_result.RowOffset + 0.5);
 
 	// validation check
-	if(_roi1.Columns() < col_offset+_iMinSize ||
-		_roi1.Rows() < col_offset+_iMinSize)
+	if(_roi1.Columns() < abs(col_offset)+_iMinSize ||
+		_roi1.Rows() < abs(col_offset)+_iMinSize)
 		return(false);
 
 	*pPair = *this;

@@ -26,6 +26,8 @@ public:
 
 	void operator=(const CorrelationResult& b);
 
+	void Default();
+
 	// CorrelationResult properties
 	double		RowOffset;
 	double		ColOffset;
@@ -62,25 +64,27 @@ public:
 
 	void operator=(const CorrelationPair& b);
 
-	Image* GetFirstImg()  {return _pImg1;};
-	Image* GetSecondImg() {return _pImg2;};
-	UIRect GetFirstRoi()  {return _roi1;};
-	UIRect GetSecondRoi() {return _roi2;};
+	bool Reset();
 
-	Image* GetMaskImg() {return _pMaskImg;};
+	Image* GetFirstImg() const {return _pImg1;};
+	Image* GetSecondImg() const {return _pImg2;};
+	UIRect GetFirstRoi() const {return _roi1;};
+	UIRect GetSecondRoi() const {return _roi2;};
+
+	Image* GetMaskImg() const {return _pMaskImg;};
 
 	void SetCorrlelationResult(CorrelationResult result);
 
-	bool GetCorrelationResult(CorrelationResult* pResult);
+	bool GetCorrelationResult(CorrelationResult* pResult) const;
 
-	OverlapType GetOverlapType() {return _type;};
+	OverlapType GetOverlapType() const {return _type;};
 
-	unsigned int Columns() {return _roi1.Columns();};
-	unsigned int Rows() {return _roi1.Rows();};
+	unsigned int Columns() const {return _roi1.Columns();};
+	unsigned int Rows() const {return _roi1.Rows();};
 
-	bool IsValid() {return _roi1.IsValid();};
+	bool IsValid() const {return _roi1.IsValid();};
 
-	bool IsProcessed() {return _bIsProcessed;};
+	bool IsProcessed() const {return _bIsProcessed;};
 
 	bool AdjustRoiBaseOnResult(CorrelationPair* pPair) const;
 

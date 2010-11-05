@@ -117,7 +117,7 @@ void MosaicImage::ImageGridXCenters(double* pdCenX) const
 
 // Conside images are arrranged in x-y grids
 // Centers in Y direction of grid 
-void MosaicImage::ImageGridXCenters(double* pdCenY) const
+void MosaicImage::ImageGridYCenters(double* pdCenY) const
 {
 	for(unsigned int iy=0; iy<_iNumImgY; iy++)
 	{

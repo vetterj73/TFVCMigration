@@ -21,6 +21,28 @@ public:
 		DRect validRect);
 	~OverlapManager(void);
 
+	bool ResetforNewPanel();
+
+	bool DoAlignmentForFov(
+		unsigned int iMosaicIndex, 
+		unsigned int iRowImIndex,
+		unsigned int iColImIndex);
+
+	list<FovFovOverlap>* GetFovFovListForFov(
+		unsigned int iMosaicIndex, 
+		unsigned int iRowImIndex,
+		unsigned int iColImIndex) const;
+
+	list<CadFovOverlap>* GetCadFovListForFov(
+		unsigned int iMosaicIndex, 
+		unsigned int iRowImIndex,
+		unsigned int iColImIndex) const;
+
+	list<FidFovOverlap>* GetFidFovListForFov(
+		unsigned int iMosaicIndex, 
+		unsigned int iRowImIndex,
+		unsigned int iColImIndex) const;
+
 protected:
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();

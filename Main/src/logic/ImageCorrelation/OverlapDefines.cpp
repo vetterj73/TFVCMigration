@@ -33,6 +33,8 @@ void Overlap::operator=(const Overlap& b)
 	_type = b._type;
 
 	_bValid = b._bValid;
+	_bProcessed = b._bProcessed;
+
 	_coarsePair = b._coarsePair;
 }
 
@@ -52,12 +54,28 @@ void Overlap::config(
 	_type = type;
 
 	_bValid = CalCoarseCorrPair();
+	_bProcessed = false;
 
 	if(_bValid)
 	{
 		_iColumns = _coarsePair.Columns();
 		_iRows	  = _coarsePair.Rows();
 	}
+}
+
+// Reset to status to before alignment
+bool Overlap::Reset()
+{
+	// Clean fine correlation pair list
+	_finePairList.clear();
+	
+	// Reset coarse correlation pair
+	_coarsePair.Reset();
+
+	// Reset processed flag 
+	_bProcessed = false;
+
+	return(true);
 }
 
 // Calculate the coarse correlation pair
@@ -159,11 +177,17 @@ bool Overlap::CalCoarseCorrPair()
 
 bool Overlap::DoIt()
 {
+	// Validation check
+	if(!_bValid) return(false);
+
 	// Do coarse correlation
 	_coarsePair.DoAlignment();
 
 	if(_type != Fov_To_Fov)
+	{
+		_bProcessed = true;
 		return(true);
+	}
 
 // Fine alignemt (only for Fov and Fov)
 	// Clean fine correlation pair list
@@ -176,6 +200,7 @@ bool Overlap::DoIt()
 	{
 		bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
+	if(!bAdjusted) return(false);
 
 	// Create fine correlation pair list
 	unsigned int iBlockWidth = 400;
@@ -211,6 +236,7 @@ bool Overlap::DoIt()
 		i->DoAlignment();
 	}
 	
+	_bProcessed = true;
 	return(true);
 }
 
@@ -228,14 +254,26 @@ FovFovOverlap::FovFovOverlap(
 {
 	_pMosaic1 = pMosaic1;
 	_pMosaic2 = pMosaic2;
-	_ImgPos1 = ImgPos1;
-	_ImgPos2 = ImgPos2;
+	_imgPos1 = ImgPos1;
+	_imgPos2 = ImgPos2;
 	_bHasMask = bHasMask;
 
 	Image* pImg1 = _pMosaic1->GetImagePtr(ImgPos1.first, ImgPos1.second);
 	Image* pImg2 = _pMosaic1->GetImagePtr(ImgPos2.first, ImgPos2.second);
 
 	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
+}
+
+
+
+bool FovFovOverlap::IsValid() const
+{
+	bool bFlag =
+		_pMosaic1->IsImageAcquired(_imgPos1.first, _imgPos1.second) &&
+		_pMosaic2->IsImageAcquired(_imgPos2.first, _imgPos2.second) &&
+		_bValid;
+
+	return(bFlag);
 }
 
 #pragma endregion 
@@ -249,12 +287,22 @@ CadFovOverlap::CadFovOverlap(
 	DRect validRect)
 {
 	_pMosaic = pMosaic;
-	_ImgPos = ImgPos;
+	_imgPos = ImgPos;
 	_pCadImg = pCadImg;
 
 	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
 
 	config(pImg1, _pCadImg, validRect, Cad_To_Fov);
+}
+
+bool CadFovOverlap::IsValid() const
+{
+	bool bFlag =
+		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
+		(_pCadImg->GetBuffer() != NULL) &&
+		_bValid;
+
+	return(bFlag);
 }
 
 #pragma endregion
@@ -270,7 +318,7 @@ FidFovOverlap::FidFovOverlap(
 	DRect validRect)
 {
 	_pMosaic = pMosaic;
-	_ImgPos = ImgPos;
+	_imgPos = ImgPos;
 	_pFidImg = pFidImg;
 
 	_dCenterX = dCenterX;
@@ -279,6 +327,16 @@ FidFovOverlap::FidFovOverlap(
 	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
 
 	config(pImg1, _pFidImg, validRect, Fid_To_Fov);
+}
+
+bool FidFovOverlap::IsValid() const
+{
+	bool bFlag =
+		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
+		(_pFidImg->GetBuffer() != NULL) &&
+		_bValid;
+
+	return(bFlag);
 }
 
 #pragma endregion

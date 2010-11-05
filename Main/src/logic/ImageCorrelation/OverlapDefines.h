@@ -30,18 +30,22 @@ public:
 		OverlapType type,		
 		Image* pMaskImg = NULL);
 
-	Image* GetFirstImage() {return _pImg1;};
+	Image* GetFirstImage() const {return _pImg1;};
 
-	unsigned int Columns() {return _iColumns;};
+	unsigned int Columns() const {return _iColumns;};
 	unsigned int Rows() {return _iRows;};
 
-	bool IsValid() {return _bValid;};
+	virtual bool IsValid() const {return _bValid;};
+	bool IsProcessed() const {return _bProcessed;};
 
 	bool DoIt();
+	bool Reset();
 
 protected:
 	bool CalCoarseCorrPair();
-	bool ChopOverlap();
+	bool ChopOverlap();	
+	bool _bValid;
+	bool _bProcessed;
 
 private:
 	Image* _pImg1;
@@ -50,8 +54,6 @@ private:
 	OverlapType _type;
 
 	Image* _pMaskImg;
-
-	bool _bValid;
 
 	unsigned int _iColumns;
 	unsigned int _iRows;
@@ -67,18 +69,24 @@ public:
 	FovFovOverlap(
 		MosaicImage*	pMosaic1,
 		MosaicImage*	pMosaic2,
-		pair<unsigned int, unsigned int> ImgPos1,
+		pair<unsigned int, unsigned int> ImgPos1, // first = x, second = y
 		pair<unsigned int, unsigned int> ImgPos2,
 		DRect validRect,
 		bool bHasMask);
 
-	bool IsValid();
+	MosaicImage* GetFirstMosaicImage() const {return _pMosaic1;};
+	pair<unsigned int, unsigned int> GetFirstImagePosition() const {return _imgPos1;};
+
+	MosaicImage* GetSecondMosaicImage() const {return _pMosaic2;};
+	pair<unsigned int, unsigned int> GetSecondImagePosition() const {return _imgPos2;};
+
+	bool IsValid() const;
 
 private:
 		MosaicImage*	_pMosaic1;
 		MosaicImage*	_pMosaic2;
-		pair<unsigned int, unsigned int> _ImgPos1;
-		pair<unsigned int, unsigned int> _ImgPos2;
+		pair<unsigned int, unsigned int> _imgPos1;
+		pair<unsigned int, unsigned int> _imgPos2;
 		bool _bHasMask;
 };
 
@@ -87,13 +95,19 @@ class CadFovOverlap: public Overlap
 public:
 	CadFovOverlap(
 		MosaicImage* pMosaic,
-		pair<unsigned int, unsigned int> ImgPos,
+		pair<unsigned int, unsigned int> ImgPos, // first = x, second = y
 		Image* pCadImg,
 		DRect validRect);
 
+	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
+	Image* GetCadImage() const {return _pCadImg;};
+
+	bool IsValid() const;
+
 private:
 	MosaicImage*	_pMosaic;
-	pair<unsigned int, unsigned int> _ImgPos;
+	pair<unsigned int, unsigned int> _imgPos;
 	Image* _pCadImg;
 };
 
@@ -103,18 +117,24 @@ class FidFovOverlap: public Overlap
 public:
 	FidFovOverlap(
 		MosaicImage*	pMosaic,
-		pair<unsigned int, unsigned int> ImgPos,
+		pair<unsigned int, unsigned int> ImgPos, // first = x, second = y
 		Image* pFidImg,
 		double _dXcenter,
 		double _dYcenter,
 		DRect validRect);
 
-	double GetFiducialXPos() {return _dCenterX;};
-	double GetFiducialYPos() {return _dCenterY;};
+	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
+	Image* GetFidImage() const {return _pFidImg;};
+
+	double GetFiducialXPos() const {return _dCenterX;};
+	double GetFiducialYPos() const {return _dCenterY;};
+
+	bool IsValid() const;
 
 private:
 	MosaicImage*	_pMosaic;
-	pair<unsigned int, unsigned int> _ImgPos;
+	pair<unsigned int, unsigned int> _imgPos;
 
 	Image* _pFidImg;
 

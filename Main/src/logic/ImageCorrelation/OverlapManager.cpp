@@ -85,8 +85,8 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	unsigned int iNumY1 = _pMosaics[iIndex1].NumImInX();
 	double* pdCenX1 = new double[iNumX1];
 	double* pdCenY1 = new double[iNumY1];
-	_pMosaics[iIndex1].ImageLineCentersX(pdCenX1);
-	_pMosaics[iIndex1].ImageLineCentersY(pdCenY1);
+	_pMosaics[iIndex1].ImageGridXCenters(pdCenX1);
+	_pMosaics[iIndex1].ImageGridYCenters(pdCenY1);
 	double dSpanX = (pdCenX1[iNumX1-1] - pdCenX1[0])/(iNumX1-1);
 	double dSpanY = (pdCenY1[iNumY1-1] - pdCenY1[0])/(iNumY1-1);
 
@@ -94,8 +94,8 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	unsigned int iNumY2 = _pMosaics[iIndex2].NumImInX();
 	double* pdCenX2 = new double[iNumX2];
 	double* pdCenY2 = new double[iNumY2];
-	_pMosaics[iIndex2].ImageLineCentersX(pdCenX2);
-	_pMosaics[iIndex2].ImageLineCentersY(pdCenY2);
+	_pMosaics[iIndex2].ImageGridXCenters(pdCenX2);
+	_pMosaics[iIndex2].ImageGridYCenters(pdCenY2);
 
 	unsigned int ix, iy, kx, ky;
 	for(iy = 0; iy<iNumY1; iy++)
@@ -251,4 +251,105 @@ void OverlapManager::CreateCadFovOverlaps()
 // Create Fiducial and Fov overlaps
 void OverlapManager::CreateFidFovOverlaps()
 {
+}
+
+// Reset mosaic images and overlaps for new panel inspection 
+bool OverlapManager::ResetforNewPanel()
+{
+	// Reset all mosaic images for new panel inspection
+	unsigned int i, kx , ky;
+	for(i=0; i<_iNumIllumination; i++)
+	{
+		_pMosaics[i].ResetForNextPanel();
+	}
+
+	// Reset all overlaps for new panel inspection
+	for(i=0; i<_iNumIllumination; i++)
+	{
+		for(ky=0; ky<_iNumImgY; ky++)
+		{
+			for(kx=0; kx<_iNumImgX; kx++)
+			{
+				// Reset Fov and Fov overlap
+				list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[i][ky][kx];
+				for(list<FovFovOverlap>::iterator j=pFovFovList->begin(); j!=pFovFovList->end(); j++)
+				{
+					j->Reset();
+				}
+
+				// Reset Cad and Fov overlap
+				list<CadFovOverlap>* pCadFovList = &_cadFovOverlapLists[i][ky][kx]; 
+				for(list<CadFovOverlap>::iterator j=pCadFovList->begin(); j!=pCadFovList->end(); j++)
+				{
+					j->Reset();
+				}
+
+				// Reset Fid and Fov overlap
+				list<FidFovOverlap>* pFidFovList = &_fidFovOverlapLists[i][ky][kx];
+				for(list<FidFovOverlap>::iterator j=pFidFovList->begin(); j!=pFidFovList->end(); j++)
+				{
+					j->Reset();
+				}
+			} //kx
+		} // ky
+	} // i
+
+	return(true);
+}
+
+// Do alignment for a certain Fov
+bool OverlapManager::DoAlignmentForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iRowImIndex,
+	unsigned int iColImIndex)
+{
+	// process valid FovFov Overlap  
+	list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex];
+	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
+	{
+		if(i->IsValid())
+			i->DoIt();
+	}
+
+	// Process valid Cad Fov overalp
+	list<CadFovOverlap>* pCadFovList = &_cadFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]; 
+	for(list<CadFovOverlap>::iterator i=pCadFovList->begin(); i!=pCadFovList->end(); i++)
+	{
+		if(i->IsValid())
+			i->DoIt();
+	}
+
+	// Process valid fiducial Fov overlap
+	list<FidFovOverlap>* pFidFovList = &_fidFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]; 
+	for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
+	{
+		if(i->IsValid())
+			i->DoIt();
+	}
+
+	return(true);
+}
+
+list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iRowImIndex,
+	unsigned int iColImIndex) const
+{
+	return(&_fovFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]);
+}
+
+list<CadFovOverlap>* OverlapManager::GetCadFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iRowImIndex,
+	unsigned int iColImIndex) const
+{
+	return(&_cadFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]);
+}
+
+list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iRowImIndex,
+	unsigned int iColImIndex) const
+{
+	return(&_fidFovOverlapLists[iMosaicIndex][iRowImIndex][iColImIndex]);
 }
