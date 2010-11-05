@@ -35,8 +35,8 @@ private:
 	Image* _pCadImg;
 	DRect _validRect;
 
-	unsigned int _iSizeX;
-	unsigned int _iSizeY;
+	unsigned int _iNumImgX;
+	unsigned int _iNumImgY;
 	
 	// A[Mosaic Index][Row(y) Index][Column(x) Index]
 	list<FovFovOverlap>*** _fovFovOverlapLists;

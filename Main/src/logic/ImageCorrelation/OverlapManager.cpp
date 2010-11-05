@@ -16,15 +16,15 @@ OverlapManager::OverlapManager(
 	_validRect = validRect;
 
 	unsigned int i, j;
-	_iSizeX=0;
-	_iSizeY=0;
+	_iNumImgX=0;
+	_iNumImgY=0;
 	for(i=0; i<_iNumIllumination; i++)
 	{
-		if (_iSizeX < pMosaics[i].NumImInX())
-			_iSizeX = pMosaics[i].NumImInX();
+		if (_iNumImgX < pMosaics[i].NumImInX())
+			_iNumImgX = pMosaics[i].NumImInX();
 
-		if (_iSizeY < pMosaics[i].NumImInY())
-			_iSizeY = pMosaics[i].NumImInY();
+		if (_iNumImgY < pMosaics[i].NumImInY())
+			_iNumImgY = pMosaics[i].NumImInY();
 	}
 
 	// Create 3D arrays for storage of overlaps
@@ -33,15 +33,15 @@ OverlapManager::OverlapManager(
 	_fidFovOverlapLists = new list<FidFovOverlap>**[_iNumIllumination];
 	for(i=0; i<_iNumIllumination; i++)
 	{
-		_fovFovOverlapLists[i] = new list<FovFovOverlap>*[_iSizeY];
-		_cadFovOverlapLists[i] = new list<CadFovOverlap>*[_iSizeY];
-		_fidFovOverlapLists[i] = new list<FidFovOverlap>*[_iSizeY];
+		_fovFovOverlapLists[i] = new list<FovFovOverlap>*[_iNumImgY];
+		_cadFovOverlapLists[i] = new list<CadFovOverlap>*[_iNumImgY];
+		_fidFovOverlapLists[i] = new list<FidFovOverlap>*[_iNumImgY];
 
-		for(j=0; j<_iSizeY; j++)
+		for(j=0; j<_iNumImgY; j++)
 		{
-			_fovFovOverlapLists[i][j] = new list<FovFovOverlap>[_iSizeX];
-			_cadFovOverlapLists[i][j] = new list<CadFovOverlap>[_iSizeX];
-			_fidFovOverlapLists[i][j] = new list<FidFovOverlap>[_iSizeX];
+			_fovFovOverlapLists[i][j] = new list<FovFovOverlap>[_iNumImgX];
+			_cadFovOverlapLists[i][j] = new list<CadFovOverlap>[_iNumImgX];
+			_fidFovOverlapLists[i][j] = new list<FidFovOverlap>[_iNumImgX];
 		}
 	}
 
@@ -56,7 +56,7 @@ OverlapManager::~OverlapManager(void)
 	unsigned int i, j;
 	for(i=0; i<_iNumIllumination; i++)
 	{
-		for(j=0; j<_iSizeY; j++)
+		for(j=0; j<_iNumImgY; j++)
 		{
 			delete [] _fovFovOverlapLists[i][j];
 			delete [] _cadFovOverlapLists[i][j];
@@ -229,11 +229,11 @@ void OverlapManager::CreateCadFovOverlaps()
 			continue;
 
 		// If use Cad
-		unsigned int iSizeX = _pMosaics[i].NumImInX();
-		unsigned int iSizeY = _pMosaics[i].NumImInY();
-		for(ky=0; ky<iSizeY; ky++)
+		unsigned int iNumImgX = _pMosaics[i].NumImInX();
+		unsigned int iNumImgY = _pMosaics[i].NumImInY();
+		for(ky=0; ky<iNumImgY; ky++)
 		{
-			for(kx=0; kx<iSizeX; kx++)
+			for(kx=0; kx<iNumImgX; kx++)
 			{
 				CadFovOverlap overlap(
 					&_pMosaics[i],
