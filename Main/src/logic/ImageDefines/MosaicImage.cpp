@@ -1,48 +1,77 @@
 #include "MosaicImage.h"
 
-MosaicImage::MosaicImage(unsigned int iIndex, unsigned int iSizeX, unsigned int iSizeY, bool bUseCad)
+MosaicImage::MosaicImage(
+	unsigned int iIndex, 
+	unsigned int iNumImgX, 
+	unsigned int iNumImgY,
+	unsigned int iImColumns,
+	unsigned int iImRows,
+	unsigned int iImStride,
+	bool bUseCad)
 {
 	_iIndex = iIndex;
-	_iSizeX = iSizeX;
-	_iSizeY = iSizeY;
+	_iNumImgX = iNumImgX;
+	_iNumImgY = iNumImgY;
 	_bUseCad = bUseCad;
 
-	_ImagePtrs = new Image*[NumImages()];
-	_bImagesAcquired = new bool[NumImages()];
-
+	_images = new Image[NumImages()];
 	_maskImages = new Image[NumImages()];
-
-	Reset();
+	unsigned int iBytePerPixel = 1;
+	bool bCreatOwnBuffer = false;
+	for(unsigned int i=0; i<NumImages(); i++)
+	{
+		_images[i].Configure(iImColumns, iImRows, iImStride, iBytePerPixel, bCreatOwnBuffer);
+		_maskImages[i].Configure(iImColumns, iImRows, iImStride, iBytePerPixel, bCreatOwnBuffer);
+	}
+	
+	_bImagesAcquired = new bool[NumImages()];
+	ResetForNextPanel();
 }
 
-void MosaicImage::Reset()
+// Reset to prepare the next panel alignment
+void MosaicImage::ResetForNextPanel()
 {
 	for(unsigned int i=0; i<NumImages(); i++)
-		_bImagesAcquired[i] = false;
+	{
+		_images[i].SetTransform(_images[i].GetNominalTransform());
+		_maskImages[i].SetTransform(_maskImages[i].GetNominalTransform());
+	}	
+	
+	for(unsigned int i=0; i<NumImages(); i++)
+		_bImagesAcquired[i] = false;	
+	
+	_iNumImageAcquired = 0;
 
 	_bIsMaskImgValid = false;
-
-	_iNumImageAcquired = 0;
 }
 
 MosaicImage::~MosaicImage(void)
 {
-	delete [] _ImagePtrs;
+	delete [] _images;
 	delete [] _bImagesAcquired;
 	delete [] _maskImages;
 }
 
-// Add an image point of certain position to mosaic image
-void MosaicImage::AddImagePtr(	
-	Image* pImage, 
-	unsigned int iPosX, 
-	unsigned int iPosY)
+// Set both nominal and regular transform for an image in certain position
+void MosaicImage::SetImageTransforms(ImgTransform trans, unsigned int iPosX, unsigned int iPosY)
 {
-	unsigned int iPos = iPosY*_iSizeX+ iPosX;
-	_ImagePtrs[iPos] = pImage;
+	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
 
 	if(!_bImagesAcquired[iPos])
 	{
+		_images[iPos].SetNorminalTransform(trans);
+		_images[iPos].SetTransform(trans);
+	}
+}
+
+// Add the buffer for an image in certain position
+void MosaicImage::AddImageBuffer(unsigned char* pBuffer, unsigned int iPosX, unsigned int iPosY)
+{
+	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+
+	if(!_bImagesAcquired[iPos])
+	{
+		_images[iPos].SetBuffer(pBuffer);
 		_bImagesAcquired[iPos] = true;
 		_iNumImageAcquired++;
 	}
@@ -51,14 +80,14 @@ void MosaicImage::AddImagePtr(
 //Get image point in certain position
 Image* MosaicImage::GetImagePtr(unsigned int iPosX, unsigned int iPosY) const
 {
-	unsigned int iPos = iPosY*_iSizeX+ iPosX;
-	return(_ImagePtrs[iPos]);
+	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	return(&_images[iPos]);
 }
 
 // Return true if a image in certain position is acquired/added
 bool MosaicImage::IsImageAcquired(unsigned int iPosX, unsigned int iPosY) const
 {
-	unsigned int iPos = iPosY*_iSizeX+ iPosX;
+	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
 	return(_bImagesAcquired[iPos]);
 }
 
@@ -71,31 +100,33 @@ bool MosaicImage::IsAcquisitionCompleted() const
 		return(false);
 }
 
-// Get average center in X of image Columns
-void MosaicImage::ImageLineCentersX(double* pdCenX) const
+// Conside images are arrranged in x-y grids
+// Centers in X direction of grid 
+void MosaicImage::ImageGridXCenters(double* pdCenX) const
 {
-	for(unsigned int ix=0; ix<_iSizeX; ix++)
+	for(unsigned int ix=0; ix<_iNumImgX; ix++)
 	{
 		pdCenX[ix] = 0;
-		for(unsigned int iy=0; iy<_iSizeY; iy++)
+		for(unsigned int iy=0; iy<_iNumImgY; iy++)
 		{
 			pdCenX[ix] += GetImagePtr(ix, iy)->CenterX();
 		}
-		pdCenX[ix] /= _iSizeY;
+		pdCenX[ix] /= _iNumImgY;
 	}
 }
 
-// Get average center in Y of image rows
-void MosaicImage::ImageLineCentersY(double* pdCenY) const
+// Conside images are arrranged in x-y grids
+// Centers in Y direction of grid 
+void MosaicImage::ImageGridXCenters(double* pdCenY) const
 {
-	for(unsigned int iy=0; iy<_iSizeY; iy++)
+	for(unsigned int iy=0; iy<_iNumImgY; iy++)
 	{
 		pdCenY[iy] = 0;
-		for(unsigned int ix=0; ix<_iSizeX; ix++)
+		for(unsigned int ix=0; ix<_iNumImgX; ix++)
 		{
 			pdCenY[iy] += GetImagePtr(ix, iy)->CenterY();
 		}
-		pdCenY[iy] /= _iSizeX;
+		pdCenY[iy] /= _iNumImgX;
 	}
 }
 
@@ -107,7 +138,7 @@ bool MosaicImage::PrepareMaskImages()
 
 	for(unsigned int i=0 ; i<NumImages(); i++)
 	{
-		_maskImages[i] = *(_ImagePtrs[i]);
+		_maskImages[i].SetTransform(_images[i].GetTransform());
 		_maskImages[i].CreateOwnBuffer();
 	}
 
@@ -124,8 +155,8 @@ Image* MosaicImage::GetMaskImagePtr(unsigned int iPosX, unsigned int iPosY) cons
 	if(!_bIsMaskImgValid)
 		return NULL;
 
-	unsigned int iPos = iPosY*_iSizeX+ iPosX;
-	return(_ImagePtrs[iPos]);
+	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	return(&_maskImages[iPos]);
 }
 
 		

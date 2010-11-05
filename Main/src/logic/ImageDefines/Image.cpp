@@ -19,6 +19,7 @@ Image::Image(
 		unsigned iDepth,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
+		bool bCreateOwnBuffer,
 		unsigned char *buffer)
 {
 	Configure(	
@@ -28,6 +29,7 @@ Image::Image(
 		iDepth,
 		nominalTrans,
 		actualTrans,
+		bCreateOwnBuffer,
 		buffer);
 }
 
@@ -70,6 +72,7 @@ void Image::Configure(
 	int iRows, 
 	int iStride,
 	unsigned iDepth,
+	bool bCreateOwnBuffer,
 	unsigned char *buffer)
 {
 	_rows				= iRows;
@@ -79,7 +82,7 @@ void Image::Configure(
 
 	DeleteBufferIfOwner();
 	
-	if(buffer == NULL)
+	if(bCreateOwnBuffer)
 	{
 		_buffer	= new unsigned char[BufferSizeInBytes()];	
 		_IOwnMyOwnBuffer = true;
@@ -95,6 +98,7 @@ void Image::Configure(
 		unsigned iDepth,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
+		bool bCreateOwnBuffer,
 		unsigned char *buffer)
 {
 	Configure(
@@ -102,6 +106,7 @@ void Image::Configure(
 		iRows, 
 		iStride,
 		iDepth,
+		bCreateOwnBuffer,
 		buffer);
 
 	_nominalTrans = nominalTrans;
@@ -112,6 +117,7 @@ void Image::Configure(
 
 #pragma region buffer operations
 
+// Get buffer point at certain location
 unsigned char*	Image::GetBuffer(unsigned int row, unsigned col) const
 {
 	return(GetBuffer() + ByteRowStride()*row + GetBytesPerPixel()*col);
@@ -151,6 +157,7 @@ void Image::DeleteBufferIfOwner()
 // clear the image
 void Image::ZeroBuffer()
 {
+	if(_buffer != NULL)
 	::memset(_buffer, 0, BufferSizeInBytes());
 }
 

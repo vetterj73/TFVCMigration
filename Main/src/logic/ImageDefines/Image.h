@@ -20,11 +20,12 @@ public:
 	Image();
 	Image(
 		int iColumns, 
-		int iRows, 
+		int iRows,						
 		int iStride,					// In pixels
 		unsigned iDepth,				// Bytes per pixel
 		ImgTransform nominalTrans,		// used for overlap calculation before stitching
 		ImgTransform actualTrans,		// Stitching results
+		bool bCreateOwnBuffer,			// Falg for whether create own buffer
 		unsigned char *buffer = NULL);
 
 	Image(const Image& b);		
@@ -36,6 +37,7 @@ public:
 		int iRows, 
 		int iStride,		
 		unsigned iDepth,
+		bool bCreateOwnBuffer,
 		unsigned char *buffer = NULL);	
 
 	void Configure(	
@@ -45,6 +47,7 @@ public:
 		unsigned iDepth,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
+		bool bCreateOwnBuffer,
 		unsigned char *buffer = NULL);
 
 	// Get/set functions
