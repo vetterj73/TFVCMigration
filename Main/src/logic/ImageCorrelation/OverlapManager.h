@@ -10,6 +10,27 @@
 
 using namespace MosaicDM;
 
+class FovIndex
+{
+public:
+	FovIndex(
+		unsigned int iIllumIndex,
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex)
+	{
+		IlluminationIndex = iIllumIndex;
+		TriggerIndex = iTrigIndex;
+		CameraIndex = iCamIndex;
+	}
+
+	unsigned int IlluminationIndex;
+	unsigned int TriggerIndex;
+	unsigned int CameraIndex;
+};
+
+
+
+
 class OverlapManager
 {
 public:
@@ -43,14 +64,21 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
+	bool CreateImageOrderInSolver(
+		unsigned int* piIllumIndices, 
+		unsigned iNumIllums, 
+		map<FovIndex, unsigned int>* pOrderMap);
+
+	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap);
+
 protected:
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();
 	void CreateFidFovOverlaps();
 	
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
-
-	bool ArrangeImageRowbyXInWorld;
+	
+	void MaskCreationStage();
 
 private:	
 	MosaicImage* _pMosaics;
@@ -69,5 +97,7 @@ private:
 	list<FidFovOverlap>*** _fidFovOverlapLists;
 
 	unsigned int _iMinOverlapSize;
+
+	int _iMaskCreationStage;
 };
 
