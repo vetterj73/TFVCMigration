@@ -15,7 +15,7 @@ namespace MosaicDM
 		_numTriggers = 0;
 		_cameraOverlap = 0;
 		_triggerOverlap = 0;
-
+		_correlateWithCAD = false;
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -29,7 +29,8 @@ namespace MosaicDM
         							int numCameras,
 									double cameraOverlapInMeters,
 									int numTriggers,
-									double triggerOverlapInMeters)
+									double triggerOverlapInMeters,
+									bool correlateWithCAD)
 	{
 		_pMosaicSet = pMosaicSet;
 		_cameraOffset = cameraOffsetInMeters;
@@ -38,6 +39,8 @@ namespace MosaicDM
 		_numTriggers = numTriggers;
 		_cameraOverlap = cameraOverlapInMeters;
 		_triggerOverlap = triggerOverlapInMeters;
+		_correlateWithCAD = correlateWithCAD;
+
 		int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 

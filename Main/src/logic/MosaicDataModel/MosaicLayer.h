@@ -61,7 +61,8 @@ namespace MosaicDM
         		int numCameras,
 				double cameraOverlapInMeters,
 				int numTriggers,
-				double triggerOverlapInMeters);
+				double triggerOverlapInMeters,
+				bool correlateWithCAD);
 
 			///
 			///	Adds an image...
@@ -77,5 +78,6 @@ namespace MosaicDM
 			double _cameraOffset;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
+			bool _correlateWithCAD;
 	};
 }

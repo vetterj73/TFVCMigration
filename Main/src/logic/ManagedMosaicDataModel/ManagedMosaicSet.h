@@ -63,7 +63,8 @@ namespace MMosaicDM
         							int numCameras,
 									double cameraOverlapInMeters,
 									int numTriggers,
-									double triggerOverlapInMeters)
+									double triggerOverlapInMeters,
+									bool correlateWithCAD)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(
 					cameraOffsetInMeters, 
@@ -71,7 +72,8 @@ namespace MMosaicDM
         			numCameras,
 					cameraOverlapInMeters,
 					numTriggers,
-					triggerOverlapInMeters);
+					triggerOverlapInMeters,
+					correlateWithCAD);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 

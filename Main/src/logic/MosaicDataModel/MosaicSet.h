@@ -61,12 +61,14 @@ namespace MosaicDM
 			/// \param cameraOverlapInMeters - overlap between cameras in this layer
 			/// \param numTriggers - number of triggers used for this layer
 			/// \param triggerOverlapInMeters - overlap between triggers in this layer
+			/// \param correlateWithCAD - should this layer be correlated against CAD?
 			MosaicLayer *AddLayer(double cameraOffsetInMeters, 
 									double triggerOffsetInMeters,
         							int numCameras,
 									double cameraOverlapInMeters,
 									int numTriggers,
-									double triggerOverlapInMeters);
+									double triggerOverlapInMeters,
+									bool correlateWithCAD);
 			
 			///
 			/// Gets a layer from the MosaicSet

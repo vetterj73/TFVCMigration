@@ -119,7 +119,7 @@ namespace CyberStitchTester
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
-                _mosaicSet.AddLayer(.2, i*.2, numCameras, .003, pSpec.NumberOfTriggers, .004);
+                _mosaicSet.AddLayer(.2, i*.2, numCameras, .003, pSpec.NumberOfTriggers, .004, false);
             }
         }
 

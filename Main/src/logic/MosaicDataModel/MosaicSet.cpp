@@ -56,11 +56,14 @@ namespace MosaicDM
         							int numCameras,
 									double cameraOverlapInMeters,
 									int numTriggers,
-									double triggerOverlapInMeters)
+									double triggerOverlapInMeters,
+									bool correlateWithCAD)
 	{
 		MosaicLayer *pML = new MosaicLayer();
+
 		pML->Initialize(this, cameraOffsetInMeters, triggerOffsetInMeters,
-			numCameras, cameraOverlapInMeters, numTriggers, triggerOverlapInMeters);
+			numCameras, cameraOverlapInMeters, numTriggers, triggerOverlapInMeters,
+			correlateWithCAD);
 		_layerList.push_back(pML);
 
 		// Setup the default correlation Flags...
