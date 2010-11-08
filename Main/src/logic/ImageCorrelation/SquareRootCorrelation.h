@@ -5,6 +5,8 @@
 
 #pragma once
 
-#include "CorrelationPair.h"
+//#include "CorrelationPair.h"
+
+class CorrelationPair;
 
 bool SqRtCorrelation(CorrelationPair* pCorrPair, unsigned int decimation_factor, bool bEnableNegCorr);

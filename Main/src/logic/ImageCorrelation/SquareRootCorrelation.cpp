@@ -1,5 +1,6 @@
 #include "SquareRootCorrelation.h"
 #include "regoff.h"
+#include "CorrelationPair.h"
 
 // Do the square root correlation and report result
 // overlap: input, overlap for correlation calculation

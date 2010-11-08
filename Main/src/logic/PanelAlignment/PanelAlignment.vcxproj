@@ -86,7 +86,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\ImageDefines\x64\Debug</AdditionalLibraryDirectories>
       <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

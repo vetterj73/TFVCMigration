@@ -16,6 +16,10 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic\ImageDefines\ImageDefines.vcxproj", "{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCorrelation", "..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj", "{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3890952F-8D06-46A8-8731-5131F30FE9F8} = {3890952F-8D06-46A8-8731-5131F30FE9F8}
+		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MosaicDataModel", "..\..\logic\MosaicDataModel\MosaicDataModel.vcxproj", "{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -36,6 +40,11 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsNgcWrapper", "..\..\logic\VsNgcWrapper\VsNgcWrapper.vcxproj", "{3890952F-8D06-46A8-8731-5131F30FE9F8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\logic\PanelAlignment\PanelAlignment.vcxproj", "{C71CA433-5C57-43DB-BA7E-1F4CBB229951}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
+		{84C9E16A-93E3-4105-A3AF-0533131EB43D} = {84C9E16A-93E3-4105-A3AF-0533131EB43D}
+		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
