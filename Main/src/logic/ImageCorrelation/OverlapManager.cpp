@@ -75,12 +75,14 @@ OverlapManager::~OverlapManager(void)
 // Create Fov overlap for two illuminations
 bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2)
 {
+	// Correlation setting between two layers (illuminations)
 	CorrelationFlags flags = _pFlags[iIndex1][iIndex2];
 	bool bCamCam = flags.GetCameraToCamera();
 	bool bTrigTrig = flags.GetTriggerToTrigger();
 	bool bMask = flags.GetMaskNeeded();
 	bool bCad	= false; //need modify
 	
+	// Camera centers in Y of world space and trigger centers in X of world space 
 	unsigned int iNumTrigs1 = _pMosaics[iIndex1].NumTriggers();
 	unsigned int iNumCams1 = _pMosaics[iIndex1].NumCameras();
 	double* pdCenX1 = new double[iNumTrigs1];
@@ -97,6 +99,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	_pMosaics[iIndex2].TriggerCentersInX(pdCenX2);
 	_pMosaics[iIndex2].CameraCentersInY(pdCenY2);
 
+	// For each image in first layer (illuminaiton)
 	unsigned int iCam1, iTrig1, iCam2, iTrig2;
 	for(iTrig1 = 0; iTrig1<iNumTrigs1; iTrig1++)
 	{
@@ -104,62 +107,68 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 		{
 			// Cam to cam (Col to col) overlap
 			if(bCamCam)
-			{
-				int iCamIndex1=-1, iCamIndex2=-1, iTrigIndex=-1;				
-				// The nearest horizontal line1
+			{			
+				// The nearest trigger
+				int iTrigIndex=-1;	
+				double dMinDis = 1.0*dSpanTrig; // If nearest trigger is far away, just ignore
 				for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
 				{	
-					double dis = fabs(pdCenY1[iTrig1] -pdCenY2[iTrig2]);
-					double dMinDis = 2*dSpanTrig;
+					double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);	
 					if(dMinDis > dis)
 					{
 						dMinDis = dis;
 						iTrigIndex = iTrig2;
-					}
+					}		
 				}
-				// The nearest left image in horizontal line with a distance bigger than 0.5 span
-				for(iCam2 = 0; iCam2<iNumCams2; iCam2++)
-				{		
-					double dis = pdCenX1[iCam1] -pdCenX2[iCam2];
-					if(dis>dSpanCam*0.5)
-						iCamIndex1 = iCam2;
-				}
-				// The nearest rightr image in horizontal line with a distance bigger than 0.5 span
-				for(iCam2 = iNumCams2-1; iCam2>=0; iCam2++)
-				{		
-					double dis = pdCenX2[iCam2]-pdCenX1[iCam1];
-					if(dis>dSpanCam*0.5)
-						iCamIndex2 = iCam2;
-				}
-
-				// Create left overlap and add to list
-				if(iCamIndex1>0 && iTrigIndex>0)
+				
+				if(iTrigIndex > 0)
 				{
-					FovFovOverlap overlap(
-						&_pMosaics[iIndex1], &_pMosaics[iIndex2],
-						pair<unsigned int, unsigned int>(iCam1, iTrig1),
-						pair<unsigned int, unsigned int>(iCamIndex1, iTrigIndex),
-						_validRect, bMask);
-
-					if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
-					{
-						_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-						_fovFovOverlapLists[iIndex2][iTrigIndex][iCamIndex1].push_back(overlap);
+					// The nearest left image in the nearest trigger with a distance bigger than 0.5 span
+					int iLeftCamIndex=-1;
+					for(iCam2 = 0; iCam2<iNumCams2; iCam2++)
+					{	// pdCenY1/2[i] increases with i	
+						double dis = pdCenY1[iCam1] -pdCenY2[iCam2];
+						if(dis > 0.5*dSpanCam && dis < 1.2*dSpanCam)
+							iLeftCamIndex = iCam2;
 					}
-				}
-				// Create right overlap and add to list
-				if(iCamIndex2>0 && iTrigIndex>0)
-				{
-					FovFovOverlap overlap(
-						&_pMosaics[iIndex1], &_pMosaics[iIndex2],
-						pair<unsigned int, unsigned int>(iCam1, iTrig1),
-						pair<unsigned int, unsigned int>(iCamIndex2, iTrigIndex),
-						_validRect, bMask);
+					// The nearest right image in the nearest trigger with a distance bigger than 0.5 span
+					int iRightCamIndex=-1;
+					for(iCam2 = iNumCams2-1; iCam2>=0; iCam2++)
+					{	// pdCenY1/2[i] increases with i
+						double dis = pdCenY2[iCam2]-pdCenY1[iCam1];
+						if(dis > 0.5*dSpanCam  && dis < 1.2*dSpanCam)
+							iRightCamIndex = iCam2;
+					}
 
-					if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+					// Create left overlap and add to list
+					if(iLeftCamIndex>0)
 					{
-						_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-						_fovFovOverlapLists[iIndex2][iTrigIndex][iCamIndex2].push_back(overlap);
+						FovFovOverlap overlap(
+							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+							pair<unsigned int, unsigned int>(iCam1, iTrig1),
+							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
+							_validRect, bMask);
+
+						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+						{
+							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
+							_fovFovOverlapLists[iIndex2][iTrigIndex][iLeftCamIndex].push_back(overlap);
+						}
+					}
+					// Create right overlap and add to list
+					if(iRightCamIndex>0)
+					{
+						FovFovOverlap overlap(
+							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+							pair<unsigned int, unsigned int>(iCam1, iTrig1),
+							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
+							_validRect, bMask);
+
+						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+						{
+							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
+							_fovFovOverlapLists[iIndex2][iTrigIndex][iRightCamIndex].push_back(overlap);
+						}
 					}
 				}
 			} //if(bCamCam)
@@ -167,12 +176,13 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 			// Trig to trig (Row to row) overlap
 			if(bTrigTrig)
 			{
-				// Find the nearest vertical line
+				// Find the nearest camera
 				int iCamIndex = -1;
+				double dMinDis = 1.0*dSpanCam; // If nearest camere is far away, ignore
 				for(iCam2=0; iCam2<iNumCams2; iCam2++)
 				{
-					double dis = fabs(pdCenX1[iCam1] -pdCenX2[iCam2]);
-					double dMinDis = 2*dSpanCam;
+					double dis = fabs(pdCenY1[iCam1] -pdCenY2[iCam2]);
+					
 					if(dMinDis>dis && dis < 0.5*dSpanCam)
 					{
 						dMinDis = dis;
@@ -180,22 +190,25 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					}
 				}
 				
-				// Any image nearby in the nearest vertical line
-				for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
+				if(iCamIndex>0)
 				{
-					double dis = fabs(pdCenX1[iCam1] -pdCenX2[iCam2]);
-					if(dis < 0.8*dSpanTrig && iCamIndex>0)
+					// Any nearby trigger of the nearest camera 
+					for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
 					{
-						FovFovOverlap overlap(
-							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
-							pair<unsigned int, unsigned int>(iCam1, iTrig1),
-							pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
-							_validRect, bMask);
-
-						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+						double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);
+						if(dis < 1.1*dSpanTrig)
 						{
-							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-							_fovFovOverlapLists[iIndex2][iTrig2][iCamIndex].push_back(overlap);
+							FovFovOverlap overlap(
+								&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+								pair<unsigned int, unsigned int>(iCam1, iTrig1),
+								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
+								_validRect, bMask);
+
+							if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+							{
+								_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
+								_fovFovOverlapLists[iIndex2][iTrig2][iCamIndex].push_back(overlap);
+							}
 						}
 					}
 				}
