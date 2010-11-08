@@ -17,8 +17,8 @@ public:
 	bool SetPanel(MosaicSet* pSet);
 	bool AddImage(
 		unsigned int iLayerIndex, 
-		unsigned int iRowIndex, 
-		unsigned int iColIndex,
+		unsigned int iTrigIndex, 
+		unsigned int iCamIndex,
 		unsigned char* pcBuf);
 
 private:

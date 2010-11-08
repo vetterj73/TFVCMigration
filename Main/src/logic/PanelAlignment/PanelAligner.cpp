@@ -34,23 +34,23 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 	unsigned int iImStride = _pSet->GetImageStrideInPixels();
 	
 	// Create moasic images
-	unsigned int i, j, kx, ky;
+	unsigned int i, j, iCam, iTrig;
 	for(i=0; i<_iNumIllumination; i++)
 	{
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
-		unsigned int iNumFovY = pLayer->GetNumberOfTriggers();
-		unsigned int iNumFovX = pLayer->GetNumberOfCameras();
+		unsigned int iNumTrigs = pLayer->GetNumberOfTriggers();
+		unsigned int iNumCams = pLayer->GetNumberOfCameras();
 		bool bUseCad = false; // Need work
 
-		_pMosaics[i].Config(i, iNumFovX, iNumFovY, iImWidth, iImHeight, iImStride, bUseCad);
+		_pMosaics[i].Config(i, iNumCams, iNumTrigs, iImWidth, iImHeight, iImStride, bUseCad);
 
-		for(ky=0; ky<iNumFovY; ky++)
+		for(iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
-			for(kx=0; kx<iNumFovX; kx++)
+			for(iCam=0; iCam<iNumCams; iCam++)
 			{
-				MosaicTile* pTile = pLayer->GetTile(kx, ky);
+				MosaicTile* pTile = pLayer->GetTile(iCam, iTrig);
 				ImgTransform t; // Need work
-				_pMosaics[i].SetImageTransforms(t, kx, ky);
+				_pMosaics[i].SetImageTransforms(t, iCam, iTrig);
 			}
 		}
 	}
@@ -68,12 +68,12 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 
 bool PanelAligner::AddImage(
 	unsigned int iLayerIndex, 
-	unsigned int iRowIndex, 
+	unsigned int iTrigIndex, 
 	unsigned int iColIndex,
 	unsigned char* pcBuf)
 {
-	_pMosaics[iLayerIndex].AddImageBuffer(pcBuf, iColIndex, iRowIndex);
-	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iRowIndex, iColIndex);
+	_pMosaics[iLayerIndex].AddImageBuffer(pcBuf, iColIndex, iTrigIndex);
+	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iColIndex);
 
 	return(true);
 }

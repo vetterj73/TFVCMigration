@@ -9,8 +9,8 @@ MosaicImage::MosaicImage()
 
 MosaicImage::MosaicImage(
 	unsigned int iIndex, 
-	unsigned int iNumImgX, 
-	unsigned int iNumImgY,
+	unsigned int iNumCameras, 
+	unsigned int iNumTriggers,
 	unsigned int iImColumns,
 	unsigned int iImRows,
 	unsigned int iImStride,
@@ -18,8 +18,8 @@ MosaicImage::MosaicImage(
 {
 	Config(
 		iIndex, 
-		iNumImgX, 
-		iNumImgY,
+		iNumCameras, 
+		iNumTriggers,
 		iImColumns,
 		iImRows,
 		iImStride,
@@ -35,18 +35,19 @@ MosaicImage::~MosaicImage(void)
 
 void MosaicImage::Config(
 	unsigned int iIndex, 
-	unsigned int iNumImgX, 
-	unsigned int iNumImgY,
+	unsigned int iNumCameras, 
+	unsigned int iNumTriggers,
 	unsigned int iImColumns,
 	unsigned int iImRows,
 	unsigned int iImStride,
 	bool bUseCad)
 {
 	_iIndex = iIndex;
-	_iNumImgX = iNumImgX;
-	_iNumImgY = iNumImgY;
+	_iNumCameras = iNumCameras;
+	_iNumTriggers = iNumTriggers;
 	_bUseCad = bUseCad;
 
+	// Create images and mask images
 	_images = new Image[NumImages()];
 	_maskImages = new Image[NumImages()];
 	unsigned int iBytePerPixel = 1;
@@ -57,22 +58,24 @@ void MosaicImage::Config(
 		_maskImages[i].Configure(iImColumns, iImRows, iImStride, iBytePerPixel, bCreatOwnBuffer);
 	}
 	
+	// Create array for image acquisition flags
 	_bImagesAcquired = new bool[NumImages()];
+
+	// Rest all flags
 	ResetForNextPanel();
 }
-
-
-
 
 // Reset to prepare the next panel alignment
 void MosaicImage::ResetForNextPanel()
 {
+	// Reset image transform to nominal one
 	for(unsigned int i=0; i<NumImages(); i++)
 	{
 		_images[i].SetTransform(_images[i].GetNominalTransform());
 		_maskImages[i].SetTransform(_maskImages[i].GetNominalTransform());
 	}	
 	
+	// Clean acquiresation flags, count and mask image validation flag
 	for(unsigned int i=0; i<NumImages(); i++)
 		_bImagesAcquired[i] = false;	
 	
@@ -83,9 +86,9 @@ void MosaicImage::ResetForNextPanel()
 
 
 // Set both nominal and regular transform for an image in certain position
-void MosaicImage::SetImageTransforms(ImgTransform trans, unsigned int iPosX, unsigned int iPosY)
+void MosaicImage::SetImageTransforms(ImgTransform trans, unsigned int iCamIndex, unsigned int iTrigIndex)
 {
-	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 
 	if(!_bImagesAcquired[iPos])
 	{
@@ -95,9 +98,9 @@ void MosaicImage::SetImageTransforms(ImgTransform trans, unsigned int iPosX, uns
 }
 
 // Add the buffer for an image in certain position
-void MosaicImage::AddImageBuffer(unsigned char* pBuffer, unsigned int iPosX, unsigned int iPosY)
+void MosaicImage::AddImageBuffer(unsigned char* pBuffer, unsigned int iCamIndex, unsigned int iTrigIndex)
 {
-	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 
 	if(!_bImagesAcquired[iPos])
 	{
@@ -108,16 +111,16 @@ void MosaicImage::AddImageBuffer(unsigned char* pBuffer, unsigned int iPosX, uns
 }
 
 //Get image point in certain position
-Image* MosaicImage::GetImagePtr(unsigned int iPosX, unsigned int iPosY) const
+Image* MosaicImage::GetImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const
 {
-	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 	return(&_images[iPos]);
 }
 
 // Return true if a image in certain position is acquired/added
-bool MosaicImage::IsImageAcquired(unsigned int iPosX, unsigned int iPosY) const
+bool MosaicImage::IsImageAcquired(unsigned int iCamIndex, unsigned int iTrigIndex) const
 {
-	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 	return(_bImagesAcquired[iPos]);
 }
 
@@ -130,33 +133,31 @@ bool MosaicImage::IsAcquisitionCompleted() const
 		return(false);
 }
 
-// Conside images are arrranged in x-y grids
-// Centers in X direction of grid 
-void MosaicImage::ImageGridXCenters(double* pdCenX) const
+// Camera centers in Y of world space
+void MosaicImage::CameraCentersInY(double* pdCenY) const
 {
-	for(unsigned int ix=0; ix<_iNumImgX; ix++)
+	for(unsigned int iCam=0; iCam<_iNumCameras; iCam++)
 	{
-		pdCenX[ix] = 0;
-		for(unsigned int iy=0; iy<_iNumImgY; iy++)
+		pdCenY[iCam] = 0;
+		for(unsigned int iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{
-			pdCenX[ix] += GetImagePtr(ix, iy)->CenterX();
+			pdCenY[iCam] += GetImagePtr(iCam, iTrig)->CenterY();
 		}
-		pdCenX[ix] /= _iNumImgY;
+		pdCenY[iCam] /= _iNumTriggers;
 	}
 }
 
-// Conside images are arrranged in x-y grids
-// Centers in Y direction of grid 
-void MosaicImage::ImageGridYCenters(double* pdCenY) const
+// Trigger centesr in  X of world space 
+void MosaicImage::TriggerCentersInX(double* pdCenX) const
 {
-	for(unsigned int iy=0; iy<_iNumImgY; iy++)
+	for(unsigned int iTrig=0; iTrig<_iNumTriggers; iTrig++)
 	{
-		pdCenY[iy] = 0;
-		for(unsigned int ix=0; ix<_iNumImgX; ix++)
+		pdCenX[iTrig] = 0;
+		for(unsigned int iCam=0; iCam<_iNumCameras; iCam++)
 		{
-			pdCenY[iy] += GetImagePtr(ix, iy)->CenterY();
+			pdCenX[iTrig] += GetImagePtr(iCam, iTrig)->CenterX();
 		}
-		pdCenY[iy] /= _iNumImgX;
+		pdCenX[iTrig] /= _iNumCameras;
 	}
 }
 
@@ -179,13 +180,13 @@ bool MosaicImage::PrepareMaskImages()
 
 // Get a mask image point in certain position
 // return NULL if it is not valid
-Image* MosaicImage::GetMaskImagePtr(unsigned int iPosX, unsigned int iPosY) const
+Image* MosaicImage::GetMaskImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const
 {
 	// Validation check
 	if(!_bIsMaskImgValid)
 		return NULL;
 
-	unsigned int iPos = iPosY*_iNumImgX+ iPosX;
+	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 	return(&_maskImages[iPos]);
 }
 

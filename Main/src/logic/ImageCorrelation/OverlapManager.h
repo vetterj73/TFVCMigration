@@ -25,23 +25,23 @@ public:
 
 	bool DoAlignmentForFov(
 		unsigned int iMosaicIndex, 
-		unsigned int iRowImIndex,
-		unsigned int iColImIndex);
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex);
 
 	list<FovFovOverlap>* GetFovFovListForFov(
 		unsigned int iMosaicIndex, 
-		unsigned int iRowImIndex,
-		unsigned int iColImIndex) const;
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex) const;
 
 	list<CadFovOverlap>* GetCadFovListForFov(
 		unsigned int iMosaicIndex, 
-		unsigned int iRowImIndex,
-		unsigned int iColImIndex) const;
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex) const;
 
 	list<FidFovOverlap>* GetFidFovListForFov(
 		unsigned int iMosaicIndex, 
-		unsigned int iRowImIndex,
-		unsigned int iColImIndex) const;
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex) const;
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -49,6 +49,9 @@ protected:
 	void CreateFidFovOverlaps();
 	
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
+
+	bool ArrangeImageRowbyXInWorld;
+
 private:	
 	MosaicImage* _pMosaics;
 	CorrelationFlags** _pFlags;	
@@ -57,8 +60,8 @@ private:
 	Image* _pCadImg;
 	DRect _validRect;
 
-	unsigned int _iNumImgX;
-	unsigned int _iNumImgY;
+	unsigned int _iNumCameras;
+	unsigned int _iNumTriggers;
 	
 	// A[Mosaic Index][Row(y) Index][Column(x) Index]
 	list<FovFovOverlap>*** _fovFovOverlapLists;

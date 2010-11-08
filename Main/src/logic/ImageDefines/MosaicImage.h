@@ -16,8 +16,8 @@ public:
 
 	MosaicImage(
 		unsigned int iIndex,		// Index of mosaic image
-		unsigned int iNumImgX,		// Number of images in x direction
-		unsigned int iNumImgY,		// Number of images in y direction
+		unsigned int iNumCameras,	// Number of cameras (images in a row)
+		unsigned int iNumTriggers,	// Number of triggers (images in a column)
 		unsigned int iImColumns,	// Columns of each image
 		unsigned int iImRows,		// Rows of each image
 		unsigned int iImStride,		// Stride of each image
@@ -25,8 +25,8 @@ public:
 
 	void Config(
 		unsigned int iIndex,		
-		unsigned int iNumImgX,		
-		unsigned int iNumImgY,		
+		unsigned int iNumCameras,		
+		unsigned int iNumTriggers,		
 		unsigned int iImColumns,	
 		unsigned int iImRows,		
 		unsigned int iImStride,		
@@ -36,29 +36,29 @@ public:
 	
 	void ResetForNextPanel();
 
-	void SetImageTransforms(ImgTransform trans, unsigned int iPosX, unsigned int iPosY);
-	void AddImageBuffer(unsigned char* pBuffer, unsigned int iPosX, unsigned int iPosY);
+	void SetImageTransforms(ImgTransform trans, unsigned int iCamIndex, unsigned int iTrigIndex);
+	void AddImageBuffer(unsigned char* pBuffer, unsigned int iCamIndex, unsigned int iTrigIndex);
 
-	Image* GetImagePtr(unsigned int iPosX, unsigned int iPosY) const;
-	bool IsImageAcquired(unsigned int iPosX, unsigned int iPosY) const;
+	Image* GetImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const;
+	bool IsImageAcquired(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool IsAcquisitionCompleted() const;
 
-	Image* GetMaskImagePtr(unsigned int iPosX, unsigned int iPosY) const;
+	Image* GetMaskImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool PrepareMaskImages();
 
-	unsigned int NumImages() const {return(_iNumImgX * _iNumImgY);};
-	unsigned int NumImInX() const {return(_iNumImgX);};
-	unsigned int NumImInY() const {return(_iNumImgY);};
+	unsigned int NumImages() const {return(_iNumCameras * _iNumTriggers);};
+	unsigned int NumCameras() const {return(_iNumCameras);};
+	unsigned int NumTriggers() const {return(_iNumTriggers);};
 	
 	bool UseCad() const {return(_bUseCad);};
 
-	void ImageGridXCenters(double* pdCenX) const;
-	void ImageGridYCenters(double* pdCenY) const;
+	void CameraCentersInY(double* pdCenY) const;
+	void TriggerCentersInX(double* pdCenX) const;
 	
 private:	
 	unsigned int _iIndex;			// Mosaic image's index
-	unsigned int _iNumImgX;			// The number of images in column
-	unsigned int _iNumImgY;			// The number of images in row
+	unsigned int _iNumCameras;		// Number of cameras (images in a row)
+	unsigned int _iNumTriggers;		// Number of triggers (images in a column)
 	bool _bUseCad;					// Whether need correlation with CAD
 	
 	Image*	_images;				// An array of images
