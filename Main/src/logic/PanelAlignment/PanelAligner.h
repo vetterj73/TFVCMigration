@@ -25,6 +25,7 @@ private:
 	MosaicSet* _pSet;
 	OverlapManager* _pOverlapManager;
 	MosaicImage* _pMosaics;
+	CorrelationFlags** _pCorrelationFlags;
 	unsigned int _iNumIllumination;
 };
 

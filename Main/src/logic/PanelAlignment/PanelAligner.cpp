@@ -34,7 +34,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 	unsigned int iImStride = _pSet->GetImageStrideInPixels();
 	
 	// Create moasic images
-	unsigned int i, kx, ky;
+	unsigned int i, j, kx, ky;
 	for(i=0; i<_iNumIllumination; i++)
 	{
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
@@ -55,9 +55,13 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 		}
 	}
 
+	for(i=0; i<_iNumIllumination; i++)
+		for(j=0; j<_iNumIllumination; j++)
+			_pCorrelationFlags[i][j] = *_pSet->GetCorrelationFlags(i, j);
+
 	// Create Overlap manager
 	DRect rect;	// need work
-	_pOverlapManager = new OverlapManager(_pMosaics, NULL, _iNumIllumination, NULL, rect); // nee work
+	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIllumination, NULL, rect); // nee work
 
 	return(true);
 }
