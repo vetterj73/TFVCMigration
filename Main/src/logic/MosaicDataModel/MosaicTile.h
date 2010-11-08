@@ -42,6 +42,11 @@ namespace MosaicDM
 				double centerOffsetXInMeters, double centerOffsetYInMeters,
 				double rotation);
 
+			double GetPixelSizeX(){return _pixelSizeX;};
+			double GetPixelSizeY(){return _pixelSizeY;};
+			double CenterOffsetX(){return _centerOffsetX;};
+			double CenterOffsetY(){return _centerOffsetY;};
+			double Rotation(){return _rotation;};
 
 		protected:
 			bool SetImageBuffer(unsigned char* pImageBuffer)
