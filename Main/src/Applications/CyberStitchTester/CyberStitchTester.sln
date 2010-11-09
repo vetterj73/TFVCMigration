@@ -46,11 +46,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\log
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformsCreator", "..\TransformsCreator\TransformsCreator.vcxproj", "{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
-		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformsCreator", "..\..\logic\TransformsCreator\TransformsCreator.vcxproj", "{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -88,9 +84,9 @@ Global
 		SccProjectUniqueName9 = ..\\..\\logic\\PanelAlignment\\PanelAlignment.vcxproj
 		SccProjectName9 = ../../logic/PanelAlignment
 		SccLocalPath9 = ..\\..\\logic\\PanelAlignment
-		SccProjectUniqueName10 = ..\\TransformsCreator\\TransformsCreator.vcxproj
-		SccProjectName10 = ../TransformsCreator
-		SccLocalPath10 = ..\\TransformsCreator
+		SccProjectUniqueName10 = ..\\..\\logic\\TransformsCreator\\TransformsCreator.vcxproj
+		SccProjectName10 = ../../logic/TransformsCreator
+		SccLocalPath10 = ..\\..\\logic\\TransformsCreator
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -252,22 +248,22 @@ Global
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|x64.ActiveCfg = Release|x64
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|x64.Build.0 = Release|x64
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Release|x86.ActiveCfg = Release|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Win32.ActiveCfg = Debug|Win32
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|Win32.Build.0 = Debug|Win32
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|x64.ActiveCfg = Debug|x64
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|x64.Build.0 = Debug|x64
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|x86.ActiveCfg = Debug|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Any CPU.ActiveCfg = Release|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Debug|x86.ActiveCfg = Debug|x64
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Any CPU.ActiveCfg = Release|x64
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Mixed Platforms.Build.0 = Release|x64
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Win32.ActiveCfg = Release|Win32
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|Win32.Build.0 = Release|Win32
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|x64.ActiveCfg = Release|x64
 		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|x64.Build.0 = Release|x64
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|x86.ActiveCfg = Release|Win32
+		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
