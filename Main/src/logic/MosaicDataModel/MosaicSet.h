@@ -80,7 +80,7 @@ namespace MosaicDM
 			///
 			///	Getters for all basic Attributes
 			///
-			int GetNumMosaicLayers(){return _layerList.size();}		
+			int GetNumMosaicLayers(){return (int)_layerList.size();}		
 			int GetImageWidthInPixels(){return _imageWidth;}
 			int GetImageHeightInPixels(){return _imageHeight;}
 			int GetImageStrideInPixels(){return _imageStride;}

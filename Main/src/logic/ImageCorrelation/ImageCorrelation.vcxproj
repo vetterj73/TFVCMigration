@@ -90,7 +90,7 @@
       <AdditionalDependencies>Ruddd.lib; BitmapD.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -126,7 +126,7 @@
       <AdditionalDependencies>Rudd.lib; Bitmap.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
