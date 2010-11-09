@@ -69,7 +69,7 @@ public:
 	FovFovOverlap(
 		MosaicImage*	pMosaic1,
 		MosaicImage*	pMosaic2,
-		pair<unsigned int, unsigned int> ImgPos1, // first = x, second = y
+		pair<unsigned int, unsigned int> ImgPos1, // first = camera, second = trigger
 		pair<unsigned int, unsigned int> ImgPos2,
 		DRect validRect,
 		bool bHasMask);
@@ -95,7 +95,7 @@ class CadFovOverlap: public Overlap
 public:
 	CadFovOverlap(
 		MosaicImage* pMosaic,
-		pair<unsigned int, unsigned int> ImgPos, // first = x, second = y
+		pair<unsigned int, unsigned int> ImgPos, // first = camera, second = trigger
 		Image* pCadImg,
 		DRect validRect);
 
@@ -117,7 +117,7 @@ class FidFovOverlap: public Overlap
 public:
 	FidFovOverlap(
 		MosaicImage*	pMosaic,
-		pair<unsigned int, unsigned int> ImgPos, // first = x, second = y
+		pair<unsigned int, unsigned int> ImgPos, // first = camera, second = trigger
 		Image* pFidImg,
 		double _dXcenter,
 		double _dYcenter,
