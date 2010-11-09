@@ -19,9 +19,8 @@
 
   <!--Build All Needed Components-->
   <Target Name="BuildCode" DependsOnTargets="EstablishVersion;CommonLabel">
-    <Exec ContinueOnError="true" Command="devenv /build &quot;release|win32&quot; $(APPLICATIONS)CyberStitchTester\CyberStitchTester.sln > $(BUILDRESULTSCyberStitchTester32.log"/>
-    
-
+    <Exec ContinueOnError="true" Command="devenv /build &quot;release|win32&quot; $(APPLICATIONS)CyberStitchTester\CyberStitchTester.sln > $(BUILDRESULTS)CyberStitchTesterRelease32.log"/>
+    <Exec ContinueOnError="true" Command="devenv /build &quot;release|x64&quot; $(APPLICATIONS)CyberStitchTester\CyberStitchTester.sln > $(BUILDRESULTS)CyberStitchTesterRelease64.log"/>
   </Target>
 
   <!--Unit Test the code -->
