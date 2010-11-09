@@ -38,6 +38,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91-C1B1-48D2-89B0-B102895144B7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsNgcWrapper", "..\..\logic\VsNgcWrapper\VsNgcWrapper.vcxproj", "{3890952F-8D06-46A8-8731-5131F30FE9F8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\logic\PanelAlignment\PanelAlignment.vcxproj", "{C71CA433-5C57-43DB-BA7E-1F4CBB229951}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -47,8 +50,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\log
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TransformsCreator", "..\..\logic\TransformsCreator\TransformsCreator.vcxproj", "{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Panel", "..\..\logic\Panel\Panel.vcxproj", "{472145E5-F493-4DD4-AC4B-05AE3189245F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPanel", "..\..\logic\CPanel\CPanel.vcxproj", "{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -94,14 +103,14 @@ Global
 		SccProjectUniqueName10 = ..\\..\\logic\\TransformsCreator\\TransformsCreator.vcxproj
 		SccProjectName10 = ../../logic/TransformsCreator
 		SccLocalPath10 = ..\\..\\logic\\TransformsCreator
-		SccProjectUniqueName11 = ..\\..\\logic\\Panel\\Panel.vcxproj
+		SccProjectUniqueName11 = ..\\..\\logic\\CPanel\\CPanel.vcxproj
 		SccProjectTopLevelParentUniqueName11 = CyberStitchTester.sln
-		SccProjectName11 = ../../logic/Panel
-		SccLocalPath11 = ..\\..\\logic\\Panel
-		SccProjectUniqueName12 = ..\\..\\logic\\CPanel\\CPanel.vcxproj
+		SccProjectName11 = ../../logic/CPanel
+		SccLocalPath11 = ..\\..\\logic\\CPanel
+		SccProjectUniqueName12 = ..\\..\\logic\\Panel\\Panel.vcxproj
 		SccProjectTopLevelParentUniqueName12 = CyberStitchTester.sln
-		SccProjectName12 = ../../logic/CPanel
-		SccLocalPath12 = ..\\..\\logic\\CPanel
+		SccProjectName12 = ../../logic/Panel
+		SccLocalPath12 = ..\\..\\logic\\Panel
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -311,7 +320,6 @@ Global
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x64.ActiveCfg = Release|x64
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x64.Build.0 = Release|x64
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x86.ActiveCfg = Release|x64
-		{2C9A3646-95BE-4168-AD77-57DBFC0E55A4}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -320,8 +328,8 @@ Global
 		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {83A6E92A-C9C4-4634-B1E7-357467A9340E}
 		{84C9E16A-93E3-4105-A3AF-0533131EB43D} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
-		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{472145E5-F493-4DD4-AC4B-05AE3189245F} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
+		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
