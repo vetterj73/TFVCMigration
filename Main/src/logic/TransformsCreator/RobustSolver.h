@@ -6,18 +6,24 @@
 class RobustSolver
 {
 public:
-	RobustSolver(unsigned int iNumFovs, unsigned int iNumEquations, bool bProjectiveTrans = false);
+	RobustSolver(
+		map<FovIndex, unsigned int>* pFovOrderMap, 
+		unsigned int iNumCorrelations, 
+		bool bProjectiveTrans = false);
 	~RobustSolver(void);
 
-	void AddCalibationConstraints(MosaicImage* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex);
+	bool AddCalibationConstraints(MosaicImage* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex);
 
 protected:
 	void ZeroTheSystem();
 
 private:
+	map<FovIndex, unsigned int>* _pFovOrderMap;
 	bool			_bProjectiveTrans;	
+	unsigned int	_iNumCorrelations;
+	
 	unsigned int	_iNumFovs;
-	unsigned int	_iNumEquations;
+	
 	
 	unsigned int	_iNumCalibConstrains;
 	unsigned int	_iNumParamsPerFov;

@@ -46,6 +46,7 @@ public:
 	Image* GetMaskImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool PrepareMaskImages();
 
+	unsigned int Index() const {return(_iIndex);};
 	unsigned int NumImages() const {return(_iNumCameras * _iNumTriggers);};
 	unsigned int NumCameras() const {return(_iNumCameras);};
 	unsigned int NumTriggers() const {return(_iNumTriggers);};

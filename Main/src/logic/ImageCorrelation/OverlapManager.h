@@ -29,7 +29,33 @@ public:
 };
 
 
+bool operator<(const FovIndex& a, const FovIndex& b)
+{
+	if(a.IlluminationIndex < b.IlluminationIndex)
+		return (true);
 
+	if(a.TriggerIndex < b.TriggerIndex)
+		return(true);
+
+	if(a.CameraIndex < b.CameraIndex)
+		return(true);
+
+	return(false);
+}
+
+bool operator>(const FovIndex& a, const FovIndex& b)
+{
+	if(a.IlluminationIndex > b.IlluminationIndex)
+		return (true);
+
+	if(a.TriggerIndex > b.TriggerIndex)
+		return(true);
+
+	if(a.CameraIndex > b.CameraIndex)
+		return(true);
+
+	return(false);
+}
 
 class OverlapManager
 {
