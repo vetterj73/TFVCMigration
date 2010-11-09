@@ -27,7 +27,7 @@ Environment:
 using namespace System::Collections::Generic;
 
 #include "feature.h"
-#include "FeatureDescription.h"
+#include "CFeature.h"
 #include "panel.h"
 
 namespace Cyber
@@ -92,8 +92,7 @@ namespace Cyber
 			///
 			/// \param panelSize A \ref PointD class containing the X and Y dimenstions
 			/// of the panel.
-			CPanel(PointD^ panelSize);
-			CPanel(float lengthX, float lengthY );
+			CPanel(double lengthX, double lengthY );
 			CPanel(System::Drawing::PointF panelSize);
 
 			#pragma endregion
@@ -103,7 +102,7 @@ namespace Cyber
 			/// Adds a feature to the list of features to inspect.
 			///
 			/// \param feature A \ref CFeature object to inspect.
-			SPISTATUS AddFeature(CFeature^ feature);
+			int AddFeature(CFeature^ feature);
 
 			///
 			/// Removes all features from the panel's inspection list.
@@ -117,7 +116,7 @@ namespace Cyber
 			/// Adds a fiducial to the list of fiducials to use for inspeciton.
 			///
 			/// \param fiducial A \ref CFeature object to find.
-			SPISTATUS AddFiducial(CFeature^ fiducial);
+			int AddFiducial(CFeature^ fiducial);
 
 			///
 			/// Removes all fiducials from the panel's list.
@@ -138,20 +137,22 @@ namespace Cyber
 				void set(System::String^ value);
 			}
 
-
-
-
-			/// The total PCB panel X and Y dimensions.
-			///
-			/// \remarks The \b PanelSize property is of type PointD containing an X 
-			/// and Y component. 
-			/// The components are in meters.
-			property SPIAPI::PointD^ PanelSize
+			/// The total PCB panel X dimension.
+			/// in meters.
+			property double PanelSizeX
 			{
-				SPIAPI::PointD^ get();
-				void set(SPIAPI::PointD^ value);
+				double get();
+				void set(double value);
 			}
 
+
+			/// The total PCB panel Y dimension.
+			/// in meters.
+			property double PanelSizeY
+			{
+				double get();
+				void set(double value);
+			}
 
 
 			/// \internal

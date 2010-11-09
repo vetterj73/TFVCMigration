@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Feature.h"
-#include "StatusCodes.h"
 #include <map>
 using std::map;
 
@@ -27,11 +26,11 @@ public:
 
 	/* destructor */	~Panel();
 
-	SPIStatusCode		AddFeature(Feature*);
+	int					AddFeature(Feature*);
 	void				RemoveFeature(int featureId);
 	unsigned int		NumberOfFeatures();
 
-	SPIStatusCode		AddFiducial(Feature*);
+	int					AddFiducial(Feature*);
 	void				RemoveFiducial(int fiducialId);
 	unsigned int		NumberOfFiducials();
 
@@ -88,7 +87,7 @@ private:
 	// frame of reference
 	double				XCadOrigin;
 	double				YCadOrigin;
-	Word				_apertureIndex;
+	unsigned short   	_apertureIndex;
 
 	State				_status;
 };

@@ -21,7 +21,7 @@ Environment:
 
 ---------------------------------------------------------------------------------
 */
-#include "PanelDescription.h"
+#include "CPanel.h"
 
 using namespace System;
 
@@ -36,18 +36,11 @@ namespace Cyber
 		//
 		// Constructors
 		//
-		CPanel::CPanel(float lengthX, float lengthY )
+		CPanel::CPanel(double lengthX, double lengthY )
 		{
 			_pPanel = new Panel();
 			_pPanel->xLength(lengthX);
 			_pPanel->yLength(lengthY);
-		}
-
-		CPanel::CPanel(PointD^ panelSize)
-		{
-			_pPanel = new Panel();
-			_pPanel->xLength(panelSize->X);
-			_pPanel->yLength(panelSize->Y);
 		}
 
 		CPanel::CPanel(System::Drawing::PointF panelSize)
@@ -63,9 +56,9 @@ namespace Cyber
 		// Methods
 		//
 
-		SPISTATUS CPanel::AddFeature(CFeature^ feature)
+		int CPanel::AddFeature(CFeature^ feature)
 		{
-			return (SPISTATUS)_pPanel->AddFeature((Feature*)(void*)feature->UnmanagedFeature);
+			return _pPanel->AddFeature((Feature*)(void*)feature->UnmanagedFeature);
 		}
 
 		void CPanel::ClearFeatures()
@@ -102,11 +95,9 @@ namespace Cyber
 			return ToManagedFeature(pFeature);
 		}
 
-
-
-		SPISTATUS CPanel::AddFiducial(CFeature^ fiducial)
+		int CPanel::AddFiducial(CFeature^ fiducial)
 		{
-			return (SPISTATUS)_pPanel->AddFiducial((Feature*)(void*)fiducial->UnmanagedFeature);
+			return _pPanel->AddFiducial((Feature*)(void*)fiducial->UnmanagedFeature);
 		}
 
 		void CPanel::ClearFiducials()
@@ -188,7 +179,7 @@ namespace Cyber
 					}
 				}
 			}
-			catch(System::Exception^ e)
+			catch(System::Exception^)
 			{
 				//throw;
 				return nullptr;
@@ -213,16 +204,24 @@ namespace Cyber
 
 
 
-		SPIAPI::PointD^ CPanel::PanelSize::get() 
+		double CPanel::PanelSizeX::get() 
 		{ 
-			SPIAPI::PointD^ p = gcnew PointD(_pPanel->xLength(), _pPanel->yLength());
-			return p; 
+			return _pPanel->xLength();
 		}
 
-		void CPanel::PanelSize::set(SPIAPI::PointD^ value) 
+		void CPanel::PanelSizeX::set(double X) 
 		{ 
-			_pPanel->xLength(value->X);
-			_pPanel->yLength(value->Y);
+			_pPanel->xLength(X);
+		}
+
+		double CPanel::PanelSizeY::get() 
+		{ 
+			return _pPanel->yLength();
+		}
+
+		void CPanel::PanelSizeY::set(double Y) 
+		{ 
+			_pPanel->yLength(Y);
 		}
 
 	} // Namespace

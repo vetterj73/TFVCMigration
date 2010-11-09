@@ -1,5 +1,5 @@
 #include "Panel.h"
-#include "System.h"
+//#include "System.h"
 
 Panel::Panel() :
 	_name(""),
@@ -10,7 +10,7 @@ Panel::Panel() :
 	YCadOrigin(0.0)
 {
 	Pads.clear();
-	_apertureIndex = (Word) pow(2.0, (int)(sizeof(Word)*8)) - 1;
+	_apertureIndex = (unsigned short) pow(2.0, (int)(sizeof(unsigned short)*8)) - 1;
 	_currentFeature = endFeatures();
 	_currentFiducial = endFiducials();
 }
@@ -93,7 +93,7 @@ void Panel::ClearFeatures()
 		delete pad->second;
 
 	Pads.clear();
-	_apertureIndex = (Word) pow(2.0, (int)(sizeof(Word)*8)) - 1;
+	_apertureIndex = (unsigned short) pow(2.0, (int)(sizeof(unsigned short)*8)) - 1;
 }
 
 void Panel::ClearFiducials()
@@ -122,18 +122,18 @@ double Panel::yExtentOfPads()
 	return (maxY-minY);
 }
 
-SPIStatusCode Panel::AddFeature(Feature* pad)
+int Panel::AddFeature(Feature* pad)
 {
 	if(!pad->Validate(LengthX, LengthY))
-		return STATUS_FEATURE_OUT_OF_BOUNDS;
+		return -1;
 
 	if(!(Pads.find(pad->GetId())==endFeatures()))
-		return STATUS_FEATURE_ID_IN_USE;
+		return -2;
 
 	pad->SetApertureValue(_apertureIndex);
 	_apertureIndex--;
 	Pads[pad->GetId()] = pad;
-	return STATUS_SUCCESS;
+	return 0;
 }
 
 void Panel::RemoveFeature(int featureId)
@@ -141,17 +141,17 @@ void Panel::RemoveFeature(int featureId)
 	Pads.erase(featureId);
 }
 
-SPIStatusCode Panel::AddFiducial(Feature* fid)
+int Panel::AddFiducial(Feature* fid)
 {
 	if(!fid->Validate(LengthX, LengthY))
-		return STATUS_FEATURE_OUT_OF_BOUNDS;
+		return -1;
 
 	if(!(Fids.find(fid->GetId())==endFiducials()))
-		return STATUS_FEATURE_ID_IN_USE;
+		return -2;
 
 	fid->SetApertureValue(0);
 	Fids[fid->GetId()] = fid;
-	return STATUS_SUCCESS;
+	return 0;
 }
 
 void Panel::RemoveFiducial(int fiducialId)

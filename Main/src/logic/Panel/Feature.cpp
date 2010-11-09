@@ -1,7 +1,7 @@
 #include "ArcPolygonizer.h"
 #include "Feature.h"
-#include "Parse.h"
-#include "System.h"
+//#include "Parse.h"
+//#include "System.h"
 
 #ifndef EPSILON
 #define EPSILON 0.0000001
@@ -76,9 +76,10 @@ void Feature::ResetResults()
 
 void Feature::InspectionAreaFromBounds()
 {
+	// @todo - config?
 	// Read percent of feature to add to each side from config, different amount based on dimension
-	double iaLongDim = Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Long, CFG_VAL_Inspection_PadInspectionArea_Long);
-	double iaShortDim = Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Short, CFG_VAL_Inspection_PadInspectionArea_Short);
+	double iaLongDim = .10;//Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Long, CFG_VAL_Inspection_PadInspectionArea_Long);
+	double iaShortDim = .10;//Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Short, CFG_VAL_Inspection_PadInspectionArea_Short);
 
 	bool square = _boundingBox.Square();
 	double height = _boundingBox.Height();
@@ -822,7 +823,8 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	_concavePolygon = false;
 	_polygonPoints.clear();
 
-	bool debugShape = (Config::instance().getInt(CFG_KEY_Inspection_DebugShapes, CFG_VAL_Inspection_DebugShapes))?true:false;
+#pragma warning("Config");
+	bool debugShape = false;//(Config::instance().getInt(CFG_KEY_Inspection_DebugShapes, CFG_VAL_Inspection_DebugShapes))?true:false;
 
 	//
 	// Step 1: Convert lines and arcs defined by 
@@ -830,7 +832,9 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	//
 	if(_segments.size() <= 0)
 	{
-		G_LOG_1_ERROR("CyberShape %d is invalid! There are no segments!", _index);
+
+#pragma warning("Logging");
+//		G_LOG_1_ERROR("CyberShape %d is invalid! There are no segments!", _index);
 		return false;
 	}
 
@@ -840,13 +844,15 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	// The first segment must not be an arc
 	if(seg->GetLine()==false)
 	{
-		G_LOG_1_ERROR("CyberShape %d is invalid! It's definition started with an arc segment!", _index);
+#pragma warning("Logging");
+//		G_LOG_1_ERROR("CyberShape %d is invalid! It's definition started with an arc segment!", _index);
 		return false;
 	}
 
 	if(debugShape)
 	{
-		G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+#pragma warning("Logging");
+//		G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
 	}
 
 	// Add the starting point to the list
@@ -870,7 +876,8 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 		{
 			if(debugShape)
 			{
-				G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+#pragma warning("Logging");
+//				G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
 			}
 
 			segmentVertices.push_back(Point(seg->GetPositionX(), seg->GetPositionY()));
@@ -896,7 +903,8 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 			{
 				if(debugShape)
 				{
-					G_LOG_3_SOFTWARE("OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
+#pragma warning("Logging");
+//					G_LOG_3_SOFTWARE("OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
 				}
 
 				segmentVertices.push_back(Point(point->x, point->y));
@@ -932,7 +940,8 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 		{
 			if(debugShape)
 			{
-				G_LOG_3_SOFTWARE("OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
+#pragma warning("Logging");
+//				G_LOG_3_SOFTWARE("OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
 			}
 
 			_polygonPoints.push_back((*vertex));

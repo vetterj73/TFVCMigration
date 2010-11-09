@@ -7,9 +7,6 @@
 #pragma once
 
 #include "Box.h"
-#include "Parse.h"
-#include "TypeDefs.h"
-
 #include <string>
 #include <vector>
 using std::string;
@@ -54,8 +51,8 @@ public:
 	Box GetInspectionArea()	{ return _inspectionArea; }
 	double GetNominalArea()	{ return _nominalArea;    }
 
-	Word GetApertureValue()			{ return _apertureValue;  }
-	void SetApertureValue(Word a)	{ _apertureValue = a; }
+	unsigned short GetApertureValue()			{ return _apertureValue;  }
+	void SetApertureValue(unsigned short a)	{ _apertureValue = a; }
 
 	string GetName()		{ return _name;  }
 	unsigned int GetId()	{ return _index; }
@@ -99,7 +96,7 @@ protected:
 	Box				_boundingBox;
 	Box				_inspectionArea;
 	double			_nominalArea;
-	Word			_apertureValue;
+	unsigned short	_apertureValue;
 };
 
 class CrossFeature : public Feature

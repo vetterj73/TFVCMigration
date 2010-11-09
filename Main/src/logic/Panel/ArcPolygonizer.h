@@ -1,8 +1,6 @@
 #pragma once 
 
 #include "Point.h"
-#include "STL.h"
-
 #include <math.h>
 
 const double PI = 3.14159265359;
