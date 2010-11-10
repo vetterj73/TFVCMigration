@@ -3,7 +3,7 @@
 OverlapManager::OverlapManager(
 	MosaicImage* pMosaics, 
 	CorrelationFlags** pFlags, 
-	unsigned int iNumIllumination,
+	unsigned int iNumIlluminations,
 	Image* pCadImg, 
 	DRect validRect)
 {	
@@ -11,14 +11,14 @@ OverlapManager::OverlapManager(
 	
 	_pMosaics = pMosaics;	
 	_pFlags = pFlags;	
-	_iNumIllumination = iNumIllumination;
+	_iNumIlluminations = iNumIlluminations;
 	_pCadImg = pCadImg;
 	_validRect = validRect;
 
 	unsigned int i, j;
 	_iNumCameras=0;
 	_iNumTriggers=0;
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		if (_iNumCameras < pMosaics[i].NumCameras())
 			_iNumCameras = pMosaics[i].NumCameras();
@@ -28,10 +28,10 @@ OverlapManager::OverlapManager(
 	}
 
 	// Create 3D arrays for storage of overlaps
-	_fovFovOverlapLists = new list<FovFovOverlap>**[_iNumIllumination];
-	_cadFovOverlapLists = new list<CadFovOverlap>**[_iNumIllumination];
-	_fidFovOverlapLists = new list<FidFovOverlap>**[_iNumIllumination];
-	for(i=0; i<_iNumIllumination; i++)
+	_fovFovOverlapLists = new list<FovFovOverlap>**[_iNumIlluminations];
+	_cadFovOverlapLists = new list<CadFovOverlap>**[_iNumIlluminations];
+	_fidFovOverlapLists = new list<FidFovOverlap>**[_iNumIlluminations];
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		_fovFovOverlapLists[i] = new list<FovFovOverlap>*[_iNumTriggers];
 		_cadFovOverlapLists[i] = new list<CadFovOverlap>*[_iNumTriggers];
@@ -56,7 +56,7 @@ OverlapManager::~OverlapManager(void)
 {
 	// Release 3D arrays for storage
 	unsigned int i, j;
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		for(j=0; j<_iNumTriggers; j++)
 		{
@@ -180,7 +180,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 			{
 				// Find the nearest camera
 				int iCamIndex = -1;
-				double dMinDis = 1.0*dSpanCam; // If nearest camere is far away, ignore
+				double dMinDis = 0.6*dSpanCam; // If nearest camere is far away, ignore
 				for(iCam2=0; iCam2<iNumCams2; iCam2++)
 				{
 					double dis = fabs(pdCenY1[iCam1] -pdCenY2[iCam2]);
@@ -197,8 +197,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					// Any nearby trigger of the nearest camera 
 					for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
 					{
+						
 						double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);
-						if(dis < 1.1*dSpanTrig)
+						if((iIndex1 != iIndex2 && dis<0.8*dSpanTrig) ||		// For different mosaic images
+							(iIndex1 = iIndex2 && dis<1.2*dSpanTrig && dis>0.8*dSpanTrig)) // for the same mosaic image
 						{
 							FovFovOverlap overlap(
 								&_pMosaics[iIndex1], &_pMosaics[iIndex2],
@@ -225,9 +227,9 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 void OverlapManager::CreateFovFovOverlaps()
 {
 	unsigned int i, j;
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
-		for(j=i; j<_iNumIllumination; j++)
+		for(j=i; j<_iNumIlluminations; j++)
 		{
 			CreateFovFovOverlapsForTwoIllum(i, j);
 		}
@@ -238,7 +240,7 @@ void OverlapManager::CreateFovFovOverlaps()
 void OverlapManager::CreateCadFovOverlaps()
 {
 	unsigned int i, iCam, iTrig;
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		if(!_pMosaics[i].UseCad()) // If not use Cad
 			continue;
@@ -273,13 +275,13 @@ bool OverlapManager::ResetforNewPanel()
 {
 	// Reset all mosaic images for new panel inspection
 	unsigned int i, iCam , iTrig;
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		_pMosaics[i].ResetForNextPanel();
 	}
 
 	// Reset all overlaps for new panel inspection
-	for(i=0; i<_iNumIllumination; i++)
+	for(i=0; i<_iNumIlluminations; i++)
 	{
 		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{
@@ -372,15 +374,14 @@ list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
 	return(&_fidFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
 }
 
-
 // Decide after what layer is completed, mask images need to be created
 void OverlapManager::CalMaskCreationStage()
 {
 	unsigned int i, j;
-	unsigned iMin = _iNumIllumination+10;
-	for(i=0; i<_iNumIllumination; i++)
+	unsigned iMin = _iNumIlluminations+10;
+	for(i=0; i<_iNumIlluminations; i++)
 	{
-		for(j=i; j<_iNumIllumination; j++)
+		for(j=i; j<_iNumIlluminations; j++)
 		{
 			if(_pFlags[i][j].GetMaskNeeded())
 			{
@@ -396,11 +397,117 @@ void OverlapManager::CalMaskCreationStage()
 		}
 	}
 
-	if(iMin > _iNumIllumination)
+	if(iMin > _iNumIlluminations)
 		_iMaskCreationStage = -1;
 	else
-		_iMaskCreationStage = iMin-1;
+		_iMaskCreationStage = iMin;
 }
+
+unsigned int OverlapManager::MaxCorrelations() const
+{
+	unsigned int iFovFovCount = 0;
+	unsigned int iCadFovCount = 0;
+	unsigned int iFidFovCount = 0;
+
+	unsigned int i, iTrig, iCam;
+	for(i=0; i<_iNumIlluminations; i++)
+	{
+		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
+		{
+			for(iCam=0; iCam<_iNumCameras; iCam++)
+			{
+				// FovFov
+				iFovFovCount += (unsigned int)_fovFovOverlapLists[i][iTrig][iCam].size();
+
+				// CadFov
+				iCadFovCount += (unsigned int)_cadFovOverlapLists[i][iTrig][iCam].size();
+
+				//FidFov
+				iFidFovCount += (unsigned int)_fidFovOverlapLists[i][iTrig][iCam].size();
+			}
+		}
+	}
+
+	iFovFovCount /=2;
+
+	// Double check 3*3
+	unsigned int iSum = 3*3*iFovFovCount+iCadFovCount+iFidFovCount;
+	return(iSum);
+}
+
+//Report possible Maximum correlation will be used by solver to create mask
+unsigned int OverlapManager::MaxMaskCorrelations() const
+{
+	if(_iMaskCreationStage<=0)
+		return(0);
+
+	unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
+
+	return(MaxCorrelations(piIllumIndices, _iMaskCreationStage));
+}
+
+//Report possible maximum corrleaiton will be used by solver to create transforms
+unsigned int OverlapManager::MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const
+{
+	unsigned int iFovFovCount = 0;
+	unsigned int iCadFovCount = 0;
+	unsigned int iFidFovCount = 0;
+
+	unsigned int i, iTrig, iCam;
+	for(i=0; i<iNumIllums; i++)
+	{
+		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
+		{
+			for(iCam=0; iCam<_iNumCameras; iCam++)
+			{
+				// FovFov
+				list<FovFovOverlap>* pFovList = &_fovFovOverlapLists[i][iTrig][iCam];
+				for(list<FovFovOverlap>::iterator ite=pFovList->begin(); ite!=pFovList->end(); ite++)
+				{
+					if(IsFovFovOverlapForIllums(&(*ite), piIllumIndices, iNumIllums))
+					{
+						iFovFovCount++;
+					}
+				}
+
+				// CadFov
+				iCadFovCount += (unsigned int)_cadFovOverlapLists[i][iTrig][iCam].size();
+
+				//FidFov
+				iFidFovCount += (unsigned int)_fidFovOverlapLists[i][iTrig][iCam].size();
+			}
+		}
+	}
+
+	iFovFovCount /=2;
+
+	// Double check 3*3
+	unsigned int iSum = 3*3*iFovFovCount+iCadFovCount+iFidFovCount;
+	return(iSum);
+}
+
+// Check wether FovFov overlap's all mosaic image is in the list
+// 
+bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const
+{
+	unsigned int iIndex1 = pOverlap->GetFirstMosaicImage()->Index();
+	unsigned int iIndex2 = pOverlap->GetSecondMosaicImage()->Index();
+	
+	bool bFlag1=false, bFlag2=false;
+	unsigned int i;
+	for(i=0; i<iNumIllums; i++)
+	{
+		if(iIndex1 == piIllumIndices[i])
+			bFlag1 = true;
+
+		if(iIndex2 == piIllumIndices[i])
+			bFlag2 = true;
+	}
+
+	return(bFlag1 && bFlag2);
+}
+
+
 
 
 

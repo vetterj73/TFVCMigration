@@ -1,26 +1,6 @@
 #pragma once
-#include"OverlapManager.h"
-
-class FovIndex
-{
-public:
-	FovIndex(
-		unsigned int iIllumIndex,
-		unsigned int iTrigIndex,
-		unsigned int iCamIndex)
-	{
-		IlluminationIndex = iIllumIndex;
-		TriggerIndex = iTrigIndex;
-		CameraIndex = iCamIndex;
-	}
-
-	unsigned int IlluminationIndex;
-	unsigned int TriggerIndex;
-	unsigned int CameraIndex;
-};
-
-bool operator<(const FovIndex& a, const FovIndex& b);
-bool operator>(const FovIndex& a, const FovIndex& b);
+#include "OverlapManager.h"
+#include "RobustSolver.h"
 
 class StitchingManager
 {
@@ -39,8 +19,14 @@ protected:
 		map<FovIndex, unsigned int>* pOrderMap);
 
 private:
-	OverlapManager* _pOvelapManager;
+	OverlapManager* _pOverlapManager;
 
+	int _iMaskCreationStage;
 
+	RobustSolver* _pSolver;
+	map<FovIndex, unsigned int> _solverMap;
+
+	RobustSolver* _pMaskSolver;
+	map<FovIndex, unsigned int> _maskMap;
 };
 

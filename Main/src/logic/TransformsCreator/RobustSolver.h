@@ -1,7 +1,28 @@
 #pragma once
 
 #include "MosaicImage.h"
-#include "StitchingManager.h"
+#include "OverlapDefines.h"
+
+class FovIndex
+{
+public:
+	FovIndex(
+		unsigned int iIllumIndex,
+		unsigned int iTrigIndex,
+		unsigned int iCamIndex)
+	{
+		IlluminationIndex = iIllumIndex;
+		TriggerIndex = iTrigIndex;
+		CameraIndex = iCamIndex;
+	}
+
+	unsigned int IlluminationIndex;
+	unsigned int TriggerIndex;
+	unsigned int CameraIndex;
+};
+
+bool operator<(const FovIndex& a, const FovIndex& b);
+bool operator>(const FovIndex& a, const FovIndex& b);
 
 // Only support single thread so far
 class RobustSolver

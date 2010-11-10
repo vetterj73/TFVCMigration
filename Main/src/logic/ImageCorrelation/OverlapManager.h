@@ -16,7 +16,7 @@ public:
 	OverlapManager(
 		MosaicImage* pMosaics, 
 		CorrelationFlags** pFlags, 
-		unsigned int iNumIllumination,
+		unsigned int iNumIlluminations,
 		Image* pCadImg, 
 		DRect validRect);
 	~OverlapManager(void);
@@ -44,8 +44,10 @@ public:
 		unsigned int iCamIndex) const;
 
 	MosaicImage* GetMoaicImage(unsigned int iIndex) const {return &(_pMosaics[iIndex]);};
-	unsigned int NumIlluminations() {return _iNumIllumination;};
+	unsigned int NumIlluminations() {return _iNumIlluminations;};
 	int GetMaskCreationStage() {return _iMaskCreationStage;};
+	unsigned int MaxCorrelations() const;
+	unsigned int MaxMaskCorrelations() const;
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -55,11 +57,14 @@ protected:
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
 
 	void CalMaskCreationStage();
+
+	unsigned int MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const;
+	bool IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 	
 private:	
 	MosaicImage* _pMosaics;
 	CorrelationFlags** _pFlags;	
-	unsigned int _iNumIllumination;
+	unsigned int _iNumIlluminations;
 	
 	Image* _pCadImg;
 	DRect _validRect;

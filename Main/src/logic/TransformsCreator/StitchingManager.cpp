@@ -1,39 +1,35 @@
 #include "StitchingManager.h"
 
-
-bool operator<(const FovIndex& a, const FovIndex& b)
+StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 {
-	if(a.IlluminationIndex < b.IlluminationIndex)
-		return (true);
+	_pOverlapManager = pOverlapManager;
 
-	if(a.TriggerIndex < b.TriggerIndex)
-		return(true);
+	bool bProjectiveTrans = false;
 
-	if(a.CameraIndex < b.CameraIndex)
-		return(true);
 
-	return(false);
+	CreateImageOrderInSolver(&_solverMap);	
+	unsigned int iMaxNumCorrelation =  pOverlapManager->MaxCorrelations();  
+	_pSolver = new RobustSolver(	
+		&_solverMap, 
+		iMaxNumCorrelation, 
+		bProjectiveTrans);
+
+	_iMaskCreationStage = _pOverlapManager->GetMaskCreationStage();
+	if(_iMaskCreationStage >= 1)
+	{
+		unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
+		for(int i=0; i<_iMaskCreationStage; i++)
+		{
+			piIllumIndices[i] = i;
+			CreateImageOrderInSolver(piIllumIndices, _iMaskCreationStage, &_maskMap);
+		}
+		iMaxNumCorrelation =  pOverlapManager->MaxMaskCorrelations();
+		_pMaskSolver = new RobustSolver(
+			&_solverMap, 
+			iMaxNumCorrelation, 
+			bProjectiveTrans);
+	}
 }
-
-bool operator>(const FovIndex& a, const FovIndex& b)
-{
-	if(a.IlluminationIndex > b.IlluminationIndex)
-		return (true);
-
-	if(a.TriggerIndex > b.TriggerIndex)
-		return(true);
-
-	if(a.CameraIndex > b.CameraIndex)
-		return(true);
-
-	return(false);
-}
-
-StitchingManager::StitchingManager(OverlapManager* pOvelapManager)
-{
-	_pOvelapManager = pOvelapManager;
-}
-
 
 StitchingManager::~StitchingManager(void)
 {
@@ -64,7 +60,7 @@ bool StitchingManager::CreateImageOrderInSolver(
 	{
 		// Get trigger centers in X
 		unsigned int iIllumIndex = piIllumIndices[i];
-		MosaicImage* pMosaic = _pOvelapManager->GetMoaicImage(iIllumIndex);
+		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
 		unsigned int iNumTrigs = pMosaic->NumTriggers();
 		double* dCenX = new double[iNumTrigs];
 		pMosaic->TriggerCentersInX(dCenX);
@@ -89,7 +85,7 @@ bool StitchingManager::CreateImageOrderInSolver(
 	{
 		unsigned int iIllumIndex = j->first.IlluminationIndex;
 		unsigned int iTrigerINdex = j->first.TriggerIndex;
-		MosaicImage* pMosaic = _pOvelapManager->GetMoaicImage(iIllumIndex);
+		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
 		unsigned int iNumCams = pMosaic->NumCameras();
 		for(i=0; i<iNumCams; i++)
 		{
@@ -104,7 +100,7 @@ bool StitchingManager::CreateImageOrderInSolver(
 
 bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap)
 {
-	unsigned int iNumIllums = _pOvelapManager->NumIlluminations();
+	unsigned int iNumIllums = _pOverlapManager->NumIlluminations();
 	unsigned int* piIllumIndices = new unsigned int[iNumIllums];
 
 	for(unsigned int i=0; i<iNumIllums; i++)
