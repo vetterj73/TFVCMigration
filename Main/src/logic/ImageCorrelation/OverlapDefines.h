@@ -38,6 +38,9 @@ public:
 	virtual bool IsValid() const {return _bValid;};
 	bool IsProcessed() const {return _bProcessed;};
 
+	CorrelationPair* GetCoarsePairPtr() {return &_coarsePair;};
+	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
+
 	bool DoIt();
 	bool Reset();
 
@@ -75,19 +78,23 @@ public:
 		bool bHasMask);
 
 	MosaicImage* GetFirstMosaicImage() const {return _pMosaic1;};
+	unsigned int GetFirstTriggerIndex() const {return _imgPos1.second;};
+	unsigned int GetFirstCameraIndex() const {return _imgPos1.first;};
 	pair<unsigned int, unsigned int> GetFirstImagePosition() const {return _imgPos1;};
 
 	MosaicImage* GetSecondMosaicImage() const {return _pMosaic2;};
+	unsigned int GetSecondTriggerIndex() const {return _imgPos2.second;};
+	unsigned int GetSecondCameraIndex() const {return _imgPos2.first;};
 	pair<unsigned int, unsigned int> GetSecondImagePosition() const {return _imgPos2;};
 
 	bool IsValid() const;
 
 private:
-		MosaicImage*	_pMosaic1;
-		MosaicImage*	_pMosaic2;
-		pair<unsigned int, unsigned int> _imgPos1;
-		pair<unsigned int, unsigned int> _imgPos2;
-		bool _bHasMask;
+	MosaicImage*	_pMosaic1;
+	MosaicImage*	_pMosaic2;
+	pair<unsigned int, unsigned int> _imgPos1;
+	pair<unsigned int, unsigned int> _imgPos2;
+	bool _bHasMask;
 };
 
 class CadFovOverlap: public Overlap
@@ -100,7 +107,10 @@ public:
 		DRect validRect);
 
 	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	unsigned int GetTriggerIndex() const {return _imgPos.second;};
+	unsigned int GetCameraIndex() const {return _imgPos.first;};
 	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
+	
 	Image* GetCadImage() const {return _pCadImg;};
 
 	bool IsValid() const;
@@ -124,11 +134,13 @@ public:
 		DRect validRect);
 
 	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	unsigned int GetTriggerIndex() const {return _imgPos.second;};
+	unsigned int GetCameraIndex() const {return _imgPos.first;};
 	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
 	Image* GetFidImage() const {return _pFidImg;};
 
-	double GetFiducialXPos() const {return _dCenterX;};
-	double GetFiducialYPos() const {return _dCenterY;};
+	double GetFiducialXPos() const {return _dFidCenterX;};
+	double GetFiducialYPos() const {return _dFidCenterY;};
 
 	bool IsValid() const;
 
@@ -138,7 +150,7 @@ private:
 
 	Image* _pFidImg;
 
-	double _dCenterX;
-	double _dCenterY;
+	double _dFidCenterX;
+	double _dFidCenterY;
 };
 

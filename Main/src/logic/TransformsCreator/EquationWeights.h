@@ -14,7 +14,7 @@ public:
 		return *ptr;
 	}
 
-	double CalWeight(const CorrelationPair* pPair) const;
+	double CalWeight(CorrelationPair* pPair);
 
 protected:
 	EquationWeights(void);

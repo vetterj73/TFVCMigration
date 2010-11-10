@@ -1,11 +1,12 @@
 #include "RobustSolver.h"
 #include "EquationWeights.h"
+#include "lsqrpoly.h"
 
 #define Weights EquationWeights::instance()
 
 RobustSolver::RobustSolver(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 
-	unsigned int iNumCorrelation, 
+	unsigned int iMaxNumCorrelation, 
 	bool bProjectiveTrans)
 {
 	_pFovOrderMap = pFovOrderMap;
@@ -25,7 +26,7 @@ RobustSolver::RobustSolver(
 	}
 
 	_iMatrixWidth = _iNumFovs * _iNumParamsPerFov;
-	_iMatrixHeight = _iNumFovs * _iNumCalibConstrains + 2*iNumCorrelation;
+	_iMatrixHeight = _iNumFovs * _iNumCalibConstrains + 2*iMaxNumCorrelation;
 
 	unsigned int _iMatrixSize = _iMatrixWidth * _iMatrixHeight;
 
@@ -67,7 +68,8 @@ void RobustSolver::ZeroTheSystem()
 		_dVectorX[i] = 0.0;
 }
 
-// Add Constraints for one 
+#pragma region Add equations
+// Add Constraints for one image
 bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex)
 {
 	// Validation check
@@ -225,68 +227,465 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 		//* 11 M6 = M10
 		pdRowBegin[iFOVPos+6] = Weights.wPMEq;
 		pdRowBegin[iFOVPos+10] = -Weights.wPMEq;
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
 					
 		//* 12 M7 = M11
 		pdRowBegin[iFOVPos+7] = Weights.wPMEq;
 		pdRowBegin[iFOVPos+11]= -Weights.wPMEq;
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
 					
 		//* 13 M8 = 0
 		pdRowBegin[iFOVPos+8] = Weights.wPM89;
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
 
 		//* 14 M9 = 0;
 		pdRowBegin[iFOVPos+9] = Weights.wPM89;
-
-					
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
+							
 		if(iNextCamFovPos > 0 )
 		{	
 			//* 15 M10 = Next FOV M10
 			pdRowBegin[iFOVPos+10] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+10] = -Weights.wPMNext;
+			pdRowBegin += _iMatrixWidth;
+			_iCurrentRow++;
 						
 			//* 16 M11 = Next FOV M11
 			pdRowBegin[iFOVPos+11] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+11] = -Weights.wPMNext;
+			pdRowBegin += _iMatrixWidth;
+			_iCurrentRow++;
 		}
 	}
 
 	return(true);
 }
 
-/*/ Robust regression by Huber's "Algorithm H"
+// Add results for one Fov and Fov overlap
+bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
+{
+	// Validation check
+	if(!pOverlap->IsProcessed()) return(false);
+
+	// First Fov's information
+	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicImage()->Index();
+	unsigned int iTrigIndexA = pOverlap->GetFirstTriggerIndex();
+	unsigned int iCamIndexA = pOverlap->GetFirstCameraIndex();
+	FovIndex index1(iMosicIndexA, iTrigIndexA, iCamIndexA); 
+	unsigned int iFOVPosA = (*_pFovOrderMap)[index1] *_iNumParamsPerFov;
+
+	// Second Fov's information
+	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicImage()->Index();
+	unsigned int iTrigIndexB = pOverlap->GetSecondTriggerIndex();
+	unsigned int iCamIndexB = pOverlap->GetSecondCameraIndex();
+	FovIndex index2(iMosicIndexB, iTrigIndexB, iCamIndexB); 
+	unsigned int iFOVPosB = (*_pFovOrderMap)[index2] *_iNumParamsPerFov;
+
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+
+	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
+	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
+	{
+		// validation checka
+		CorrelationResult result;
+		bool bFlag = i->GetCorrelationResult(&result);
+		if(!bFlag) 
+			continue;
+
+		CorrelationPair pair(*i);
+		double w = Weights.CalWeight(&pair);
+		if(w <= 0) 
+			continue;
+
+		// Get Centers of ROIs
+		double rowImgA = (i->GetFirstRoi().FirstRow + i->GetFirstRoi().LastRow)/ 2.0;
+		double colImgA = (i->GetFirstRoi().FirstColumn + i->GetFirstRoi().LastColumn)/ 2.0;
+
+		double rowImgB = (i->GetSecondRoi().FirstRow + i->GetSecondRoi().LastRow)/ 2.0;
+		double colImgB = (i->GetSecondRoi().FirstColumn + i->GetSecondRoi().LastColumn)/ 2.0;
+
+		// Get offset
+		double offsetRows = result.RowOffset;
+		double offsetCols = result.ColOffset;
+
+		// Add a equataion for X
+		pdRow[iFOVPosA + 0] = (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA + 1] = (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA + 2] = w;
+		pdRow[iFOVPosB + 0] = -rowImgB * w;
+		pdRow[iFOVPosB + 1] = -colImgB * w;
+		pdRow[iFOVPosB + 2] = -w;
+
+		// For projective transform
+		if(_bProjectiveTrans)
+		{
+			pdRow[iFOVPosA + 6] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+			pdRow[iFOVPosA + 7] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+			pdRow[iFOVPosA + 8] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+			pdRow[iFOVPosB + 6] = -rowImgB * rowImgB * w;
+			pdRow[iFOVPosB + 7] = -rowImgB * colImgB * w;
+			pdRow[iFOVPosB + 8] = -colImgB * colImgB * w;
+		}
+		pdRow += _iMatrixWidth;
+		_iCurrentRow++;
+
+		// Add a equataion for Y
+		pdRow[iFOVPosA + 3] = (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA + 4] = (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA + 5] = w;
+		pdRow[iFOVPosB + 3] = -rowImgB * w;
+		pdRow[iFOVPosB + 4] = -colImgB * w;
+		pdRow[iFOVPosB + 5] = -w;
+
+		// For projective transform
+		if(_bProjectiveTrans)
+		{
+			pdRow[iFOVPosA + 9] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+			pdRow[iFOVPosA +10] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+			pdRow[iFOVPosA +11] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+			pdRow[iFOVPosB + 9] = -rowImgB * rowImgB * w;
+			pdRow[iFOVPosB +10] = -rowImgB * colImgB * w;
+			pdRow[iFOVPosB +11] = -colImgB * colImgB * w;
+		}
+		pdRow += _iMatrixWidth;
+		_iCurrentRow++;
+	}
+
+	return(true);
+}
+
+// Add results for one Cad and Fov overlap
+bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
+{
+	// Validation check
+	if(!pOverlap->IsProcessed()) return(false);
+
+	// Fov's information
+	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();
+	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
+	unsigned int iCamIndex = pOverlap->GetCameraIndex();
+	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 
+	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
+
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+
+	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
+
+	// validation check
+	CorrelationResult result;
+	bool bFlag = pPair->GetCorrelationResult(&result);
+	if(!bFlag) 
+		return(false);
+
+	double w = Weights.CalWeight(pPair);
+	if(w <= 0) 
+		return(false);
+
+	// Get Centers of ROIs
+	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
+	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+
+	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
+	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+	double dCadCenX, dCadCenY;
+	pOverlap->GetCadImage()->ImageToWorld(rowImgB, colImgB, &dCadCenX, &dCadCenY);
+
+	// Get offset
+	double offsetRows = result.RowOffset;
+	double offsetCols = result.ColOffset;
+
+	// Add a equataion for X
+	pdRow[iFOVPosA + 0] = (rowImgA-offsetRows) * w;
+	pdRow[iFOVPosA + 1] = (colImgA-offsetCols) * w;
+	pdRow[iFOVPosA + 2] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 6] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA + 7] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA + 8] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+	}
+	_dVectorB[_iCurrentRow] = w*dCadCenX;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// Add a equataion for Y
+	pdRow[iFOVPosA + 3] = (rowImgA-offsetRows) * w;
+	pdRow[iFOVPosA + 4] = (colImgA-offsetCols) * w;
+	pdRow[iFOVPosA + 5] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 9] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA +10] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA +11] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+	}
+	_dVectorB[_iCurrentRow] = w*dCadCenY;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+	
+	return(true);
+}
+
+// Add results for one Fiducial and Fov overlap
+bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
+{
+	// Validation check
+	if(!pOverlap->IsProcessed()) return(false);
+
+	// Fov's information
+	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();
+	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
+	unsigned int iCamIndex = pOverlap->GetCameraIndex();
+	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 
+	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
+
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+
+	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
+
+	// validation check
+	CorrelationResult result;
+	bool bFlag = pPair->GetCorrelationResult(&result);
+	if(!bFlag) 
+		return(false);
+
+	double w = Weights.CalWeight(pPair);
+	if(w <= 0) 
+		return(false);
+
+	// Get Centers of ROIs
+	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
+	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+
+	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
+	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+	double dFidCenX, dFidCenY;
+	pOverlap->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidCenX, &dFidCenY);
+
+	// Get offset
+	double offsetRows = result.RowOffset;
+	double offsetCols = result.ColOffset;
+
+	// Add a equataion for X
+	pdRow[iFOVPosA + 0] = (rowImgA-offsetRows) * w;
+	pdRow[iFOVPosA + 1] = (colImgA-offsetCols) * w;
+	pdRow[iFOVPosA + 2] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 6] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA + 7] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA + 8] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+	}
+	_dVectorB[_iCurrentRow] = w*dFidCenX;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// Add a equataion for Y
+	pdRow[iFOVPosA + 3] = (rowImgA-offsetRows) * w;
+	pdRow[iFOVPosA + 4] = (colImgA-offsetCols) * w;
+	pdRow[iFOVPosA + 5] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 9] = (rowImgA-offsetRows) * (rowImgA-offsetRows) * w;
+		pdRow[iFOVPosA +10] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
+		pdRow[iFOVPosA +11] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
+	}
+	_dVectorB[_iCurrentRow] = w*dFidCenY;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+	
+	return(true);
+}
+#pragma endregion
+
+#pragma region Solver
+struct LeftIndex
+{
+	unsigned int iLeft;
+	unsigned int iIndex;
+	unsigned int iLength;
+};
+
+bool operator<(const LeftIndex& a, const LeftIndex& b)
+{
+	return(a.iLeft < b.iLeft);
+};
+
+// Reorder the matrix A and vector B, and transpose Matrix A for banded solver
+// bRemoveEmptyRows, flag for removing empty equations from Matrix A
+// piCounts: output, # rows in block i for banded solver
+// piEmptyRows: output, number of empty equations in Matrix A
+unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows)
+{
+	//Get map for reorder
+	list<LeftIndex> leftIndexList;
+	int iStart, iEnd;
+	bool bFlag;
+	int iMaxIndex;
+	unsigned int iMaxLength = 0;	// Max unempty length in a row 
+	*piEmptyRows = 0;				// Number of empty rows
+	for(unsigned int row(0); row<_iMatrixHeight; ++row) // for each row
+	{
+		bFlag = false;  // False if the whole row is zero
+		for(unsigned int col(0); col<_iMatrixWidth; ++col)
+		{
+			if(_dMatrixA[row*_iMatrixWidth+col]!=0)
+			{
+				if(!bFlag)
+				{
+					iStart = col; //record the first column
+					bFlag = true;
+				}
+
+				iEnd = col; // record the last column
+			}
+		}
+
+		LeftIndex node;				
+		node.iIndex = row;
+		if(bFlag) // Not a empty row
+		{
+			node.iLeft = iStart;
+			node.iLength = iEnd-iStart+1;
+		}
+		else
+		{	// Empty Rows
+			node.iLeft = _iMatrixWidth+1; // Empty rows need put on the last 
+			node.iLength = 0;
+
+			(*piEmptyRows)++;
+		}
+		
+		// Update iMaxLength
+		if(node.iLength > iMaxLength)
+		{
+			iMaxLength = node.iLength;
+			iMaxIndex = row;
+		}
+		
+		leftIndexList.push_back(node);	
+	}
+	// Sort node
+	leftIndexList.sort();
+
+	// Clear piCount
+	for(unsigned int j = 0; j<_iMatrixWidth; j++)
+		piCounts[j] = 0;
+
+	// Reorder and transpose
+	double* workspace = new double[_iMatrixWidth];
+	double* dCopyB = new double[_iMatrixHeight];
+	unsigned int iDestRow = 0;
+	list<LeftIndex>::const_iterator i;
+	for(i=leftIndexList.begin(); i!=leftIndexList.end(); i++)
+	{
+		for(unsigned int col(0); col<_iMatrixWidth; ++col)
+			workspace[col*_iMatrixHeight+iDestRow] = _dMatrixA[i->iIndex*_iMatrixWidth+col];
+
+		dCopyB[iDestRow] = _dVectorB[i->iIndex];
+
+		// Skip the empty rows
+		if(bRemoveEmptyRows && (i->iLength == 0)) continue;
+
+		// Count Rows of each block 
+		if(i->iLeft < _iMatrixWidth - iMaxLength)
+			piCounts[i->iLeft]++; // All blocks except the last one
+		else
+			piCounts[_iMatrixWidth - iMaxLength]++; // The last block
+		
+		iDestRow++;
+	}
+	
+	unsigned int k;
+	unsigned int temp=0;
+	for(k=0; k<_iMatrixWidth-iMaxLength+1; k++)
+		temp += piCounts[k];
+
+	if(bRemoveEmptyRows)
+	{
+		// Skip the empty rows in input matrix (columns in workspace)
+		for(k=0; k<_iMatrixWidth; k++)
+			::memcpy(_dMatrixA+k*(_iMatrixHeight-*piEmptyRows), workspace+k*_iMatrixHeight, (_iMatrixHeight-*piEmptyRows)*sizeof(double));
+
+	}
+	else	// include empty rows
+		::memcpy(_dMatrixA, workspace, _iMatrixSize*sizeof(double));
+
+	for(k=0; k<_iMatrixHeight; k++)
+		_dVectorB[k] = dCopyB[k];
+
+ /*/ for debug
+	// Save Matrix A 
+	ofstream of("C:\\2D_SPI\\reorderA.csv");
+
+	of << std::scientific;
+
+	int ilines = nRows;
+	if(bRemoveEmptyRows)
+		ilines = nRows-*piEmptyRows;
+
+	for(k=0; k<ilines; k++)
+	{ 
+		for(j=0; j<_iMatrixWidth; j++)
+		{
+			of << MatrixA[j*ilines+k]<<",";
+		}
+		of << std::endl;
+	}
+
+	of.close();
+*/
+	delete [] workspace;
+	delete [] dCopyB;
+	return(iMaxLength);
+}
+
+// Robust regression by Huber's "Algorithm H"
 // Banded version
 void RobustSolver::SolveXAlgHB()
 {
 
-	::memcpy(MatrixACopy, MatrixA, SizeOfA*sizeof(double));
-	VectorBCopy = VectorB;
+	::memcpy(_dMatrixACopy, _dMatrixA, _iMatrixSize*sizeof(double));
+	::memcpy(_dVectorBCopy, _dVectorB, _iMatrixHeight*sizeof(double)); 
 
 	// we built A in row order
 	// the qr factorization method requires column order
 	bool bRemoveEmptyRows = false;
-	int* mb = new int[widthOfA];
+	int* mb = new int[_iMatrixWidth];
 	unsigned int iEmptyRows;
 	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);
 
-	double*	resid = new double[nRows];
-	double scaleparm(0);
-	double cond(0);
+	double*	resid = new double[_iMatrixHeight];
+	double scaleparm = 0;
+	double cond = 0;
 
-	G_LOG_0_SPEED2("BEGIN ALG_HB");
+	//G_LOG_0_SPEED2("BEGIN ALG_HB");
 
 	int algHRetVal = 
 		alg_hb(                // Robust regression by Huber's "Algorithm H"/ Banded version.
 			// Inputs //			// See qrdb() in qrband.c for more information.
 
 			bw,						// Width (bandwidth) of each block 
-			widthOfA-bw+1,			// # of blocks 
+			_iMatrixWidth-bw+1,		// # of blocks 
 			mb,						// mb[i] = # rows in block i 
-			MatrixA,				// System matrix
-			&VectorB[0],			// Constant vector (not overwritten); must not coincide with x[] or resid[]. 
+			_dMatrixA,				// System matrix
+			_dVectorB,			// Constant vector (not overwritten); must not coincide with x[] or resid[]. 
 
 		   // Outputs //
 
-			&VectorX[0],            // Coefficient vector (overwritten with solution) 
-			&resid[0],				// Residuals b - A*x (pass null if not wanted).  If non-null, must not coincide with x[] or b[].
+			_dVectorX,            // Coefficient vector (overwritten with solution) 
+			resid,				// Residuals b - A*x (pass null if not wanted).  If non-null, must not coincide with x[] or b[].
 			&scaleparm,				// Scale parameter.  This is a robust measure of
 									//  dispersion that corresponds to RMS error.  (Pass NULL if not wanted.)
 			&cond					// Approximate reciprocal condition number.  (Pass NULL if not wanted.) 
@@ -299,9 +698,9 @@ void RobustSolver::SolveXAlgHB()
 			// -4 - Iteration limit reached (results may be tolerable)
 				  );
 
-	delete [] mb;
 
-	if( algHRetVal<0 )
+
+	/*if( algHRetVal<0 )
 		G_LOG_1_ERROR("alg_hb returned value of %d", algHRetVal);
 
 	G_LOG_0_SPEED2("FINISHED ALG_HB");
@@ -318,7 +717,122 @@ void RobustSolver::SolveXAlgHB()
 			filename = Config::instance().getLoggingDir() + "\\VectorX.csv";
 			OutputDebugVectorCSV(filename);
 		}
+	}*/
+
+	delete [] mb;
+	delete [] resid;
+}
+#pragma endregion
+
+// populates object referred to by the function argument t with 
+// the terms that define the transformation
+ImgTransform RobustSolver::GetResultTransform(
+	unsigned int iLlluminationIndex,
+	unsigned int iTriggerIndex,
+	unsigned int iCameraIndex) const 
+{
+	// Fov transform parameter begin position in column
+	FovIndex fovIndex(iLlluminationIndex, iTriggerIndex, iCameraIndex); 
+	unsigned int index = (*_pFovOrderMap)[fovIndex] *_iNumParamsPerFov;
+
+	double t[3][3];
+
+	if(!_bProjectiveTrans)
+	{
+
+		t[0][0] = _dVectorX[ index + 0 ];
+		t[0][1] = _dVectorX[ index + 1 ];
+		t[0][2] = _dVectorX[ index + 2 ];
+			   
+		t[1][0] = _dVectorX[ index + 3 ];
+		t[1][1] = _dVectorX[ index + 4 ];
+		t[1][2] = _dVectorX[ index + 5 ];
+			   
+		t[2][0] = 0;
+		t[2][1] = 0;
+		t[2][2] = 1;
+	}
+	else
+	{
+		// Create matching projetive transform
+		MatchProjeciveTransform(&_dVectorX[index], t);
 	}
 
-	delete[] resid;
-}*/
+	ImgTransform trans(t);
+
+	return(trans);
+}
+
+// From 12 calcualted parameters to match a projecive transform
+bool RobustSolver::MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const
+{
+	int iNumX = 10;
+	int iNumY = 10;
+	int iStepX = 1944/iNumX;  // Rows
+	int iStepY = 2592/iNumY;  // Columes
+	double* pRow = new double[iNumX*iNumY];
+	double* pCol = new double[iNumX*iNumY];
+	double* pX	 = new double[iNumX*iNumY];
+	double* pY	 = new double[iNumX*iNumY];
+
+	// Create match pairs for projective transform
+	int iIndex = 0;
+	for(int ky=0; ky<iNumY; ky++)
+	{
+		for(int kx=0; kx<iNumX; kx++)
+		{
+			pRow[iIndex] = kx*iStepX;
+			pCol[iIndex] = ky*iStepY;
+
+			pX[iIndex] = pRow[iIndex]*pPara[0] + pCol[iIndex]*pPara[1] + pPara[2] +
+				pRow[iIndex]*pRow[iIndex]*pPara[6] +
+				pRow[iIndex]*pCol[iIndex]*pPara[7] +
+				pCol[iIndex]*pCol[iIndex]*pPara[8];
+
+			pY[iIndex] = pRow[iIndex]*pPara[3] + pCol[iIndex]*pPara[4] + pPara[5] +
+				pRow[iIndex]*pRow[iIndex]*pPara[9] +
+				pRow[iIndex]*pCol[iIndex]*pPara[10] +
+				pCol[iIndex]*pCol[iIndex]*pPara[11];
+
+			iIndex++;
+		}
+	}
+
+	// Create matching projective transform
+	int m = iNumX*iNumY;
+	complexd* p = new complexd[m];
+	complexd* q = new complexd[m];
+	complexd* resid = new complexd[m];
+	//complexd p[25], q[25], resid[25];
+	double RMS, dRcond;
+	
+	for(int j=0; j<m; j++)
+	{
+		p[j].r = pRow[j];
+		p[j].i = pCol[j];
+		q[j].r = pX[j];
+		q[j].i = pY[j];
+	}
+
+	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
+	//G_LOG_1_SOFTWARE("RMS = %f", RMS/(1.6e-5));
+
+	if(iFlag != 0)
+	{
+		//G_LOG_0_ERROR("Failed to create matching projective transform");
+	}
+
+	delete [] p;
+	delete [] q;
+	delete [] resid;
+
+	delete [] pRow;
+	delete [] pCol;
+	delete [] pX;
+	delete [] pY;
+
+	if(iFlag != 0)
+		return(false);
+	else
+		return(true);
+}

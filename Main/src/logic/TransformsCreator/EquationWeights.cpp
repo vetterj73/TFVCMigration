@@ -41,7 +41,7 @@ EquationWeights::~EquationWeights(void)
 
 // Calculate weigtht for correlation pair
 // pPair
-double EquationWeights::CalWeight(const CorrelationPair* pPair) const
+double EquationWeights::CalWeight(CorrelationPair* pPair)
 {
 	if(pPair->IsProcessed())
 		return(0);
