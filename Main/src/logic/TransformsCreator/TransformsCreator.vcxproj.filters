@@ -21,12 +21,18 @@
     <ClInclude Include="EquationWeights.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StitchingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="RobustSolver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EquationWeights.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StitchingManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

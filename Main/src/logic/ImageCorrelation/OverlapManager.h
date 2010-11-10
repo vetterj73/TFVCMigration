@@ -10,27 +10,6 @@
 
 using namespace MosaicDM;
 
-class FovIndex
-{
-public:
-	FovIndex(
-		unsigned int iIllumIndex,
-		unsigned int iTrigIndex,
-		unsigned int iCamIndex)
-	{
-		IlluminationIndex = iIllumIndex;
-		TriggerIndex = iTrigIndex;
-		CameraIndex = iCamIndex;
-	}
-
-	unsigned int IlluminationIndex;
-	unsigned int TriggerIndex;
-	unsigned int CameraIndex;
-};
-
-bool operator<(const FovIndex& a, const FovIndex& b);
-bool operator>(const FovIndex& a, const FovIndex& b);
-
 class OverlapManager
 {
 public:
@@ -64,12 +43,9 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
-	bool CreateImageOrderInSolver(
-		unsigned int* piIllumIndices, 
-		unsigned iNumIllums, 
-		map<FovIndex, unsigned int>* pOrderMap);
-
-	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap);
+	MosaicImage* GetMoaicImage(unsigned int iIndex) const {return &(_pMosaics[iIndex]);};
+	unsigned int NumIlluminations() {return _iNumIllumination;};
+	int GetMaskCreationStage() {return _iMaskCreationStage;};
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -77,9 +53,9 @@ protected:
 	void CreateFidFovOverlaps();
 	
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
-	
-	void MaskCreationStage();
 
+	void CalMaskCreationStage();
+	
 private:	
 	MosaicImage* _pMosaics;
 	CorrelationFlags** _pFlags;	

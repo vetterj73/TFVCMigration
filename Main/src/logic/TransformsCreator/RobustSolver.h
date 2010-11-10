@@ -1,8 +1,7 @@
 #pragma once
 
 #include "MosaicImage.h"
-#include "OverlapManager.h"
-
+#include "StitchingManager.h"
 
 // Only support single thread so far
 class RobustSolver

@@ -1,34 +1,5 @@
 #include "OverlapManager.h"
 
-
-bool operator<(const FovIndex& a, const FovIndex& b)
-{
-	if(a.IlluminationIndex < b.IlluminationIndex)
-		return (true);
-
-	if(a.TriggerIndex < b.TriggerIndex)
-		return(true);
-
-	if(a.CameraIndex < b.CameraIndex)
-		return(true);
-
-	return(false);
-}
-
-bool operator>(const FovIndex& a, const FovIndex& b)
-{
-	if(a.IlluminationIndex > b.IlluminationIndex)
-		return (true);
-
-	if(a.TriggerIndex > b.TriggerIndex)
-		return(true);
-
-	if(a.CameraIndex > b.CameraIndex)
-		return(true);
-
-	return(false);
-}
-
 OverlapManager::OverlapManager(
 	MosaicImage* pMosaics, 
 	CorrelationFlags** pFlags, 
@@ -43,8 +14,6 @@ OverlapManager::OverlapManager(
 	_iNumIllumination = iNumIllumination;
 	_pCadImg = pCadImg;
 	_validRect = validRect;
-
-	_iMaskCreationStage = -1;
 
 	unsigned int i, j;
 	_iNumCameras=0;
@@ -78,6 +47,8 @@ OverlapManager::OverlapManager(
 
 	CreateFovFovOverlaps();
 	CreateCadFovOverlaps();
+
+	CalMaskCreationStage();
 }
 
 
@@ -398,100 +369,12 @@ list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
 	unsigned int iTrigIndex,
 	unsigned int iCamIndex) const
 {	
-	
 	return(&_fidFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
-
-
 }
 
-typedef list<pair<FovIndex, double>> FovList;
-
-// Create a map between Fov and its order in solver
-// piIllumIndices and iNumIllums: input, illuminations used by solver
-// pOrderMap: output, the map between Fov and its order in solver
-bool OverlapManager::CreateImageOrderInSolver(
-	unsigned int* piIllumIndices, 
-	unsigned iNumIllums,
-	map<FovIndex, unsigned int>* pOrderMap)
-{
-	unsigned int i, iTrig;
-	FovList fovList;
-	FovList::iterator j, k;
-	
-	// Build trigger list, 
-	// Trigger's center X increases in the list
-	for(i=0; i<iNumIllums; i++) // for each illuminaiton 
-	{
-		// Get trigger centers in X
-		unsigned int iIllumIndex = piIllumIndices[i];
-		unsigned int iNumTrigs = _pMosaics[iIllumIndex].NumTriggers();
-		double* dCenX = new double[iNumTrigs];
-		_pMosaics[iIllumIndex].TriggerCentersInX(dCenX);
-
-		for(iTrig = 0; iTrig<iNumTrigs; iTrig++) // for each trigger
-		{
-			// Find the right position
-			bool bFlagInsert = false;
-			for(j=fovList.begin(); j!=fovList.end(); j++)
-			{
-				if(j->second > dCenX[iTrig])
-				{
-					k = j;	// Insert position
-					bFlagInsert = true;
-					break;
-				}
-			}
-
-			// Add to the list 
-			FovIndex index(iIllumIndex, iTrig, 0);
-			if(bFlagInsert) // Need check
-			{	// Insert in a right position
-				fovList.insert(k, pair<FovIndex, double>(index, dCenX[iTrig]));
-			}
-			else
-			{// Add to the end of list if it is the biggest one or list is empty
-				fovList.push_back(pair<FovIndex, double>(index, dCenX[iTrig]));
-			}
-		}
-
-		delete [] dCenX;
-	}
-
-	// Build FOVIndexMap
-	unsigned int iCount = 0;
-	for(j=fovList.begin(); j!=fovList.end(); j++)
-	{
-		unsigned int iIllumIndex = j->first.IlluminationIndex;
-		unsigned int iTrigerINdex = j->first.TriggerIndex;
-		unsigned int iNumCams = _pMosaics[iIllumIndex].NumCameras();
-		for(i=0; i<iNumCams; i++)
-		{
-			FovIndex index(iIllumIndex, iTrig, i);
-			pOrderMap->insert(pair<FovIndex, unsigned int>(index, iCount));
-			iCount++;
-		}
-	}
-		
-	return(true);
-}
-
-bool OverlapManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap)
-{
-	unsigned int* piIllumIndices = new unsigned int[_iNumIllumination];
-
-	for(unsigned int i=0; i<_iNumIllumination; i++)
-		piIllumIndices[i] = i;
-
-	return(CreateImageOrderInSolver(
-		piIllumIndices, 
-		_iNumIllumination,
-		pOrderMap));
-
-	delete [] piIllumIndices;
-}
 
 // Decide after what layer is completed, mask images need to be created
-void OverlapManager::MaskCreationStage()
+void OverlapManager::CalMaskCreationStage()
 {
 	unsigned int i, j;
 	unsigned iMin = _iNumIllumination+10;
@@ -518,6 +401,7 @@ void OverlapManager::MaskCreationStage()
 	else
 		_iMaskCreationStage = iMin-1;
 }
+
 
 
 	
