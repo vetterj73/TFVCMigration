@@ -26,6 +26,10 @@ public:
 
 	/* destructor */	~Panel();
 
+	static bool			_debug;
+	static double		_padInspectionAreaLong;
+	static double		_padInspectionAreaShort;
+
 	int					AddFeature(Feature*);
 	void				RemoveFeature(int featureId);
 	unsigned int		NumberOfFeatures();

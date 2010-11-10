@@ -22,7 +22,7 @@ static inline int    NearestInt(double number)	{ return (int) NearestIntD(number
 
 
 ///
-/// simple point struct - not threadsafe!
+/// simple point struct - with math functions.
 ///
 struct Point
 {
@@ -47,7 +47,6 @@ struct Point
 	}
 
 };
-
 
 inline Point operator-( const Point& p )                   { return Point(-p.x, -p.y); }
 inline Point operator+( const Point& p1, const Point& p2 ) { return Point(p1.x+p2.x,p1.y+p2.y); }

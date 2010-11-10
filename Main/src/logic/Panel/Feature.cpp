@@ -1,7 +1,6 @@
 #include "ArcPolygonizer.h"
 #include "Feature.h"
-//#include "Parse.h"
-//#include "System.h"
+#include "Panel.h"
 
 #ifndef EPSILON
 #define EPSILON 0.0000001
@@ -78,8 +77,8 @@ void Feature::InspectionAreaFromBounds()
 {
 	// @todo - config?
 	// Read percent of feature to add to each side from config, different amount based on dimension
-	double iaLongDim = .10;//Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Long, CFG_VAL_Inspection_PadInspectionArea_Long);
-	double iaShortDim = .10;//Config::instance().getDouble(CFG_KEY_Inspection_PadInspectionArea_Short, CFG_VAL_Inspection_PadInspectionArea_Short);
+	double iaLongDim = Panel::_padInspectionAreaLong;
+	double iaShortDim = Panel::_padInspectionAreaShort;
 
 	bool square = _boundingBox.Square();
 	double height = _boundingBox.Height();
@@ -823,9 +822,6 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	_concavePolygon = false;
 	_polygonPoints.clear();
 
-#pragma warning("Config");
-	bool debugShape = false;//(Config::instance().getInt(CFG_KEY_Inspection_DebugShapes, CFG_VAL_Inspection_DebugShapes))?true:false;
-
 	//
 	// Step 1: Convert lines and arcs defined by 
 	//         CyberSegments to a series of CW points
@@ -849,7 +845,7 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 		return false;
 	}
 
-	if(debugShape)
+	if(Panel::_debug)
 	{
 #pragma warning("Logging");
 //		G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
@@ -874,7 +870,7 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 
 		if(seg->GetLine()== true)
 		{
-			if(debugShape)
+			if(Panel::_debug)
 			{
 #pragma warning("Logging");
 //				G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
@@ -901,7 +897,7 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 
 			for(PointList::iterator point=arcPoints.begin(); point!=arcPoints.end(); point++)
 			{
-				if(debugShape)
+				if(Panel::_debug)
 				{
 #pragma warning("Logging");
 //					G_LOG_3_SOFTWARE("OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
@@ -938,7 +934,7 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 		// If this is not a duplicate point, add to the classes list
 		if(!duplicate)
 		{
-			if(debugShape)
+			if(Panel::_debug)
 			{
 #pragma warning("Logging");
 //				G_LOG_3_SOFTWARE("OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
@@ -1053,7 +1049,7 @@ void CyberFeature::CalcAreaAndBound()
 
 	area = area/2.0;
 
-
+	
 	// add/subtract the arcs to the calculated area
 	for(unsigned int i=0; i<_segments.size()-1; i++)
 	{

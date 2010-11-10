@@ -13,6 +13,9 @@ Panel::Panel() :
 	_apertureIndex = (unsigned short) pow(2.0, (int)(sizeof(unsigned short)*8)) - 1;
 	_currentFeature = endFeatures();
 	_currentFiducial = endFiducials();
+	_padInspectionAreaLong = .60;
+	_padInspectionAreaShort = 1.20;
+	_debug = false;
 }
 
 Panel::~Panel()
