@@ -54,7 +54,16 @@ namespace MMosaicDM
 			{
 				delete _pMosaicSet;
 			}
-			
+
+			///
+			///	Destructor - not called, but defining it avoids warnngs (and I verified that
+			/// the finalizer is called.
+			///
+			~ManagedMosaicSet()
+			{
+			//	delete _pMosaicSet;
+			}		
+	
 			///
 			///	Adds a layer (see unmanaged MosaicSet for details)
 			///
@@ -101,6 +110,12 @@ namespace MMosaicDM
 			}
 
 			event ImageAddedDelegate^ OnImageAdded;
+
+			/// \internal
+			property System::IntPtr UnmanagedMosaicSet
+			{
+				System::IntPtr get() { return safe_cast<System::IntPtr>(_pMosaicSet); }
+			}
 
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
