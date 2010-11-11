@@ -59,6 +59,8 @@ namespace MosaicDM
 									double triggerOverlapInMeters,
 									bool correlateWithCAD)
 	{
+		FireDiagnosticMessage("Layer Added to Mosaic!");
+
 		MosaicLayer *pML = new MosaicLayer();
 
 		pML->Initialize(this, cameraOffsetInMeters, triggerOffsetInMeters,

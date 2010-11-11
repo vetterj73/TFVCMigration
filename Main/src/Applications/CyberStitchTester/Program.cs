@@ -117,10 +117,16 @@ namespace CyberStitchTester
                     numCameras++;
             _mosaicSet = new ManagedMosaicSet(.200, .250, 2592, 1944, 2592, .00017, .00017);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
+            _mosaicSet.OnDiagnosticsMessage += OnDiagnosticMessageFromMosaic;
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
                 _mosaicSet.AddLayer(.2, i*.2, numCameras, .003, pSpec.NumberOfTriggers, .004, false);
             }
+        }
+
+        private static void OnDiagnosticMessageFromMosaic(string message)
+        {
+            Output("Message From Mosaic: " + message);
         }
 
         /// <summary>

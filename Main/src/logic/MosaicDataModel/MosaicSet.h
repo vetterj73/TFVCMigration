@@ -1,6 +1,6 @@
-// CyberStitch.h
-
 #pragma once
+
+#include "LoggableObject.h"
 
 namespace MosaicDM 
 {
@@ -17,7 +17,7 @@ namespace MosaicDM
 	///	MosaicSet is the top level object for Mosaic Data Model.  
 	/// MosaicSet has 1 to N MosaicLayers.
 	///
-	class MosaicSet
+	class MosaicSet : public LoggableObject
 	{
 		public:
 
