@@ -8,7 +8,11 @@ public:
 	StitchingManager(OverlapManager* pOvelapManager);
 	~StitchingManager(void);
 
-	bool AddOneImageBuffer(unsigned int iIllumIndex, unsigned int iTrigIndex, unsigned int iCamIndex);
+	bool AddOneImageBuffer(	
+		unsigned char* pcBuf,
+		unsigned int iIllumIndex, 
+		unsigned int iTrigIndex, 
+		unsigned int iCamIndex);
 
 protected:
 	void reset();
@@ -17,6 +21,9 @@ protected:
 		unsigned int* piIllumIndices, 
 		unsigned iNumIllums, 
 		map<FovIndex, unsigned int>* pOrderMap);
+
+	bool IsReadyToCreateMask();
+	bool IsReadyToCreateTransforms();
 
 private:
 	OverlapManager* _pOverlapManager;

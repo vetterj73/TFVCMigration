@@ -678,6 +678,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 */
 	delete [] workspace;
 	delete [] dCopyB;
+
 	return(iMaxLength);
 }
 

@@ -1,12 +1,12 @@
 #include "StitchingManager.h"
 
+#pragma region Constructor and initilization
 StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 {
 	_pOverlapManager = pOverlapManager;
 
+	// Create solver for all illuminations
 	bool bProjectiveTrans = false;
-
-
 	CreateImageOrderInSolver(&_solverMap);	
 	unsigned int iMaxNumCorrelation =  pOverlapManager->MaxCorrelations();  
 	_pSolver = new RobustSolver(	
@@ -14,25 +14,31 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 		iMaxNumCorrelation, 
 		bProjectiveTrans);
 
+	// Creat solver for mask creation if it is necessary
+	_pMaskSolver = NULL;
 	_iMaskCreationStage = _pOverlapManager->GetMaskCreationStage();
 	if(_iMaskCreationStage >= 1)
 	{
 		unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
 		for(int i=0; i<_iMaskCreationStage; i++)
 		{
-			piIllumIndices[i] = i;
-			CreateImageOrderInSolver(piIllumIndices, _iMaskCreationStage, &_maskMap);
+			piIllumIndices[i] = i;	
 		}
+		CreateImageOrderInSolver(piIllumIndices, _iMaskCreationStage, &_maskMap);
+		delete [] piIllumIndices;
 		iMaxNumCorrelation =  pOverlapManager->MaxMaskCorrelations();
 		_pMaskSolver = new RobustSolver(
 			&_solverMap, 
 			iMaxNumCorrelation, 
 			bProjectiveTrans);
+
 	}
 }
 
 StitchingManager::~StitchingManager(void)
 {
+	if(_pSolver != NULL) delete _pSolver;
+	if(_pMaskSolver != NULL) delete _pMaskSolver;
 }
 
 typedef pair<FovIndex, double> FovIndexMap;
@@ -55,7 +61,6 @@ bool StitchingManager::CreateImageOrderInSolver(
 	FovList::iterator j, k;
 	
 	// Build trigger list, 
-
 	for(i=0; i<iNumIllums; i++) // for each illuminaiton 
 	{
 		// Get trigger centers in X
@@ -106,13 +111,45 @@ bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOr
 	for(unsigned int i=0; i<iNumIllums; i++)
 		piIllumIndices[i] = i;
 
-	return(CreateImageOrderInSolver(
+	bool bFlag = CreateImageOrderInSolver(
 		piIllumIndices, 
 		iNumIllums,
-		pOrderMap));
+		pOrderMap);
 
 	delete [] piIllumIndices;
+
+	return(bFlag);
 }
+
+#pragma endregion 
+
+
+bool StitchingManager::AddOneImageBuffer(
+	unsigned char* pcBuf,
+	unsigned int iIllumIndex, 
+	unsigned int iTrigIndex, 
+	unsigned int iCamIndex)
+{
+	_pOverlapManager->GetMoaicImage(iIllumIndex)->AddImageBuffer(pcBuf, iCamIndex, iTrigIndex);
+	_pOverlapManager->DoAlignmentForFov(iIllumIndex, iTrigIndex, iCamIndex);
+}
+
+bool StitchingManager::IsReadyToCreateMask()
+{
+	if(_iMaskCreationStage <=0 )
+		return(false);
+
+	for(int i=0; i<_iMaskCreationStage; i++)
+	{
+		if(!_pOverlapManager->GetMoaicImage(i)->IsAcquisitionCompleted())
+			return(false);
+	}
+
+	return(true);
+}
+
+
+
 
 
 

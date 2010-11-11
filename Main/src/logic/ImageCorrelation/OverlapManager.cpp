@@ -220,6 +220,12 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 		}
 	}
 
+
+	delete [] pdCenX1;
+	delete [] pdCenY1;
+	delete [] pdCenX2;
+	delete [] pdCenY2;
+
 	return true;
 }
 
@@ -443,7 +449,11 @@ unsigned int OverlapManager::MaxMaskCorrelations() const
 
 	unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
 
-	return(MaxCorrelations(piIllumIndices, _iMaskCreationStage));
+	unsigned int iNum =MaxCorrelations(piIllumIndices, _iMaskCreationStage);
+
+	delete [] piIllumIndices;
+
+	return(iNum);
 }
 
 //Report possible maximum corrleaiton will be used by solver to create transforms

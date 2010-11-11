@@ -64,7 +64,7 @@ void Image::operator=(const Image& b)
 
 Image::~Image()
 {
-
+	DeleteBufferIfOwner();
 }
 
 void Image::Configure(
