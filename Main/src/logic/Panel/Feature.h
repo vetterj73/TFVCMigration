@@ -12,6 +12,8 @@
 using std::string;
 using std::vector;
 
+class Panel;
+
 class Feature
 {
 public:	
@@ -65,7 +67,7 @@ public:
 	void SetResults(double coveragePercent, double bridgeWidth, double xCenter, double yCenter);
 	void ResetResults();
 
-	virtual bool Validate(double panelSizeX, double panelSizeY);
+	virtual bool Validate(Panel *pPanel);
 
 protected:
 	Feature(PadShape shape, int id, double positionX, double positionY, double rotation);
@@ -296,7 +298,7 @@ public:
 	// Validate will check for duplicate points and type
 	// of polygon.  These features are very special cases.
 	bool      IsConcave(); 
-	bool      Validate(double panelSizeX, double panelSizeY);
+	bool      Validate(Panel *pPanel);
 
 	const PointList& GetPointList( ) const { return _polygonPoints; }
 

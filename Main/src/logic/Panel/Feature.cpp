@@ -110,13 +110,13 @@ void Feature::InspectionAreaFromBounds()
 	_inspectionArea.p2.y = _boundingBox.p2.y + paddingY;
 }
 
-bool Feature::Validate(double panelSizeX, double panelSizeY)
+bool Feature::Validate(Panel *pPanel)
 {
 	// Make sure feature is inside the panel
-	if(_xCadCenter<0 || _xCadCenter>panelSizeX)
+	if(_xCadCenter<0 || _xCadCenter>pPanel->xLength())
 		return false;
 
-	if(_yCadCenter<0 || _yCadCenter>panelSizeY)
+	if(_yCadCenter<0 || _yCadCenter>pPanel->yLength())
 		return false;
 
 
@@ -131,7 +131,7 @@ bool Feature::Validate(double panelSizeX, double panelSizeY)
 	if(minPoint.x<0 || minPoint.y<0)
 		return false;
 
-	if(maxPoint.x>panelSizeX || maxPoint.y>panelSizeY)
+	if(maxPoint.x>pPanel->xLength() || maxPoint.y>pPanel->yLength())
 		return false;
 
 
@@ -146,11 +146,11 @@ bool Feature::Validate(double panelSizeX, double panelSizeY)
 	if(_inspectionArea.p1.y < EPSILON)
 		_inspectionArea.p1.y = 0.0;
 
-	if(_inspectionArea.p2.x-panelSizeX > EPSILON)
-		_inspectionArea.p2.x = panelSizeX;
+	if(_inspectionArea.p2.x-pPanel->xLength() > EPSILON)
+		_inspectionArea.p2.x = pPanel->xLength();
 
-	if(_inspectionArea.p2.y-panelSizeY > EPSILON)
-		_inspectionArea.p2.y = panelSizeY;
+	if(_inspectionArea.p2.y-pPanel->yLength()  > EPSILON)
+		_inspectionArea.p2.y = pPanel->yLength();
 
 	_status = Feature::FEATURE_UNINSPECTED;
 
@@ -811,7 +811,7 @@ bool CyberFeature::IsConcave()
 	return _concavePolygon;
 }
 
-bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
+bool CyberFeature::Validate(Panel *pPanel)
 {
 	//
 	// Check if the segments define a valid polygon
@@ -826,11 +826,11 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	// Step 1: Convert lines and arcs defined by 
 	//         CyberSegments to a series of CW points
 	//
-	if(_segments.size() <= 0)
+	if(pPanel->LogErrors() && _segments.size() <= 0)
 	{
-
-#pragma warning("Logging");
-//		G_LOG_1_ERROR("CyberShape %d is invalid! There are no segments!", _index);
+		char buffer[_MAX_PATH+1];
+		sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! There are no segments!", _index);
+		pPanel->FireError(buffer);
 		return false;
 	}
 
@@ -840,15 +840,20 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 	// The first segment must not be an arc
 	if(seg->GetLine()==false)
 	{
-#pragma warning("Logging");
-//		G_LOG_1_ERROR("CyberShape %d is invalid! It's definition started with an arc segment!", _index);
+		if(pPanel->LogErrors())
+		{
+			char buffer[_MAX_PATH+1];
+			sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! It's definition started with an arc segment!", _index);
+			pPanel->FireError(buffer);
+		}
 		return false;
 	}
 
-	if(Panel::_debug)
+	if(pPanel->LogDiagnostics())
 	{
-#pragma warning("Logging");
-//		G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+		char buffer[_MAX_PATH+1];
+		sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+		pPanel->FireDiagnosticMessage(buffer);
 	}
 
 	// Add the starting point to the list
@@ -870,10 +875,11 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 
 		if(seg->GetLine()== true)
 		{
-			if(Panel::_debug)
+			if(pPanel->LogDiagnostics())
 			{
-#pragma warning("Logging");
-//				G_LOG_3_SOFTWARE("OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+				char buffer[_MAX_PATH+1];
+				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
+				pPanel->FireDiagnosticMessage(buffer);
 			}
 
 			segmentVertices.push_back(Point(seg->GetPositionX(), seg->GetPositionY()));
@@ -897,10 +903,11 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 
 			for(PointList::iterator point=arcPoints.begin(); point!=arcPoints.end(); point++)
 			{
-				if(Panel::_debug)
+				if(pPanel->LogDiagnostics())
 				{
-#pragma warning("Logging");
-//					G_LOG_3_SOFTWARE("OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
+					char buffer[_MAX_PATH+1];
+					sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
+					pPanel->FireDiagnosticMessage(buffer);
 				}
 
 				segmentVertices.push_back(Point(point->x, point->y));
@@ -934,10 +941,11 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 		// If this is not a duplicate point, add to the classes list
 		if(!duplicate)
 		{
-			if(Panel::_debug)
+			if(pPanel->LogDiagnostics())
 			{
-#pragma warning("Logging");
-//				G_LOG_3_SOFTWARE("OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
+				char buffer[_MAX_PATH+1];
+				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
+				pPanel->FireDiagnosticMessage(buffer);
 			}
 
 			_polygonPoints.push_back((*vertex));
@@ -979,7 +987,6 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 				break;
 			}
 
-
 			if(firstVertex)
 			{
 				A = _polygonPoints.begin();
@@ -994,7 +1001,7 @@ bool CyberFeature::Validate(double panelSizeX, double panelSizeY)
 
 	CalcAreaAndBound();
 	InspectionArea();
-	Feature::Validate(panelSizeX, panelSizeY);
+	Feature::Validate(pPanel);
 
 	return true;
 }

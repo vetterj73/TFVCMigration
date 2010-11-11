@@ -15,7 +15,6 @@ Panel::Panel() :
 	_currentFiducial = endFiducials();
 	_padInspectionAreaLong = .60;
 	_padInspectionAreaShort = 1.20;
-	_debug = false;
 }
 
 Panel::~Panel()
@@ -127,7 +126,7 @@ double Panel::yExtentOfPads()
 
 int Panel::AddFeature(Feature* pad)
 {
-	if(!pad->Validate(LengthX, LengthY))
+	if(!pad->Validate(this))
 		return -1;
 
 	if(!(Pads.find(pad->GetId())==endFeatures()))
@@ -146,7 +145,7 @@ void Panel::RemoveFeature(int featureId)
 
 int Panel::AddFiducial(Feature* fid)
 {
-	if(!fid->Validate(LengthX, LengthY))
+	if(!fid->Validate(this))
 		return -1;
 
 	if(!(Fids.find(fid->GetId())==endFiducials()))

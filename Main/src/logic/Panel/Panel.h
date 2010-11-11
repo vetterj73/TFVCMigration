@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "LoggableObject.h"
 #include "Feature.h"
 #include <map>
 using std::map;
@@ -11,7 +12,7 @@ using std::map;
 typedef map<int, Feature*> FeatureList;
 typedef FeatureList::iterator FeatureListIterator;
 
-class Panel
+class Panel : public LoggableObject
 {
 public:
 
@@ -26,7 +27,6 @@ public:
 
 	/* destructor */	~Panel();
 
-	static bool			_debug;
 	static double		_padInspectionAreaLong;
 	static double		_padInspectionAreaShort;
 
