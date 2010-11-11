@@ -15,6 +15,9 @@ public:
 		unsigned int iCamIndex);	
 	
 	void Reset();
+
+	static void CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage);
+
 protected:
 
 	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap);

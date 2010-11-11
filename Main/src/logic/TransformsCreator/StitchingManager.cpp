@@ -136,7 +136,10 @@ bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOr
 
 #pragma endregion 
 
-
+#pragma region create transforms
+// Add an image buffer to a Fov
+// pcBuf: input, image buffer
+// iIllumIndex, iTrigIndex and iCamIndex: indics for a Fov
 bool StitchingManager::AddOneImageBuffer(
 	unsigned char* pcBuf,
 	unsigned int iIllumIndex, 
@@ -165,6 +168,7 @@ bool StitchingManager::AddOneImageBuffer(
 		CreateTransforms();
 }
 
+// Flag for create Masks
 bool StitchingManager::IsReadyToCreateMasks()
 {
 	if(_iMaskCreationStage <=0 )
@@ -179,6 +183,7 @@ bool StitchingManager::IsReadyToCreateMasks()
 	return(true);
 }
 
+// Flags for create transform for each Fov
 bool StitchingManager::IsReadyToCreateTransforms()
 {
 	for(unsigned int i=0; i<_pOverlapManager->NumIlluminations(); i++)
@@ -190,6 +195,7 @@ bool StitchingManager::IsReadyToCreateTransforms()
 	return(true);
 }
 
+// Creat Masks
 bool StitchingManager::CreateMasks( )
 {
 	// Create matrix and vector for solver
@@ -235,7 +241,7 @@ bool StitchingManager::CreateMasks( )
 	return(true);
 }
 
-
+// Create the transform for each Fov
 bool StitchingManager::CreateTransforms()
 {
 	int iNumIllums = _pOverlapManager->NumIlluminations();
@@ -266,6 +272,7 @@ bool StitchingManager::CreateTransforms()
 	}
 }
 
+// Add overlap results for a certain illumation/mosaic image to solver
 void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex)
 {
 	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
@@ -303,3 +310,62 @@ void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned 
 		}
 	}
 }
+#pragma endregion
+
+#pragma region Create panel image
+// This is a utility function
+// Create a panel image based on a mosaic image
+// pMosaic: input, mosaic image
+// pPanelImage: output, the stitched image
+void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage)
+{
+	// Trigger and camera centers in world space
+	unsigned int iNumTrigs = pMosaic->NumTriggers();
+	unsigned int iNumCams = pMosaic->NumCameras();
+	double* pdCenX = new double[iNumTrigs];
+	double* pdCenY = new double[iNumCams];
+	pMosaic->TriggerCentersInX(pdCenX);
+	pMosaic->CameraCentersInY(pdCenY);
+
+	// Panel image Row bounds for Roi
+	unsigned int* piRectRows = new unsigned int[iNumTrigs+1];
+	piRectRows[0] = pPanelImage->Rows()-1;
+	for(unsigned int i=1; i<iNumTrigs; i++)
+	{
+		double dX = (pdCenX[i-1] +pdCenX[i])/2;
+		double dTempRow, dTempCol;
+		pPanelImage->WorldToImage(dX, 0, &dTempRow, &dTempCol);
+		piRectRows[i] = (unsigned int)dTempRow;
+	}
+	piRectRows[iNumTrigs] = pPanelImage->Rows(); 
+
+	// Panel image Column bounds for Roi
+	unsigned int* piRectCols = new unsigned int[iNumCams+1];
+	piRectCols[0] = pPanelImage->Columns()-1;
+	for(unsigned int i=1; i<iNumCams; i++)
+	{
+		double dY = (pdCenY[i-1] +pdCenY[i])/2;
+		double dTempRow, dTempCol;
+		pPanelImage->WorldToImage(0, dY, &dTempRow, &dTempCol);
+		piRectCols[i] = (unsigned int)dTempCol;
+	}
+	piRectCols[iNumCams] = pPanelImage->Columns();
+
+	// Morph each Fov to create stitched panel image
+	for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
+	{
+		for(unsigned int iCam=0; iCam<iNumCams; iCam++)
+		{
+			Image* pFov = pMosaic->GetImagePtr(iCam, iTrig);
+			UIRect rect(piRectCols[iCam], piRectCols[iCam+1]-1, piRectRows[iTrig], piRectRows[iTrig+1]-1);
+			pPanelImage->MorphFrom(pFov, rect);
+		}
+	}
+
+	delete [] pdCenX;
+	delete [] pdCenY;
+	delete [] piRectRows;
+	delete [] piRectCols;
+}
+
+#pragma endregion
