@@ -1,9 +1,10 @@
 #include "StitchingManager.h"
 
 #pragma region Constructor and initilization
-StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
+StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPanelMaskImage)
 {
 	_pOverlapManager = pOverlapManager;
+	_pPanelMaskImage = pPanelMaskImage;
 
 	// Create solver for all illuminations
 	bool bProjectiveTrans = false;
@@ -31,14 +32,26 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 			&_solverMap, 
 			iMaxNumCorrelation, 
 			bProjectiveTrans);
-
 	}
+
+	_bMasksCreated = false;
 }
 
 StitchingManager::~StitchingManager(void)
 {
 	if(_pSolver != NULL) delete _pSolver;
 	if(_pMaskSolver != NULL) delete _pMaskSolver;
+}
+
+
+void StitchingManager::Reset()
+{
+	_pOverlapManager->ResetforNewPanel();
+	_pSolver->Reset();
+	if(_pMaskSolver != NULL)
+		_pMaskSolver->Reset();
+
+	_bMasksCreated = false;
 }
 
 typedef pair<FovIndex, double> FovIndexMap;
@@ -132,9 +145,27 @@ bool StitchingManager::AddOneImageBuffer(
 {
 	_pOverlapManager->GetMoaicImage(iIllumIndex)->AddImageBuffer(pcBuf, iCamIndex, iTrigIndex);
 	_pOverlapManager->DoAlignmentForFov(iIllumIndex, iTrigIndex, iCamIndex);
+
+	// Need create masks and masks havn't created
+	if(_iMaskCreationStage>0 && !_bMasksCreated)
+	{
+		if(IsReadyToCreateMasks())
+		{
+			bool bFlag = CreateMasks();
+			if(bFlag)
+				_bMasksCreated= true;
+			else
+			{
+				//log fatal error
+			}
+		}
+	}
+
+	if(IsReadyToCreateTransforms())
+		CreateTransforms();
 }
 
-bool StitchingManager::IsReadyToCreateMask()
+bool StitchingManager::IsReadyToCreateMasks()
 {
 	if(_iMaskCreationStage <=0 )
 		return(false);
@@ -148,8 +179,127 @@ bool StitchingManager::IsReadyToCreateMask()
 	return(true);
 }
 
+bool StitchingManager::IsReadyToCreateTransforms()
+{
+	for(unsigned int i=0; i<_pOverlapManager->NumIlluminations(); i++)
+	{
+		if(!_pOverlapManager->GetMoaicImage(i)->IsAcquisitionCompleted())
+			return(false);
+	}
+
+	return(true);
+}
+
+bool StitchingManager::CreateMasks( )
+{
+	// Create matrix and vector for solver
+	for(int i=0; i<_iMaskCreationStage; i++)
+	{
+		AddOverlapResultsForIllum(_pMaskSolver, i);
+	}
+
+	// Solve transforms
+	_pMaskSolver->SolveXAlgHB();
+
+	// For each mosaic image
+	for(int i=0; i<_iMaskCreationStage; i++)
+	{
+		// Get calculated transforms
+		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(i);
+		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			{
+				Image* img = pMosaic->GetImagePtr(iCam, iTrig);
+				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
+				img->SetTransform(t);
+			}
+		}
+
+		// Prepare mask images
+		pMosaic->PrepareMaskImages();
+
+		// Create content of mask images
+		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			{
+				Image* img = pMosaic->GetMaskImagePtr(iCam, iTrig);
+				
+				UIRect rect(0,  img->Columns()-1, 0, img->Rows()-1);
+				img->MorphFrom(_pPanelMaskImage, rect);
+			}
+		}
+	}
+
+	return(true);
+}
 
 
+bool StitchingManager::CreateTransforms()
+{
+	int iNumIllums = _pOverlapManager->NumIlluminations();
 
+	// Create matrix and vector for solver
+	for(int i=0; i<iNumIllums; i++)
+	{
+		AddOverlapResultsForIllum(_pSolver, i);
+	}
 
+	// Solve transforms
+	_pSolver->SolveXAlgHB();
 
+	// For each mosaic image
+	for(int i=0; i<iNumIllums; i++)
+	{
+		// Get calculated transforms
+		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(i);
+		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			{
+				Image* img = pMosaic->GetImagePtr(iCam, iTrig);
+				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
+				img->SetTransform(t);
+			}
+		}
+	}
+}
+
+void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex)
+{
+	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
+	for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+	{
+		for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+		{
+			// For certain Fov
+			// Add calibration constraints
+			solver->AddCalibationConstraints(pMosaic, iCam, iTrig);
+
+			// Add Fov and Fov overlap results
+			list<FovFovOverlap>* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
+			for(list<FovFovOverlap>::iterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+			{
+				if(ite->IsProcessed())
+					solver->AddFovFovOvelapResults(&(*ite));
+			}
+
+			// Add Cad and Fov overlap results
+			list<CadFovOverlap>* pCadFovList =_pOverlapManager->GetCadFovListForFov(iIllumIndex, iTrig, iCam);
+			for(list<CadFovOverlap>::iterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
+			{
+				if(ite->IsProcessed())
+					solver->AddCadFovOvelapResults(&(*ite));
+			}
+
+			// Add Fiducial and Fov overlap results
+			list<FidFovOverlap>* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+			for(list<FidFovOverlap>::iterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+			{
+				if(ite->IsProcessed())
+					solver->AddFidFovOvelapResults(&(*ite));
+			}
+		}
+	}
+}

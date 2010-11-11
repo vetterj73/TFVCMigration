@@ -48,6 +48,8 @@ public:
 	int GetMaskCreationStage() {return _iMaskCreationStage;};
 	unsigned int MaxCorrelations() const;
 	unsigned int MaxMaskCorrelations() const;
+	unsigned int MaxNumTriggers() {return(_iNumTriggers);};
+	unsigned int MaxNumCameras() {return(_iNumCameras);};
 
 protected:
 	void CreateFovFovOverlaps();	

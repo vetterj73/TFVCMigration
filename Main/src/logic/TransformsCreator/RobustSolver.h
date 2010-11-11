@@ -45,6 +45,8 @@ public:
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex) const;
 
+	void Reset() {ZeroTheSystem();};
+
 protected:
 	void ZeroTheSystem();
 	unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
