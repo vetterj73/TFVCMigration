@@ -330,7 +330,7 @@ bool OverlapManager::DoAlignmentForFov(
 	list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex];
 	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
 	{
-		if(i->IsValid())
+		if(i->IsReadyToProcess())
 			i->DoIt();
 	}
 
@@ -338,7 +338,7 @@ bool OverlapManager::DoAlignmentForFov(
 	list<CadFovOverlap>* pCadFovList = &_cadFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]; 
 	for(list<CadFovOverlap>::iterator i=pCadFovList->begin(); i!=pCadFovList->end(); i++)
 	{
-		if(i->IsValid())
+		if(i->IsReadyToProcess())
 			i->DoIt();
 	}
 
@@ -346,7 +346,7 @@ bool OverlapManager::DoAlignmentForFov(
 	list<FidFovOverlap>* pFidFovList = &_fidFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]; 
 	for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
 	{
-		if(i->IsValid())
+		if(i->IsReadyToProcess())
 			i->DoIt();
 	}
 

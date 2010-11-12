@@ -47,6 +47,9 @@ public:
 
 	void Reset() {ZeroTheSystem();};
 
+	// Debug
+	void OutputVectorXCSV(string filename);
+
 protected:
 	void ZeroTheSystem();
 	unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);

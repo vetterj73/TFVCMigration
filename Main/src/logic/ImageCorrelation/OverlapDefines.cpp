@@ -333,7 +333,7 @@ bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
-		(_pFidImg->GetBuffer() != NULL) &&
+		(_pFidImg != NULL) && (_pFidImg->GetBuffer() != NULL) &&
 		_bValid;
 
 	return(bFlag);

@@ -34,6 +34,8 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 
 #define Weights EquationWeights::Instance()
 
+#pragma region constructor
+
 RobustSolver::RobustSolver(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 
 	unsigned int iMaxNumCorrelation, 
@@ -97,6 +99,8 @@ void RobustSolver::ZeroTheSystem()
 	for(i =0; i<_iMatrixWidth; i++)
 		_dVectorX[i] = 0.0;
 }
+
+#pragma endregion
 
 #pragma region Add equations
 // Add Constraints for one image
@@ -539,7 +543,7 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 }
 #pragma endregion
 
-#pragma region Solver
+#pragma region Solver and transform
 struct LeftIndex
 {
 	unsigned int iLeft;
@@ -753,7 +757,6 @@ void RobustSolver::SolveXAlgHB()
 	delete [] mb;
 	delete [] resid;
 }
-#pragma endregion
 
 // populates object referred to by the function argument t with 
 // the terms that define the transformation
@@ -867,3 +870,40 @@ bool RobustSolver::MatchProjeciveTransform(const double pPara[12], double dTrans
 	else
 		return(true);
 }
+
+#pragma endregion
+
+#pragma region Debug
+// Debug
+// Vector X output
+void RobustSolver::OutputVectorXCSV(string filename)
+{
+	ofstream of(filename.c_str());
+
+	of << std::scientific;
+
+	string line;
+
+	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
+	{
+		of << "I_" << k->first.IlluminationIndex 
+			<< "T_" << k->first.TriggerIndex 
+			<< "C_" << k->first.CameraIndex
+			<< ",";
+
+		for(unsigned int j=0; j<_iNumParamsPerFov; ++j)
+		{
+			if( j!=0 )
+				of << ",";
+
+			double d = _dVectorX[k->second*_iNumParamsPerFov + j];
+
+			of << d;
+		}
+
+		of <<  std::endl;
+	}
+
+	of.close();
+}
+#pragma endregion

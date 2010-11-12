@@ -244,7 +244,10 @@ bool StitchingManager::CreateMasks( )
 	}
 
 	if(_bDebug)
+	{
 		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
+		_pMaskSolver->OutputVectorXCSV("C:\\Temp\\MaskVectorX.csv");
+	}
 
 	return(true);
 }
@@ -273,14 +276,17 @@ bool StitchingManager::CreateTransforms()
 			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
 			{
 				Image* img = pMosaic->GetImage(iCam, iTrig);
-				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
+				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
 		}
 	}
 
 	if(_bDebug)
+	{
 		SaveStitchingImages("C:\\Temp\\Aligned", _iMaskCreationStage);
+		_pSolver->OutputVectorXCSV("C:\\Temp\\AlignedVectorX.csv");
+	}
 
 	return(true);
 }
@@ -350,9 +356,9 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 	pMosaic->TriggerCentersInX(pdCenX);
 	pMosaic->CameraCentersInY(pdCenY);
 
-	// Panel image Row bounds for Roi
+	// Panel image Row bounds for Roi (decreasing order)
 	unsigned int* piRectRows = new unsigned int[iNumTrigs+1];
-	piRectRows[0] = pPanelImage->Rows()-1;
+	piRectRows[0] = pPanelImage->Rows();
 	for(unsigned int i=1; i<iNumTrigs; i++)
 	{
 		double dX = (pdCenX[i-1] +pdCenX[i])/2;
@@ -360,11 +366,11 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 		pPanelImage->WorldToImage(dX, 0, &dTempRow, &dTempCol);
 		piRectRows[i] = (unsigned int)dTempRow;
 	}
-	piRectRows[iNumTrigs] = pPanelImage->Rows(); 
+	piRectRows[iNumTrigs] = 0; 
 
-	// Panel image Column bounds for Roi
+	// Panel image Column bounds for Roi (increasing order)
 	unsigned int* piRectCols = new unsigned int[iNumCams+1];
-	piRectCols[0] = pPanelImage->Columns()-1;
+	piRectCols[0] = 0;
 	for(unsigned int i=1; i<iNumCams; i++)
 	{
 		double dY = (pdCenY[i-1] +pdCenY[i])/2;
@@ -380,7 +386,7 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 		for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 		{
 			Image* pFov = pMosaic->GetImage(iCam, iTrig);
-			UIRect rect(piRectCols[iCam], piRectRows[iTrig], piRectCols[iCam+1]-1,  piRectRows[iTrig+1]-1);
+			UIRect rect(piRectCols[iCam], piRectRows[iTrig+1], piRectCols[iCam+1]-1,  piRectRows[iTrig]-1);
 			pPanelImage->MorphFrom(pFov, rect);
 		}
 	}
