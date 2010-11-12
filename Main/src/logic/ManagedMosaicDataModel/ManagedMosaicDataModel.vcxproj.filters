@@ -33,7 +33,7 @@
     <ClInclude Include="ManagedCorrelationFlags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Shared\LoggableManagedObject.h">
+    <ClInclude Include="..\shared\ManagedLoggableObject.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

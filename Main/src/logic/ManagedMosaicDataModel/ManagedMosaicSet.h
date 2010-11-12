@@ -5,7 +5,7 @@
 #include "MosaicSet.h"
 #include "ManagedMosaicLayer.h"
 #include "ManagedCorrelationFlags.h"
-#include "LoggableManagedObject.h"
+#include "ManagedLoggableObject.h"
 
 using namespace System;
 using namespace MLOGGER;
