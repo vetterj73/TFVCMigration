@@ -39,11 +39,11 @@ public:
 	void SetImageTransforms(ImgTransform trans, unsigned int iCamIndex, unsigned int iTrigIndex);
 	void AddImageBuffer(unsigned char* pBuffer, unsigned int iCamIndex, unsigned int iTrigIndex);
 
-	Image* GetImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const;
+	Image* GetImage(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool IsImageAcquired(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool IsAcquisitionCompleted() const;
 
-	Image* GetMaskImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const;
+	Image* GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex) const;
 	bool PrepareMaskImages();
 
 	unsigned int Index() const {return(_iIndex);};

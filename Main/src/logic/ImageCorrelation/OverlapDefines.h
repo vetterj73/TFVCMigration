@@ -37,7 +37,7 @@ public:
 	unsigned int Columns() const {return _iColumns;};
 	unsigned int Rows() {return _iRows;};
 
-	virtual bool IsValid() const {return _bValid;};
+	bool IsValid() const {return _bValid;};
 	bool IsProcessed() const {return _bProcessed;};
 
 	CorrelationPair* GetCoarsePairPtr() {return &_coarsePair;};
@@ -90,7 +90,7 @@ public:
 	unsigned int GetSecondCameraIndex() const {return _imgPos2.first;};
 	pair<unsigned int, unsigned int> GetSecondImagePosition() const {return _imgPos2;};
 
-	bool IsValid() const;
+	bool IsReadyToProcess() const;
 
 private:
 	MosaicImage*	_pMosaic1;
@@ -116,7 +116,7 @@ public:
 	
 	Image* GetCadImage() const {return _pCadImg;};
 
-	bool IsValid() const;
+	bool IsReadyToProcess() const;
 
 private:
 	MosaicImage*	_pMosaic;
@@ -145,7 +145,7 @@ public:
 	double GetFiducialXPos() const {return _dFidCenterX;};
 	double GetFiducialYPos() const {return _dFidCenterY;};
 
-	bool IsValid() const;
+	bool IsReadyToProcess() const;
 
 private:
 	MosaicImage*	_pMosaic;

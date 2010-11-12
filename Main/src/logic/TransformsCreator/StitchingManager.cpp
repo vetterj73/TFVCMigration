@@ -221,7 +221,7 @@ bool StitchingManager::CreateMasks( )
 		{
 			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetImagePtr(iCam, iTrig);
+				Image* img = pMosaic->GetImage(iCam, iTrig);
 				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
@@ -235,7 +235,7 @@ bool StitchingManager::CreateMasks( )
 		{
 			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetMaskImagePtr(iCam, iTrig);
+				Image* img = pMosaic->GetMaskImage(iCam, iTrig);
 				
 				UIRect rect(0, 0, img->Columns()-1,  img->Rows()-1);
 				img->MorphFrom(_pPanelMaskImage, rect);
@@ -272,7 +272,7 @@ bool StitchingManager::CreateTransforms()
 		{
 			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetImagePtr(iCam, iTrig);
+				Image* img = pMosaic->GetImage(iCam, iTrig);
 				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
@@ -379,7 +379,7 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 	{
 		for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 		{
-			Image* pFov = pMosaic->GetImagePtr(iCam, iTrig);
+			Image* pFov = pMosaic->GetImage(iCam, iTrig);
 			UIRect rect(piRectCols[iCam], piRectRows[iTrig], piRectCols[iCam+1]-1,  piRectRows[iTrig+1]-1);
 			pPanelImage->MorphFrom(pFov, rect);
 		}

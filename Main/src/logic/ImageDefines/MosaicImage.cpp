@@ -111,7 +111,7 @@ void MosaicImage::AddImageBuffer(unsigned char* pBuffer, unsigned int iCamIndex,
 }
 
 //Get image point in certain position
-Image* MosaicImage::GetImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const
+Image* MosaicImage::GetImage(unsigned int iCamIndex, unsigned int iTrigIndex) const
 {
 	unsigned int iPos = iTrigIndex*_iNumCameras+ iCamIndex;
 	return(&_images[iPos]);
@@ -141,7 +141,7 @@ void MosaicImage::CameraCentersInY(double* pdCenY) const
 		pdCenY[iCam] = 0;
 		for(unsigned int iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{
-			pdCenY[iCam] += GetImagePtr(iCam, iTrig)->CenterY();
+			pdCenY[iCam] += GetImage(iCam, iTrig)->CenterY();
 		}
 		pdCenY[iCam] /= _iNumTriggers;
 	}
@@ -155,7 +155,7 @@ void MosaicImage::TriggerCentersInX(double* pdCenX) const
 		pdCenX[iTrig] = 0;
 		for(unsigned int iCam=0; iCam<_iNumCameras; iCam++)
 		{
-			pdCenX[iTrig] += GetImagePtr(iCam, iTrig)->CenterX();
+			pdCenX[iTrig] += GetImage(iCam, iTrig)->CenterX();
 		}
 		pdCenX[iTrig] /= _iNumCameras;
 	}
@@ -180,7 +180,7 @@ bool MosaicImage::PrepareMaskImages()
 
 // Get a mask image point in certain position
 // return NULL if it is not valid
-Image* MosaicImage::GetMaskImagePtr(unsigned int iCamIndex, unsigned int iTrigIndex) const
+Image* MosaicImage::GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex) const
 {
 	// Validation check
 	if(!_bIsMaskImgValid)

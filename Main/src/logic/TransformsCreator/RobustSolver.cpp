@@ -110,9 +110,9 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	// Fov's nominal center
 	FovIndex index(pMosaic->Index(), iTrigIndex, iCamIndex); 
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
-	ImgTransform transFov = pMosaic->GetImagePtr(iCamIndex, iTrigIndex)->GetNominalTransform();
-	unsigned int iCols = pMosaic->GetImagePtr(iCamIndex, iTrigIndex)->Columns();
-	unsigned int iRows = pMosaic->GetImagePtr(iCamIndex, iTrigIndex)->Rows();
+	ImgTransform transFov = pMosaic->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
+	unsigned int iCols = pMosaic->GetImage(iCamIndex, iTrigIndex)->Columns();
+	unsigned int iRows = pMosaic->GetImage(iCamIndex, iTrigIndex)->Rows();
 	double dPixelCenRow = (iRows-1) / 2.0;
 	double dPixelCenCol = (iCols-1) / 2.0;
 	double dFovCalCenX, dFovCalCenY;
@@ -127,7 +127,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	if(index.CameraIndex < pMosaic->NumCameras())
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextCamFov = pMosaic->GetImagePtr(++iCamIndex, iTrigIndex)->GetNominalTransform();
+		transNextCamFov = pMosaic->GetImage(++iCamIndex, iTrigIndex)->GetNominalTransform();
 		transFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
@@ -141,7 +141,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	if(index.TriggerIndex < pMosaic->NumTriggers())
 	{
 		iNextTrigFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextTrigFov = pMosaic->GetImagePtr(iCamIndex, ++iTrigIndex)->GetNominalTransform();
+		transNextTrigFov = pMosaic->GetImage(iCamIndex, ++iTrigIndex)->GetNominalTransform();
 		transFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
 	}*/
 

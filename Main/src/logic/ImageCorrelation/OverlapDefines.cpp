@@ -258,15 +258,15 @@ FovFovOverlap::FovFovOverlap(
 	_imgPos2 = ImgPos2;
 	_bHasMask = bHasMask;
 
-	Image* pImg1 = _pMosaic1->GetImagePtr(ImgPos1.first, ImgPos1.second);
-	Image* pImg2 = _pMosaic1->GetImagePtr(ImgPos2.first, ImgPos2.second);
+	Image* pImg1 = _pMosaic1->GetImage(ImgPos1.first, ImgPos1.second);
+	Image* pImg2 = _pMosaic1->GetImage(ImgPos2.first, ImgPos2.second);
 
 	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
 }
 
 
 
-bool FovFovOverlap::IsValid() const
+bool FovFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic1->IsImageAcquired(_imgPos1.first, _imgPos1.second) &&
@@ -290,12 +290,12 @@ CadFovOverlap::CadFovOverlap(
 	_imgPos = ImgPos;
 	_pCadImg = pCadImg;
 
-	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
+	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 
 	config(pImg1, _pCadImg, validRect, Cad_To_Fov);
 }
 
-bool CadFovOverlap::IsValid() const
+bool CadFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
@@ -324,12 +324,12 @@ FidFovOverlap::FidFovOverlap(
 	_dFidCenterX = dCenterX;
 	_dFidCenterY = dCenterY;
 
-	Image* pImg1 = _pMosaic->GetImagePtr(ImgPos.first, ImgPos.second);
+	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 
 	config(pImg1, _pFidImg, validRect, Fid_To_Fov);
 }
 
-bool FidFovOverlap::IsValid() const
+bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
