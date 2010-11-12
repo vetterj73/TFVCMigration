@@ -173,6 +173,8 @@ bool Image::Save(string sFileName)
 	pBmp->write(sFileName);
 
 	delete pBmp;
+
+	return(true);
 }
 
 #pragma endregion

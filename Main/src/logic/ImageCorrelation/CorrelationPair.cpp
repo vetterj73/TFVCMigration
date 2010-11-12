@@ -5,6 +5,8 @@
 
 
 #pragma region CorrelationResult class
+
+// Constructors
 CorrelationResult::CorrelationResult()
 {
 	Default();
@@ -35,6 +37,7 @@ void CorrelationResult::operator=(const CorrelationResult& b)
 	AmbigScore	= b.AmbigScore;
 }
 
+// Default values
 void CorrelationResult::Default()
 {
 	RowOffset = 0;
@@ -117,14 +120,6 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_iMinSize = b._iMinSize;
 }
 
-// Reset to the satus before doing alignment
-bool CorrelationPair::Reset()
-{
-	_bIsProcessed = false;
-	_result.Default();
-
-	return(true);
-}
 
 void CorrelationPair::SetCorrlelationResult(CorrelationResult result)
 {
@@ -144,6 +139,17 @@ bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult) const
 	return(true);
 }
 
+// Reset to the satus before doing alignment
+bool CorrelationPair::Reset()
+{
+	_bIsProcessed = false;
+	_result.Default();
+
+	return(true);
+}
+
+// Do the alignment
+// Return true if it is processed
 bool CorrelationPair::DoAlignment()
 {
 	bool bSRC = true;
@@ -218,10 +224,10 @@ bool CorrelationPair::DoAlignment()
 		_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
 		_result.CorrCoeff = results.dCoreScore;
 		_result.AmbigScore= results.dAmbigScore;
-
-		_bIsProcessed = true;
 	}
-
+	
+	_bIsProcessed = true;
+	
 	return(true);
 }
 
@@ -384,6 +390,7 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 	return(true);
 }
 
+// For Debug
 void CorrelationPair::DumpImg(string sFileName) const
 {
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 

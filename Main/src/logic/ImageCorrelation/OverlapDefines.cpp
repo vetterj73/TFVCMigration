@@ -299,7 +299,7 @@ bool CadFovOverlap::IsValid() const
 {
 	bool bFlag =
 		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
-		(_pCadImg->GetBuffer() != NULL) &&
+		(_pCadImg != NULL) && (_pCadImg->GetBuffer() != NULL) &&
 		_bValid;
 
 	return(bFlag);

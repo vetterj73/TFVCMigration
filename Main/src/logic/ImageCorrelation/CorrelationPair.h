@@ -14,6 +14,7 @@ class CorrelationResult
 {
 public:
 
+	//Constructors 
 	CorrelationResult();
 
 	CorrelationResult(
@@ -26,6 +27,7 @@ public:
 
 	void operator=(const CorrelationResult& b);
 
+	// Default values
 	void Default();
 
 	// CorrelationResult properties
@@ -47,6 +49,7 @@ typedef enum {
 class CorrelationPair
 {
 public:
+	// Constructors
 	CorrelationPair();
 
 	CorrelationPair(
@@ -64,8 +67,7 @@ public:
 
 	void operator=(const CorrelationPair& b);
 
-	bool Reset();
-
+	// Get/set functions
 	Image* GetFirstImg() const {return _pImg1;};
 	Image* GetSecondImg() const {return _pImg2;};
 	UIRect GetFirstRoi() const {return _roi1;};
@@ -86,10 +88,13 @@ public:
 
 	bool IsProcessed() const {return _bIsProcessed;};
 
+	// Do alignment and reset
+	bool DoAlignment();	
+	bool Reset();
+
+	// For overlap process
 	bool AdjustRoiBaseOnResult(CorrelationPair* pPair) const;
-
-	bool DoAlignment();
-
+	
 	bool ChopCorrPair(
 		unsigned int iNumBlockX, 
 		unsigned int iNumBlockY, 
@@ -100,6 +105,7 @@ public:
 		unsigned int iBlockRowSearchExpansion,
 		list<CorrelationPair>* pOutPairList) const;
 
+	// For Debug
 	void DumpImg(string sFileName) const;
 	bool DumpImgWithResult(string sFileName) const;
 

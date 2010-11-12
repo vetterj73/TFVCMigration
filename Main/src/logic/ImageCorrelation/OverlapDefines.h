@@ -30,7 +30,9 @@ public:
 		OverlapType type,		
 		Image* pMaskImg = NULL);
 
+	// Get/set
 	Image* GetFirstImage() const {return _pImg1;};
+	Image* GetSecondImage() const {return _pImg2;};
 
 	unsigned int Columns() const {return _iColumns;};
 	unsigned int Rows() {return _iRows;};
@@ -41,6 +43,7 @@ public:
 	CorrelationPair* GetCoarsePairPtr() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
 
+	// Do alignment and reset
 	bool DoIt();
 	bool Reset();
 

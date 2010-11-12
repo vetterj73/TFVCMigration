@@ -169,6 +169,8 @@ bool StitchingManager::AddOneImageBuffer(
 
 	if(IsReadyToCreateTransforms())
 		CreateTransforms();
+
+	return(true);
 }
 
 // Flag for create Masks

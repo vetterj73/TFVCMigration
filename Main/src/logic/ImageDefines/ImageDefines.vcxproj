@@ -143,7 +143,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;BitmapD.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64</AdditionalLibraryDirectories>
