@@ -49,6 +49,9 @@ OverlapManager::OverlapManager(
 	CreateCadFovOverlaps();
 
 	CalMaskCreationStage();
+
+	// For Debug
+	_bDebug = true;
 }
 
 
@@ -331,7 +334,14 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
+		{
 			i->DoIt();
+			if(_bDebug)
+			{
+				i->DumpOvelapImages();
+				i->DumpResultImages();
+			}
+		}
 	}
 
 	// Process valid Cad Fov overalp
@@ -339,7 +349,14 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<CadFovOverlap>::iterator i=pCadFovList->begin(); i!=pCadFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
+		{
 			i->DoIt();
+			if(_bDebug)
+			{
+				i->DumpOvelapImages();
+				i->DumpResultImages();
+			}
+		}
 	}
 
 	// Process valid fiducial Fov overlap
@@ -347,7 +364,14 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
+		{
 			i->DoIt();
+			if(_bDebug)
+			{
+				i->DumpOvelapImages();
+				i->DumpResultImages();
+			}
+		}
 	}
 
 	return(true);

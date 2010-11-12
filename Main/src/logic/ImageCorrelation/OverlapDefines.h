@@ -51,7 +51,10 @@ protected:
 	bool CalCoarseCorrPair();
 	bool ChopOverlap();	
 	bool _bValid;
-	bool _bProcessed;
+	bool _bProcessed;	
+	
+	CorrelationPair _coarsePair;
+	list<CorrelationPair> _finePairList;
 
 private:
 	Image* _pImg1;
@@ -63,12 +66,10 @@ private:
 
 	unsigned int _iColumns;
 	unsigned int _iRows;
-
-	CorrelationPair _coarsePair;
-	list<CorrelationPair> _finePairList;
 };
 
-// Overlap between FOV image FOV image
+// Overlap between FOV image and FOV image
+// Image with lower illumination index is the first image
 class FovFovOverlap: public Overlap
 {
 public:
@@ -92,6 +93,10 @@ public:
 
 	bool IsReadyToProcess() const;
 
+	// For debug
+	bool DumpOvelapImages();
+	bool DumpResultImages();
+
 private:
 	MosaicImage*	_pMosaic1;
 	MosaicImage*	_pMosaic2;
@@ -100,6 +105,8 @@ private:
 	bool _bHasMask;
 };
 
+// Overlap between CAD image and FOV image
+// Fov image is always the first image
 class CadFovOverlap: public Overlap
 {
 public:
@@ -118,13 +125,18 @@ public:
 
 	bool IsReadyToProcess() const;
 
+	// For debug
+	bool DumpOvelapImages();
+	bool DumpResultImages();
+
 private:
 	MosaicImage*	_pMosaic;
 	pair<unsigned int, unsigned int> _imgPos;
 	Image* _pCadImg;
 };
 
-
+// Overlap between Fiducial image and FOV image
+// Fov image is always the first image
 class FidFovOverlap: public Overlap
 {
 public:
@@ -146,6 +158,10 @@ public:
 	double GetFiducialYPos() const {return _dFidCenterY;};
 
 	bool IsReadyToProcess() const;
+
+	// For debug
+	bool DumpOvelapImages();
+	bool DumpResultImages();
 
 private:
 	MosaicImage*	_pMosaic;

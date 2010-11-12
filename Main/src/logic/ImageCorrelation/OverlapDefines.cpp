@@ -276,6 +276,65 @@ bool FovFovOverlap::IsReadyToProcess() const
 	return(bFlag);
 }
 
+// For Debug 
+bool FovFovOverlap::DumpOvelapImages()
+{
+	if(!IsReadyToProcess())
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImg(s);
+
+	int iCount = 0;
+	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+	{
+		printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
+		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
+
+		s.append(cTemp);
+		i->DumpImg(s);
+
+		iCount++;
+	}
+
+	return(true);
+}
+
+bool FovFovOverlap::DumpResultImages()
+{
+	if(!_bProcessed)
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImgWithResult(s);
+
+	int iCount = 0;
+	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+	{
+		printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
+		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
+
+		s.append(cTemp);
+		i->DumpImgWithResult(s);
+
+		iCount++;
+	}
+}
+
 #pragma endregion 
 
 #pragma region CadFovOverlap class
@@ -303,6 +362,39 @@ bool CadFovOverlap::IsReadyToProcess() const
 		_bValid;
 
 	return(bFlag);
+}
+
+// For Debug 
+bool CadFovOverlap::DumpOvelapImages()
+{
+	if(!IsReadyToProcess())
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_coarse_I%dT%dC%d.bmp", 
+		_pMosaic->Index(), _imgPos.second, _imgPos.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImg(s);
+
+	return(true);
+}
+
+bool CadFovOverlap::DumpResultImages()
+{
+	if(!_bProcessed)
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_CadFov_I%dT%dC%d.bmp", 
+		_pMosaic->Index(), _imgPos.second, _imgPos.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImgWithResult(s);
+
+	return(true);
 }
 
 #pragma endregion
@@ -337,6 +429,39 @@ bool FidFovOverlap::IsReadyToProcess() const
 		_bValid;
 
 	return(bFlag);
+}
+
+// For Debug 
+bool FidFovOverlap::DumpOvelapImages()
+{
+	if(!IsReadyToProcess())
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_coarse_I%dT%dC%d.bmp", 
+		_pMosaic->Index(), _imgPos.second, _imgPos.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImg(s);
+
+	return(true);
+}
+
+bool FidFovOverlap::DumpResultImages()
+{
+	if(!_bProcessed)
+		return(false);
+
+	string s;
+	char cTemp[100];
+	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FidFov_I%dT%dC%d.bmp", 
+		_pMosaic->Index(), _imgPos.second, _imgPos.first);
+		
+	s.append(cTemp);
+	_coarsePair.DumpImgWithResult(s);
+
+	return(true);
 }
 
 #pragma endregion
