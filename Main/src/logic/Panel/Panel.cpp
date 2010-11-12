@@ -1,6 +1,9 @@
 #include "Panel.h"
 //#include "System.h"
 
+double Panel::_padInspectionAreaLong;
+double Panel::_padInspectionAreaShort;
+
 Panel::Panel() :
 	_name(""),
 	_status(UNINITIALIZED),
