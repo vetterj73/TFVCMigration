@@ -11,8 +11,8 @@ UIRect::UIRect()
 
 UIRect::UIRect(
 	unsigned int firstCol,
+	unsigned int firstRow,	
 	unsigned int lastCol,
-	unsigned int firstRow,
 	unsigned int lastRow ) 
 {
 	FirstColumn	= firstCol;

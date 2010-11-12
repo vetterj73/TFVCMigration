@@ -10,8 +10,8 @@ public:
 	UIRect();
 	UIRect(
 		unsigned int firstCol,
-		unsigned int lastCol,
 		unsigned int firstRow,
+		unsigned int lastCol,		
 		unsigned int lastRow );
 
 	UIRect(const UIRect& b);
