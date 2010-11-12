@@ -81,32 +81,32 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -115,7 +115,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,10 +123,10 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,7 +135,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,10 +143,10 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;BitmapD.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

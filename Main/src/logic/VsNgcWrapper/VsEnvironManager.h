@@ -17,6 +17,8 @@ public:
 	bool SetEnv(VsEnviron& env, DWORD threadId);
 
 protected:
+	static VsEnvironManager* ptr;
+
 	VsEnvironManager(void);
 	~VsEnvironManager(void);
 

@@ -5,22 +5,15 @@
 class EquationWeights
 {
 public:
-
-	static EquationWeights& instance()
-	{
-		if( !ptr )
-			ptr = new EquationWeights;
-
-		return *ptr;
-	}
+	static EquationWeights& Instance();
 
 	double CalWeight(CorrelationPair* pPair);
 
 protected:
+	static EquationWeights* ptr;
+
 	EquationWeights(void);
 	~EquationWeights(void);
-
-	static EquationWeights* ptr;
 
 public:
 // weights for calibration related constrains

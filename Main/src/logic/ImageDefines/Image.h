@@ -92,6 +92,8 @@ public:
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);
 
+	bool				Save(string sFileName);
+
 protected:
 
 	// Image size, stride and depth

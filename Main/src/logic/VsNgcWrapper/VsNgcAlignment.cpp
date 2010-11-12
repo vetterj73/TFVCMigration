@@ -160,6 +160,8 @@ bool VsNgcAlignment::Align()
 			}
 		}
 
+		delete [] pbBufMask;
+			// Create mask
 		tTemplate.yAllowMasking = TRUE;
 		if(vsMask2DNgcTemplate(&tTemplate) < 0) // If add mask failed
 		{

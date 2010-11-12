@@ -51,6 +51,8 @@ public:
 	unsigned int MaxNumTriggers() {return(_iNumTriggers);};
 	unsigned int MaxNumCameras() {return(_iNumCameras);};
 
+	DRect GetValidRect() {return _validRect;};
+
 protected:
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();

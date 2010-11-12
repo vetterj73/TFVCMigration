@@ -16,10 +16,10 @@ public:
 	
 	void Reset();
 
+	void CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage);
 	static void CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage);
 
 protected:
-
 	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap);
 	bool CreateImageOrderInSolver(
 		unsigned int* piIllumIndices, 
@@ -33,6 +33,8 @@ protected:
 	bool CreateTransforms();
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex);
 
+	void StitchingManager::SaveStitchingImages(string name, unsigned int iNum);
+
 private:
 	OverlapManager* _pOverlapManager;
 	Image* _pPanelMaskImage;
@@ -45,5 +47,8 @@ private:
 	RobustSolver* _pMaskSolver;
 	map<FovIndex, unsigned int> _maskMap;
 	bool _bMasksCreated;
+
+	// For debug;
+	bool _bDebug;
 };
 

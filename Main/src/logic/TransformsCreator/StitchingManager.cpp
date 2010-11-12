@@ -35,6 +35,9 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPane
 	}
 
 	_bMasksCreated = false;
+
+	// For debug
+	_bDebug = true;
 }
 
 StitchingManager::~StitchingManager(void)
@@ -238,6 +241,9 @@ bool StitchingManager::CreateMasks( )
 		}
 	}
 
+	if(_bDebug)
+		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
+
 	return(true);
 }
 
@@ -270,6 +276,11 @@ bool StitchingManager::CreateTransforms()
 			}
 		}
 	}
+
+	if(_bDebug)
+		SaveStitchingImages("C:\\Temp\\Aligned", _iMaskCreationStage);
+
+	return(true);
 }
 
 // Add overlap results for a certain illumation/mosaic image to solver
@@ -313,6 +324,16 @@ void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned 
 #pragma endregion
 
 #pragma region Create panel image
+
+// Create a panel image based on a mosaic image 
+// iIllumIndex: mosaic image index
+// pPanelImage: output, the stitched image
+void StitchingManager::CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage)
+{
+	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
+	CreateStitchingImage(pMosaic, pPanelImage);
+}
+
 // This is a utility function
 // Create a panel image based on a mosaic image
 // pMosaic: input, mosaic image
@@ -366,6 +387,44 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 	delete [] pdCenY;
 	delete [] piRectRows;
 	delete [] piRectCols;
+}
+
+
+//** for debug
+void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
+{
+	// Create image size
+	double dPixelSize = 16.9e-6; 
+	DRect rect = _pOverlapManager->GetValidRect();
+	unsigned int iNumCols = (unsigned int)((rect.yMax - rect.yMin)/dPixelSize);
+	unsigned int iNumRows = (unsigned int)((rect.xMax - rect.xMin)/dPixelSize);
+	// create image transform
+	double t[3][3];
+	t[0][0] = dPixelSize;
+	t[0][1] = 0;
+	t[0][2] = rect.xMin;
+	t[1][0] = 0;
+	t[1][1] = dPixelSize;
+	t[1][2] = rect.yMin;
+	t[2][0] = 0;
+	t[2][1] = 0;
+	t[2][2] = 1;
+	ImgTransform trans(t);
+	//Create image
+	bool bCreateOwnBuf = true;
+	unsigned iBytePerpixel = 1;
+	Image panelImage(iNumCols, iNumRows, iNumCols, iBytePerpixel, trans, trans, bCreateOwnBuf);
+
+	// Create stitched images
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		CreateStitchingImage(i, &panelImage);
+		char cTemp[100];
+		printf_s(cTemp, 100, "%s_%d.bmp", sName, i); 
+		string s;
+		s.assign(cTemp);
+		panelImage.Save(s);
+	}
 }
 
 #pragma endregion

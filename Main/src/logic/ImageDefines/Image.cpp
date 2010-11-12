@@ -1,5 +1,6 @@
 #include "Image.h"
 #include "Utilities.h"
+#include "Bitmap.h"
 
 #pragma region constructor and configuration
 Image::Image() 
@@ -161,6 +162,19 @@ void Image::ZeroBuffer()
 	::memset(_buffer, 0, BufferSizeInBytes());
 }
 
+// Save image to disc
+bool Image::Save(string sFileName)
+{
+	Bitmap* pBmp = Bitmap::NewBitmapFromBuffer(
+		_columns, _rows, _pixelRowStride, _buffer, _bytesPerPixel*8);
+	
+	if(pBmp == NULL) return(false);
+		
+	pBmp->write(sFileName);
+
+	delete pBmp;
+}
+
 #pragma endregion
 
 #pragma region Transform related
@@ -308,3 +322,4 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 }
 
 #pragma endregion
+

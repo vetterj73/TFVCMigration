@@ -1,5 +1,15 @@
 #include "EquationWeights.h"
 
+// For singleton pattern
+EquationWeights* EquationWeights::ptr = 0;
+EquationWeights& EquationWeights::Instance()
+{
+	if( ptr != NULL )
+		ptr = new EquationWeights();
+
+	return *ptr;
+}
+
 EquationWeights::EquationWeights(void)
 {
 // weights for calibration related constrains
@@ -16,7 +26,6 @@ EquationWeights::EquationWeights(void)
 	wPMEq = 1e12;		// m6 = m10 and m7 = m11
 	wPM89 = 1e12;		// M8 = 0 and M9 = 0
 	wPMNext = 2e11;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
-
 
 	// Parameters of weight for Fov and Fov overlap
 	_dWeightFovFov = 2e5;
@@ -37,7 +46,6 @@ EquationWeights::EquationWeights(void)
 EquationWeights::~EquationWeights(void)
 {
 }
-
 
 // Calculate weigtht for correlation pair
 // pPair

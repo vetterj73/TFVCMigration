@@ -32,7 +32,7 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 }
 #pragma endregion
 
-#define Weights EquationWeights::instance()
+#define Weights EquationWeights::Instance()
 
 RobustSolver::RobustSolver(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 

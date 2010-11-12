@@ -4,10 +4,13 @@
 using std::map;
 
 //Singleton pattern
+VsEnvironManager* VsEnvironManager::ptr = 0;
 VsEnvironManager& VsEnvironManager::Instance(void)
 {
-	static VsEnvironManager inst;
-	return inst;
+	if( ptr != NULL )
+		ptr = new VsEnvironManager();
+
+	return *ptr;
 }
 
 VsEnvironManager::VsEnvironManager(void)
