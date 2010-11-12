@@ -8,10 +8,10 @@
 #include "Feature.h"
 #include <map>
 using std::map;
-
 typedef map<int, Feature*> FeatureList;
 typedef FeatureList::iterator FeatureListIterator;
 
+using namespace LOGGER;
 class Panel : public LoggableObject
 {
 public:

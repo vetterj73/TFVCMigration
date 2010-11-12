@@ -5,20 +5,19 @@
 #include "MosaicSet.h"
 #include "ManagedMosaicLayer.h"
 #include "ManagedCorrelationFlags.h"
+#include "LoggableManagedObject.h"
 
 using namespace System;
-using namespace System::Runtime::InteropServices;
+using namespace MLOGGER;
 namespace MMosaicDM 
 {
 	public delegate void ImageAddedDelegate(int, int, int);
-	public delegate void LoggingDelegate(String ^ message);
-	protected delegate void LoggingDelegateForUnmanaged(const char *message);
 	
 	///
 	///	Simple Wrapper around unmanaged MosaicSet.  Only exposes what is necessary.
 	/// NOTE:  This only works with 8 bit images!
 	///
-	public ref class ManagedMosaicSet
+	public ref class ManagedMosaicSet : public MLoggableObject
 	{
 		public:
 
@@ -43,14 +42,11 @@ namespace MMosaicDM
 						pixelSizeYInMeters
 					);
 
-				_imageAddedDelegate = gcnew ImageAddedDelegate(this, &MMosaicDM::ManagedMosaicSet::RaiseImageAdded); 
-				_pMosaicSet->RegisterImageAddedCallback((MosaicDM::IMAGEADDED_CALLBACK)Marshal::GetFunctionPointerForDelegate(_imageAddedDelegate).ToPointer(), NULL);
-			
-				_errorDelegate = gcnew LoggingDelegateForUnmanaged(this, &MMosaicDM::ManagedMosaicSet::RaiseError); 
-				_pMosaicSet->RegisterErrorCallback((LOGGINGCALLBACK)Marshal::GetFunctionPointerForDelegate(_errorDelegate).ToPointer());
+				// This sets up the Logging interface from unmanaged...
+				SetLoggableObject(_pMosaicSet);
 
-				_diagnosticsDelegate = gcnew LoggingDelegateForUnmanaged(this, &MMosaicDM::ManagedMosaicSet::RaiseDiagnosticMessage); 
-				_pMosaicSet->RegisterDiagnosticMessageCallback((LOGGINGCALLBACK)Marshal::GetFunctionPointerForDelegate(_diagnosticsDelegate).ToPointer());
+				_imageAddedDelegate = gcnew ImageAddedDelegate(this, &MMosaicDM::ManagedMosaicSet::RaiseImageAdded); 
+				_pMosaicSet->RegisterImageAddedCallback((MosaicDM::IMAGEADDED_CALLBACK)Marshal::GetFunctionPointerForDelegate(_imageAddedDelegate).ToPointer(), NULL);	
 			}
 
 
@@ -117,8 +113,6 @@ namespace MMosaicDM
 			}
 
 			event ImageAddedDelegate^ OnImageAdded;
-			event LoggingDelegate^ OnError;
-			event LoggingDelegate^ OnDiagnosticsMessage;
 
 			/// \internal
 			property System::IntPtr UnmanagedMosaicSet
@@ -133,20 +127,6 @@ namespace MMosaicDM
 			void RaiseImageAdded(int layerIndex, int cameraIndex, int triggerIndex)
 			{
 				OnImageAdded(layerIndex, cameraIndex, triggerIndex);
-			}
-
-			LoggingDelegateForUnmanaged ^_errorDelegate;
-			void RaiseError(const char* error)
-			{
-				String ^msg = gcnew String(error);
-				OnError(msg);
-			}
-
-			LoggingDelegateForUnmanaged ^_diagnosticsDelegate;
-			void RaiseDiagnosticMessage(const char* diag)
-			{
-				String ^msg = gcnew String(diag);
-				OnDiagnosticsMessage(msg);
 			}
 	};
 }

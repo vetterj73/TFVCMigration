@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LoggableObject.h"
+using namespace LOGGER;
 
 namespace MosaicDM 
 {

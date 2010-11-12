@@ -1,49 +1,59 @@
 #pragma once
-
-typedef void (*LOGGINGCALLBACK)(const char* message);
-
 #include "windows.h"
 
-class LoggableObject
+namespace LOGGER
 {
-public:
-	LoggableObject()
+	enum LOGTYPE 
 	{
-		registeredDiagnosticMessageCallback_ = NULL;
-		registeredErrorCallback_ = NULL;
-	}
+		LogTypeError,
+		LogTypeWarning,
+		LogTypeDiagnostic,
+		LogTypeSystem,
+		NUMLOGTYPES
+	};
 
-	// Register a function that will be used for diagnostic messages.
-	void RegisterDiagnosticMessageCallback(LOGGINGCALLBACK callback)
+	typedef void (*LOGGINGCALLBACK)(const char* message, LOGTYPE LogType);
+
+	class LoggableObject
 	{
-		registeredDiagnosticMessageCallback_ = callback;
-	}
+	public:
+
+		LoggableObject()
+		{
+			_registeredLoggingCallback = NULL;
+
+			for(int i=0; i<(int)NUMLOGTYPES; i++)
+				_logTypeFlags[i] = false;
+		}
+
+		// Register a function that will be used for log messages.
+		void RegisterLoggingCallback(LOGGINGCALLBACK callback)
+		{
+			_registeredLoggingCallback = callback;
+		}
+
+		bool IsLoggingType(LOGTYPE logType)
+		{
+			return _logTypeFlags[logType];
+		};
+
+		void SetLogType(LOGTYPE logType, bool bOn)
+		{
+			_logTypeFlags[logType] = bOn;
+		}
 	
-	// Register a function that will be used for error messages.
-	void RegisterErrorCallback(LOGGINGCALLBACK callback)
-	{
-		registeredErrorCallback_ = callback;
-	}
+		// Let listener know that a log message they are interested in has occurred
+		void FireLogEntry(const char *message, LOGTYPE logType)
+		{
+			if(_registeredLoggingCallback == NULL)
+				return;
 
-	// Let listener know that a Diagnostic Message Occurred
-	void FireDiagnosticMessage(const char *message)
-	{
-		if(registeredDiagnosticMessageCallback_ != NULL)
-			registeredDiagnosticMessageCallback_(message);
-	}
+			if(IsLoggingType(logType))
+				_registeredLoggingCallback(message, logType);
+		}
 
-	// Let listener know that an Error occurred
-	void FireError(const char *message)
-	{
-		if(registeredErrorCallback_ != NULL)
-			registeredErrorCallback_(message);
-	}
-
-	// Let listener know if logging is enabled.
-	bool LogDiagnostics(){return registeredDiagnosticMessageCallback_!=NULL;};
-	bool LogErrors(){return registeredErrorCallback_!=NULL;};
-
-private:
-	LOGGINGCALLBACK registeredDiagnosticMessageCallback_;
-	LOGGINGCALLBACK registeredErrorCallback_;
-};
+	private:
+		LOGGINGCALLBACK _registeredLoggingCallback;
+		bool _logTypeFlags[(int)NUMLOGTYPES];
+	};
+}

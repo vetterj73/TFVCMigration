@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using MCoreAPI;
+using MLOGGER;
 using MMosaicDM;
 using SIMAPI;
 
@@ -117,16 +118,18 @@ namespace CyberStitchTester
                     numCameras++;
             _mosaicSet = new ManagedMosaicSet(.200, .250, 2592, 1944, 2592, .00017, .00017);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
-            _mosaicSet.OnDiagnosticsMessage += OnDiagnosticMessageFromMosaic;
+            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
+            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++ )
             {
                 _mosaicSet.AddLayer(.2, i*.2, numCameras, .003, pSpec.NumberOfTriggers, .004, false);
             }
         }
 
-        private static void OnDiagnosticMessageFromMosaic(string message)
+        private static void OnLogEntryFromMosaic(string message, MLOGTYPE logtype)
         {
-            Output("Message From Mosaic: " + message);
+            Output(logtype + " From Mosaic: " + message);
         }
 
         /// <summary>

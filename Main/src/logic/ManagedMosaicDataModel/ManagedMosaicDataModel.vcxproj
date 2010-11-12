@@ -149,6 +149,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Shared\LoggableManagedObject.h" />
     <ClInclude Include="ManagedCorrelationFlags.h" />
     <ClInclude Include="ManagedMosaicLayer.h" />
     <ClInclude Include="ManagedMosaicSet.h" />
