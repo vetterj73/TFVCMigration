@@ -826,7 +826,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 	// Step 1: Convert lines and arcs defined by 
 	//         CyberSegments to a series of CW points
 	//
-	if(pPanel->IsLoggingType(LogTypeError) && _segments.size() <= 0)
+	if(pPanel->IsLoggingTypeEnabled(LogTypeError) && _segments.size() <= 0)
 	{
 		char buffer[_MAX_PATH+1];
 		sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! There are no segments!", _index);
@@ -840,7 +840,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 	// The first segment must not be an arc
 	if(seg->GetLine()==false)
 	{
-		if(pPanel->IsLoggingType(LogTypeError))
+		if(pPanel->IsLoggingTypeEnabled(LogTypeError))
 		{
 			char buffer[_MAX_PATH+1];
 			sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! It's definition started with an arc segment!", _index);
@@ -849,7 +849,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 		return false;
 	}
 
-	if(pPanel->IsLoggingType(LogTypeDiagnostic))
+	if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
 	{
 		char buffer[_MAX_PATH+1];
 		sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
@@ -875,7 +875,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 
 		if(seg->GetLine()== true)
 		{
-			if(pPanel->IsLoggingType(LogTypeDiagnostic))
+			if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
 			{
 				char buffer[_MAX_PATH+1];
 				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
@@ -903,7 +903,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 
 			for(PointList::iterator point=arcPoints.begin(); point!=arcPoints.end(); point++)
 			{
-				if(pPanel->IsLoggingType(LogTypeDiagnostic))
+				if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
 				{
 					char buffer[_MAX_PATH+1];
 					sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
@@ -941,7 +941,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 		// If this is not a duplicate point, add to the classes list
 		if(!duplicate)
 		{
-			if(pPanel->IsLoggingType(LogTypeDiagnostic))
+			if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
 			{
 				char buffer[_MAX_PATH+1];
 				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
