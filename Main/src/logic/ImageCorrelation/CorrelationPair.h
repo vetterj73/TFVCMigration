@@ -77,6 +77,7 @@ public:
 	void SetCorrlelationResult(CorrelationResult result);
 
 	bool GetCorrelationResult(CorrelationResult* pResult) const;
+	CorrelationResult GetCorrelationResult() const;
 
 	OverlapType GetOverlapType() const {return _type;};
 
@@ -124,6 +125,4 @@ private:
 	unsigned int _iRowSearchExpansion;
 
 	CorrelationResult _result;
-
-	unsigned int _iMinSize;	// internal setting
 };

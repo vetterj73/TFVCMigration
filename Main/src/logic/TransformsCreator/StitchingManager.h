@@ -16,18 +16,18 @@ public:
 	
 	void Reset();
 
-	void CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage);
+	void CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage) const;
 	static void CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage);
 
 protected:
-	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap);
+	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const;
 	bool CreateImageOrderInSolver(
 		unsigned int* piIllumIndices, 
 		unsigned iNumIllums, 
-		map<FovIndex, unsigned int>* pOrderMap);
+		map<FovIndex, unsigned int>* pOrderMap) const;
 
-	bool IsReadyToCreateMasks();
-	bool IsReadyToCreateTransforms();
+	bool IsReadyToCreateMasks() const;
+	bool IsReadyToCreateTransforms() const;
 
 	bool CreateMasks();
 	bool CreateTransforms();

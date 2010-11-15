@@ -71,7 +71,7 @@ bool operator<(const FovIndexMap& a, const FovIndexMap& b)
 bool StitchingManager::CreateImageOrderInSolver(
 	unsigned int* piIllumIndices, 
 	unsigned iNumIllums,
-	map<FovIndex, unsigned int>* pOrderMap)
+	map<FovIndex, unsigned int>* pOrderMap) const
 {
 	unsigned int i, iTrig;
 	FovList fovList;
@@ -120,7 +120,7 @@ bool StitchingManager::CreateImageOrderInSolver(
 	return(true);
 }
 
-bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap)
+bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const
 {
 	unsigned int iNumIllums = _pOverlapManager->NumIlluminations();
 	unsigned int* piIllumIndices = new unsigned int[iNumIllums];
@@ -175,7 +175,7 @@ bool StitchingManager::AddOneImageBuffer(
 }
 
 // Flag for create Masks
-bool StitchingManager::IsReadyToCreateMasks()
+bool StitchingManager::IsReadyToCreateMasks() const
 {
 	if(_iMaskCreationStage <=0 )
 		return(false);
@@ -190,7 +190,7 @@ bool StitchingManager::IsReadyToCreateMasks()
 }
 
 // Flags for create transform for each Fov
-bool StitchingManager::IsReadyToCreateTransforms()
+bool StitchingManager::IsReadyToCreateTransforms() const
 {
 	for(unsigned int i=0; i<_pOverlapManager->NumIlluminations(); i++)
 	{
@@ -337,7 +337,7 @@ void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned 
 // Create a panel image based on a mosaic image 
 // iIllumIndex: mosaic image index
 // pPanelImage: output, the stitched image
-void StitchingManager::CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage)
+void StitchingManager::CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage) const
 {
 	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
 	CreateStitchingImage(pMosaic, pPanelImage);

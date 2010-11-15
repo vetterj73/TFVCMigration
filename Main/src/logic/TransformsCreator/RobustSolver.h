@@ -52,7 +52,7 @@ public:
 	void Reset() {ZeroTheSystem();};
 
 	// Debug
-	void OutputVectorXCSV(string filename);
+	void OutputVectorXCSV(string filename) const;
 
 protected:
 	void ZeroTheSystem();

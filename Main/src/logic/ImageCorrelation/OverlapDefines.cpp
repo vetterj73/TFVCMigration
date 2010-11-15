@@ -1,5 +1,6 @@
 #include "OverlapDefines.h"
 #include "Logger.h"
+#include "CorrelationParameters.h"
 
 #pragma region Overlap class
 
@@ -151,9 +152,9 @@ bool Overlap::CalCoarseCorrPair()
 	}
 
 	// create coarse correlation pair
-	unsigned int iDecim = 2;
-	unsigned int iColSearchExpansion = 50;
-	unsigned int iRowSearchExpansion = 75;
+	unsigned int iDecim = CorrParams.iCoarseMinDecim;
+	unsigned int iColSearchExpansion = CorrParams.iCoarseColSearchExpansion;
+	unsigned int iRowSearchExpansion = CorrParams.iCoarseRowSearchExpansion;
 	if(_type != Fid_To_Fov)
 	{
 		if(roi1.Columns()>500 && roi1.Rows()>500)
@@ -199,30 +200,31 @@ bool Overlap::DoIt()
 	CorrelationPair tempPair = _coarsePair;
 	if(_coarsePair.IsProcessed())
 	{
-		bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+		CorrelationResult result= _coarsePair.GetCorrelationResult();
+		if(result.CorrCoeff * (1-result.AmbigScore) >CorrParams.dCoarseResultReliableTh)
+			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
-	if(!bAdjusted) return(false);
 
 	// Create fine correlation pair list
-	unsigned int iBlockWidth = 400;
+	unsigned int iBlockWidth = CorrParams.iFineBlockWidth;
 	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
-	if(iNumBlockX >3) iNumBlockX = 3;
+	if(iNumBlockX > CorrParams.iFineMaxBlocksInCol) iNumBlockX = CorrParams.iFineMaxBlocksInCol;
 	if(iNumBlockX <1) iNumBlockX = 1;
 	if(iBlockWidth <  tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
 
-	unsigned int iBlockHeight = 300;
+	unsigned int iBlockHeight = CorrParams.iFineBlockHeight;
 	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
-	if(iNumBlockY >3) iNumBlockY = 3;
+	if(iNumBlockY > CorrParams.iFineMaxBlocksInRow) iNumBlockY = CorrParams.iFineMaxBlocksInRow;
 	if(iNumBlockY <1) iNumBlockY = 1;
 	if(iBlockHeight < tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
 
-	unsigned int iBlockDecim = 2;
-	unsigned int iBlockColSearchExpansion = 20;
-	unsigned int iBlockRowSearchExpansion = 20;
+	unsigned int iBlockDecim = CorrParams.iFineDecim;
+	unsigned int iBlockColSearchExpansion = CorrParams.iFineColSearchExpansion;
+	unsigned int iBlockRowSearchExpansion = CorrParams.iFineRowSearchExpansion;
 	if(!bAdjusted)
 	{
-		iBlockColSearchExpansion = 50;
-		iBlockRowSearchExpansion = 75;
+		iBlockColSearchExpansion = CorrParams.iCoarseColSearchExpansion;
+		iBlockRowSearchExpansion = CorrParams.iCoarseRowSearchExpansion;
 	}
 
 	tempPair.ChopCorrPair(
@@ -264,8 +266,6 @@ FovFovOverlap::FovFovOverlap(
 
 	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
 }
-
-
 
 bool FovFovOverlap::IsReadyToProcess() const
 {

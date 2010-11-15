@@ -3,6 +3,7 @@
 #include "SquareRootCorrelation.h"
 #include "VsNgcWrapper.h"
 #include "Logger.h"
+#include "CorrelationParameters.h"
 
 
 #pragma region CorrelationResult class
@@ -59,8 +60,6 @@ CorrelationPair::CorrelationPair()
 	_type = NULL_OVERLAP;
 
 	_bIsProcessed=false;
-
-	_iMinSize = 20;
 }
 
 CorrelationPair::CorrelationPair(
@@ -91,8 +90,6 @@ CorrelationPair::CorrelationPair(
 	_type = type;
 
 	_bIsProcessed = false;
-
-	_iMinSize = 20;
 }
 
 CorrelationPair::CorrelationPair(const CorrelationPair& b)
@@ -117,8 +114,6 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 
 	_bIsProcessed = b._bIsProcessed;
 	_result = b._result;
-
-	_iMinSize = b._iMinSize;
 }
 
 
@@ -138,6 +133,11 @@ bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult) const
 	*pResult = _result;
 
 	return(true);
+}
+
+CorrelationResult CorrelationPair::GetCorrelationResult() const
+{
+	return(_result);
 }
 
 // Reset to the satus before doing alignment
@@ -172,13 +172,13 @@ bool CorrelationPair::DoAlignment()
 			pLineBuf += _pImg1->ByteRowStride();
 		}
 
-		if(iCount*100/_roi1.Rows()/_roi1.Columns() > 5)
-			bSRC = true;
+		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrParams.dMaskAreaRatioTh*100)
+			bSRC = false;
 	}
 
 	if(bSRC)
 	{	// use SRC/regoff
-		if(_roi1.Columns()<_iMinSize || _roi1.Rows()<_iMinSize)
+		if(_roi1.Columns()<CorrParams.iCorrPairMinRoiSize || _roi1.Rows()<CorrParams.iCorrPairMinRoiSize)
 		{
 			return(false);
 		}
@@ -187,8 +187,8 @@ bool CorrelationPair::DoAlignment()
 	else
 	{	
 		// Mask sure ROI size is bigger enough for search
-		if(_roi1.Columns() < 2*_iColSearchExpansion+_iMinSize ||
-			_roi1.Rows() < 2*_iRowSearchExpansion+_iMinSize)
+		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrParams.iCorrPairMinRoiSize ||
+			_roi1.Rows() < 2*_iRowSearchExpansion+CorrParams.iCorrPairMinRoiSize)
 			return(false);
 
 		// Use Ngc
@@ -350,17 +350,13 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 	if(!_bIsProcessed)
 		return(false);
 
-	double dRoiAdjustTh = 0.03;
-	if(_result.CorrCoeff * (1-_result.AmbigScore) < 0.03)
-		return(false);
-
 	// Adjustment offsets
 	int col_offset = (int)(_result.ColOffset + 0.5);	
 	int row_offset = (int)(_result.RowOffset + 0.5);
 
 	// validation check
-	if(_roi1.Columns() < abs(col_offset)+_iMinSize ||
-		_roi1.Rows() < abs(col_offset)+_iMinSize)
+	if(_roi1.Columns() < abs(col_offset)+CorrParams.iCorrPairMinRoiSize ||
+		_roi1.Rows() < abs(col_offset)+CorrParams.iCorrPairMinRoiSize)
 		return(false);
 
 	*pPair = *this;

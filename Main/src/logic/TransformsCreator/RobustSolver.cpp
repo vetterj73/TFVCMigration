@@ -877,7 +877,7 @@ bool RobustSolver::MatchProjeciveTransform(const double pPara[12], double dTrans
 #pragma region Debug
 // Debug
 // Vector X output
-void RobustSolver::OutputVectorXCSV(string filename)
+void RobustSolver::OutputVectorXCSV(string filename) const
 {
 	ofstream of(filename.c_str());
 
