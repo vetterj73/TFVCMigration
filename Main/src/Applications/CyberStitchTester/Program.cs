@@ -10,6 +10,8 @@ namespace CyberStitchTester
 {
     class Program
     {
+        private const double cCameraOverlap = .4;
+        private const double cTriggerOverlap = .4;
         private static ManagedMosaicSet _mosaicSet = null;
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
@@ -114,8 +116,7 @@ namespace CyberStitchTester
 
         private static void AddDeviceToMosaic(ManagedSIMDevice d)
         {
-            ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(0);
-            if (pSpec == null)
+            if (d.NumberOfCaptureSpecs <=0)
             {
                 Output("No Capture Specs defined");
                 return;
@@ -129,7 +130,8 @@ namespace CyberStitchTester
 
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++)
             {
-                ManagedMosaicLayer layer = _mosaicSet.AddLayer(.2, i * .2, numCameras, .003, pSpec.NumberOfTriggers, .004, false);
+                ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(0);
+                ManagedMosaicLayer layer = _mosaicSet.AddLayer(.2, pSpec.XOffset(), numCameras, .004, pSpec.NumberOfTriggers, .004, false);
 
                 if (layer == null)
                 {
@@ -152,9 +154,8 @@ namespace CyberStitchTester
                         }
 
                         // Trigger offset is initial offset + triggerIndex * overlap...
-                        double triggerOffset = .2;
                         mmt.SetTransformParameters(camera.Pixelsize.X, camera.Pixelsize.Y,
-                            triggerOffset, d.YOffset + camera.CenterOffset.Y, camera.Rotation);
+                            pSpec.XOffset() + pSpec.GetTriggerAtIndex(k), camera.CenterOffset.Y, camera.Rotation);
                     }
                 }
             }
