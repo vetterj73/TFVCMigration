@@ -161,7 +161,7 @@ namespace CyberStitchTester
             }
         }
 
-        private static void OnLogEntryFromMosaic(string message, MLOGTYPE logtype)
+        private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
         {
             Output(logtype + " From Mosaic: " + message);
         }

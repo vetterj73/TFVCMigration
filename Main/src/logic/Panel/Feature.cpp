@@ -826,11 +826,9 @@ bool CyberFeature::Validate(Panel *pPanel)
 	// Step 1: Convert lines and arcs defined by 
 	//         CyberSegments to a series of CW points
 	//
-	if(pPanel->IsLoggingTypeEnabled(LogTypeError) && _segments.size() <= 0)
+	if(_segments.size() <= 0)
 	{
-		char buffer[_MAX_PATH+1];
-		sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! There are no segments!", _index);
-		pPanel->FireLogEntry(buffer, LogTypeError);
+		pPanel->FireLogEntry(LogTypeError, "CyberShape %d is invalid! There are no segments!", _index);
 		return false;
 	}
 
@@ -840,21 +838,11 @@ bool CyberFeature::Validate(Panel *pPanel)
 	// The first segment must not be an arc
 	if(seg->GetLine()==false)
 	{
-		if(pPanel->IsLoggingTypeEnabled(LogTypeError))
-		{
-			char buffer[_MAX_PATH+1];
-			sprintf_s(buffer, _MAX_PATH, "CyberShape %d is invalid! It's definition started with an arc segment!", _index);
-			pPanel->FireLogEntry(buffer, LogTypeError);
-		}
+		pPanel->FireLogEntry(LogTypeError, "CyberShape %d is invalid! It's definition started with an arc segment!", _index);
 		return false;
 	}
 
-	if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
-	{
-		char buffer[_MAX_PATH+1];
-		sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
-		pPanel->FireLogEntry(buffer, LogTypeDiagnostic);
-	}
+	pPanel->FireLogEntry(LogTypeDiagnostic, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
 
 	// Add the starting point to the list
 	segmentVertices.push_back(Point(seg->GetPositionX(), seg->GetPositionY()));
@@ -875,13 +863,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 
 		if(seg->GetLine()== true)
 		{
-			if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
-			{
-				char buffer[_MAX_PATH+1];
-				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
-				pPanel->FireLogEntry(buffer, LogTypeDiagnostic);
-			}
-
+			pPanel->FireLogEntry(LogTypeDiagnostic, "OddShapePart,#%d,Line(meters),%0.06lf,%0.06lf", _index, seg->GetPositionX(), seg->GetPositionY());
 			segmentVertices.push_back(Point(seg->GetPositionX(), seg->GetPositionY()));
 		}
 		else
@@ -903,13 +885,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 
 			for(PointList::iterator point=arcPoints.begin(); point!=arcPoints.end(); point++)
 			{
-				if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
-				{
-					char buffer[_MAX_PATH+1];
-					sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
-					pPanel->FireLogEntry(buffer, LogTypeDiagnostic);
-				}
-
+				pPanel->FireLogEntry(LogTypeDiagnostic, "OddShapePart,#%d,Arc(meters),%0.06lf,%0.06lf", _index, point->x, point->y);
 				segmentVertices.push_back(Point(point->x, point->y));
 			}
 		}
@@ -941,13 +917,7 @@ bool CyberFeature::Validate(Panel *pPanel)
 		// If this is not a duplicate point, add to the classes list
 		if(!duplicate)
 		{
-			if(pPanel->IsLoggingTypeEnabled(LogTypeDiagnostic))
-			{
-				char buffer[_MAX_PATH+1];
-				sprintf_s(buffer, _MAX_PATH, "OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
-				pPanel->FireLogEntry(buffer, LogTypeDiagnostic);
-			}
-
+			pPanel->FireLogEntry(LogTypeDiagnostic, "OddShapePart,#%d,Vertex(meters),%0.06lf,%0.06lf", _index, vertex->x, vertex->y);
 			_polygonPoints.push_back((*vertex));
 		}
 	}

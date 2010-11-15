@@ -9,7 +9,7 @@
       <dependency project_name="Rudd" version="2.0.1.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Rudd" target=".\RuddLib\" />
       <dependency project_name="SensorVision" version="3.0.1.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\SensorVision" target=".\SensorVision\" />
       <dependency project_name="SIMCoreAPI" version="1.1.28.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\SIMCoreAPI" target=".\SIMCoreAPI\" />
-      <dependency project_name="LoggableObject" version="1.0.1.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\LoggableObject" target=".\LoggableObject\" />
+      <dependency project_name="LoggableObject" version="1.0.2.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\LoggableObject" target=".\LoggableObject\" />
     </dependencies>
     <hardware_dependencies>
     </hardware_dependencies>

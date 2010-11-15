@@ -59,7 +59,7 @@ namespace MosaicDM
 									double triggerOverlapInMeters,
 									bool correlateWithCAD)
 	{
-		FireLogEntry("Layer Added to Mosaic!", LogTypeDiagnostic);
+		FireLogEntry(LogTypeDiagnostic, "Layer Added to Mosaic!");
 
 		MosaicLayer *pML = new MosaicLayer();
 
