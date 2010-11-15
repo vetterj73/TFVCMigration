@@ -7,6 +7,8 @@
 #include "LoggableObject.h"
 using namespace LOGGER;
 
+#define LOG Logger::Instance() 
+
 class Logger : public LoggableObject
 {
 public:

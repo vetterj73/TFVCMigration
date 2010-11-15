@@ -55,7 +55,6 @@ OverlapManager::OverlapManager(
 	_bDebug = true;
 }
 
-
 OverlapManager::~OverlapManager(void)
 {
 	// Release 3D arrays for storage

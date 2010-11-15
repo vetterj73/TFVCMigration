@@ -202,7 +202,7 @@ bool StitchingManager::IsReadyToCreateTransforms() const
 }
 
 // Creat Masks
-bool StitchingManager::CreateMasks( )
+bool StitchingManager::CreateMasks()
 {
 	// Create matrix and vector for solver
 	for(int i=0; i<_iMaskCreationStage; i++)
@@ -244,6 +244,8 @@ bool StitchingManager::CreateMasks( )
 		}
 	}
 
+	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Mask images are created");
+
 	if(_bDebug)
 	{
 		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
@@ -282,6 +284,8 @@ bool StitchingManager::CreateTransforms()
 			}
 		}
 	}
+
+	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Transforms are created");
 
 	if(_bDebug)
 	{

@@ -294,7 +294,7 @@ bool CorrelationPair::ChopCorrPair(
 			roi2.FirstRow < 0 || 
 			roi2.LastRow > _pImg2->Rows()-1)
 		{
-			//G_LOG_0_ERROR("dividing image overlap into blocks");
+			LOG.FireLogEntry(LogTypeError, "CorrelationPair::ChopCorrPair(): ROI is invalid");
 			return(false);
 		}
 
@@ -320,7 +320,7 @@ bool CorrelationPair::ChopCorrPair(
 				roi2.FirstColumn < 0 || 
 				roi2.LastColumn > _pImg2->Columns()-1)
 			{
-				//G_LOG_0_ERROR("dividing image overlap into blocks");
+				LOG.FireLogEntry(LogTypeError, "CorrelationPair::ChopCorrPair(): ROI is invalid");
 				return(false);
 			}
 

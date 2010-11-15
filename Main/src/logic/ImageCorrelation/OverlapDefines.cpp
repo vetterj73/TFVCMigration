@@ -140,7 +140,7 @@ bool Overlap::CalCoarseCorrPair()
 		roi1.FirstColumn < 0 ||
 		roi1.LastColumn > _pImg1->Columns()-1)
 	{
-		//G_LOG_0_ERROR("CameraOverlap failed BoundsCheck");
+		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 	}
 
 	if(roi2.FirstRow < 0 ||
@@ -148,7 +148,7 @@ bool Overlap::CalCoarseCorrPair()
 		roi2.FirstColumn < 0 ||
 		roi2.LastColumn > _pImg2->Columns()-1)
 	{
-		//G_LOG_0_ERROR("CameraOverlap failed BoundsCheck");
+		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 	}
 
 	// create coarse correlation pair

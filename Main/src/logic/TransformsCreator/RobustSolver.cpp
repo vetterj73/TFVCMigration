@@ -706,7 +706,7 @@ void RobustSolver::SolveXAlgHB()
 	double scaleparm = 0;
 	double cond = 0;
 
-	//G_LOG_0_SPEED2("BEGIN ALG_HB");
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():BEGIN ALG_HB");
 
 	int algHRetVal = 
 		alg_hb(                // Robust regression by Huber's "Algorithm H"/ Banded version.
@@ -736,24 +736,12 @@ void RobustSolver::SolveXAlgHB()
 
 
 
-	/*if( algHRetVal<0 )
-		G_LOG_1_ERROR("alg_hb returned value of %d", algHRetVal);
+	if( algHRetVal<0 )
+		LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():alg_hb returned value of %d", algHRetVal);
 
-	G_LOG_0_SPEED2("FINISHED ALG_HB");
-	G_LOG_1_SOFTWARE("alg_hb Bandwidth = %d", bw)
-	G_LOG_3_SOFTWARE("alg_hb nIterations=%d, scaleparm=%f, cond=%f", algHRetVal, scaleparm, cond);
-
-	if(Config::instance().getInt(CFG_KEY_Align_Debug, CFG_VAL_Align_Debug))
-	{
-		std::string filename = Config::instance().getLoggingDir() + "\\MatrixA.csv";
-		OutputDebugMatrixCSV(filename);
-
-		if(_bProjeciveTrans)
-		{
-			filename = Config::instance().getLoggingDir() + "\\VectorX.csv";
-			OutputDebugVectorCSV(filename);
-		}
-	}*/
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():FINISHED ALG_HB");
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():alg_hb Bandwidth = %d", bw);
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():alg_hb nIterations=%d, scaleparm=%f, cond=%f", algHRetVal, scaleparm, cond);
 
 	delete [] mb;
 	delete [] resid;
@@ -850,11 +838,11 @@ bool RobustSolver::MatchProjeciveTransform(const double pPara[12], double dTrans
 	}
 
 	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
-	//G_LOG_1_SOFTWARE("RMS = %f", RMS/(1.6e-5));
+	//LOG.FireLogEntry(LogTypeSystem, "RobustSolver::MatchProjeciveTransform():RMS = %f", RMS/(1.6e-5));
 
 	if(iFlag != 0)
 	{
-		//G_LOG_0_ERROR("Failed to create matching projective transform");
+		//LOG.FireLogEntry(LogTypeSystem, "RobustSolver::MatchProjeciveTransform():Failed to create matching projective transform");
 	}
 
 	delete [] p;
