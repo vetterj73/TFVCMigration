@@ -1,6 +1,7 @@
 #include "RobustSolver.h"
 #include "EquationWeights.h"
 #include "lsqrpoly.h"
+#include "Logger.h"
 
 #pragma region Operateors
 bool operator<(const FovIndex& a, const FovIndex& b)

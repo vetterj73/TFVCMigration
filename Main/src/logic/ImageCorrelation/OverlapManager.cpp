@@ -1,4 +1,5 @@
 #include "OverlapManager.h"
+#include "Logger.h"
 
 OverlapManager::OverlapManager(
 	MosaicImage* pMosaics, 

@@ -1,3 +1,7 @@
+/* 
+	The banded robust least square solver class
+*/
+
 #pragma once
 
 #include "MosaicImage.h"

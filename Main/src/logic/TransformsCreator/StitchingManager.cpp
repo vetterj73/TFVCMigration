@@ -1,4 +1,5 @@
 #include "StitchingManager.h"
+#include "Logger.h"
 
 #pragma region Constructor and initilization
 StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPanelMaskImage)

@@ -1,4 +1,5 @@
 #include "MosaicImage.h"
+#include "Logger.h"
 
 MosaicImage::MosaicImage()
 {

@@ -2,6 +2,7 @@
 
 #include "SquareRootCorrelation.h"
 #include "VsNgcWrapper.h"
+#include "Logger.h"
 
 
 #pragma region CorrelationResult class
@@ -178,8 +179,9 @@ bool CorrelationPair::DoAlignment()
 	if(bSRC)
 	{	// use SRC/regoff
 		if(_roi1.Columns()<_iMinSize || _roi1.Rows()<_iMinSize)
+		{
 			return(false);
-
+		}
 		SqRtCorrelation(this, _iDecim, true);
 	}
 	else

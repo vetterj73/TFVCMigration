@@ -1,4 +1,5 @@
 #include "OverlapDefines.h"
+#include "Logger.h"
 
 #pragma region Overlap class
 
