@@ -117,6 +117,8 @@ namespace CyberStitchTester
 
             for(int i=0; i<ManagedCoreAPI.NumberOfDevices(); i++)
                 AddDeviceToMosaic(ManagedCoreAPI.GetDevice(i));
+
+            SetupCorrelateFlags();
         }
 
         private static void AddDeviceToMosaic(ManagedSIMDevice d)
@@ -181,6 +183,29 @@ namespace CyberStitchTester
                             camera.Rotation,
                             xOffset, yOffset);
                     }
+                }
+            }
+        }
+
+        private static void SetupCorrelateFlags()
+        {
+            
+            for (int i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+            {
+                for (int j = 0; j < _mosaicSet.GetNumMosaicLayers(); j++)
+                {
+                    ManagedCorrelationFlags flag =_mosaicSet.GetCorrelationSet(i, j);
+                    if (i == j)
+                    {
+                        flag.SetTriggerToTrigger(false);
+                        flag.SetCameraToCamera(true);
+                    }
+                    else
+                    {
+                        flag.SetTriggerToTrigger(true);
+                        flag.SetCameraToCamera(false);
+                    }
+                    flag.SetMaskNeeded(false);
                 }
             }
         }
