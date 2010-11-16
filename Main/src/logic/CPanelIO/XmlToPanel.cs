@@ -135,7 +135,7 @@ namespace CPanelIO
             try
             {
                 CSIMPanel simPanel = new CSIMPanel(panel.Name, 
-                     ToCSIMPanelUnits(panel.PanelSize.X), ToCSIMPanelUnits(panel.PanelSize.Y));
+                     ToCSIMPanelUnits(panel.PanelSizeX), ToCSIMPanelUnits(panel.PanelSizeY));
 
                 CFeature fid = panel.GetFirstFiducial();
                 while(fid != null)
@@ -306,11 +306,9 @@ namespace CPanelIO
                 panel.Name = simPanel.PanelName;
 
                 /// Get Panel Size
-                float panelSizeX = ToCPanelUnits(simPanel.PanelSize.ToPointF().X);
-                float panelSizeY = ToCPanelUnits(simPanel.PanelSize.ToPointF().Y);
-                panel.PanelSize = new PointD((double)panelSizeX, (double)panelSizeY);
-
-                if(panel.PanelSize.X < 0.000001 || panel.PanelSize.Y < 0.000001)
+                panel.PanelSizeX = ToCPanelUnits(simPanel.PanelSize.ToPointF().X);
+                panel.PanelSizeY = ToCPanelUnits(simPanel.PanelSize.ToPointF().Y);
+                if(panel.PanelSizeX < 0.000001 || panel.PanelSizeY < 0.000001)
                     throw new ArgumentException("Invalid panel size");
 
 

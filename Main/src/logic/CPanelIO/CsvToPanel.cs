@@ -34,21 +34,13 @@ namespace CPanelIO
                         {
                             case "LengthX":
                                 result = Double.TryParse(row[1], out length);
-                                PointD panelSize = panel.PanelSize;
-                                if (result) panelSize.X = (float) length;
-                                else panelSize.X = (float) 0.0;
-                                panel.PanelSize = panelSize;
-                                //panel.PanelSize.X = length;
-                                //else panel.LengthX = 0.0;
+                                if (result) panel.PanelSizeX = (float) length;
+                                else panel.PanelSizeX = (float)0.0;
                                 break;
                             case "LengthY":
                                 result = Double.TryParse(row[1], out length);
-                                panelSize = panel.PanelSize;
-                                if (result) panelSize.Y = (float) length;
-                                else panelSize.Y = (float) 0.0;
-                                panel.PanelSize = panelSize;
-                                //if (result) panel.PanelSize.Y = length;
-                                //else panel.LengthY = 0.0;
+                                if (result) panel.PanelSizeY = (float)length;
+                                else panel.PanelSizeY = (float)0.0;
                                 break;
                             case "Feature":
 

@@ -64,11 +64,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPanel", "..\..\logic\CPane
 		{472145E5-F493-4DD4-AC4B-05AE3189245F} = {472145E5-F493-4DD4-AC4B-05AE3189245F}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPanelIO", "..\..\..\..\..\..\CyberBuild2010\CyberStitch\Main\src\logic\CPanelIO\CPanelIO.csproj", "{A06AD1D0-414A-496D-89AC-8667F1019D75}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPanelIO", "..\..\logic\CPanelIO\CPanelIO.csproj", "{A06AD1D0-414A-496D-89AC-8667F1019D75}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 13
+		SccNumberOfProjects = 14
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -113,6 +113,9 @@ Global
 		SccProjectTopLevelParentUniqueName12 = CyberStitchTester.sln
 		SccProjectName12 = ../../logic/CPanel
 		SccLocalPath12 = ..\\..\\logic\\CPanel
+		SccProjectUniqueName13 = ..\\..\\logic\\CPanelIO\\CPanelIO.csproj
+		SccProjectName13 = ../../logic/CPanelIO
+		SccLocalPath13 = ..\\..\\logic\\CPanelIO
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

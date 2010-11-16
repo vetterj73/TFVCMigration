@@ -30,8 +30,8 @@ namespace CPanelIO
             }
 
             PointF srfPanelSize = srfUtilities.GetPanelSize(DistanceType.Meters);
-            PointD panelSize = new PointD(srfPanelSize.X, srfPanelSize.Y);
-            panel.PanelSize = panelSize;
+            panel.PanelSizeX = srfPanelSize.X;
+            panel.PanelSizeY = srfPanelSize.Y;
 
             //
             // Get SRF Fiducials and assign them to CSPIAPI.CPanel.Fiducials
