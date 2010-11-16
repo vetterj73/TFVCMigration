@@ -64,6 +64,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CPanel", "..\..\logic\CPane
 		{472145E5-F493-4DD4-AC4B-05AE3189245F} = {472145E5-F493-4DD4-AC4B-05AE3189245F}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPanelIO", "..\..\..\..\..\..\CyberBuild2010\CyberStitch\Main\src\logic\CPanelIO\CPanelIO.csproj", "{A06AD1D0-414A-496D-89AC-8667F1019D75}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 13
@@ -103,14 +105,14 @@ Global
 		SccProjectUniqueName10 = ..\\..\\logic\\TransformsCreator\\TransformsCreator.vcxproj
 		SccProjectName10 = ../../logic/TransformsCreator
 		SccLocalPath10 = ..\\..\\logic\\TransformsCreator
-		SccProjectUniqueName11 = ..\\..\\logic\\CPanel\\CPanel.vcxproj
+		SccProjectUniqueName11 = ..\\..\\logic\\Panel\\Panel.vcxproj
 		SccProjectTopLevelParentUniqueName11 = CyberStitchTester.sln
-		SccProjectName11 = ../../logic/CPanel
-		SccLocalPath11 = ..\\..\\logic\\CPanel
-		SccProjectUniqueName12 = ..\\..\\logic\\Panel\\Panel.vcxproj
+		SccProjectName11 = ../../logic/Panel
+		SccLocalPath11 = ..\\..\\logic\\Panel
+		SccProjectUniqueName12 = ..\\..\\logic\\CPanel\\CPanel.vcxproj
 		SccProjectTopLevelParentUniqueName12 = CyberStitchTester.sln
-		SccProjectName12 = ../../logic/Panel
-		SccLocalPath12 = ..\\..\\logic\\Panel
+		SccProjectName12 = ../../logic/CPanel
+		SccLocalPath12 = ..\\..\\logic\\CPanel
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -320,6 +322,20 @@ Global
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x64.ActiveCfg = Release|x64
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x64.Build.0 = Release|x64
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}.Release|x86.ActiveCfg = Release|x64
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Win32.ActiveCfg = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|x64.ActiveCfg = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
