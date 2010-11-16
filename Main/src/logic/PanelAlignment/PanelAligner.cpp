@@ -16,7 +16,7 @@ PanelAligner::~PanelAligner(void)
 }
 
 // Set panel
-bool PanelAligner::SetPanel(MosaicSet* pSet)
+bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 {
 	if(_pOverlapManager != NULL)
 		delete _pOverlapManager;
@@ -69,6 +69,8 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 
 	// Create stitching manager
 	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
+
+	LOG.FireLogEntry(LogTypeSystem, "Panel change over is done!");
 
 	return(true);
 }
