@@ -47,6 +47,9 @@ namespace MosaicDM
 				double rotation,
 				double centerOffsetXInMeters, double centerOffsetYInMeters);
 
+			ImgTransform GetNominalTransform() {return _inputTransform;};
+			void SetOutputTransform(ImgTransform t) {_outputTransform = t;};
+
 		protected:
 			bool SetImageBuffer(unsigned char* pImageBuffer)
 			{

@@ -5,7 +5,7 @@
 class StitchingManager
 {
 public:
-	StitchingManager(OverlapManager* pOvelapManager, Image* pPanelMaskImage);
+	StitchingManager(OverlapManager* pOverlapManager, Image* pPanelMaskImage);
 	~StitchingManager(void);
 
 	bool AddOneImageBuffer(	

@@ -70,24 +70,24 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\..\..\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\..\..\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\ImageDefines\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -96,14 +96,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\..\..\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -112,14 +112,14 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\..\..\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -40,7 +40,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
 		unsigned int iNumTrigs = pLayer->GetNumberOfTriggers();
 		unsigned int iNumCams = pLayer->GetNumberOfCameras();
-		bool bUseCad = false; // Need work
+		bool bUseCad = pLayer->IsUseCad();
 
 		_pMosaics[i].Config(i, iNumCams, iNumTrigs, iImWidth, iImHeight, iImStride, bUseCad);
 
@@ -49,7 +49,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 			for(iCam=0; iCam<iNumCams; iCam++)
 			{
 				MosaicTile* pTile = pLayer->GetTile(iCam, iTrig);
-				ImgTransform t; // Need work
+				ImgTransform t = pTile->GetNominalTransform();
 				_pMosaics[i].SetImageTransforms(t, iCam, iTrig);
 			}
 		}
@@ -60,8 +60,15 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 			_pCorrelationFlags[i][j] = *_pSet->GetCorrelationFlags(i, j);
 
 	// Create Overlap manager
-	DRect rect;	// need work
+	DRect rect;
+	rect.xMin = 0;
+	rect.xMax = _pSet->GetObjectWidthInMeters();
+	rect.yMin = 0;
+	rect.yMax = _pSet->GetObjectWidthInMeters();
 	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, rect); // nee work
+
+	// Create stitching manager
+	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
 
 	return(true);
 }
@@ -69,11 +76,10 @@ bool PanelAligner::SetPanel(MosaicSet* pSet)
 bool PanelAligner::AddImage(
 	unsigned int iLayerIndex, 
 	unsigned int iTrigIndex, 
-	unsigned int iColIndex,
+	unsigned int iCamIndex,
 	unsigned char* pcBuf)
 {
-	_pMosaics[iLayerIndex].AddImageBuffer(pcBuf, iColIndex, iTrigIndex);
-	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iColIndex);
+	_pStitchingManager->AddOneImageBuffer(pcBuf, iLayerIndex, iTrigIndex, iCamIndex);
 
 	return(true);
 }

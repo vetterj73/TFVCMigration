@@ -2,6 +2,7 @@
 
 #include "MosaicImage.h"
 #include "OverlapManager.h"
+#include "StitchingManager.h"
 #include "MosaicSet.h"
 #include "MosaicLayer.h"
 #include "MosaicTile.h"
@@ -22,10 +23,13 @@ public:
 		unsigned char* pcBuf);
 
 private:
-	MosaicSet* _pSet;
-	OverlapManager* _pOverlapManager;
-	MosaicImage* _pMosaics;
+	MosaicSet* _pSet;	
 	CorrelationFlags** _pCorrelationFlags;
+	
+	MosaicImage* _pMosaics;
+	OverlapManager* _pOverlapManager;
+	StitchingManager* _pStitchingManager;
+
 	unsigned int _iNumIlluminations;
 };
 
