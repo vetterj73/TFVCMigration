@@ -18,11 +18,6 @@ namespace MosaicDM
 	void MosaicTile::Initialize(MosaicLayer* pMosaicLayer, double centerOffsetX, double centerOffsetY)
 	{
 		_pMosaicLayer = pMosaicLayer;
-		_rotation = 0;
-		_pixelSizeX = _pMosaicLayer->GetMosaicSet()->GetNominalPixelSizeX();
-		_pixelSizeY = _pMosaicLayer->GetMosaicSet()->GetNominalPixelSizeY();
-		_centerOffsetX = centerOffsetX;
-		_centerOffsetY = centerOffsetY;
 	}
 
 	///
@@ -30,13 +25,9 @@ namespace MosaicDM
 	///	Let me know your thoughts.
 	///
 	void MosaicTile::SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
-		double centerOffsetXInMeters, double centerOffsetYInMeters,
-		double rotation)
+		double rotation,
+		double offsetXInMeters, double offsetYInMeters)
 	{
-		_pixelSizeX=pixelSizeXInMeters;
-		_pixelSizeY=pixelSizeYInMeters;
-		_centerOffsetX=centerOffsetXInMeters;
-		_centerOffsetY=centerOffsetYInMeters;
-		_rotation=rotation;
+		_inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters,rotation, offsetXInMeters, offsetYInMeters);
 	}
 }

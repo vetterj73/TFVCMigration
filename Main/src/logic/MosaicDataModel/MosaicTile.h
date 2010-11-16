@@ -39,14 +39,8 @@ namespace MosaicDM
 			/// nominal values will be used.
 			///
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
-				double centerOffsetXInMeters, double centerOffsetYInMeters,
-				double rotation);
-
-			double GetPixelSizeX(){return _pixelSizeX;};
-			double GetPixelSizeY(){return _pixelSizeY;};
-			double CenterOffsetX(){return _centerOffsetX;};
-			double CenterOffsetY(){return _centerOffsetY;};
-			double Rotation(){return _rotation;};
+				double rotation,
+				double centerOffsetXInMeters, double centerOffsetYInMeters);
 
 		protected:
 			bool SetImageBuffer(unsigned char* pImageBuffer)
@@ -66,11 +60,6 @@ namespace MosaicDM
 		private:
 			MosaicLayer *_pMosaicLayer;
 			unsigned char * _pImageBuffer;
-			double _pixelSizeX;
-			double _pixelSizeY;
-			double _centerOffsetX;
-			double _centerOffsetY;
-			double _rotation;
 			ImgTransform _inputTransform;
 			ImgTransform _outputTransform;
 	};

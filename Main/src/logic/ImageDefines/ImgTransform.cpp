@@ -38,23 +38,12 @@ ImgTransform::ImgTransform(
 	double dTranslateX,
 	double dTranslateY)
 {
-	_bHasInverse = false;
-
-	double cosTheta = cos(dRotation);
-	double sinTheta = sin(dRotation);
-
-	_dT[0] = dScaleX * cosTheta;
-	// Need double check
-	_dT[1] = -(dScaleX+dScaleY)/2 *sinTheta;
-	_dT[2] = dTranslateX;
-	
-	_dT[3] = -_dT[1];
-	_dT[4] = dScaleY * cosTheta;
-	_dT[5] = dTranslateY;
-
-	_dT[6] = 0;
-	_dT[7] = 0;
-	_dT[8] = 1;
+	Config(	
+		dScaleX, 
+		dScaleY,
+		dRotation, 
+		dTranslateX,
+		dTranslateY);
 }
 
 
@@ -74,6 +63,32 @@ void ImgTransform::operator=(const ImgTransform& b)
 	if(_bHasInverse)
 		for(i=0; i<9; i++)
 			_dInvT[i] = b._dInvT[i];
+}
+
+void ImgTransform::Config(	
+	double dScaleX, 
+	double dScaleY,
+	double dRotation, 
+	double dTranslateX,
+	double dTranslateY)
+{
+	_bHasInverse = false;
+
+	double cosTheta = cos(dRotation);
+	double sinTheta = sin(dRotation);
+
+	_dT[0] = dScaleX * cosTheta;
+	// Need double check
+	_dT[1] = -(dScaleX+dScaleY)/2 *sinTheta;
+	_dT[2] = dTranslateX;
+	
+	_dT[3] = -_dT[1];
+	_dT[4] = dScaleY * cosTheta;
+	_dT[5] = dTranslateY;
+
+	_dT[6] = 0;
+	_dT[7] = 0;
+	_dT[8] = 1;
 }
 
 // Get/set functions

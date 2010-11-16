@@ -30,11 +30,12 @@ namespace MMosaicDM
 			/// nominal values will be used.
 			///
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
-				double centerOffsetXInMeters, double centerOffsetYInMeters,
-				double rotation)
+				double rotation,
+				double centerOffsetXInMeters, double centerOffsetYInMeters)
 			{
 				_pMosaicTile->SetTransformParameters(pixelSizeXInMeters, pixelSizeYInMeters,
-					centerOffsetXInMeters, centerOffsetYInMeters, rotation);
+					rotation,
+					centerOffsetXInMeters, centerOffsetYInMeters);
 			}
 
 		private:

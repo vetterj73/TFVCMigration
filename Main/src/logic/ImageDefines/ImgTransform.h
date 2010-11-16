@@ -26,6 +26,13 @@ public:
 
 	void operator=(const ImgTransform& b);
 
+	void Config(	
+		double dScaleX, 
+		double dScaleY,
+		double dRotation, 
+		double dTranslateX,
+		double dTranslateY);
+
 	// Get/set functions
 	void GetMatrix(double dT[9]) const;
 	void GetMatrix(double dT[3][3]) const;

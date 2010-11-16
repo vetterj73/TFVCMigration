@@ -178,7 +178,8 @@ namespace CyberStitchTester
 
                         // Trigger offset is initial offset + triggerIndex * overlap...
                         mmt.SetTransformParameters(camera.Pixelsize.X, camera.Pixelsize.Y,
-                            xOffset, yOffset, camera.Rotation);
+                            camera.Rotation,
+                            xOffset, yOffset);
                     }
                 }
             }
