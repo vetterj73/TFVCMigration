@@ -15,8 +15,8 @@ namespace CyberStitchTester
         private static ManagedMosaicSet _mosaicSet = null;
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
-        private static double _panelWidth = 200;   // in mm
-        private static double _panelHeight = 200;  // in mm
+        private static double _panelWidth = 200;   // in mm (will be converted into meter)
+        private static double _panelHeight = 200;  // in mm (will be converted into meter)
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -30,17 +30,21 @@ namespace CyberStitchTester
             {
                 if(args[i] == "-w" && i<args.Length-1)
                 {
-                    _panelWidth = Convert.ToInt16(args[i + 1]);
+                    _panelWidth = Convert.ToDouble(args[i + 1]); // in mm
                 }
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
-                    _panelHeight = Convert.ToInt16(args[i + 1]);
+                    _panelHeight = Convert.ToDouble(args[i + 1]); // in mm
                 }
                 else if (args[i] == "-s" && i < args.Length - 1)
                 {
                     simulationFile = args[i + 1];
                 }
             }
+
+            // Convert panel size into meter
+            _panelWidth /= 1000.0;
+            _panelHeight /= 1000.0;
 
             bool bSimulating = false;
             if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
@@ -73,7 +77,7 @@ namespace CyberStitchTester
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
                     
-                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panelWidth/1000.0, _panelHeight/1000.0, 0, .004);
+                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panelWidth, _panelHeight, 0, .004);
                     if(cs1==null)
                     {
                         Output("Could not create capture spec.");        
@@ -106,7 +110,7 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panelWidth / 1000.0, _panelHeight / 1000.0, 2592, 1944, 2592, 1.69e-5, 1.69e-5);
+            _mosaicSet = new ManagedMosaicSet(_panelWidth, _panelHeight, 2592, 1944, 2592, 1.69e-5, 1.69e-5);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
@@ -146,7 +150,7 @@ namespace CyberStitchTester
                 /// Set up the transform parameters...
                 for (int j = 0; j < numCameras; j++)
                 {
-                    ManagedSIMCamera camera = d.GetSIMCamera(i);
+                    ManagedSIMCamera camera = d.GetSIMCamera(j);
                     for (int k = 0; k < pSpec.NumberOfTriggers; k++)
                     {
                         ManagedMosaicTile mmt = layer.GetTile(j, k);
@@ -156,6 +160,7 @@ namespace CyberStitchTester
                             Output("Could not access tile at: " + j + ", " + k);
                             return;
                         }
+                        double dTmep = pSpec.GetTriggerAtIndex(k);
 
                         // First camera center in X
                         double xOffset = _panelWidth - pSpec.GetTriggerAtIndex(k) - camera0.Pixelsize.X * camera0.Rows()/2;
@@ -167,7 +172,7 @@ namespace CyberStitchTester
                         // First camera center in Y
                         double yOffset = (-d.YOffset + camera0.Pixelsize.Y * camera0.Columns() / 2); ;
                         // The camera center in Y
-                        yOffset = (camera.CenterOffset.Y - camera0.CenterOffset.X);
+                        yOffset += (camera.CenterOffset.Y - camera0.CenterOffset.Y);
                         // The camera orign in Y
                         yOffset -= (camera.Pixelsize.Y * camera.Columns() / 2);
 
