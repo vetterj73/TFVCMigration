@@ -137,7 +137,7 @@ namespace CyberStitchTester
             for (int i = 0; i < d.NumberOfCaptureSpecs; i++)
             {
                 ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(i);
-                ManagedMosaicLayer layer = _mosaicSet.AddLayer(.2, pSpec.XOffset(), numCameras, .004, pSpec.NumberOfTriggers, .004, false);
+                ManagedMosaicLayer layer = _mosaicSet.AddLayer(numCameras, pSpec.NumberOfTriggers, false);
 
                 if (layer == null)
                 {

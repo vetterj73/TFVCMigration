@@ -29,6 +29,9 @@ namespace MMosaicDM
 				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 
+			bool IsUseCad() {return _pMosaicLayer->IsUseCad();};
+			void SetUseCad(bool bUseCad) { _pMosaicLayer->SetUseCad(bUseCad);}; 
+
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};

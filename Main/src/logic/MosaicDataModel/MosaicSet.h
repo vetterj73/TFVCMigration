@@ -56,20 +56,13 @@ namespace MosaicDM
 			///
 			/// Adds a layer to a mosaic set
 			///
-			/// \param cameraOffsetInMeters - offset of object in first camera image
-			/// \param triggerOffsetInMeters - offset of object in first trigger image
 			/// \param numCameras - number of cameras used for this layer
-			/// \param cameraOverlapInMeters - overlap between cameras in this layer
 			/// \param numTriggers - number of triggers used for this layer
-			/// \param triggerOverlapInMeters - overlap between triggers in this layer
 			/// \param correlateWithCAD - should this layer be correlated against CAD?
-			MosaicLayer *AddLayer(double cameraOffsetInMeters, 
-									double triggerOffsetInMeters,
-        							int numCameras,
-									double cameraOverlapInMeters,
-									int numTriggers,
-									double triggerOverlapInMeters,
-									bool correlateWithCAD);
+			MosaicLayer *AddLayer(
+				int numCameras,
+				int numTriggers,
+				bool correlateWithCAD);
 			
 			///
 			/// Gets a layer from the MosaicSet
@@ -92,7 +85,7 @@ namespace MosaicDM
 			double GetObjectLengthInMeters(){return _objectLengthInMeters;};
 
 			///
-			///	Get the correlation flags associated with the current layers
+			///	Get the correlation flags associated with the certain layers
 			///
 			CorrelationFlags* GetCorrelationFlags(int layerX, int layerY);
 
@@ -105,8 +98,6 @@ namespace MosaicDM
 			///	Adds an image to the mosaic...
 			///
 			bool AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex);
-
-
 
 		private:
 			int _imageWidth;

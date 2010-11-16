@@ -70,21 +70,14 @@ namespace MMosaicDM
 			///
 			///	Adds a layer (see unmanaged MosaicSet for details)
 			///
-			ManagedMosaicLayer ^AddLayer(double cameraOffsetInMeters, 
-									double triggerOffsetInMeters,
-        							int numCameras,
-									double cameraOverlapInMeters,
-									int numTriggers,
-									double triggerOverlapInMeters,
-									bool correlateWithCAD)
+			ManagedMosaicLayer ^AddLayer(
+        		int numCameras,
+				int numTriggers,
+				bool correlateWithCAD)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(
-					cameraOffsetInMeters, 
-					triggerOffsetInMeters,
         			numCameras,
-					cameraOverlapInMeters,
 					numTriggers,
-					triggerOverlapInMeters,
 					correlateWithCAD);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
@@ -119,6 +112,8 @@ namespace MMosaicDM
 			{
 				System::IntPtr get() { return safe_cast<System::IntPtr>(_pMosaicSet); }
 			}
+
+			int GetNumMosaicLayers(){ return _pMosaicSet->GetNumMosaicLayers();}
 
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;

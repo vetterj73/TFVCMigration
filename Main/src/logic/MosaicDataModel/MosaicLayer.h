@@ -48,20 +48,15 @@ namespace MosaicDM
 
 			int GetNumberOfTriggers(){return _numTriggers;}
 			int GetNumberOfCameras(){return _numCameras;}
-			double GetCameraOverlapInMeters(){return _cameraOverlap;}
-			double GetTriggerOverlapInMeters(){return _triggerOverlap;}
-			double GetCameraOffsetInMeters(){return _cameraOffset;}
-			double GetTriggerOffsetInMeters(){return _triggerOffset;}
+
+			bool IsUseCad() {return _correlateWithCAD;};
+			void SetUseCad(bool bUseCad) { _correlateWithCAD = bUseCad;}; 
 
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
-				double cameraOffsetInMeters, 
-				double triggerOffsetInMeters,
         		int numCameras,
-				double cameraOverlapInMeters,
 				int numTriggers,
-				double triggerOverlapInMeters,
 				bool correlateWithCAD);
 
 			///
@@ -72,10 +67,6 @@ namespace MosaicDM
 		private:
 			int _numTriggers;
 			int _numCameras;
-			double _triggerOverlap;
-			double _cameraOverlap;
-			double _triggerOffset;
-			double _cameraOffset;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
 			bool _correlateWithCAD;

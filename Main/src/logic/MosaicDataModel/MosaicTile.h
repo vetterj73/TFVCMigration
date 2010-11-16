@@ -35,6 +35,11 @@ namespace MosaicDM
 			bool ContainsImage(){return _pImageBuffer != NULL;}
 
 			///
+			///	Called by the MosaicLayer class.
+			///
+			void Initialize(MosaicLayer* pMosaicLayer, double centerOffsetX, double centerOffsetY);	
+
+			///
 			///	Sets the parameters needed for transform.  If this function isn't called,
 			/// nominal values will be used.
 			///
@@ -51,11 +56,6 @@ namespace MosaicDM
 				_pImageBuffer = pImageBuffer;
 				return true;
 			};
-
-			///
-			///	Called by the MosaicLayer class.
-			///
-			void Initialize(MosaicLayer* pMosaicLayer, double centerOffsetX, double centerOffsetY);	
 
 		private:
 			MosaicLayer *_pMosaicLayer;

@@ -51,21 +51,16 @@ namespace MosaicDM
 		return _layerList[index];
 	}
 
-	MosaicLayer * MosaicSet::AddLayer(double cameraOffsetInMeters, 
-									double triggerOffsetInMeters,
-        							int numCameras,
-									double cameraOverlapInMeters,
-									int numTriggers,
-									double triggerOverlapInMeters,
-									bool correlateWithCAD)
+	MosaicLayer * MosaicSet::AddLayer(
+		int numCameras,
+		int numTriggers,
+		bool correlateWithCAD)
 	{
 		FireLogEntry(LogTypeDiagnostic, "Layer Added to Mosaic!");
 
 		MosaicLayer *pML = new MosaicLayer();
 
-		pML->Initialize(this, cameraOffsetInMeters, triggerOffsetInMeters,
-			numCameras, cameraOverlapInMeters, numTriggers, triggerOverlapInMeters,
-			correlateWithCAD);
+		pML->Initialize(this, numCameras, numTriggers, correlateWithCAD);
 		_layerList.push_back(pML);
 
 		// Setup the default correlation Flags...

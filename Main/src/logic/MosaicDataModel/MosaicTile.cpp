@@ -21,8 +21,8 @@ namespace MosaicDM
 	}
 
 	///
-	///	George - it makes sense to me to create an actual transform here...  
-	///	Let me know your thoughts.
+	///	Create transform here
+	/// roatation angle in radians, offset X and y for image origin in world space
 	///
 	void MosaicTile::SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
 		double rotation,
