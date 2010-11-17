@@ -131,8 +131,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>MosaicDataModel.lib;VsNgcWrapper.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -169,8 +169,14 @@
     <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
       <Project>{84c9e16a-93e3-4105-a3af-0533131eb43d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\MosaicDataModel\MosaicDataModel.vcxproj">
+      <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PanelAlignment\PanelAlignment.vcxproj">
       <Project>{c71ca433-5c57-43db-ba7e-1f4cbb229951}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Panel\Panel.vcxproj">
+      <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
     </ProjectReference>
     <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
       <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
