@@ -131,8 +131,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MosaicDataModel.lib;VsNgcWrapper.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -160,11 +160,20 @@
     <ProjectReference Include="..\CPanel\CPanel.vcxproj">
       <Project>{d6409417-3fc6-4ef2-9afc-04cc54cc71cf}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
+      <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
       <Project>{84c9e16a-93e3-4105-a3af-0533131eb43d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\PanelAlignment\PanelAlignment.vcxproj">
       <Project>{c71ca433-5c57-43db-ba7e-1f4cbb229951}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
+      <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
