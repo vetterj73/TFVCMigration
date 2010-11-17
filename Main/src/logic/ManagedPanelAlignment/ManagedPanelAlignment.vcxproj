@@ -91,8 +91,9 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -105,8 +106,9 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -118,8 +120,9 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -131,8 +134,9 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>VsNgcWrapper.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -180,6 +184,9 @@
     </ProjectReference>
     <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
       <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\VsNgcWrapper\VsNgcWrapper.vcxproj">
+      <Project>{3890952f-8d06-46a8-8731-5131f30fe9f8}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
