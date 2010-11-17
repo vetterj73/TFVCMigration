@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
+using CPanelIO;
+using Cyber.SPIAPI;
 using MCoreAPI;
 using MLOGGER;
 using MMosaicDM;
@@ -13,10 +15,9 @@ namespace CyberStitchTester
         private const double cCameraOverlap = .4;
         private const double cTriggerOverlap = .4;
         private static ManagedMosaicSet _mosaicSet = null;
+        private static CPanel _panel; 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
-        private static double _panelWidth = 200;   // in mm (will be converted into meter)
-        private static double _panelHeight = 200;  // in mm (will be converted into meter)
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -25,26 +26,50 @@ namespace CyberStitchTester
         {
 
             string simulationFile = "";
+            string panelFile="";
+            double panelWidth = 200;   // in mm (will be converted into meter)
+            double panelHeight = 200;  // in mm (will be converted into meter)
 
             for(int i=0; i<args.Length; i++)
             {
                 if(args[i] == "-w" && i<args.Length-1)
                 {
-                    _panelWidth = Convert.ToDouble(args[i + 1]); // in mm
+                    panelWidth = Convert.ToDouble(args[i + 1]); // in mm
                 }
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
-                    _panelHeight = Convert.ToDouble(args[i + 1]); // in mm
+                    panelHeight = Convert.ToDouble(args[i + 1]); // in mm
                 }
                 else if (args[i] == "-s" && i < args.Length - 1)
                 {
                     simulationFile = args[i + 1];
                 }
+                else if (args[i] == "-p" && i < args.Length - 1)
+                {
+                    panelFile = args[i + 1];
+                }
+
             }
 
             // Convert panel size into meter
-            _panelWidth /= 1000.0;
-            _panelHeight /= 1000.0;
+            panelWidth /= 1000.0;
+            panelHeight /= 1000.0;
+            _panel = new CPanel(panelWidth, panelHeight);
+
+            if (!string.IsNullOrEmpty(panelFile))
+            {
+                try
+                {
+                    if (!SRFToPanel.parseSRF(panelFile, _panel))
+                        throw new ApplicationException("Could not parse the SRF panel file");
+                }
+                catch (Exception except)
+                {
+                    Output("Exception reading Panel file: " + except.Message);
+                    return;
+                }
+            }
+
 
             bool bSimulating = false;
             if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
@@ -77,7 +102,7 @@ namespace CyberStitchTester
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
                     
-                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panelWidth, _panelHeight, 0, .004);
+                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                     if(cs1==null)
                     {
                         Output("Could not create capture spec.");        
@@ -110,7 +135,7 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panelWidth, _panelHeight, 2592, 1944, 2592, 1.69e-5, 1.69e-5);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, 1.69e-5, 1.69e-5);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
@@ -165,7 +190,7 @@ namespace CyberStitchTester
                         double dTmep = pSpec.GetTriggerAtIndex(k);
 
                         // First camera center in X
-                        double xOffset = _panelWidth - pSpec.GetTriggerAtIndex(k) - camera0.Pixelsize.X * camera0.Rows()/2;
+                        double xOffset = _panel.PanelSizeX- pSpec.GetTriggerAtIndex(k) - camera0.Pixelsize.X * camera0.Rows()/2;
                         // The camera center in X
                         xOffset += (camera.CenterOffset.X - camera0.CenterOffset.X);
                         // The camera's origin in X
