@@ -93,7 +93,6 @@ namespace Cyber
 			/// \param panelSize A \ref PointD class containing the X and Y dimenstions
 			/// of the panel.
 			CPanel(double lengthX, double lengthY );
-			CPanel(System::Drawing::PointF panelSize);
 
 			#pragma endregion
 

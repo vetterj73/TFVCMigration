@@ -43,15 +43,6 @@ namespace Cyber
 			_pPanel->yLength(lengthY);
 		}
 
-		CPanel::CPanel(System::Drawing::PointF panelSize)
-		{
-			_pPanel = new Panel();
-			_pPanel->xLength(panelSize.X);
-			_pPanel->yLength(panelSize.Y);
-		}
-
-
-
 		//
 		// Methods
 		//
