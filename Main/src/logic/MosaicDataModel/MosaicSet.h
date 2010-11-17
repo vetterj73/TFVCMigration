@@ -3,6 +3,12 @@
 #include "LoggableObject.h"
 using namespace LOGGER;
 
+#include <vector>
+#include <map>
+using std::map;
+using std::pair;
+using std::vector;
+
 namespace MosaicDM 
 {
 	class MosaicLayer;
