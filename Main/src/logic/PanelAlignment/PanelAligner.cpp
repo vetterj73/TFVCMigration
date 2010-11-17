@@ -85,9 +85,20 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 bool PanelAligner::AddImage(
 	unsigned int iLayerIndex, 
 	unsigned int iTrigIndex, 
-	unsigned int iCamIndex,
-	unsigned char* pcBuf)
+	unsigned int iCamIndex)
 {
+	// If this is the first image of the cycle, reset
+	if(iLayerIndex==0 && iTrigIndex==0 && iCamIndex==0)
+	{
+		_pStitchingManager->Reset();
+		LOG.FireLogEntry(LogTypeSystem, "New Panel Begins!");
+	}
+
+	// Get image buffer
+	unsigned char* pcBuf = _pSet->GetLayer(iLayerIndex)->GetTile(iCamIndex, iTrigIndex)->GetImageBuffer();
+	if(pcBuf==NULL) return(false);
+
+	// Add buffer to stitching manager
 	_pStitchingManager->AddOneImageBuffer(pcBuf, iLayerIndex, iTrigIndex, iCamIndex);
 
 	return(true);

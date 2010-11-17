@@ -91,10 +91,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -107,10 +105,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -122,10 +118,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>VsNgcWrapper.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -137,10 +131,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>
-      </AdditionalDependencies>
-      <AdditionalLibraryDirectories>
-      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -168,14 +160,8 @@
     <ProjectReference Include="..\CPanel\CPanel.vcxproj">
       <Project>{d6409417-3fc6-4ef2-9afc-04cc54cc71cf}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
-      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
       <Project>{84c9e16a-93e3-4105-a3af-0533131eb43d}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\MosaicDataModel\MosaicDataModel.vcxproj">
-      <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
     </ProjectReference>
     <ProjectReference Include="..\PanelAlignment\PanelAlignment.vcxproj">
       <Project>{c71ca433-5c57-43db-ba7e-1f4cbb229951}</Project>

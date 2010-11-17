@@ -17,11 +17,11 @@ public:
 	~PanelAligner(void);
 
 	bool SetPanel(MosaicSet* pSet, Panel *pPanel);
+
 	bool AddImage(
 		unsigned int iLayerIndex, 
 		unsigned int iTrigIndex, 
-		unsigned int iCamIndex,
-		unsigned char* pcBuf);
+		unsigned int iCamIndex);
 
 	LoggableObject* GetLogger() {return &LOG;};
 

@@ -13,18 +13,21 @@ namespace PanelAlignM {
 	public ref class ManagedPanelAlignment
 	{
 		// TODO: Add your methods for this class here.
+	public:
+		ManagedPanelAlignment();
+		!ManagedPanelAlignment();
 
-		//bool SetPanel(ManagedMosaicSet^ set, CPanel^ panel);
-		//bool AddImage(
-		//	unsigned int iLayerIndex, 
-		//	unsigned int iTrigIndex, 
-		//	unsigned int iCamIndex,
-		//	unsigned char* pcBuf);
+		bool SetPanel(ManagedMosaicSet^ set, CPanel^ panel);
+
+		bool AddImage(
+			unsigned int iLayerIndex, 
+			unsigned int iTrigIndex, 
+			unsigned int iCamIndex);
 
 		//LoggableObject* GetLogger() {return &LOG;};
 
 
 	private:
-		PanelAligner* _pAlinger;
+		PanelAligner* _pAligner;
 	};
 }
