@@ -20,9 +20,9 @@ namespace PanelAlignM {
 		bool SetPanel(ManagedMosaicSet^ set, CPanel^ panel);
 
 		bool AddImage(
-			unsigned int iLayerIndex, 
-			unsigned int iTrigIndex, 
-			unsigned int iCamIndex);
+			int iLayerIndex, 
+			int iTrigIndex, 
+			int iCamIndex);
 
 		//LoggableObject* GetLogger() {return &LOG;};
 

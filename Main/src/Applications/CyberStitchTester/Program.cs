@@ -7,6 +7,7 @@ using MCoreAPI;
 using MLOGGER;
 using MMosaicDM;
 using SIMAPI;
+using PanelAlignM;
 
 namespace CyberStitchTester
 {
@@ -18,6 +19,7 @@ namespace CyberStitchTester
         private static CPanel _panel; 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
+        private static ManagedPanelAlignment _aligner;
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -111,6 +113,8 @@ namespace CyberStitchTester
             }
 
             SetupMosaic();
+
+            _aligner.SetPanel(_mosaicSet, _panel);
 
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
             {
@@ -257,6 +261,17 @@ namespace CyberStitchTester
             numAcqsComplete++;
             if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
                 mDoneEvent.Set();
+
+            // for two illuminations debug onley
+            int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+            for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+            {
+                int i = iTrig % 2;
+                for (int iCam = 0; iCam < _mosaicSet.GetLayer(i).GetNumberOfCameras(); iCam++)
+                {
+                    _aligner.AddImage(i, iTrig, iCam);
+                }
+            }
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)

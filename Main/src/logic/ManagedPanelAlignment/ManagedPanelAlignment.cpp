@@ -36,11 +36,14 @@ namespace PanelAlignM {
 	}
 
 	bool ManagedPanelAlignment::AddImage(
-			unsigned int iLayerIndex, 
-			unsigned int iTrigIndex, 
-			unsigned int iCamIndex)
+			int iLayerIndex, 
+			int iTrigIndex, 
+			int iCamIndex)
 	{
-		bool bFlag = _pAligner->AddImage(iLayerIndex, iTrigIndex, iCamIndex);
+		bool bFlag = _pAligner->AddImage(
+			(unsigned int)iLayerIndex, 
+			(unsigned int)iTrigIndex, 
+			(unsigned int)iCamIndex);
 
 		return(bFlag);
 	}

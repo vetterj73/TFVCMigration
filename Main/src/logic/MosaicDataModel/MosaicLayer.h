@@ -46,8 +46,8 @@ namespace MosaicDM
 			///
 			MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 
-			int GetNumberOfTriggers(){return _numTriggers;}
-			int GetNumberOfCameras(){return _numCameras;}
+			int GetNumberOfTriggers(){return _numTriggers;};
+			int GetNumberOfCameras(){return _numCameras;};
 
 			bool IsUseCad() {return _correlateWithCAD;};
 			void SetUseCad(bool bUseCad) { _correlateWithCAD = bUseCad;}; 

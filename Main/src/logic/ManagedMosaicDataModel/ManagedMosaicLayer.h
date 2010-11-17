@@ -29,6 +29,9 @@ namespace MMosaicDM
 				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 
+			int GetNumberOfTriggers(){return _pMosaicLayer->GetNumberOfTriggers();};
+			int GetNumberOfCameras(){return  _pMosaicLayer->GetNumberOfCameras();};
+
 			bool IsUseCad() {return _pMosaicLayer->IsUseCad();};
 			void SetUseCad(bool bUseCad) { _pMosaicLayer->SetUseCad(bUseCad);}; 
 
