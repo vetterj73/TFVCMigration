@@ -1,17 +1,14 @@
 #pragma once
 
-#include "MosaicImage.h"
-#include "OverlapManager.h"
-#include "StitchingManager.h"
-
 #include "MosaicSet.h"
-#include "MosaicLayer.h"
-#include "MosaicTile.h"
-#include "Panel.h"
-
 #include "Logger.h"
 
 using namespace MosaicDM;
+
+class MosaicImage;
+class OverlapManager;
+class StitchingManager;
+class Panel;
 
 class PanelAligner
 {

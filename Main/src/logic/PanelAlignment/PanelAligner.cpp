@@ -1,5 +1,12 @@
 #include "PanelAligner.h"
 
+#include "StitchingManager.h"
+
+#include "MosaicLayer.h"
+#include "MosaicTile.h"
+
+#include "Panel.h"
+
 PanelAligner::PanelAligner(void)
 {
 	_pOverlapManager = NULL;
