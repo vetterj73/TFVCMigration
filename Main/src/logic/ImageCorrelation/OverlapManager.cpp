@@ -58,8 +58,7 @@ OverlapManager::OverlapManager(
 
 	CreateFovFovOverlaps();
 	CreateCadFovOverlaps();
-
-
+	CreateFidFovOverlaps();
 
 	CalMaskCreationStage();
 
@@ -88,7 +87,8 @@ OverlapManager::~OverlapManager(void)
 	delete [] _cadFovOverlapLists;
 	delete [] _fidFovOverlapLists;
 
-	delete [] _pFidImages;
+	if(_pFidImages != NULL)
+		delete [] _pFidImages;
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
