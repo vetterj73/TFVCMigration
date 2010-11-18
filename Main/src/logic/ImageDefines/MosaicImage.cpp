@@ -51,12 +51,11 @@ void MosaicImage::Config(
 	// Create images and mask images
 	_images = new Image[NumImages()];
 	_maskImages = new Image[NumImages()];
-	unsigned int iBytePerPixel = 1;
 	bool bCreatOwnBuffer = false;
 	for(unsigned int i=0; i<NumImages(); i++)
 	{
-		_images[i].Configure(iImColumns, iImRows, iImStride, iBytePerPixel, bCreatOwnBuffer);
-		_maskImages[i].Configure(iImColumns, iImRows, iImStride, iBytePerPixel, bCreatOwnBuffer);
+		_images[i].Configure(iImColumns, iImRows, iImStride, bCreatOwnBuffer);
+		_maskImages[i].Configure(iImColumns, iImRows, iImStride, bCreatOwnBuffer);
 	}
 	
 	// Create array for image acquisition flags

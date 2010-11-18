@@ -17,12 +17,12 @@ class Image
 {
 public:
 	// Construcor and configuration file
-	Image(unsigned int iBytePerpixel = 1);
+	Image(unsigned int iBytePerPixel = 1);
 	Image(
 		int iColumns, 
 		int iRows,						
 		int iStride,					// In pixels
-		unsigned iBytePerPixel,				// Bytes per pixel
+		unsigned int iBytePerPixel,		// Bytes per pixel
 		ImgTransform nominalTrans,		// used for overlap calculation before stitching
 		ImgTransform actualTrans,		// Stitching results
 		bool bCreateOwnBuffer,			// Falg for whether create own buffer
@@ -36,7 +36,6 @@ public:
 		int iColumns, 
 		int iRows, 
 		int iStride,		
-		unsigned iBytePerPixel,
 		bool bCreateOwnBuffer,
 		unsigned char *buffer = NULL);	
 
@@ -44,7 +43,6 @@ public:
 		int iColumns, 
 		int iRows, 
 		int iStride,
-		unsigned iBytePerPixel,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -57,12 +55,13 @@ public:
 	void				SetNorminalTransform(const ImgTransform t) {_nominalTrans = t;};
 
 	unsigned char*		GetBuffer() const {return _buffer;};	
-	unsigned char*		GetBuffer(unsigned int row, unsigned col) const;
+	unsigned char*		GetBuffer(unsigned col, unsigned int row) const;
 	void				SetBuffer(unsigned char* buf);
 
 	bool				HasOwnBuffer() const {return _IOwnMyOwnBuffer;};
 
 	unsigned int		GetBytesPerPixel()const {return _bytesPerPixel;};
+	unsigned int		GetBitsPerPixel(){return GetBytesPerPixel()*8;};
 	unsigned int		Rows() const {return _rows;};
 	unsigned int		Columns() const {return _columns;};
 	unsigned int		ByteRowStride() const {return _pixelRowStride*GetBytesPerPixel();};

@@ -8,6 +8,7 @@
 
 #include "..\..\..\RuddLib\include\feature.h"
 #include "Image.h"
+#include "Image16.h"
 #include "Feature.h"
 
 // The following rountines use Rudd's ScanConv implemented in RenderShape

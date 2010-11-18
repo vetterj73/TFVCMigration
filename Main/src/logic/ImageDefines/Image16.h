@@ -12,7 +12,7 @@ class Image16 : public Image
 
 	// Helper Functions for 16 bit access - this is an override from Image...
 	unsigned short* GetBuffer16();
-	Byte* PtrToPixel(unsigned int column, unsigned int row);
+	unsigned short* GetBuffer16(unsigned int column, unsigned int row);
 	virtual void SetPixelValue(unsigned int index, unsigned int value);
 };
 

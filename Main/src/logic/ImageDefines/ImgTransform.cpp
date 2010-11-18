@@ -91,6 +91,21 @@ void ImgTransform::Config(
 	_dT[8] = 1;
 }
 
+void ImgTransform::Config(double dScaleX, double dScaleY)
+{
+	_dT[0] = dScaleX;
+	_dT[1] = 0;
+	_dT[2] = 0;
+
+	_dT[3] = 0;
+	_dT[4] = dScaleY;
+	_dT[5] = 0;
+
+	_dT[6] = 0;
+	_dT[7] = 0;
+	_dT[8] = 1;
+}
+
 // Get/set functions
 void ImgTransform::GetMatrix(double dT[9]) const 
 {

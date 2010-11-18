@@ -1,7 +1,6 @@
 #include "ArcPolygonizer.h"
 #include "RenderShape.h"
 //#include "System.h"
-#include "Image.h"
 
 // Rudd includes
 #include "aapoly.h"
@@ -60,11 +59,15 @@ void RenderShape(IMAGETYPE& image, double resolution,
 	double yMax	= yCenter + radius; // 
 	
 
-	double centerCol, centerRow;
+	double centerCol, centerRow, dTempRow, dTempCol;
 	unsigned int firstCol, firstRow, lastCol, lastRow;
-	image.CADToImage(xCenter, yCenter, centerRow, centerCol);
-	image.CADToImage(xMin, yMin, firstRow, firstCol);
-	image.CADToImage(xMax, yMax, lastRow, lastCol);
+	image.WorldToImage(xCenter, yCenter, &centerRow, &centerCol);
+	image.WorldToImage(xMin, yMin, &dTempRow, &dTempCol);
+	firstRow = (unsigned int)dTempRow;
+	firstCol = (unsigned int)dTempCol;
+	image.WorldToImage(xMax, yMax, &dTempRow, &dTempCol);
+	lastRow = (unsigned int)dTempRow;
+	lastCol = (unsigned int)dTempCol;
 
 	if(antiAlias)
 	{
@@ -81,7 +84,7 @@ void RenderShape(IMAGETYPE& image, double resolution,
 	if (firstCol <0 || firstRow < 0 || 
 		lastCol >= image.Columns() || lastRow >= image.Rows())
 	{
-		G_LOG_0_ERROR("trying to Render pad outside of CAD image");
+		//G_LOG_0_ERROR("trying to Render pad outside of CAD image");
 		return;
 	}
 
@@ -92,10 +95,14 @@ void RenderShape(IMAGETYPE& image, double resolution,
 	sconvArgs.featy = centerRow - (firstRow + lastRow)/2.0;
 	
 	if(image.GetBytesPerPixel() == 2)
-		ScanConv(ncols, nrows, (unsigned short*)image.PtrToPixel(firstCol, firstRow), 
+	{
+		unsigned short* buf = (unsigned short*)image.GetBuffer();
+		buf += firstRow*image.PixelRowStride()+firstCol;
+		ScanConv(ncols, nrows, buf, 
 			image.PixelRowStride(), sconvArgs);
+	}
 	else
-		ScanConv(ncols, nrows, image.PtrToPixel(firstCol, firstRow), 
+		ScanConv(ncols, nrows, image.GetBuffer(firstCol, firstRow), 
 			image.PixelRowStride(), sconvArgs);
 }
 
@@ -132,12 +139,21 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 	// Have to draw the donut hole in a separate image and substract it from the disc drawn on the mask
 	double width = box.Width();
 	double height = box.Height();
-	int cols = (int) (width/resolution);
-	int rows = (int) (height/resolution);
+	int cols = (int) (width/resolution+0.5);
+	int rows = (int) (height/resolution+0.5);
+
+	ImgTransform trans;
+	trans.Config(resolution, resolution);
 
 	// Set up image to draw donut hole
 	IMAGETYPE donutHole;
-	donutHole.ConfigureFromPixels(width, height, resolution, resolution);
+	donutHole.Configure(
+		cols, 
+		rows, 
+		cols,
+		trans,
+		trans,
+		true);	// create own buffer
 
 	// Create donut hole
 	RenderShape(donutHole, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), width/2.0, height/2.0);
@@ -153,8 +169,10 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 	//delete bmp;
 
 	// Transform to pixel coordinates, and position them on nearest whole integer pixels
-	//donutHole.CADToImage(box);
-	image.CADToImage(box);
+	Box temp;
+	donutHole.WorldToImage(box.p1.x, box.p1.y, &temp.p1.y, &temp.p1.x);
+	donutHole.WorldToImage(box.p2.x, box.p2.y, &temp.p2.y, &temp.p2.x);
+	box = temp;
 	box.p1.x = NearestIntD(box.p1.x);
 	box.p1.y = NearestIntD(box.p1.y);
 	box.p2.x = NearestIntD(box.p2.x);
@@ -212,7 +230,7 @@ void RenderAAPolygon(IMAGETYPE& image, Feature* feature, PointList& polygonPoint
 		pt = polygonPoints.front();
 
 		// Transform point to pixels
-		image.CADToImage(pt.x, pt.y, pixelY, pixelX);
+		image.WorldToImage(pt.x, pt.y, &pixelY, &pixelX);
 
 		p[i].x = pixelX;
 		p[i].y = pixelY;
@@ -234,13 +252,13 @@ void RenderAAPolygon(IMAGETYPE& image, Feature* feature, PointList& polygonPoint
 	if(image.GetBytesPerPixel()==1)
 		aapoly(image.Columns(), image.Rows(), image.GetBuffer(), image.Columns(), numPoints, p);
 	else
-		aapoly(image.Columns(), image.Rows(), (Word*)image.GetBuffer(), image.Columns(), numPoints, p);
+		aapoly(image.Columns(), image.Rows(), (unsigned short*)image.GetBuffer(), image.Columns(), numPoints, p);
 
 	delete[] p;
 
 	if(returnValue != 0)
 	{
-		G_LOG_1_ERROR("aapoly returned %d", returnValue);
+		//G_LOG_1_ERROR("aapoly returned %d", returnValue);
 	}
 }
 
@@ -273,7 +291,10 @@ void RenderPolygon(IMAGETYPE& image, double resolution,
 	Box roi = feature->GetInspectionArea();
 
 	// Transform to pixel coordinates, and position them on nearest whole integer pixels
-	image.CADToImage(roi);
+	Box temp;
+	image.WorldToImage(roi.p1.x, roi.p1.y, &temp.p1.y, &temp.p1.x);
+	image.WorldToImage(roi.p2.x, roi.p2.y, &temp.p2.y, &temp.p2.x);
+	roi = temp;
 	roi.p1.x = NearestIntD(roi.p1.x);
 	roi.p1.y = NearestIntD(roi.p1.y);
 	roi.p2.x = NearestIntD(roi.p2.x);
@@ -338,7 +359,7 @@ void RenderPolygon(IMAGETYPE& image, double resolution,
 			pPix = r*polygonImage.Columns()+c;
 			iPix = ri*image.Columns()+ci;
 			gv = (polygonImage.GetBuffer16()[pPix]>threshold)*grayValue;
-			Word* buffer = (Word*)image.GetBuffer();
+			unsigned short* buffer = (unsigned short*)image.GetBuffer();
 			buffer[iPix] += gv;
 		}
 	}

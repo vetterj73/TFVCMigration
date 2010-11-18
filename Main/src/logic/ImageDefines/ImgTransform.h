@@ -32,6 +32,8 @@ public:
 		double dRotation, 
 		double dTranslateX,
 		double dTranslateY);
+	
+	void Config(double dScaleX, double dScaleY);
 
 	// Get/set functions
 	void GetMatrix(double dT[9]) const;
@@ -44,7 +46,7 @@ public:
 
 	void GetInvertMatrix(double dInvT[9]);
 	void GetInvertMatrix(double dInvT[3][3]);
-
+	
 	ImgTransform Inverse();
 
 	//Map and inverse map
