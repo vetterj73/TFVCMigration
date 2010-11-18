@@ -130,6 +130,26 @@
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="PanelAligner.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
+      <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\MosaicDataModel\MosaicDataModel.vcxproj">
+      <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Panel\Panel.vcxproj">
+      <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
+      <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\VsNgcWrapper\VsNgcWrapper.vcxproj">
+      <Project>{3890952f-8d06-46a8-8731-5131f30fe9f8}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

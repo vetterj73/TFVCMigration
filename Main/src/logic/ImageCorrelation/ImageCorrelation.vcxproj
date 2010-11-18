@@ -163,6 +163,11 @@
     <ClCompile Include="OverlapManager.cpp" />
     <ClCompile Include="SquareRootCorrelation.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Panel\Panel.vcxproj">
+      <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
