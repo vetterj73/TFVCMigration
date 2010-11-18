@@ -25,9 +25,6 @@ public:
 
 	LoggableObject* GetLogger() {return &LOG;};
 
-	// for Logger
-	void Write(LOGTYPE LogType, const char* message);
-
 private:
 	MosaicSet* _pSet;	
 	CorrelationFlags** _pCorrelationFlags;
@@ -37,9 +34,5 @@ private:
 	StitchingManager* _pStitchingManager;
 
 	unsigned int _iNumIlluminations;
-
-	//*** Warning:: should  be removef laer
-	// for Logger
-	FILE* m_logFile;
 };
 

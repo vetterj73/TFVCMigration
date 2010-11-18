@@ -10,7 +10,6 @@
 void MyWriteCallback(LOGTYPE LogType, const char* message, void* context)
 {
 	PanelAligner* pAligner = static_cast<PanelAligner*>(context);
-	pAligner->Write(LogType, message);
 }
 
 PanelAligner::PanelAligner(void)
@@ -18,10 +17,6 @@ PanelAligner::PanelAligner(void)
 	_pOverlapManager = NULL;
 	_pMosaics = NULL;
 	_pCorrelationFlags = NULL;
-
-	fopen_s(&m_logFile, "c:\\Temp\\StitchLog", "wt");
-	LOG.SetAllLogTypes(true);
-	//LOG.RegisterLoggingCallback();
 }
 
 PanelAligner::~PanelAligner(void)
@@ -39,13 +34,6 @@ PanelAligner::~PanelAligner(void)
 
 		delete [] _pCorrelationFlags;
 	}
-
-	fclose(m_logFile);
-}
-
-void PanelAligner::Write(LOGTYPE LogType, const char* message)
-{
-	fprintf(m_logFile, message);
 }
 
 // Set panel
