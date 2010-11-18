@@ -1,7 +1,7 @@
 #include "ArcPolygonizer.h"
 #include "RenderShape.h"
-#include "System.h"
-#include "ImageInclude.h"
+//#include "System.h"
+#include "Image.h"
 
 // Rudd includes
 #include "aapoly.h"
