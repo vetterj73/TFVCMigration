@@ -7,10 +7,21 @@
 
 #include "Panel.h"
 
+void MyWriteCallback(LOGTYPE LogType, const char* message, void* context)
+{
+	PanelAligner* pAligner = static_cast<PanelAligner*>(context);
+	pAligner->Write(LogType, message);
+}
+
 PanelAligner::PanelAligner(void)
 {
 	_pOverlapManager = NULL;
 	_pMosaics = NULL;
+	_pCorrelationFlags = NULL;
+
+	fopen_s(&m_logFile, "c:\\Temp\\StitchLog", "wt");
+	LOG.SetAllLogTypes(true);
+	//LOG.RegisterLoggingCallback();
 }
 
 PanelAligner::~PanelAligner(void)
@@ -20,6 +31,21 @@ PanelAligner::~PanelAligner(void)
 
 	if(_pMosaics != NULL)
 		delete [] _pMosaics;
+
+	if(_pCorrelationFlags != NULL)
+	{
+		for(int i=0; i<_iNumIlluminations; i++)
+			delete [] _pCorrelationFlags[i];
+
+		delete [] _pCorrelationFlags;
+	}
+
+	fclose(m_logFile);
+}
+
+void PanelAligner::Write(LOGTYPE LogType, const char* message)
+{
+	fprintf(m_logFile, message);
 }
 
 // Set panel
@@ -60,6 +86,13 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 				_pMosaics[i].SetImageTransforms(t, iCam, iTrig);
 			}
 		}
+	}
+
+	// New and set correlation flag
+	_pCorrelationFlags = new CorrelationFlags*[_iNumIlluminations];
+	for(i=0; i<_iNumIlluminations; i++)
+	{
+		_pCorrelationFlags[i] = new CorrelationFlags[_iNumIlluminations];
 	}
 
 	for(i=0; i<_iNumIlluminations; i++)

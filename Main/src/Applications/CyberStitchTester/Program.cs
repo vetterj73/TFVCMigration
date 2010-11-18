@@ -19,7 +19,7 @@ namespace CyberStitchTester
         private static CPanel _panel; 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
-        private static ManagedPanelAlignment _aligner;
+        private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
