@@ -350,6 +350,7 @@ Global
 		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|Win32.ActiveCfg = Release|Any CPU
 		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|x64.ActiveCfg = Release|Any CPU
+		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|x64.Build.0 = Release|Any CPU
 		{A06AD1D0-414A-496D-89AC-8667F1019D75}.Release|x86.ActiveCfg = Release|Any CPU
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
