@@ -72,7 +72,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 	rect.xMax = _pSet->GetObjectWidthInMeters();
 	rect.yMin = 0;
 	rect.yMax = _pSet->GetObjectWidthInMeters();
-	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, rect); // nee work
+	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, _pSet->GetNominalPixelSizeX(), _pPanel); // nee work
 
 	// Create stitching manager
 	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);

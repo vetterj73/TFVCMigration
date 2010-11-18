@@ -1,12 +1,16 @@
 #include "OverlapManager.h"
 #include "Logger.h"
+#include "RenderShape.h"
+#include "CorrelationParameters.h"
 
+#pragma region constructor and reset
 OverlapManager::OverlapManager(
 	MosaicImage* pMosaics, 
 	CorrelationFlags** pFlags, 
 	unsigned int iNumIlluminations,
 	Image* pCadImg, 
-	DRect validRect)
+	double dCadImageResolution,
+	Panel* pPanel)
 {	
 	_iMinOverlapSize = 100;
 	
@@ -14,7 +18,13 @@ OverlapManager::OverlapManager(
 	_pFlags = pFlags;	
 	_iNumIlluminations = iNumIlluminations;
 	_pCadImg = pCadImg;
-	_validRect = validRect;
+	_pPanel = pPanel;
+	_validRect.xMin = 0;
+	_validRect.yMin = 0;
+	_validRect.xMax = _pPanel->xLength();
+	_validRect.yMax = _pPanel->yLength();
+
+	_dCadImageResolution = dCadImageResolution;
 
 	unsigned int i, j;
 	_iNumCameras=0;
@@ -49,6 +59,8 @@ OverlapManager::OverlapManager(
 	CreateFovFovOverlaps();
 	CreateCadFovOverlaps();
 
+
+
 	CalMaskCreationStage();
 
 	// For Debug
@@ -75,8 +87,57 @@ OverlapManager::~OverlapManager(void)
 	delete [] _fovFovOverlapLists;
 	delete [] _cadFovOverlapLists;
 	delete [] _fidFovOverlapLists;
+
+	delete [] _pFidImages;
 }
 
+// Reset mosaic images and overlaps for new panel inspection 
+bool OverlapManager::ResetforNewPanel()
+{
+	// Reset all mosaic images for new panel inspection
+	unsigned int i, iCam , iTrig;
+	for(i=0; i<_iNumIlluminations; i++)
+	{
+		_pMosaics[i].ResetForNextPanel();
+	}
+
+	// Reset all overlaps for new panel inspection
+	for(i=0; i<_iNumIlluminations; i++)
+	{
+		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
+		{
+			for(iCam=0; iCam<_iNumCameras; iCam++)
+			{
+				// Reset Fov and Fov overlap
+				list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[i][iTrig][iCam];
+				for(list<FovFovOverlap>::iterator j=pFovFovList->begin(); j!=pFovFovList->end(); j++)
+				{
+					j->Reset();
+				}
+
+				// Reset Cad and Fov overlap
+				list<CadFovOverlap>* pCadFovList = &_cadFovOverlapLists[i][iTrig][iCam]; 
+				for(list<CadFovOverlap>::iterator j=pCadFovList->begin(); j!=pCadFovList->end(); j++)
+				{
+					j->Reset();
+				}
+
+				// Reset Fid and Fov overlap
+				list<FidFovOverlap>* pFidFovList = &_fidFovOverlapLists[i][iTrig][iCam];
+				for(list<FidFovOverlap>::iterator j=pFidFovList->begin(); j!=pFidFovList->end(); j++)
+				{
+					j->Reset();
+				}
+			} //iCam
+		} // iTrig
+	} // i
+
+	return(true);
+}
+
+#pragma endregion
+
+#pragma region FovFovOverlaps
 // Create Fov overlap for two illuminations
 bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2)
 {
@@ -245,6 +306,18 @@ void OverlapManager::CreateFovFovOverlaps()
 	}
 }
 
+// Get FovFovOverlap list for certain Fov
+list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iTrigIndex,
+	unsigned int iCamIndex) const
+{
+	return(&_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
+}
+
+#pragma endregion
+
+#pragma region CadFovOverlaps
 // Create Cad and Fov overlaps
 void OverlapManager::CreateCadFovOverlaps()
 {
@@ -274,54 +347,186 @@ void OverlapManager::CreateCadFovOverlaps()
 	}
 }
 
-// Create Fiducial and Fov overlaps
-void OverlapManager::CreateFidFovOverlaps()
+// Get CadFovOverlap list for certain Fov
+list<CadFovOverlap>* OverlapManager::GetCadFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iTrigIndex,
+	unsigned int iCamIndex) const
 {
+	return(&_cadFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
 }
+#pragma endregion
 
-// Reset mosaic images and overlaps for new panel inspection 
-bool OverlapManager::ResetforNewPanel()
+#pragma region FidFovOverlap
+// Create Fiducial images
+bool OverlapManager::CreateFiducialImages()
 {
-	// Reset all mosaic images for new panel inspection
-	unsigned int i, iCam , iTrig;
-	for(i=0; i<_iNumIlluminations; i++)
+	_pFidImages = NULL;
+	unsigned int iNum = _pPanel->NumberOfFiducials();
+
+	if(iNum <=0) 
 	{
-		_pMosaics[i].ResetForNextPanel();
+		LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFiducialImages():No fiducial avaliable for alignment");
+		return(false);
 	}
+	_pFidImages = new Image[iNum];
 
-	// Reset all overlaps for new panel inspection
-	for(i=0; i<_iNumIlluminations; i++)
+	unsigned int iCount = 0;
+	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
-		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
-		{
-			for(iCam=0; iCam<_iNumCameras; iCam++)
-			{
-				// Reset Fov and Fov overlap
-				list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[i][iTrig][iCam];
-				for(list<FovFovOverlap>::iterator j=pFovFovList->begin(); j!=pFovFovList->end(); j++)
-				{
-					j->Reset();
-				}
+		double dScale = 1.0;
+		RenderFiducial(
+			&_pFidImages[iCount], 
+			i->second, 
+			_dCadImageResolution, 
+			dScale);
 
-				// Reset Cad and Fov overlap
-				list<CadFovOverlap>* pCadFovList = &_cadFovOverlapLists[i][iTrig][iCam]; 
-				for(list<CadFovOverlap>::iterator j=pCadFovList->begin(); j!=pCadFovList->end(); j++)
-				{
-					j->Reset();
-				}
-
-				// Reset Fid and Fov overlap
-				list<FidFovOverlap>* pFidFovList = &_fidFovOverlapLists[i][iTrig][iCam];
-				for(list<FidFovOverlap>::iterator j=pFidFovList->begin(); j!=pFidFovList->end(); j++)
-				{
-					j->Reset();
-				}
-			} //iCam
-		} // iTrig
-	} // i
+		iCount++;
+	}
 
 	return(true);
 }
+
+// fiducial is placed in the exact center of the resulting image
+// this is important as SqRtCorrelation (used to build least squares table)
+// measures the positional difference between the center of the fiducial 
+// image and the center of the FOV image segement.  Any information
+// about offset of the fiducial from the center of the FOV is lost
+// img: output, fiducial image,
+// fid: input, fiducial feature 
+// resolution: the pixel size, in meters
+// dScale: the fiducial area expansion scale
+void OverlapManager::RenderFiducial(
+	Image* pImg, 
+	Feature* pFid, 
+	double resolution, 
+	double dScale)
+{
+	// Area in world space
+	double dExpandX = CorrParams.dFiducialSearchExpansionX;
+	double dExpandY = CorrParams.dFiducialSearchExpansionY;
+	double dHalfWidth = pFid->GetBoundingBox().Width()/2;
+	double dHalfHeight= pFid->GetBoundingBox().Height()/2;
+	double xMinImg = pFid->GetBoundingBox().Min().x - dHalfWidth*(dScale-1)  - dExpandX; 
+	double yMinImg = pFid->GetBoundingBox().Min().y - dHalfHeight*(dScale-1) - dExpandY; 
+	double xMaxImg = pFid->GetBoundingBox().Max().x + dHalfWidth*(dScale-1)  + dExpandX; 
+	double yMaxImg = pFid->GetBoundingBox().Max().y + dHalfHeight*(dScale-1) + dExpandY;
+	
+	// The size of image in pixels
+	unsigned int nRowsImg
+			(unsigned int((1.0/resolution)*(xMaxImg-xMinImg)));	
+	unsigned int nColsImg
+			(unsigned int((1.0/resolution)*(yMaxImg-yMinImg)));	
+	
+	// Define transform for new fiducial image
+	double t[3][3];
+	t[0][0] = resolution;
+	t[0][1] = 0;
+	t[0][2] = pFid->GetCadX() - resolution * (nRowsImg-1) / 2.;
+	
+	t[1][0] = 0;
+	t[1][1] = resolution;
+	t[1][2] = pFid->GetCadY() - resolution * (nColsImg-1) / 2.;
+	t[2][0] = 0;
+	t[2][1] = 0;
+	t[2][2] = 1;	
+	ImgTransform trans(t);
+
+	// Create and clean buffer
+	pImg->Configure(nColsImg, nRowsImg, nColsImg, trans, trans, true);
+	pImg->ZeroBuffer();
+
+	// Fiducial drawing/render
+	unsigned int grayValue=255;
+	int antiAlias=1;
+	switch(pFid->GetShape())
+	{
+	case Feature::SHAPE_CROSS:
+		RenderCross(*pImg, resolution, (CrossFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DIAMOND:
+		RenderDiamond(*pImg, resolution, (DiamondFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DISC:
+		RenderDisc(*pImg, resolution, (DiscFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DONUT:
+		RenderDonut(*pImg, resolution, (DonutFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_RECTANGLE:
+		RenderRectangle(*pImg, resolution, (RectangularFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_TRIANGLE:
+		RenderTriangle(*pImg, resolution, (TriangleFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_CYBER:
+		RenderCyberShape(*pImg, resolution, (CyberFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	default:
+		LOG.FireLogEntry(LogTypeError, "OverlapManager::RenderFiducials() - unsupported fiducial type");	
+	}
+}
+
+// Create Fiducial and Fov overlaps
+void OverlapManager::CreateFidFovOverlaps()
+{
+	CreateFiducialImages();
+
+	unsigned int i, iCam, iTrig;
+	for(i=0; i<_iNumIlluminations; i++)
+	{
+		unsigned int iNumCameras = _pMosaics[i].NumCameras();
+		unsigned int iNumTriggers = _pMosaics[i].NumTriggers();
+		for(iTrig=0; iTrig<iNumTriggers; iTrig++)
+		{
+			for(iCam=0; iCam<iNumCameras; iCam++)
+			{
+				for(int iFid=0; iFid<_pPanel->NumberOfFiducials(); iFid++)
+				{
+					FidFovOverlap overlap(
+						&_pMosaics[i],
+						pair<unsigned int, unsigned int>(iCam, iTrig),
+						&_pFidImages[iFid],
+						_pFidImages[iFid].CenterX(),
+						_pFidImages[iFid].CenterY(),
+						_validRect);
+
+					// overlap is in valid
+					if(!overlap.IsValid())
+						continue;
+
+					// overlap is too small
+					int iMinOverlapCols = _pFidImages[iFid].Columns()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionY/_dCadImageResolution);
+					int iMinOverlapRows = _pFidImages[iFid].Rows()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
+					if(overlap.Columns()>iMinOverlapCols && overlap.Rows()>iMinOverlapRows)
+						continue;
+
+					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);
+				}
+			}
+		}
+	}
+}
+
+// Get FidFovOverlap list for certain Fov
+list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
+	unsigned int iMosaicIndex, 
+	unsigned int iTrigIndex,
+	unsigned int iCamIndex) const
+{	
+	return(&_fidFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
+}
+
+#pragma endregion
+
+#pragma region Do Alignment
 
 // Do alignment for a certain Fov
 bool OverlapManager::DoAlignmentForFov(
@@ -377,33 +582,9 @@ bool OverlapManager::DoAlignmentForFov(
 	return(true);
 }
 
-// Get FovFovOverlap list for certain Fov
-list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
-	unsigned int iMosaicIndex, 
-	unsigned int iTrigIndex,
-	unsigned int iCamIndex) const
-{
-	return(&_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
-}
+#pragma endregion
 
-// Get CadFovOverlap list for certain Fov
-list<CadFovOverlap>* OverlapManager::GetCadFovListForFov(
-	unsigned int iMosaicIndex, 
-	unsigned int iTrigIndex,
-	unsigned int iCamIndex) const
-{
-	return(&_cadFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
-}
-
-// Get FidFovOverlap list for certain Fov
-list<FidFovOverlap>* OverlapManager::GetFidFovListForFov(
-	unsigned int iMosaicIndex, 
-	unsigned int iTrigIndex,
-	unsigned int iCamIndex) const
-{	
-	return(&_fidFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
-}
-
+#pragma region Solver setup
 // Decide after what layer is completed, mask images need to be created
 void OverlapManager::CalMaskCreationStage()
 {
@@ -540,9 +721,4 @@ bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned 
 
 	return(bFlag1 && bFlag2);
 }
-
-
-
-
-
-	
+#pragma endregion

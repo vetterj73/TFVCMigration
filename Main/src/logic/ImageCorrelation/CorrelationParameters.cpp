@@ -30,6 +30,10 @@ CorrelationParameters::CorrelationParameters(void)
 	// Correlation pair
 	iCorrPairMinRoiSize = 20;			// The Size of Roi of correlation pair need >= this value to process
 	dMaskAreaRatioTh = 0.05;			// NGC will be used only if Mask area/Roi area > this value
+
+	// Fiducial search expansion
+	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
+	dFiducialSearchExpansionY = 2e-3;
 }
 
 CorrelationParameters::~CorrelationParameters(void)

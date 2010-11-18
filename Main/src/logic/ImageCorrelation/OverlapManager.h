@@ -7,6 +7,8 @@
 #include "MosaicImage.h"
 #include "CorrelationFlags.h"
 #include "OverlapDefines.h"
+#include "Panel.h"
+
 
 using namespace MosaicDM;
 
@@ -18,7 +20,8 @@ public:
 		CorrelationFlags** pFlags, 
 		unsigned int iNumIlluminations,
 		Image* pCadImg, 
-		DRect validRect);
+		double dCadImageResolution,
+		Panel* pPanel);
 	~OverlapManager(void);
 
 	bool ResetforNewPanel();
@@ -64,6 +67,14 @@ protected:
 
 	unsigned int MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 	bool IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const;
+
+	bool CreateFiducialImages();
+
+	static void RenderFiducial(
+		Image* pImg, 
+		Feature* pFid, 
+		double resolution, 
+		double dScale);
 	
 private:	
 	MosaicImage* _pMosaics;
@@ -71,10 +82,15 @@ private:
 	unsigned int _iNumIlluminations;
 	
 	Image* _pCadImg;
+	Panel* _pPanel;
 	DRect _validRect;
+
+	double _dCadImageResolution;
 
 	unsigned int _iNumCameras;
 	unsigned int _iNumTriggers;
+
+	Image* _pFidImages;
 	
 	// A[Mosaic Index][Row(y) Index][Column(x) Index]
 	list<FovFovOverlap>*** _fovFovOverlapLists;

@@ -37,5 +37,9 @@ public:
 	// Correlation pair
 	unsigned int iCorrPairMinRoiSize;		// The Size of Roi of correlation pair need >= this value to process
 	double dMaskAreaRatioTh;				// NGC will be used only if Mask area/Roi area > this value
+
+	// Fiducial search expansion
+	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
+	double dFiducialSearchExpansionY;
 };
 
