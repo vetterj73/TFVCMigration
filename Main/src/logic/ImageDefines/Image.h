@@ -17,12 +17,12 @@ class Image
 {
 public:
 	// Construcor and configuration file
-	Image();
+	Image(unsigned int iBytePerpixel = 1);
 	Image(
 		int iColumns, 
 		int iRows,						
 		int iStride,					// In pixels
-		unsigned iDepth,				// Bytes per pixel
+		unsigned iBytePerPixel,				// Bytes per pixel
 		ImgTransform nominalTrans,		// used for overlap calculation before stitching
 		ImgTransform actualTrans,		// Stitching results
 		bool bCreateOwnBuffer,			// Falg for whether create own buffer
@@ -36,7 +36,7 @@ public:
 		int iColumns, 
 		int iRows, 
 		int iStride,		
-		unsigned iDepth,
+		unsigned iBytePerPixel,
 		bool bCreateOwnBuffer,
 		unsigned char *buffer = NULL);	
 
@@ -44,7 +44,7 @@ public:
 		int iColumns, 
 		int iRows, 
 		int iStride,
-		unsigned iDepth,
+		unsigned iBytePerPixel,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -62,12 +62,13 @@ public:
 
 	bool				HasOwnBuffer() const {return _IOwnMyOwnBuffer;};
 
-	short				GetBytesPerPixel()const {return _bytesPerPixel;};
+	unsigned int		GetBytesPerPixel()const {return _bytesPerPixel;};
 	unsigned int		Rows() const {return _rows;};
 	unsigned int		Columns() const {return _columns;};
 	unsigned int		ByteRowStride() const {return _pixelRowStride*GetBytesPerPixel();};
 	unsigned int		PixelRowStride() const {return _pixelRowStride;};
 	unsigned int		BufferSizeInBytes() const {return ByteRowStride()*Rows();};
+	unsigned int		BufferSizeInPixels(){return _rows * _pixelRowStride;};
 	
 	pair<double,double> ImageCenter( ) const;
 	double				CenterX() const;
@@ -100,7 +101,7 @@ protected:
 	unsigned int		_rows;
 	unsigned int		_columns;
 	unsigned int		_pixelRowStride;
-	short				_bytesPerPixel;
+	unsigned int				_bytesPerPixel;
 
 	bool				_IOwnMyOwnBuffer;	// Whether image class create and maintain image buffer 
 	unsigned char*		_buffer;			// Image buffer

@@ -151,6 +151,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Image.h" />
+    <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
     <ClInclude Include="MosaicImage.h" />
     <ClInclude Include="STL.h" />
@@ -159,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Image16.cpp" />
     <ClCompile Include="ImgTransform.cpp" />
     <ClCompile Include="MosaicImage.cpp" />
     <ClCompile Include="UIRect.cpp" />

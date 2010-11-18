@@ -3,12 +3,12 @@
 #include "Bitmap.h"
 
 #pragma region constructor and configuration
-Image::Image() 
+Image::Image(unsigned int iBytePerpixel) 
 {
 	_rows=0;
 	_columns=0;
 	_pixelRowStride=0;
-	_bytesPerPixel=0;
+	_bytesPerPixel=iBytePerpixel;
 	_IOwnMyOwnBuffer= false;	
 	_buffer=0;
 }
@@ -17,7 +17,7 @@ Image::Image(
 		int iColumns, 
 		int iRows, 
 		int iStride,
-		unsigned iDepth,
+		unsigned iBytePerPixel,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -27,7 +27,7 @@ Image::Image(
 		iColumns, 
 		iRows, 
 		iStride,
-		iDepth,
+		iBytePerPixel,
 		nominalTrans,
 		actualTrans,
 		bCreateOwnBuffer,
@@ -72,14 +72,14 @@ void Image::Configure(
 	int iColumns, 
 	int iRows, 
 	int iStride,
-	unsigned iDepth,
+	unsigned iBytePerPixel,
 	bool bCreateOwnBuffer,
 	unsigned char *buffer)
 {
 	_rows				= iRows;
 	_columns			= iColumns;
 	_pixelRowStride		= iStride;
-	_bytesPerPixel		= iDepth;
+	_bytesPerPixel		= iBytePerPixel;
 
 	DeleteBufferIfOwner();
 	
@@ -96,7 +96,7 @@ void Image::Configure(
 		int iColumns, 
 		int iRows, 
 		int iStride,
-		unsigned iDepth,
+		unsigned iBytePerPixel,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -106,7 +106,7 @@ void Image::Configure(
 		iColumns, 
 		iRows, 
 		iStride,
-		iDepth,
+		iBytePerPixel,
 		bCreateOwnBuffer,
 		buffer);
 
