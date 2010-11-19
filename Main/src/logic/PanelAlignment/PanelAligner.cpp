@@ -49,6 +49,7 @@ void PanelAligner::CleanUp()
 // Set panel
 bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
 {
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::SetPanel():Begin panel change over");
 	// CleanUp internal stuff for new production
 	CleanUp();
 
@@ -107,7 +108,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
 	// (Mask image is NULL at this time)
 	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
 
-	LOG.FireLogEntry(LogTypeSystem, "Panel change over is done!");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::SetPanel():Panel change over is done");
 
 	return(true);
 }

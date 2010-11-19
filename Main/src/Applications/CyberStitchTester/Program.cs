@@ -20,6 +20,7 @@ namespace CyberStitchTester
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
+        private static TextWriter writer = new StreamWriter("c:\\Temp\\AlignLog.txt");
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -114,6 +115,9 @@ namespace CyberStitchTester
 
             SetupMosaic();
 
+            _aligner.OnLogEntry += OnLogEntryFromClient;
+            _aligner.SetAllLogTypes(true);
+
             _aligner.SetPanel(_mosaicSet, _panel);
 
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
@@ -127,6 +131,13 @@ namespace CyberStitchTester
 
             // Now - Correlate and Stitch...
             Output("All Done!");
+        }
+
+        private static void OnLogEntryFromClient( MLOGTYPE logtype, string message)
+        {
+            Console.WriteLine(logtype + " " + message);
+            DateTime dataTime = DateTime.Now;
+            writer.WriteLine(dataTime + ":"+ logtype + " " + message);
         }
 
         /// <summary>

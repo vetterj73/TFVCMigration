@@ -7,10 +7,11 @@
 using namespace System;
 using namespace MMosaicDM; 
 using namespace Cyber::SPIAPI;
+using namespace MLOGGER;
 
 namespace PanelAlignM {
 
-	public ref class ManagedPanelAlignment
+	public ref class ManagedPanelAlignment : public MLoggableObject
 	{
 		// TODO: Add your methods for this class here.
 	public:
