@@ -161,7 +161,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	double* pdCenY1 = new double[iNumCams1];
 	_pMosaics[iIndex1].TriggerCentersInX(pdCenX1);
 	_pMosaics[iIndex1].CameraCentersInY(pdCenY1);
-	double dSpanTrig = (pdCenX1[iNumTrigs1-1] - pdCenX1[0])/(iNumTrigs1-1);
+	double dSpanTrig = (pdCenX1[0] - pdCenX1[iNumTrigs1-1])/(iNumTrigs1-1);
 	double dSpanCam = (pdCenY1[iNumCams1-1] - pdCenY1[0])/(iNumCams1-1);
 	
 	unsigned int iNumTrigs2 = _pMosaics[iIndex2].NumTriggers();
