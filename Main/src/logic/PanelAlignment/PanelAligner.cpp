@@ -7,23 +7,22 @@
 
 #include "Panel.h"
 
-void MyWriteCallback(LOGTYPE LogType, const char* message, void* context)
-{
-	PanelAligner* pAligner = static_cast<PanelAligner*>(context);
-}
-
 PanelAligner::PanelAligner(void)
 {
-	_pOverlapManager = NULL;
 	_pMosaics = NULL;
 	_pCorrelationFlags = NULL;
+	_pOverlapManager = NULL;
+	_pStitchingManager = NULL;
 }
 
 PanelAligner::~PanelAligner(void)
 {
-	if(_pOverlapManager != NULL)
-		delete _pOverlapManager;
+	CleanUp();
+}
 
+// CleanUp internal stuff for new production or desctructor
+void PanelAligner::CleanUp()
+{
 	if(_pMosaics != NULL)
 		delete [] _pMosaics;
 
@@ -34,19 +33,29 @@ PanelAligner::~PanelAligner(void)
 
 		delete [] _pCorrelationFlags;
 	}
-}
 
-// Set panel
-bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
-{
 	if(_pOverlapManager != NULL)
 		delete _pOverlapManager;
 
-	if(_pMosaics != NULL)
-		delete [] _pMosaics;
+	if(_pStitchingManager != NULL)
+		delete _pStitchingManager;
+
+	_pMosaics = NULL;
+	_pCorrelationFlags = NULL;
+	_pOverlapManager = NULL;
+	_pStitchingManager = NULL;
+}
+
+// Set panel
+bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
+{
+	// CleanUp internal stuff for new production
+	CleanUp();
 
 	_pSet = pSet;
+	_pPanel = pPanel;
 
+	// Create moasic images
 	_iNumIlluminations = _pSet->GetNumMosaicLayers();
 	_pMosaics = new MosaicImage[_iNumIlluminations];
 
@@ -54,9 +63,8 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 	unsigned int iImHeight = _pSet->GetImageHeightInPixels();
 	unsigned int iImStride = _pSet->GetImageStrideInPixels();
 	
-	// Create moasic images
 	unsigned int i, j, iCam, iTrig;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_iNumIlluminations; i++)	// for each mosaic image
 	{
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
 		unsigned int iNumTrigs = pLayer->GetNumberOfTriggers();
@@ -95,7 +103,8 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* _pPanel)
 	rect.yMax = _pSet->GetObjectWidthInMeters();
 	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, _pSet->GetNominalPixelSizeX(), _pPanel); // nee work
 
-	// Create stitching manager
+	// Create stitching manager 
+	// (Mask image is NULL at this time)
 	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
 
 	LOG.FireLogEntry(LogTypeSystem, "Panel change over is done!");

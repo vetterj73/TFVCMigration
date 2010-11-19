@@ -8,7 +8,7 @@ namespace PanelAlignM {
 
 	ManagedPanelAlignment::ManagedPanelAlignment()
 	{
-		_pAligner = NULL;
+		_pAligner = new PanelAligner();
 	}
 
 	ManagedPanelAlignment::!ManagedPanelAlignment()
@@ -17,16 +17,9 @@ namespace PanelAlignM {
 			delete _pAligner;
 	}
 
+	// Change production/set panel
 	bool ManagedPanelAlignment::SetPanel(ManagedMosaicSet^ set, CPanel^ panel)
 	{
-		if(_pAligner!=NULL)
-		{
-			delete _pAligner;
-			_pAligner = NULL;
-		}
-
-		_pAligner = new PanelAligner();
-
 		MosaicSet* pMosaicSet = (MosaicSet*)(void*)set->UnmanagedMosaicSet;
 		Panel* pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
 

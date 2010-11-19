@@ -25,10 +25,17 @@ public:
 
 	LoggableObject* GetLogger() {return &LOG;};
 
+protected:
+	// CleanUp internal stuff for new production or desctructor
+	void CleanUp();
+
 private:
-	MosaicSet* _pSet;	
-	CorrelationFlags** _pCorrelationFlags;
+	// Inputs
+	MosaicSet* _pSet;		
+	Panel* _pPanel;
 	
+	// Internal stuff
+	CorrelationFlags** _pCorrelationFlags;
 	MosaicImage* _pMosaics;
 	OverlapManager* _pOverlapManager;
 	StitchingManager* _pStitchingManager;
