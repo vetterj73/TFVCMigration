@@ -12,20 +12,24 @@ OverlapManager::OverlapManager(
 	double dCadImageResolution,
 	Panel* pPanel)
 {	
-	_iMinOverlapSize = 100;
-	
+	// Inputs
 	_pMosaics = pMosaics;	
 	_pFlags = pFlags;	
 	_iNumIlluminations = iNumIlluminations;
 	_pCadImg = pCadImg;
 	_pPanel = pPanel;
+	_dCadImageResolution = dCadImageResolution;	
+
+	// Valid panel area in world space 
 	_validRect.xMin = 0;
 	_validRect.yMin = 0;
 	_validRect.xMax = _pPanel->xLength();
 	_validRect.yMax = _pPanel->yLength();
+	
+	// Control parameter
+	_iMinOverlapSize = CorrParams.iMinOverlapSize;
 
-	_dCadImageResolution = dCadImageResolution;
-
+	// Calculate max number of cameras and triggers for mossiac images
 	unsigned int i, j;
 	_iNumCameras=0;
 	_iNumTriggers=0;
@@ -56,10 +60,12 @@ OverlapManager::OverlapManager(
 		}
 	}
 
+	//Create overlaps
 	CreateFovFovOverlaps();
 	CreateCadFovOverlaps();
 	CreateFidFovOverlaps();
 
+	// Decide the stage to calculate mask
 	CalMaskCreationStage();
 
 	// For Debug

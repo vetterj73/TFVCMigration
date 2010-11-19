@@ -41,5 +41,8 @@ public:
 	// Fiducial search expansion
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
+
+	// Overlap
+	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 };
 

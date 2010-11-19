@@ -80,6 +80,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
 			{
 				MosaicTile* pTile = pLayer->GetTile(iCam, iTrig);
 				ImgTransform t = pTile->GetNominalTransform();
+				// Set both nominal and regular transform
 				_pMosaics[i].SetImageTransforms(t, iCam, iTrig);
 			}
 		}
@@ -101,7 +102,7 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
 	rect.xMin = 0;
 	rect.xMax = _pSet->GetObjectWidthInMeters();
 	rect.yMin = 0;
-	rect.yMax = _pSet->GetObjectWidthInMeters();
+	rect.yMax = _pSet->GetObjectLengthInMeters();
 	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, _pSet->GetNominalPixelSizeX(), _pPanel); // nee work
 
 	// Create stitching manager 

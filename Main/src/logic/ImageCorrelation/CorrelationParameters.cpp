@@ -34,6 +34,9 @@ CorrelationParameters::CorrelationParameters(void)
 	// Fiducial search expansion
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
+
+	// Overlap
+	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 }
 
 CorrelationParameters::~CorrelationParameters(void)
