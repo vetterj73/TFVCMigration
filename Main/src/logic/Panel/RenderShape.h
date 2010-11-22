@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "..\..\..\RuddLib\include\feature.h"
 #include "Image.h"
 #include "Image16.h"
 #include "Feature.h"

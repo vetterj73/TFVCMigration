@@ -6,6 +6,7 @@
 #include "aapoly.h"
 #include "nint.h"
 
+#include "..\..\..\RuddLib\include\feature.h"
 using RUDD::FEATURE_ARGS;
 using RUDD::FEAT_CIRC;
 using RUDD::FEAT_RECT;
