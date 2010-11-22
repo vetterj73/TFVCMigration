@@ -28,7 +28,7 @@ void PanelAligner::CleanUp()
 
 	if(_pCorrelationFlags != NULL)
 	{
-		for(int i=0; i<_iNumIlluminations; i++)
+		for(unsigned int i=0; i<_iNumIlluminations; i++)
 			delete [] _pCorrelationFlags[i];
 
 		delete [] _pCorrelationFlags;

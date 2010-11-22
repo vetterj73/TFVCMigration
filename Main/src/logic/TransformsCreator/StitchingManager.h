@@ -1,6 +1,8 @@
 #pragma once
 #include "OverlapManager.h"
 #include "RobustSolver.h"
+#include <map>;
+using std::map;
 
 class StitchingManager
 {

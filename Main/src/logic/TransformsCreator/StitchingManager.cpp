@@ -58,13 +58,13 @@ void StitchingManager::Reset()
 	_bMasksCreated = false;
 }
 
-typedef pair<FovIndex, double> FovIndexMap;
-typedef list<FovIndexMap> FovList;
-bool operator<(const FovIndexMap& a, const FovIndexMap& b)
+// For function CreateImageOrderInSolver()
+typedef pair<FovIndex, double> TriggerOffsetPair;
+typedef list<TriggerOffsetPair> FovList;
+bool operator<(const TriggerOffsetPair& a, const TriggerOffsetPair& b)
 {
 	return(a.second < b.second);
 };
-
 // Create a map between Fov and its order in solver
 // piIllumIndices and iNumIllums: input, illuminations used by solver
 // pOrderMap: output, the map between Fov and its order in solver
@@ -75,9 +75,9 @@ bool StitchingManager::CreateImageOrderInSolver(
 {
 	unsigned int i, iTrig;
 	FovList fovList;
-	FovList::iterator j, k;
-	
-	// Build trigger list, 
+	FovList::iterator j;
+
+	// Build trigger offset pair list, 
 	for(i=0; i<iNumIllums; i++) // for each illuminaiton 
 	{
 		// Get trigger centers in X
@@ -101,18 +101,19 @@ bool StitchingManager::CreateImageOrderInSolver(
 	// Sort list in ascending ordering
 	fovList.sort();
 
-	// Build FOVIndexMap
+	// Build FOVIndexMap	
+	FovList::reverse_iterator k;
 	unsigned int iCount = 0;
-	for(j=fovList.begin(); j!=fovList.end(); j++)
+	for(k=fovList.rbegin(); k!=fovList.rend(); k++)
 	{
-		unsigned int iIllumIndex = j->first.IlluminationIndex;
-		unsigned int iTrigerINdex = j->first.TriggerIndex;
+		unsigned int iIllumIndex = k->first.IlluminationIndex;
+		unsigned int iTrigIndex = k->first.TriggerIndex;
 		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
 		unsigned int iNumCams = pMosaic->NumCameras();
 		for(i=0; i<iNumCams; i++)
 		{
-			FovIndex index(iIllumIndex, iTrig, i);
-			pOrderMap->insert(pair<FovIndex, unsigned int>(index, iCount));
+			FovIndex index(iIllumIndex, iTrigIndex, i);
+			(*pOrderMap)[index] = iCount;
 			iCount++;
 		}
 	}

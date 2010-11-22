@@ -8,12 +8,22 @@ bool operator<(const FovIndex& a, const FovIndex& b)
 {
 	if(a.IlluminationIndex < b.IlluminationIndex)
 		return (true);
-
-	if(a.TriggerIndex < b.TriggerIndex)
-		return(true);
-
-	if(a.CameraIndex < b.CameraIndex)
-		return(true);
+	else if(a.IlluminationIndex > b.IlluminationIndex)
+		return (false);
+	else
+	{
+		if(a.TriggerIndex < b.TriggerIndex)
+			return(true);
+		else if(a.TriggerIndex > b.TriggerIndex)
+			return(false);
+		else
+		{ 
+			if(a.CameraIndex < b.CameraIndex)
+				return(true);
+			else if(a.CameraIndex > b.CameraIndex)
+				return(false);
+		}
+	}
 
 	return(false);
 }
@@ -22,13 +32,23 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 {
 	if(a.IlluminationIndex > b.IlluminationIndex)
 		return (true);
-
-	if(a.TriggerIndex > b.TriggerIndex)
-		return(true);
-
-	if(a.CameraIndex > b.CameraIndex)
-		return(true);
-
+	else if(a.IlluminationIndex < b.IlluminationIndex)
+		return(false);
+	else
+	{
+		if(a.TriggerIndex > b.TriggerIndex)
+			return(true);
+		else if(a.TriggerIndex < b.TriggerIndex)
+			return(false);
+		else
+		{
+			if(a.CameraIndex > b.CameraIndex)
+				return(true);
+			else if(a.CameraIndex < b.CameraIndex)
+				return(false);
+		}
+	}
+			
 	return(false);
 }
 #pragma endregion
