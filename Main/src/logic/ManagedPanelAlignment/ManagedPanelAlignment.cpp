@@ -10,7 +10,7 @@ namespace PanelAlignM {
 	{
 		_pAligner = new PanelAligner();
 
-		SetLoggableObject((System::IntPtr)_pAligner->GetLogger());
+		SetLoggableObject((System::IntPtr)(void*)_pAligner->GetLogger());
 	}
 
 	ManagedPanelAlignment::!ManagedPanelAlignment()

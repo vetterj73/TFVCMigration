@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using CPanelIO;
+using Cyber.DiagnosticUtils;
 using Cyber.SPIAPI;
 using MCoreAPI;
 using MLOGGER;
@@ -20,14 +21,16 @@ namespace CyberStitchTester
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
-        private static TextWriter writer = new StreamWriter("c:\\Temp\\AlignLog.txt");
+        private static LoggingThread logger = new LoggingThread(null);
+
+
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-
+            logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
             string simulationFile = "";
             string panelFile="";
             double panelWidth = 200;   // in mm (will be converted into meter)
@@ -69,6 +72,7 @@ namespace CyberStitchTester
                 catch (Exception except)
                 {
                     Output("Exception reading Panel file: " + except.Message);
+                    logger.Kill();
                     return;
                 }
             }
@@ -90,12 +94,14 @@ namespace CyberStitchTester
             if(ManagedCoreAPI.InitializeAPI() != 0)
             {
                 Output("Could not initialize CoreAPI!");
+                logger.Kill();
                 return;
             }
 
             if(ManagedCoreAPI.NumberOfDevices() <=0)
             {
                 Output("There are no SIM Devices attached!");
+                logger.Kill();
                 return;
             }
 
@@ -118,7 +124,16 @@ namespace CyberStitchTester
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
 
-            _aligner.SetPanel(_mosaicSet, _panel);
+            try
+            {
+                _aligner.SetPanel(_mosaicSet, _panel);
+
+            }
+            catch (Exception except)
+            {
+                
+                Output("Error during SetPanel: " + except.Message);
+            }
 
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
             {
@@ -131,13 +146,15 @@ namespace CyberStitchTester
 
             // Now - Correlate and Stitch...
             Output("All Done!");
+
+            logger.Kill();
         }
 
         private static void OnLogEntryFromClient( MLOGTYPE logtype, string message)
         {
             Console.WriteLine(logtype + " " + message);
             DateTime dataTime = DateTime.Now;
-            writer.WriteLine(dataTime + ":"+ logtype + " " + message);
+            Output("logtype" + " " + message);
         }
 
         /// <summary>
@@ -268,22 +285,30 @@ namespace CyberStitchTester
 
         private static void OnAcquisitionDone(int device, int status, int count)
         {
-            Output("OnAcquisitionDone Called!");
-            numAcqsComplete++;
-            if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                mDoneEvent.Set();
-
-            // for two illuminations debug onley
-            int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-            for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+            try
             {
-                int i = iTrig % 2;
-                for (int iCam = 0; iCam < _mosaicSet.GetLayer(i).GetNumberOfCameras(); iCam++)
+                Output("OnAcquisitionDone Called!");
+                numAcqsComplete++;
+                if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
+                    mDoneEvent.Set();
+
+                // for two illuminations debug onley
+                int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
                 {
-                    _aligner.AddImage(i, iTrig, iCam);
+                    int i = iTrig % 2;
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(i).GetNumberOfCameras(); iCam++)
+                    {
+                        _aligner.AddImage(i, iTrig, iCam);
+                    }
                 }
+
             }
-        }
+            catch (Exception except)
+            {
+                Output("Error during OnAcquisitionDone: " + except.Message);
+            }
+         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
@@ -296,7 +321,8 @@ namespace CyberStitchTester
 
         private static void Output(string str)
         {
-            Console.WriteLine(str);
+            logger.AddObjectToThreadQueue(str);
+            logger.AddObjectToThreadQueue(null);
         }
     }
 }

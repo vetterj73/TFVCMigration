@@ -66,6 +66,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DiagnosticUtils">
+      <HintPath>..\..\..\CyberCommon\bin\Release\DiagnosticUtils.dll</HintPath>
+    </Reference>
     <Reference Include="ManagedCoreAPI, Version=1.0.3894.23336, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\SIMCoreAPI\bin\x64\ManagedCoreAPI.dll</HintPath>
