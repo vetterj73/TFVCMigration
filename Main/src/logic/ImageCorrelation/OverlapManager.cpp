@@ -174,7 +174,8 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	_pMosaics[iIndex2].CameraCentersInY(pdCenY2);
 
 	// For each image in first layer (illuminaiton)
-	unsigned int iCam1, iTrig1, iCam2, iTrig2;
+	unsigned int iCam1, iTrig1;
+	int iCam2, iTrig2; // Must be integer to avoid for cycle error
 	for(iTrig1 = 0; iTrig1<iNumTrigs1; iTrig1++)
 	{
 		for(iCam1 = 0; iCam1<iNumCams1; iCam1++)
@@ -185,7 +186,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 				// The nearest trigger
 				int iTrigIndex=-1;	
 				double dMinDis = 1.0*dSpanTrig; // If nearest trigger is far away, just ignore
-				for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
+				for(iTrig2=0; iTrig2<(int)iNumTrigs2; iTrig2++)
 				{	
 					double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);	
 					if(dMinDis > dis)
@@ -201,7 +202,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					int iLeftCamIndex=-1;
 					dMinDis = 1.2*dSpanCam;
 					// From left to right (cam++)
-					for(iCam2 = 0; iCam2<iNumCams2; iCam2++)
+					for(iCam2 = 0; iCam2<(int)iNumCams2; iCam2++)
 					{	// pdCenY1/2[i] increases with i	
 						double dis = pdCenY1[iCam1] -pdCenY2[iCam2];
 						// >= 0.5 span to avoid Fov of the same camera
@@ -227,7 +228,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					}
 
 					// Create left overlap and add to list
-					if(iLeftCamIndex>0)
+					if(iLeftCamIndex >= 0)
 					{
 						FovFovOverlap overlap(
 							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
@@ -242,7 +243,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 						}
 					}
 					// Create right overlap and add to list
-					if(iRightCamIndex>0)
+					if(iRightCamIndex >= 0)
 					{
 						FovFovOverlap overlap(
 							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
@@ -265,7 +266,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 				// Find the nearest camera
 				int iCamIndex = -1;
 				double dMinDis = 0.6*dSpanCam; // If nearest camere is far away, ignore
-				for(iCam2=0; iCam2<iNumCams2; iCam2++)
+				for(iCam2=0; iCam2<(int)iNumCams2; iCam2++)
 				{
 					double dis = fabs(pdCenY1[iCam1] -pdCenY2[iCam2]);
 					
@@ -276,10 +277,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					}
 				}
 				
-				if(iCamIndex>0)
+				if(iCamIndex >= 0)
 				{
 					// Any nearby trigger of the nearest camera 
-					for(iTrig2=0; iTrig2<iNumTrigs2; iTrig2++)
+					for(iTrig2=0; iTrig2<(int)iNumTrigs2; iTrig2++)
 					{
 						
 						double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);
@@ -399,7 +400,10 @@ bool OverlapManager::CreateFiducialImages()
 			&_pFidImages[iCount], 
 			i->second, 
 			_dCadImageResolution, 
-			dScale);
+			dScale);		
+		
+		// for Debug
+		//_pFidImages[iCount].Save("C:\\Temp\\fid.bmp");
 
 		iCount++;
 	}
@@ -447,9 +451,11 @@ void OverlapManager::RenderFiducial(
 	t[1][0] = 0;
 	t[1][1] = resolution;
 	t[1][2] = pFid->GetCadY() - resolution * (nColsImg-1) / 2.;
+	
 	t[2][0] = 0;
 	t[2][1] = 0;
 	t[2][2] = 1;	
+	
 	ImgTransform trans(t);
 
 	// Create and clean buffer
@@ -508,7 +514,7 @@ void OverlapManager::CreateFidFovOverlaps()
 		{
 			for(iCam=0; iCam<iNumCameras; iCam++)
 			{
-				for(int iFid=0; iFid<_pPanel->NumberOfFiducials(); iFid++)
+				for(unsigned int iFid=0; iFid<_pPanel->NumberOfFiducials(); iFid++)
 				{
 					FidFovOverlap overlap(
 						&_pMosaics[i],
@@ -525,7 +531,7 @@ void OverlapManager::CreateFidFovOverlaps()
 					// overlap is too small
 					int iMinOverlapCols = _pFidImages[iFid].Columns()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionY/_dCadImageResolution);
 					int iMinOverlapRows = _pFidImages[iFid].Rows()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
-					if(overlap.Columns()>iMinOverlapCols && overlap.Rows()>iMinOverlapRows)
+					if((int)overlap.Columns()>iMinOverlapCols && (int)overlap.Rows()>iMinOverlapRows)
 						continue;
 
 					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);

@@ -123,7 +123,7 @@ bool Overlap::CalCoarseCorrPair()
 	_pImg1->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow1, &dFirstCol1);
 	_pImg2->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow2, &dFirstCol2);
 
-	if(dFirstRow1<0 || dFirstRow2<0 || dFirstCol1<0 || dFirstCol2<0)
+	if(dFirstRow1+0.5<0 || dFirstRow2+0.5<0 || dFirstCol1+0.5<0 || dFirstCol2+0.5<0)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 		return(false);
@@ -265,7 +265,7 @@ FovFovOverlap::FovFovOverlap(
 	_bHasMask = bHasMask;
 
 	Image* pImg1 = _pMosaic1->GetImage(ImgPos1.first, ImgPos1.second);
-	Image* pImg2 = _pMosaic1->GetImage(ImgPos2.first, ImgPos2.second);
+	Image* pImg2 = _pMosaic2->GetImage(ImgPos2.first, ImgPos2.second);
 
 	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
 }
