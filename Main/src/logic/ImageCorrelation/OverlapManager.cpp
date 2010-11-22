@@ -227,8 +227,9 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 						}
 					}
 
-					// Create left overlap and add to list
-					if(iLeftCamIndex >= 0)
+					// Create left overlap and add to list 
+					// If FOV are not from the same mosaic image  (avoid the same overlap add two times for a FOV)
+					if(iLeftCamIndex>=0 && iIndex1!= iIndex2)
 					{
 						FovFovOverlap overlap(
 							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
@@ -284,8 +285,19 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					{
 						
 						double dis = fabs(pdCenX1[iTrig1] -pdCenX2[iTrig2]);
-						if((iIndex1 != iIndex2 && dis<0.8*dSpanTrig) ||		// For different mosaic images
-							(iIndex1 = iIndex2 && dis<1.2*dSpanTrig && dis>0.8*dSpanTrig)) // for the same mosaic image
+						bool bValid = false;
+						if(iIndex1 != iIndex2) // For different mosaic images
+						{
+							if(dis<0.8*dSpanTrig)
+								bValid = true;
+						}
+						else // for the same mosaic image (avoid the same overlap add two times for a FOV)
+						{
+							if(pdCenX1[iTrig1]>pdCenX2[iTrig2] && dis<1.2*dSpanTrig && dis>0.8*dSpanTrig)
+								bValid = true;
+						}
+
+						if(bValid)
 						{
 							FovFovOverlap overlap(
 								&_pMosaics[iIndex1], &_pMosaics[iIndex2],
@@ -304,7 +316,6 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 			} // Trig to Trig
 		}
 	}
-
 
 	delete [] pdCenX1;
 	delete [] pdCenY1;

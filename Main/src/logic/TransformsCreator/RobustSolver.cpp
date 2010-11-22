@@ -67,15 +67,15 @@ RobustSolver::RobustSolver(
 	
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	
-	if(_bProjectiveTrans)
-	{
-		_iNumCalibConstrains = 10;
-		_iNumParamsPerFov = 12;
+	if(_bProjectiveTrans)	// For projective transform
+	{		
+		_iNumParamsPerFov = 12;			// parameters per Fov
+		_iNumCalibConstrains = 16;		// calibration related constraints
 	}
-	else
+	else		// For Affine transform
 	{
-		_iNumCalibConstrains = 6;
-		_iNumParamsPerFov = 6;
+		_iNumParamsPerFov = 6;			// parameters per Fov
+		_iNumCalibConstrains = 10;		// calibration related constraints
 	}
 
 	_iMatrixWidth = _iNumFovs * _iNumParamsPerFov;
