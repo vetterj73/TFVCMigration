@@ -155,6 +155,8 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	bool bCad	= false; //need modify
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
+	// Attention: Trgger center X is dcreaseing with trigger index
+	// Cam center Y is increasing with camera index
 	unsigned int iNumTrigs1 = _pMosaics[iIndex1].NumTriggers();
 	unsigned int iNumCams1 = _pMosaics[iIndex1].NumCameras();
 	double* pdCenX1 = new double[iNumTrigs1];
@@ -193,23 +195,35 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					}		
 				}
 				
-				if(iTrigIndex > 0)
+				if(iTrigIndex >= 0)
 				{
 					// The nearest left image in the nearest trigger with a distance bigger than 0.5 span
 					int iLeftCamIndex=-1;
+					dMinDis = 1.2*dSpanCam;
+					// From left to right (cam++)
 					for(iCam2 = 0; iCam2<iNumCams2; iCam2++)
 					{	// pdCenY1/2[i] increases with i	
 						double dis = pdCenY1[iCam1] -pdCenY2[iCam2];
-						if(dis > 0.5*dSpanCam && dis < 1.2*dSpanCam)
+						// >= 0.5 span to avoid Fov of the same camera
+						if(dis > 0.5*dSpanCam && dis <dMinDis)
+						{
 							iLeftCamIndex = iCam2;
+							dMinDis = dis;
+						}
 					}
 					// The nearest right image in the nearest trigger with a distance bigger than 0.5 span
 					int iRightCamIndex=-1;
-					for(iCam2 = iNumCams2-1; iCam2>=0; iCam2++)
+					dMinDis = 1.2*dSpanCam;
+					// From right to left (cam--)
+					for(iCam2 = iNumCams2-1; iCam2>=0; iCam2--)
 					{	// pdCenY1/2[i] increases with i
-						double dis = pdCenY2[iCam2]-pdCenY1[iCam1];
-						if(dis > 0.5*dSpanCam  && dis < 1.2*dSpanCam)
+						double dis = -(pdCenY1[iCam1]-pdCenY2[iCam2]);
+						if(dis > 0.5*dSpanCam  && dis <dMinDis)
+						{
 							iRightCamIndex = iCam2;
+							dMinDis = dis;
+							break;
+						}
 					}
 
 					// Create left overlap and add to list

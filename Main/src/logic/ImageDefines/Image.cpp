@@ -263,7 +263,7 @@ DRect Image::GetBoundBoxInWorld() const
 	rect.xMin = topLeft.first>topRight.first ? topLeft.first:topRight.first;
 	rect.xMax = bottomLeft.first<bottomRight.first ? bottomLeft.first:bottomRight.first;
 	rect.yMin = topLeft.second>bottomLeft.second ? topLeft.second:bottomLeft.second;
-	rect.yMin = topRight.second<bottomRight.second ? topRight.second:bottomRight.second;
+	rect.yMax = topRight.second<bottomRight.second ? topRight.second:bottomRight.second;
 
 	return rect;
 }
