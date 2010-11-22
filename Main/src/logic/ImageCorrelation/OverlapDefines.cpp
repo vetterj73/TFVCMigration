@@ -122,11 +122,17 @@ bool Overlap::CalCoarseCorrPair()
 	double dFirstRow1, dFirstCol1, dFirstRow2, dFirstCol2;
 	_pImg1->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow1, &dFirstCol1);
 	_pImg2->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow2, &dFirstCol2);
+
+	if(dFirstRow1<0 || dFirstRow2<0 || dFirstCol1<0 || dFirstCol2<0)
+	{
+		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
+		return(false);
+	}
 		
 		// Roi1 and Roi2
-	roi1.FirstRow = (unsigned int)dFirstRow1;
+	roi1.FirstRow = (unsigned int)(dFirstRow1+0.5);
 	roi1.LastRow = roi1.FirstRow+iRows-1;
-	roi1.FirstColumn = (unsigned int)dFirstCol1;
+	roi1.FirstColumn = (unsigned int)(dFirstCol1+0.5);
 	roi1.LastColumn = roi1.FirstColumn+iCols-1;
 
 	roi2.FirstRow = (unsigned int)dFirstRow2;
@@ -141,6 +147,7 @@ bool Overlap::CalCoarseCorrPair()
 		roi1.LastColumn > _pImg1->Columns()-1)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
+		return(false);
 	}
 
 	if(roi2.FirstRow < 0 ||

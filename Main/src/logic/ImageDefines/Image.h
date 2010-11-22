@@ -86,8 +86,8 @@ public:
 	pair<double,double> ImageToWorld(double row, double col ) const;
 	void				ImageToWorld(double row, double col, double* pdx, double* pdy) const;
 
-	pair<double,double> WorldToImage(double dx, double dy ) const;
-	void				WorldToImage(double dx, double dy, double* pdRow, double* pdCol) const;
+	pair<double,double> WorldToImage(double dx, double dy);
+	void				WorldToImage(double dx, double dy, double* pdRow, double* pdCol);
 
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);

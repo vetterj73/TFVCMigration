@@ -77,7 +77,7 @@ void inverse(
 	// Tranpose matrix
 	for(iy=0; iy<rows; iy++)
 		for(ix=0; ix<cols; ix++)
-			outMatrix[iy*cols+ix] = in[ix*rows+iy];
+			outMatrix[iy*cols+ix] = answer[ix*rows+iy];
 
 	delete [] in;
 	delete [] sigma;

@@ -195,7 +195,7 @@ void Image::ImageToWorld(double row, double col, double* pdx, double* pdy) const
 }
 
 // Map (x, y) in world space to (row, col) in image space
-pair<double, double> Image::WorldToImage(double dx, double dy ) const
+pair<double, double> Image::WorldToImage(double dx, double dy)
 {
 	pair<double, double> pare;
 	_thisToWorld.InverseMap(dx, dy, &pare.first, &pare.second);
@@ -204,7 +204,7 @@ pair<double, double> Image::WorldToImage(double dx, double dy ) const
 }
 
 // Map (x, y) in world space to (row, col) in image space
-void Image::WorldToImage(double dx, double dy, double* pdRow, double* pdCol) const	
+void Image::WorldToImage(double dx, double dy, double* pdRow, double* pdCol)	
 {
 	_thisToWorld.InverseMap(dx, dy, pdRow, pdCol); 
 }

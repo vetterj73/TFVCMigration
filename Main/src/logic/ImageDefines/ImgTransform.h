@@ -51,7 +51,7 @@ public:
 
 	//Map and inverse map
 	void Map(double dx, double dy, double* pdu, double* pdv) const;
-	void InverseMap(double du, double dv, double* pdx, double* pdy) const;
+	void InverseMap(double du, double dv, double* pdx, double* pdy);
 
 private: 
 	void CalInverse();

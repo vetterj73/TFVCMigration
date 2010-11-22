@@ -143,6 +143,7 @@ void ImgTransform::SetMatrix(const double dT[3][3])
 
 void ImgTransform::GetInvertMatrix(double dInvT[9])
 {
+	// Calculate inverse if it doesn't exist
 	if(!_bHasInverse)
 		CalInverse();
 
@@ -153,6 +154,7 @@ void ImgTransform::GetInvertMatrix(double dInvT[9])
 
 void ImgTransform::GetInvertMatrix(double dInvT[3][3])
 {
+	// Calculate inverse if it doesn't exist
 	if(!_bHasInverse)
 		CalInverse();
 
@@ -182,19 +184,28 @@ void ImgTransform::Map(double dx, double dy, double* pdu, double* pdv) const
 	*pdv = *pdv/dTemp;
 }
 
-void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy) const
+void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy)
 {
+	// Calculate inverse if it doesn't exist
+	if(!_bHasInverse)
+		CalInverse();
+
 	*pdx = du*_dInvT[0] + dv*_dInvT[1] + _dInvT[2];
 	*pdy = du*_dInvT[3] + dv*_dInvT[4] + _dInvT[5];
 	double dTemp = du*_dInvT[6] + dv*_dInvT[7] + _dInvT[8];
 
 	*pdx = *pdx/dTemp;
-	*pdy = *pdx/dTemp;
+	*pdy = *pdy/dTemp;
 }
 
 void ImgTransform::CalInverse()
 {
+	// Calculate inverse
 	inverse(_dT, _dInvT, 3, 3);
+
+	// Normalization
+	for(int i=0; i<9; i++)
+		_dInvT[i] /= _dInvT[8];
 
 	_bHasInverse = true;
 }
