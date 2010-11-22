@@ -141,18 +141,14 @@ bool Overlap::CalCoarseCorrPair()
 	roi2.LastColumn = roi2.FirstColumn+iCols-1;
 
 		// Validation check 
-	if(roi1.FirstRow < 0 ||
-		roi1.LastRow > _pImg1->Rows()-1 ||
-		roi1.FirstColumn < 0 ||
+	if(	roi1.LastRow > _pImg1->Rows()-1 ||
 		roi1.LastColumn > _pImg1->Columns()-1)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 		return(false);
 	}
 
-	if(roi2.FirstRow < 0 ||
-		roi2.LastRow > _pImg2->Rows()-1 ||
-		roi2.FirstColumn < 0 ||
+	if(	roi2.LastRow > _pImg2->Rows()-1 ||
 		roi2.LastColumn > _pImg2->Columns()-1)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");

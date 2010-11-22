@@ -250,7 +250,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
 							_validRect, bMask);
 
-						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
 							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
 							_fovFovOverlapLists[iIndex2][iTrigIndex][iRightCamIndex].push_back(overlap);
@@ -292,7 +292,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
 								_validRect, bMask);
 
-							if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
 								_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
 								_fovFovOverlapLists[iIndex2][iTrig2][iCamIndex].push_back(overlap);
@@ -360,7 +360,7 @@ void OverlapManager::CreateCadFovOverlaps()
 					_pCadImg,
 					_validRect);
 
-				if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+				if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 					_cadFovOverlapLists[i][iTrig][iCam].push_back(overlap);
 			}
 		}
