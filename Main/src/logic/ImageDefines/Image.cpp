@@ -163,7 +163,7 @@ void Image::ZeroBuffer()
 bool Image::Save(string sFileName)
 {
 	Bitmap* pBmp = Bitmap::NewBitmapFromBuffer(
-		_columns, _rows, _pixelRowStride, _buffer, _bytesPerPixel*8);
+		_rows, _columns, _pixelRowStride, _buffer, _bytesPerPixel*8);
 	
 	if(pBmp == NULL) return(false);
 		

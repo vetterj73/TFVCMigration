@@ -289,8 +289,6 @@ namespace CyberStitchTester
             {
                 Output("OnAcquisitionDone Called!");
                 numAcqsComplete++;
-                if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                    mDoneEvent.Set();
 
                 // for two illuminations debug onley
                 int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
@@ -302,12 +300,16 @@ namespace CyberStitchTester
                         _aligner.AddImage(i, iTrig, iCam);
                     }
                 }
+            
+                if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
+                mDoneEvent.Set();
 
             }
             catch (Exception except)
             {
                 Output("Error during OnAcquisitionDone: " + except.Message);
             }
+
          }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)

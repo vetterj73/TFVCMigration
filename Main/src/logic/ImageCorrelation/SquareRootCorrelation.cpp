@@ -35,11 +35,11 @@ bool SqRtCorrelation(CorrelationPair* pCorrPair, unsigned int decimation_factor,
 
 	/* Pointer to first image  */
 	Byte* first_image_buffer =
-		pImgA->GetBuffer( pCorrPair->GetFirstRoi().FirstRow, pCorrPair->GetFirstRoi().FirstColumn);
+		pImgA->GetBuffer(pCorrPair->GetFirstRoi().FirstColumn, pCorrPair->GetFirstRoi().FirstRow);
 
 	/* Pointer to second image */
 	Byte* second_image_buffer =
-		pImgB->GetBuffer( pCorrPair->GetSecondRoi().FirstRow, pCorrPair->GetSecondRoi().FirstColumn);
+		pImgB->GetBuffer(pCorrPair->GetSecondRoi().FirstColumn, pCorrPair->GetSecondRoi().FirstRow);
 
 	// it is assumed that the row stride is the same for both images
 	int RowStrideA(pImgA->PixelRowStride());
