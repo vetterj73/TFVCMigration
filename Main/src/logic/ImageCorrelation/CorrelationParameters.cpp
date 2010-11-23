@@ -39,7 +39,8 @@ CorrelationParameters::CorrelationParameters(void)
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 
 	// debug flage
-	bDebug = false;
+	bSaveOverlap = false;
+	bSaveStitchedImage = true;
 }
 
 CorrelationParameters::~CorrelationParameters(void)

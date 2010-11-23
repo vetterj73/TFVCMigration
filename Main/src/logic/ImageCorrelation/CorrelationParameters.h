@@ -46,6 +46,7 @@ public:
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 
 	// debug flage
-	bool bDebug;
+	bool bSaveOverlap;
+	bool bSaveStitchedImage;
 };
 

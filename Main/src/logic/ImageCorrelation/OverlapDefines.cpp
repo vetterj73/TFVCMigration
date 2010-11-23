@@ -162,8 +162,6 @@ bool Overlap::CalCoarseCorrPair()
 	{
 		if(roi1.Columns()>500 && roi1.Rows()>500)
 			iDecim = 4;
-		if(roi1.Columns()>1000 && roi1.Rows()>1000)
-			iDecim = 8;
 	}
 
 	CorrelationPair coarsePair(
@@ -331,9 +329,9 @@ bool FovFovOverlap::DumpResultImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d_Score%dAmbig%d.bmp", iCount, 
+		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp", 
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
-		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount,
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
 		(int)(i->GetCorrelationResult().AmbigScore*100));
 

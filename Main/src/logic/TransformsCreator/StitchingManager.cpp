@@ -245,7 +245,7 @@ bool StitchingManager::CreateMasks()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Mask images are created");
 
-	if(CorrParams.bDebug)
+	if(CorrParams.bSaveStitchedImage)
 	{
 		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
 		_pMaskSolver->OutputVectorXCSV("C:\\Temp\\MaskVectorX.csv");
@@ -287,7 +287,7 @@ bool StitchingManager::CreateTransforms()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Transforms are created");
 
-	if(CorrParams.bDebug)
+	if(CorrParams.bSaveStitchedImage)
 	{
 		SaveStitchingImages("C:\\Temp\\Aligned", _iMaskCreationStage);
 		_pSolver->OutputVectorXCSV("C:\\Temp\\AlignedVectorX.csv");
