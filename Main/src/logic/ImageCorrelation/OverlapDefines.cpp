@@ -49,7 +49,7 @@ void Overlap::config(
 {
 	_pImg1 = pImg1; 
 	_pImg2 = pImg2;
-	_pMaskImg = _pMaskImg;
+	_pMaskImg = pMaskImg;
 
 	_validRect = validRect;
 

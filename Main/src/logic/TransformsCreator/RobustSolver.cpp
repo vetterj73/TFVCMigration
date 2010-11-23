@@ -81,7 +81,7 @@ RobustSolver::RobustSolver(
 	_iMatrixWidth = _iNumFovs * _iNumParamsPerFov;
 	_iMatrixHeight = _iNumFovs * _iNumCalibConstrains + 2*iMaxNumCorrelation;
 
-	unsigned int _iMatrixSize = _iMatrixWidth * _iMatrixHeight;
+	_iMatrixSize = _iMatrixWidth * _iMatrixHeight;
 
 	_dMatrixA = new double[_iMatrixSize];
 	_dMatrixACopy = new double[_iMatrixSize];
