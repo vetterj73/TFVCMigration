@@ -535,16 +535,17 @@ void OverlapManager::CreateFidFovOverlaps()
 						_pFidImages[iFid].CenterY(),
 						_validRect);
 
-					// overlap is in valid
+					// Overlap validation check
 					if(!overlap.IsValid())
 						continue;
 
-					// overlap is too small
-					int iMinOverlapCols = _pFidImages[iFid].Columns()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionY/_dCadImageResolution);
-					int iMinOverlapRows = _pFidImages[iFid].Rows()+_iMinOverlapSize-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
-					if((int)overlap.Columns()>iMinOverlapCols && (int)overlap.Rows()>iMinOverlapRows)
+					// Overlap size check
+					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrParams.dFiducialSearchExpansionY/_dCadImageResolution);
+					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
+					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
 						continue;
-
+						
+					// Add overlap
 					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);
 				}
 			}
@@ -679,7 +680,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 	iFovFovCount /=2;
 
 	// Double check 3*3
-	unsigned int iSum = 3*3*iFovFovCount+iCadFovCount+iFidFovCount;
+	unsigned int iSum = CorrParams.iFineMaxBlocksInRow * CorrParams.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
 	return(iSum);
 }
 
