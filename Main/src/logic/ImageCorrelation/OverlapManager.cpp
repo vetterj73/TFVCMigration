@@ -411,7 +411,11 @@ bool OverlapManager::CreateFiducialImages()
 			dScale);		
 		
 		// for Debug
-		//_pFidImages[iCount].Save("C:\\Temp\\fid.bmp");
+		//string s;
+		//char cTemp[100];
+		//sprintf_s(cTemp, 100, "C:\\Temp\\Fid_%d.bmp", iCount);
+		//s.append(cTemp);
+		//_pFidImages[iCount].Save(s);
 
 		iCount++;
 	}
@@ -541,7 +545,7 @@ void OverlapManager::CreateFidFovOverlaps()
 					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
 					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
 						continue;
-						
+
 					// Add overlap
 					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);
 				}

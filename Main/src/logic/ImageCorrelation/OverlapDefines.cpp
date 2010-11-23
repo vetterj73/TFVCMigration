@@ -168,7 +168,7 @@ bool Overlap::CalCoarseCorrPair()
 
 	CorrelationPair coarsePair(
 		_pImg1, _pImg2, 
-		roi1, pair<unsigned int, unsigned int>(roi2.FirstRow, roi2.FirstColumn),
+		roi1, pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
 		iDecim, iColSearchExpansion, iRowSearchExpansion,
 		_type, _pMaskImg);
 
@@ -382,7 +382,7 @@ bool CadFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_coarse_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_I%dT%dC%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -451,7 +451,7 @@ bool FidFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_coarse_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_I%dT%dC%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);

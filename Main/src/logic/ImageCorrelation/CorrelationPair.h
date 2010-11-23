@@ -55,7 +55,7 @@ public:
 		Image* pImg1, 
 		Image* pImg2, 
 		UIRect roi1, 
-		pair<unsigned int, unsigned int> topLeftCorner2,
+		pair<unsigned int, unsigned int> topLeftCorner2,  // (column row)
 		unsigned int iDecim,
 		unsigned int iColSearchExpansion,
 		unsigned int iRowSearchExpansion,

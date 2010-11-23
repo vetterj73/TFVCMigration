@@ -66,7 +66,7 @@ CorrelationPair::CorrelationPair(
 		Image* pImg1, 
 		Image* pImg2, 
 		UIRect roi1, 
-		pair<unsigned int, unsigned int> topLeftCorner2,
+		pair<unsigned int, unsigned int> topLeftCorner2, // (column row)
 		unsigned int iDecim,
 		unsigned int iColSearchExpansion,
 		unsigned int iRowSearchExpansion,
@@ -328,7 +328,7 @@ bool CorrelationPair::ChopCorrPair(
 				_pImg1,
 				_pImg2,
 				roi1,
-				pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow),
+				pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
 				iBlockDecim,
 				iBlockColSearchExpansion,
 				iBlockRowSearchExpansion,
