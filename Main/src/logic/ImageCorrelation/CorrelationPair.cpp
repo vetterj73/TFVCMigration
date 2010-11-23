@@ -255,20 +255,20 @@ bool CorrelationPair::ChopCorrPair(
 	pOutPairList->clear();
 	
 	// Re_adjust of bloc kwidth and height for protection
-	if(iBlockWidth > _roi1.Columns()-iNumBlockX)
-		iBlockWidth = _roi1.Columns()-iNumBlockX;
+	if(iBlockWidth > _roi1.Columns()-(iNumBlockX-1))
+		iBlockWidth = _roi1.Columns()-(iNumBlockX-1);
 
-	if(iBlockHeight > _roi1.Rows()-iNumBlockY)
-		iBlockHeight = _roi1.Rows()-iNumBlockY;
+	if(iBlockHeight > _roi1.Rows()-(iNumBlockY-1))
+		iBlockHeight = _roi1.Rows()-(iNumBlockY-1);
 
 	// Calculate pitches
 	int iPitchX = 0;
 	if(iNumBlockX!=1)
-		iPitchX = (_roi1.Columns()-iBlockWidth)/iNumBlockX;
+		iPitchX = (_roi1.Columns()-iBlockWidth)/(iNumBlockX-1);
 
 	int iPitchY = 0;
 	if(iNumBlockY!=1)
-		iPitchY = (_roi1.Rows()-iBlockHeight)/iNumBlockY;
+		iPitchY = (_roi1.Rows()-iBlockHeight)/(iNumBlockY-1);
 
 	// Calculate blocks
 	UIRect roi1, roi2;
@@ -284,10 +284,10 @@ bool CorrelationPair::ChopCorrPair(
 			iOffsetY = iy * iPitchY;
 
 		roi1.FirstRow = _roi1.FirstRow + iOffsetY;
-		roi1.LastRow = _roi1.FirstRow + iBlockHeight - 1;
+		roi1.LastRow = roi1.FirstRow + iBlockHeight - 1;
 
 		roi2.FirstRow = _roi2.FirstRow + iOffsetY;
-		roi2.LastRow = _roi2.FirstRow + iBlockHeight - 1;
+		roi2.LastRow = roi2.FirstRow + iBlockHeight - 1;
 
 		if(roi1.FirstRow < 0 || 
 			roi1.LastRow > _pImg1->Rows()-1 ||
@@ -310,10 +310,10 @@ bool CorrelationPair::ChopCorrPair(
 				iOffsetX = ix * iPitchX;
 
 			roi1.FirstColumn = _roi1.FirstColumn + iOffsetX;
-			roi1.LastColumn = _roi1.FirstColumn + iBlockWidth - 1;
+			roi1.LastColumn = roi1.FirstColumn + iBlockWidth - 1;
 
 			roi2.FirstColumn = _roi2.FirstColumn + iOffsetX;
-			roi2.LastColumn = _roi2.FirstColumn + iBlockWidth - 1;
+			roi2.LastColumn = roi2.FirstColumn + iBlockWidth - 1;
 
 			if(roi1.FirstColumn < 0 || 
 				roi1.LastColumn > _pImg1->Columns()-1 ||
