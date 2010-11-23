@@ -1,6 +1,7 @@
 #pragma once
 #include "OverlapManager.h"
 #include "RobustSolver.h"
+#include "CorrelationParameters.h"
 #include <map>;
 using std::map;
 
@@ -49,8 +50,5 @@ private:
 	RobustSolver* _pMaskSolver;
 	map<FovIndex, unsigned int> _maskMap;
 	bool _bMasksCreated;
-
-	// For debug;
-	bool _bDebug;
 };
 

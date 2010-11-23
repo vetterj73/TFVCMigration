@@ -67,9 +67,6 @@ OverlapManager::OverlapManager(
 
 	// Decide the stage to calculate mask
 	CalMaskCreationStage();
-
-	// For Debug
-	_bDebug = true;
 }
 
 OverlapManager::~OverlapManager(void)
@@ -579,7 +576,7 @@ bool OverlapManager::DoAlignmentForFov(
 		if(i->IsReadyToProcess())
 		{
 			i->DoIt();
-			if(_bDebug)
+			if(CorrParams.bDebug)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
@@ -594,7 +591,7 @@ bool OverlapManager::DoAlignmentForFov(
 		if(i->IsReadyToProcess())
 		{
 			i->DoIt();
-			if(_bDebug)
+			if(CorrParams.bDebug)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
@@ -609,7 +606,7 @@ bool OverlapManager::DoAlignmentForFov(
 		if(i->IsReadyToProcess())
 		{
 			i->DoIt();
-			if(_bDebug)
+			if(CorrParams.bDebug)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();

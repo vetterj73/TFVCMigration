@@ -123,7 +123,7 @@ bool PanelAligner::AddImage(
 	if(iLayerIndex==0 && iTrigIndex==0 && iCamIndex==0)
 	{
 		_pStitchingManager->Reset();
-		LOG.FireLogEntry(LogTypeSystem, "New Panel Begins!");
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():New Panel Begins!");
 	}
 
 	// Get image buffer
@@ -132,6 +132,8 @@ bool PanelAligner::AddImage(
 
 	// Add buffer to stitching manager
 	_pStitchingManager->AddOneImageBuffer(pcBuf, iLayerIndex, iTrigIndex, iCamIndex);
+
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
 
 	return(true);
 }

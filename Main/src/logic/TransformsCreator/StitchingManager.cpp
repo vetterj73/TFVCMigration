@@ -36,9 +36,6 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPane
 	}
 
 	_bMasksCreated = false;
-
-	// For debug
-	_bDebug = true;
 }
 
 StitchingManager::~StitchingManager(void)
@@ -205,6 +202,7 @@ bool StitchingManager::IsReadyToCreateTransforms() const
 // Creat Masks
 bool StitchingManager::CreateMasks()
 {
+	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():begin to create mask");
 	// Create matrix and vector for solver
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
@@ -247,7 +245,7 @@ bool StitchingManager::CreateMasks()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Mask images are created");
 
-	if(_bDebug)
+	if(CorrParams.bDebug)
 	{
 		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
 		_pMaskSolver->OutputVectorXCSV("C:\\Temp\\MaskVectorX.csv");
@@ -259,6 +257,7 @@ bool StitchingManager::CreateMasks()
 // Create the transform for each Fov
 bool StitchingManager::CreateTransforms()
 {
+	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Begin to create transforms");
 	int iNumIllums = _pOverlapManager->NumIlluminations();
 
 	// Create matrix and vector for solver
@@ -288,7 +287,7 @@ bool StitchingManager::CreateTransforms()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Transforms are created");
 
-	if(_bDebug)
+	if(CorrParams.bDebug)
 	{
 		SaveStitchingImages("C:\\Temp\\Aligned", _iMaskCreationStage);
 		_pSolver->OutputVectorXCSV("C:\\Temp\\AlignedVectorX.csv");

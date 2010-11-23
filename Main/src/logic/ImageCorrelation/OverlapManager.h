@@ -100,8 +100,5 @@ private:
 	unsigned int _iMinOverlapSize;
 
 	int _iMaskCreationStage;
-
-	// For Debug
-	bool _bDebug;
 };
 

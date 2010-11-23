@@ -154,7 +154,7 @@ namespace CyberStitchTester
         {
             Console.WriteLine(logtype + " " + message);
             DateTime dataTime = DateTime.Now;
-            Output("logtype" + " " + message);
+            Output(logtype + " " + message);
         }
 
         /// <summary>
@@ -292,12 +292,13 @@ namespace CyberStitchTester
 
                 // for two illuminations debug onley
                 int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-                for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+                for (int j= 0; j< iNumTrigs; j++)
                 {
-                    int i = iTrig % 2;
-                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(i).GetNumberOfCameras(); iCam++)
+                    int iIllum = j% 2;
+                    int iTrig = j / 2;
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
                     {
-                        _aligner.AddImage(i, iTrig, iCam);
+                        _aligner.AddImage(iIllum, iTrig, iCam);
                     }
                 }
             
