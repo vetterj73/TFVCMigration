@@ -212,14 +212,14 @@ bool Overlap::DoIt()
 	unsigned int iBlockWidth = CorrParams.iFineBlockWidth;
 	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
 	if(iNumBlockX > CorrParams.iFineMaxBlocksInCol) iNumBlockX = CorrParams.iFineMaxBlocksInCol;
-	if(iNumBlockX <1) iNumBlockX = 1;
-	if(iBlockWidth <  tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
+	if(iNumBlockX < 1) iNumBlockX = 1;
+	if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
 
 	unsigned int iBlockHeight = CorrParams.iFineBlockHeight;
 	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
 	if(iNumBlockY > CorrParams.iFineMaxBlocksInRow) iNumBlockY = CorrParams.iFineMaxBlocksInRow;
-	if(iNumBlockY <1) iNumBlockY = 1;
-	if(iBlockHeight < tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
+	if(iNumBlockY < 1) iNumBlockY = 1;
+	if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
 
 	unsigned int iBlockDecim = CorrParams.iFineDecim;
 	unsigned int iBlockColSearchExpansion = CorrParams.iFineColSearchExpansion;
@@ -288,7 +288,7 @@ bool FovFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 		
@@ -298,7 +298,7 @@ bool FovFovOverlap::DumpOvelapImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
+		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 
@@ -318,7 +318,7 @@ bool FovFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 		
@@ -328,7 +328,7 @@ bool FovFovOverlap::DumpResultImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
+		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 
@@ -376,7 +376,7 @@ bool CadFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_coarse_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_coarse_I%dT%dC%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -392,7 +392,7 @@ bool CadFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_CadFov_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_CadFov_I%dT%dC%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -443,7 +443,7 @@ bool FidFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_coarse_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_coarse_I%d_T%d_C%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -459,7 +459,7 @@ bool FidFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	printf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FidFov_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FidFov_I%dT%dC%d.bmp", 
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);

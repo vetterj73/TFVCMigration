@@ -434,7 +434,7 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 	{
 		CreateStitchingImage(i, &panelImage);
 		char cTemp[100];
-		printf_s(cTemp, 100, "%s_%d.bmp", sName, i); 
+		sprintf_s(cTemp, 100, "%s_%d.bmp", sName, i); 
 		string s;
 		s.assign(cTemp);
 		panelImage.Save(s);
