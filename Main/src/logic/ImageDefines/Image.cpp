@@ -5,12 +5,12 @@
 #pragma region constructor and configuration
 Image::Image(unsigned int iBytePerPixel) 
 {
-	_rows=0;
-	_columns=0;
-	_pixelRowStride=0;
-	_bytesPerPixel=iBytePerPixel;
+	_rows			= 0;
+	_columns		= 0;
+	_pixelRowStride = 0;
+	_bytesPerPixel	= iBytePerPixel;
 	_IOwnMyOwnBuffer= false;	
-	_buffer=0;
+	_buffer			=0;
 }
 
 Image::Image(
@@ -23,8 +23,12 @@ Image::Image(
 		bool bCreateOwnBuffer,
 		unsigned char *buffer)
 {
-	_bytesPerPixel=iBytePerPixel;
+	// To avoid crash ins some scenarios
+	_IOwnMyOwnBuffer = false;
+	_buffer = 0;
 
+	_bytesPerPixel=iBytePerPixel;
+	
 	Configure(	
 		iColumns, 
 		iRows, 

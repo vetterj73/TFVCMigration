@@ -249,15 +249,19 @@ bool StitchingManager::CreateMasks()
 	if(CorrParams.bSaveStitchedImage)
 	{
 		char cTemp[100];
-		sprintf_s(cTemp, 100, "%sAfterMask.bmp", CorrParams.sStitchPath.c_str()); 
+		sprintf_s(cTemp, 100, "%sAfterMask", CorrParams.sStitchPath.c_str()); 
 		string s;
 		s.assign(cTemp);
 		SaveStitchingImages(s, _iMaskCreationStage);
 
+		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Begin to create stitched images for mask");
+		
 		sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrParams.sStitchPath.c_str()); 
 		s.clear();
 		s.assign(cTemp);
 		_pSolver->OutputVectorXCSV(s);
+
+		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Stitched images for mask are created");
 	}
 
 	return(true);
@@ -304,11 +308,14 @@ bool StitchingManager::CreateTransforms()
 		sprintf_s(cTemp, 100, "%sAlignedVectorX.csv", CorrParams.sStitchPath.c_str()); 
 		s.assign(cTemp);
 		_pSolver->OutputVectorXCSV(s);		
-		/*
-		sprintf_s(cTemp, 100, "%sAligned.bmp", CorrParams.sStitchPath.c_str()); 
+		
+		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Begin to create stitched images");
+		sprintf_s(cTemp, 100, "%sAligned", CorrParams.sStitchPath.c_str()); 
 		s.clear();
 		s.assign(cTemp);
-		SaveStitchingImages(s, iNumIllums);*/
+		SaveStitchingImages(s, iNumIllums);
+
+		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Stitched images are created");
 	}
 
 	return(true);
@@ -380,26 +387,30 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 	pMosaic->CameraCentersInY(pdCenY);
 
 	// Panel image Row bounds for Roi (decreasing order)
-	unsigned int* piRectRows = new unsigned int[iNumTrigs+1];
+	int* piRectRows = new int[iNumTrigs+1];
 	piRectRows[0] = pPanelImage->Rows();
 	for(unsigned int i=1; i<iNumTrigs; i++)
 	{
 		double dX = (pdCenX[i-1] +pdCenX[i])/2;
 		double dTempRow, dTempCol;
 		pPanelImage->WorldToImage(dX, 0, &dTempRow, &dTempCol);
-		piRectRows[i] = (unsigned int)dTempRow;
+		piRectRows[i] = (int)dTempRow;
+		if(piRectRows[i]>=(int)pPanelImage->Rows()) piRectRows[i] = pPanelImage->Rows();
+		if(piRectRows[i]<0) piRectRows[i] = 0;
 	}
 	piRectRows[iNumTrigs] = 0; 
 
 	// Panel image Column bounds for Roi (increasing order)
-	unsigned int* piRectCols = new unsigned int[iNumCams+1];
+	int* piRectCols = new int[iNumCams+1];
 	piRectCols[0] = 0;
 	for(unsigned int i=1; i<iNumCams; i++)
 	{
 		double dY = (pdCenY[i-1] +pdCenY[i])/2;
 		double dTempRow, dTempCol;
 		pPanelImage->WorldToImage(0, dY, &dTempRow, &dTempCol);
-		piRectCols[i] = (unsigned int)dTempCol;
+		piRectCols[i] = (int)dTempCol;
+		if(piRectCols[i]<0) piRectCols[i] = 0;
+		if(piRectCols[i]>(int)pPanelImage->Columns()) piRectCols[i] = pPanelImage->Columns();;
 	}
 	piRectCols[iNumCams] = pPanelImage->Columns();
 
@@ -409,7 +420,12 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 		for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 		{
 			Image* pFov = pMosaic->GetImage(iCam, iTrig);
-			UIRect rect(piRectCols[iCam], piRectRows[iTrig+1], piRectCols[iCam+1]-1,  piRectRows[iTrig]-1);
+			
+			UIRect rect((unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
+				(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1));
+			// Validation check
+			if(!rect.IsValid()) continue;
+
 			pPanelImage->MorphFrom(pFov, rect);
 		}
 	}
@@ -449,9 +465,10 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 	// Create stitched images
 	for(unsigned int i=0; i<iNum; i++)
 	{
+		panelImage.ZeroBuffer();
 		CreateStitchingImage(i, &panelImage);
 		char cTemp[100];
-		sprintf_s(cTemp, 100, "%s_%d.bmp", sName, i); 
+		sprintf_s(cTemp, 100, "%s_%d.bmp", sName.c_str(), i); 
 		string s;
 		s.assign(cTemp);
 		panelImage.Save(s);
