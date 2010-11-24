@@ -300,15 +300,15 @@ bool StitchingManager::CreateTransforms()
 	if(CorrParams.bSaveStitchedImage)
 	{
 		char cTemp[100];
-		sprintf_s(cTemp, 100, "%sAligned.bmp", CorrParams.sStitchPath.c_str()); 
 		string s;
-		s.assign(cTemp);
-		SaveStitchingImages(s, iNumIllums);
-
 		sprintf_s(cTemp, 100, "%sAlignedVectorX.csv", CorrParams.sStitchPath.c_str()); 
+		s.assign(cTemp);
+		_pSolver->OutputVectorXCSV(s);		
+		/*
+		sprintf_s(cTemp, 100, "%sAligned.bmp", CorrParams.sStitchPath.c_str()); 
 		s.clear();
 		s.assign(cTemp);
-		_pSolver->OutputVectorXCSV(s);
+		SaveStitchingImages(s, iNumIllums);*/
 	}
 
 	return(true);

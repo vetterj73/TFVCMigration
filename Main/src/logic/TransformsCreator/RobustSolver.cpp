@@ -88,6 +88,8 @@ RobustSolver::RobustSolver(
 	_dVectorBCopy = new double[_iMatrixHeight];
 
 	_dVectorX = new double[_iMatrixWidth];
+
+	ZeroTheSystem();
 }
 
 RobustSolver::~RobustSolver(void)
@@ -97,8 +99,6 @@ RobustSolver::~RobustSolver(void)
 	delete [] _dVectorB;
 	delete [] _dVectorBCopy;
 	delete [] _dVectorX;
-
-	ZeroTheSystem();
 }
 
 //initialize all coefficients in the system of equations to zero 
@@ -150,7 +150,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	if(index.CameraIndex < pMosaic->NumCameras())
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextCamFov = pMosaic->GetImage(++iCamIndex, iTrigIndex)->GetNominalTransform();
+		transNextCamFov = pMosaic->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
 		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
@@ -164,7 +164,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	if(index.TriggerIndex < pMosaic->NumTriggers())
 	{
 		iNextTrigFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextTrigFov = pMosaic->GetImage(iCamIndex, ++iTrigIndex)->GetNominalTransform();
+		transNextTrigFov = pMosaic->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
 		transNextTrigFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
 	}*/
 
@@ -321,7 +321,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 // Add results for one Fov and Fov overlap
 bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {
-	// Validation check
+	// Validation check for overlap
 	if(!pOverlap->IsProcessed()) return(false);
 
 	// First Fov's information
@@ -343,14 +343,13 @@ bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
-		// validation checka
+		// validation check for correlation pair
 		CorrelationResult result;
 		bool bFlag = i->GetCorrelationResult(&result);
 		if(!bFlag) 
 			continue;
 
-		CorrelationPair pair(*i);
-		double w = Weights.CalWeight(&pair);
+		double w = Weights.CalWeight(&(*i));
 		if(w <= 0) 
 			continue;
 
@@ -414,7 +413,7 @@ bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 // Add results for one Cad and Fov overlap
 bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 {
-	// Validation check
+	// Validation check for overlap
 	if(!pOverlap->IsProcessed()) return(false);
 
 	// Fov's information
@@ -428,7 +427,7 @@ bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 
 	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
 
-	// validation check
+	// validation check for correlation pair
 	CorrelationResult result;
 	bool bFlag = pPair->GetCorrelationResult(&result);
 	if(!bFlag) 
@@ -513,14 +512,14 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	if(w <= 0) 
 		return(false);
 
-	// Get Centers of ROIs
+	// Get Centers of ROIs (fiducial image is always the second one)
 	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
 	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
 
 	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
 	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
-	double dFidCenX, dFidCenY;
-	pOverlap->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidCenX, &dFidCenY);
+	double dFidRoiCenX, dFidRoiCenY; // ROI center of fiducial image (not fiducail center or image center) in world space
+	pOverlap->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidRoiCenX, &dFidRoiCenY);
 
 	// Get offset
 	double offsetRows = result.RowOffset;
@@ -538,7 +537,7 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		pdRow[iFOVPosA + 7] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
 		pdRow[iFOVPosA + 8] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
 	}
-	_dVectorB[_iCurrentRow] = w*dFidCenX;
+	_dVectorB[_iCurrentRow] = w*dFidRoiCenX;
 	pdRow += _iMatrixWidth;
 	_iCurrentRow++;
 
@@ -554,7 +553,7 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		pdRow[iFOVPosA +10] = (rowImgA-offsetRows) * (colImgA-offsetCols) * w;
 		pdRow[iFOVPosA +11] = (colImgA-offsetCols) * (colImgA-offsetCols) * w;
 	}
-	_dVectorB[_iCurrentRow] = w*dFidCenY;
+	_dVectorB[_iCurrentRow] = w*dFidRoiCenY;
 	pdRow += _iMatrixWidth;
 	_iCurrentRow++;
 	
@@ -637,7 +636,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		piCounts[j] = 0;
 
 	// Reorder and transpose
-	double* workspace = new double[_iMatrixWidth];
+	double* workspace = new double[_iMatrixSize];
 	double* dCopyB = new double[_iMatrixHeight];
 	unsigned int iDestRow = 0;
 	list<LeftIndex>::const_iterator i;
