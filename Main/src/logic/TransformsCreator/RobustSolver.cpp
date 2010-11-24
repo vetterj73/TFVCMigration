@@ -53,8 +53,6 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 }
 #pragma endregion
 
-#define Weights EquationWeights::Instance()
-
 #pragma region constructor
 
 RobustSolver::RobustSolver(		
@@ -153,7 +151,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
 		transNextCamFov = pMosaic->GetImage(++iCamIndex, iTrigIndex)->GetNominalTransform();
-		transFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
+		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
 	/*/ Next trigger Fov transform parameter begin position in column
@@ -167,7 +165,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	{
 		iNextTrigFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
 		transNextTrigFov = pMosaic->GetImage(iCamIndex, ++iTrigIndex)->GetNominalTransform();
-		transFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
+		transNextTrigFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
 	}*/
 
 	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
@@ -186,13 +184,13 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 
 	//* 3 rotate images 90 degrees 
 	pdRowBegin[iFOVPos+1] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
-	_dVectorB[_iCurrentRow] = -Weights.wRcal * transFov.GetItem(1);
+	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(1);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
 	//* 4 rotate images 90 degrees 
 	pdRowBegin[iFOVPos+3] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
-	_dVectorB[_iCurrentRow] = -Weights.wRcal * transFov.GetItem(3);
+	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(3);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
@@ -223,7 +221,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	_iCurrentRow++;
 
 	//* 8 distance between cameras in Y
-	if(iNextCamFovPos > 0)
+	if(iNextCamFovPos > 0) // Next camera exists
 	{
 		pdRowBegin[iFOVPos+3]		= Weights.wYdelta * dPixelCenRow;
 		pdRowBegin[iFOVPos+4]		= Weights.wYdelta * dPixelCenCol;
@@ -247,7 +245,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	}
 
 	//* 9 distance between cameras in X
-	if(iNextCamFovPos > 0)
+	if(iNextCamFovPos > 0) // Next camera exists
 	{
 		pdRowBegin[iFOVPos+0]		= Weights.wXdelta * dPixelCenRow;
 		pdRowBegin[iFOVPos+1]		= Weights.wXdelta * dPixelCenCol;
@@ -301,15 +299,15 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 		pdRowBegin += _iMatrixWidth;
 		_iCurrentRow++;
 							
-		if(iNextCamFovPos > 0 )
+		if(iNextCamFovPos > 0 ) // Next camera exists
 		{	
-			//* 15 M10 = Next FOV M10
+			//* 15 M10 = Next camera M10
 			pdRowBegin[iFOVPos+10] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+10] = -Weights.wPMNext;
 			pdRowBegin += _iMatrixWidth;
 			_iCurrentRow++;
 						
-			//* 16 M11 = Next FOV M11
+			//* 16 M11 = Next camera M11
 			pdRowBegin[iFOVPos+11] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+11] = -Weights.wPMNext;
 			pdRowBegin += _iMatrixWidth;
@@ -491,7 +489,7 @@ bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 // Add results for one Fiducial and Fov overlap
 bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 {
-	// Validation check
+	// Validation check for overlap
 	if(!pOverlap->IsProcessed()) return(false);
 
 	// Fov's information
@@ -505,7 +503,7 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 
 	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
 
-	// validation check
+	// Validation check for correlation pair
 	CorrelationResult result;
 	bool bFlag = pPair->GetCorrelationResult(&result);
 	if(!bFlag) 

@@ -2,6 +2,8 @@
 
 #include "CorrelationPair.h"
 
+#define Weights EquationWeights::Instance()
+
 class EquationWeights
 {
 public:

@@ -4,7 +4,7 @@
 EquationWeights* EquationWeights::ptr = 0;
 EquationWeights& EquationWeights::Instance()
 {
-	if( ptr != NULL )
+	if( ptr == NULL )
 		ptr = new EquationWeights();
 
 	return *ptr;
@@ -51,11 +51,10 @@ EquationWeights::~EquationWeights(void)
 // pPair
 double EquationWeights::CalWeight(CorrelationPair* pPair)
 {
-	if(pPair->IsProcessed())
+	if(!pPair->IsProcessed())
 		return(0);
 
-	CorrelationResult result;
-	pPair->GetCorrelationResult(&result);
+	CorrelationResult result = pPair->GetCorrelationResult();
 	double dCorrScore = result.CorrCoeff;
 	double dAmbig = result.AmbigScore;
 
