@@ -462,6 +462,11 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 	unsigned iBytePerpixel = 1;
 	Image panelImage(iNumCols, iNumRows, iNumCols, iBytePerpixel, trans, trans, bCreateOwnBuf);
 
+	// For two illuminaitons debug only
+	unsigned char* tempBuf = NULL;
+	if(iNum==2)
+		tempBuf = new unsigned char[iNumCols*iNumRows];
+
 	// Create stitched images
 	for(unsigned int i=0; i<iNum; i++)
 	{
@@ -472,7 +477,33 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 		string s;
 		s.assign(cTemp);
 		panelImage.Save(s);
+
+		// For two illuminations debug only
+		if(iNum==2 && i==0)
+			::memcpy(tempBuf, panelImage.GetBuffer(), iNumCols*iNumRows); 
+
+		if(iNum==2 && i==1)
+		{
+			Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+				iNumRows, 
+				iNumCols,
+				tempBuf, 
+				panelImage.GetBuffer(),
+				iNumCols,
+				iNumCols);
+
+			sprintf_s(cTemp, 100, "%s.bmp", sName.c_str()); 
+			string s;
+			s.assign(cTemp);
+
+			rbg->write(s);
+			delete rbg;
+		}
 	}
+
+	// For two illuminaitons debug only
+	if(tempBuf != NULL)
+		delete [] tempBuf;
 }
 
 #pragma endregion
