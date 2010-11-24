@@ -245,10 +245,19 @@ bool StitchingManager::CreateMasks()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateMasks():Mask images are created");
 
+	// For debug
 	if(CorrParams.bSaveStitchedImage)
 	{
-		SaveStitchingImages("C:\\Temp\\AfterMask", _iMaskCreationStage);
-		_pMaskSolver->OutputVectorXCSV("C:\\Temp\\MaskVectorX.csv");
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "%sAfterMask.bmp", CorrParams.sStitchPath.c_str()); 
+		string s;
+		s.assign(cTemp);
+		SaveStitchingImages(s, _iMaskCreationStage);
+
+		sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrParams.sStitchPath.c_str()); 
+		s.clear();
+		s.assign(cTemp);
+		_pSolver->OutputVectorXCSV(s);
 	}
 
 	return(true);
@@ -287,10 +296,19 @@ bool StitchingManager::CreateTransforms()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Transforms are created");
 
+	// For Debug 
 	if(CorrParams.bSaveStitchedImage)
 	{
-		SaveStitchingImages("C:\\Temp\\Aligned", _iMaskCreationStage);
-		_pSolver->OutputVectorXCSV("C:\\Temp\\AlignedVectorX.csv");
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "%sAligned.bmp", CorrParams.sStitchPath.c_str()); 
+		string s;
+		s.assign(cTemp);
+		SaveStitchingImages(s, iNumIllums);
+
+		sprintf_s(cTemp, 100, "%sAlignedVectorX.csv", CorrParams.sStitchPath.c_str()); 
+		s.clear();
+		s.assign(cTemp);
+		_pSolver->OutputVectorXCSV(s);
 	}
 
 	return(true);

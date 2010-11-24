@@ -1,4 +1,5 @@
 #include "CorrelationParameters.h"
+#include <direct.h> //_mkdir
 
 CorrelationParameters* CorrelationParameters::_pInst = 0;
 CorrelationParameters& CorrelationParameters::Instance()
@@ -40,7 +41,14 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// debug flage
 	bSaveOverlap = false;
+	sOverlapPath = "C:\\Temp\\Overlaps\\";
 	bSaveStitchedImage = true;
+	sStitchPath = "C:\\Temp\\";
+
+	// make sure the directory exists 
+	_mkdir(sStitchPath.c_str());
+	_mkdir(sOverlapPath.c_str());
+
 }
 
 CorrelationParameters::~CorrelationParameters(void)

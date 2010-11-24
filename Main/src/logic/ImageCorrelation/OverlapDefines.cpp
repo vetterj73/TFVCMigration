@@ -286,7 +286,8 @@ bool FovFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "%sFovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 		
@@ -296,9 +297,10 @@ bool FovFovOverlap::DumpOvelapImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FovFov_Fine%d_I%dT%dC%d_I%dT%dC%d.bmp", iCount, 
+		sprintf_s(cTemp, 100, "%sFovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d.bmp",  
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
-		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount);
 
 		s.clear();
 		s.append(cTemp);
@@ -317,7 +319,8 @@ bool FovFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_coarse_I%dT%dC%d_I%dT%dC%d_Score%dAmbig%d.bmp", 
+	sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_I%dT%dC%d_I%dT%dC%d_Score%dAmbig%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
@@ -329,7 +332,8 @@ bool FovFovOverlap::DumpResultImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp", 
+		sprintf_s(cTemp, 100, "%sResult_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp",
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount,
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
@@ -380,7 +384,8 @@ bool CadFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\CadFov_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "%sCadFov_I%dT%dC%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -396,7 +401,8 @@ bool CadFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_CadFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
+	sprintf_s(cTemp, 100, "%sResult_CadFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
@@ -449,7 +455,8 @@ bool FidFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\FidFov_I%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "%sFidFov_I%dT%dC%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -465,7 +472,8 @@ bool FidFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "C:\\Temp\\Overlaps\\Result_FidFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
+	sprintf_s(cTemp, 100, "%sResult_FidFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
+		CorrParams.sOverlapPath.c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first, 
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));

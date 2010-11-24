@@ -2,6 +2,9 @@
 	Singleton Class for correlation parameters
 */
 
+#include <string>
+using std::string;
+
 #pragma once
 
 #define CorrParams CorrelationParameters::Instance() 
@@ -47,6 +50,8 @@ public:
 
 	// debug flage
 	bool bSaveOverlap;
+	string sOverlapPath;
 	bool bSaveStitchedImage;
+	string sStitchPath;
 };
 
