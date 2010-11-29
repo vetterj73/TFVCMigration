@@ -714,7 +714,7 @@ void RobustSolver::SolveXAlgHB()
 
 	// we built A in row order
 	// the qr factorization method requires column order
-	bool bRemoveEmptyRows = false;
+	bool bRemoveEmptyRows = true;
 	int* mb = new int[_iMatrixWidth];
 	unsigned int iEmptyRows;
 	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);
