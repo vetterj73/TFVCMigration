@@ -17,12 +17,11 @@ namespace CyberStitchTester
         private const double cCameraOverlap = .4;
         private const double cTriggerOverlap = .4;
         private static ManagedMosaicSet _mosaicSet = null;
-        private static CPanel _panel; 
+        private static CPanel _panel = new CPanel(0, 0); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
-
 
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
@@ -33,20 +32,10 @@ namespace CyberStitchTester
             logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
             string simulationFile = "";
             string panelFile="";
-            double panelWidth = 200;   // in mm (will be converted into meter)
-            double panelHeight = 200;  // in mm (will be converted into meter)
 
             for(int i=0; i<args.Length; i++)
             {
-                if(args[i] == "-w" && i<args.Length-1)
-                {
-                    panelWidth = Convert.ToDouble(args[i + 1]); // in mm
-                }
-                else if (args[i] == "-h" && i < args.Length - 1)
-                {
-                    panelHeight = Convert.ToDouble(args[i + 1]); // in mm
-                }
-                else if (args[i] == "-s" && i < args.Length - 1)
+                if (args[i] == "-s" && i < args.Length - 1)
                 {
                     simulationFile = args[i + 1];
                 }
@@ -57,17 +46,20 @@ namespace CyberStitchTester
 
             }
 
-            // Convert panel size into meter
-            panelWidth /= 1000.0;
-            panelHeight /= 1000.0;
-            _panel = new CPanel(panelWidth, panelHeight);
-
             if (!string.IsNullOrEmpty(panelFile))
             {
                 try
                 {
-                    if (!SRFToPanel.parseSRF(panelFile, _panel))
-                        throw new ApplicationException("Could not parse the SRF panel file");
+                    if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        if (!SRFToPanel.parseSRF(panelFile, _panel))
+                            throw new ApplicationException("Could not parse the SRF panel file");
+                    }
+                    else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        if(!XmlToPanel.CSIMPanelXmlToCPanel(panelFile, ref _panel))
+                            throw new ApplicationException("Could not convert xml panel file");
+                    }
                 }
                 catch (Exception except)
                 {
