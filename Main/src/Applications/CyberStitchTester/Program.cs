@@ -185,7 +185,10 @@ namespace CyberStitchTester
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
 
-            for (int i = 0; i < d.NumberOfCaptureSpecs; i++)
+            int iNum = d.NumberOfCaptureSpecs;
+            // For one illumination test
+            //iNum = 1;
+            for (int i = 0; i < iNum; i++)
             {
                 ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(i);
                 ManagedMosaicLayer layer = _mosaicSet.AddLayer(numCameras, pSpec.NumberOfTriggers, false);
@@ -247,8 +250,11 @@ namespace CyberStitchTester
                     ManagedCorrelationFlags flag =_mosaicSet.GetCorrelationSet(i, j);
                     if (i == j)
                     {
-                        flag.SetTriggerToTrigger(false);
                         flag.SetCameraToCamera(true);
+                        if(_mosaicSet.GetNumMosaicLayers() == 1)
+                            flag.SetTriggerToTrigger(true); // For one illumination
+                        else
+                            flag.SetTriggerToTrigger(false);
                     }
                     else
                     {
@@ -283,15 +289,30 @@ namespace CyberStitchTester
                 Output("OnAcquisitionDone Called!");
                 numAcqsComplete++;
 
-                // for two illuminations debug onley
-                int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-                for (int j= 0; j< iNumTrigs; j++)
+                // For two illuminationa
+                if (_mosaicSet.GetNumMosaicLayers() == 2)
                 {
-                    int iIllum = j% 2;
-                    int iTrig = j / 2;
-                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                    int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                    for (int j = 0; j < iNumTrigs; j++)
                     {
-                        _aligner.AddImage(iIllum, iTrig, iCam);
+                        int iIllum = j % 2;
+                        int iTrig = j / 2;
+                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                        {
+                            _aligner.AddImage(iIllum, iTrig, iCam);
+                        }
+                    }
+                }
+
+                // For one illumination
+                if (_mosaicSet.GetNumMosaicLayers() == 1)
+                {
+                    for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+                    {
+                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
+                        {
+                            _aligner.AddImage(0, iTrig, iCam);
+                        }
                     }
                 }
             
