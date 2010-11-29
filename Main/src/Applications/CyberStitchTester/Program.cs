@@ -214,7 +214,8 @@ namespace CyberStitchTester
                         double dTmep = pSpec.GetTriggerAtIndex(k);
 
                         // First camera center in X
-                        double xOffset = _panel.PanelSizeX- pSpec.GetTriggerAtIndex(k) - camera0.Pixelsize.X * camera0.Rows()/2;
+                        double dTrigOffset = pSpec.GetTriggerAtIndex(k) + pSpec.XOffset();
+                        double xOffset = _panel.PanelSizeX- dTrigOffset - camera0.Pixelsize.X * camera0.Rows()/2;
                         // The camera center in X
                         xOffset += (camera.CenterOffset.X - camera0.CenterOffset.X);
                         // The camera's origin in X
