@@ -130,6 +130,8 @@ namespace CyberStitchTester
                 Output("Error during SetPanel: " + except.Message);
             }
 
+            int iNum = ManagedCoreAPI.NumberOfDevices();
+
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
             {
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
@@ -278,7 +280,6 @@ namespace CyberStitchTester
         /// <param name="triggerIndex"></param>
         private static void OnImageAddedToMosaic(int layerIndex, int cameraIndex, int triggerIndex)
         {
-            iBufCount++;
             Output("Image was added to the Mosaic!!!!!!!" + iBufCount);
         }
 
@@ -330,42 +331,33 @@ namespace CyberStitchTester
                 if (_mosaicSet.GetNumMosaicLayers() == 4)
                 {  
                     // before two illuminaitons
-                    if (_iDeviceDoneCount == 0)
-                    { 
-                        int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-                        for (int j = 0; j < iNumTrigs; j++)
+                    int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                    for (int j = 0; j < iNumTrigs; j++)
+                    {
+                        int iIllum = j % 2;
+                        int iTrig = j / 2;
+                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
                         {
-                            int iIllum = j % 2;
-                            int iTrig = j / 2;
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                            if (!_aligner.AddImage(iIllum, iTrig, iCam))
                             {
-                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
+                                Output("Failed to add image!");
+                                return;
                             }
                         }
-
-                        _iDeviceDoneCount = 1;
-                        return;
                     }
 
                     // After two illuminaitons
-                    if (_iDeviceDoneCount == 1)
+                    iNumTrigs = _mosaicSet.GetLayer(2).GetNumberOfTriggers() + _mosaicSet.GetLayer(3).GetNumberOfTriggers();
+                    for (int j = 0; j < iNumTrigs; j++)
                     {
-                        int iNumTrigs = _mosaicSet.GetLayer(2).GetNumberOfTriggers() + _mosaicSet.GetLayer(3).GetNumberOfTriggers();
-                        for (int j = 0; j < iNumTrigs; j++)
+                        int iIllum = j % 2 + 2;
+                        int iTrig = j / 2;
+                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
                         {
-                            int iIllum = j % 2 + 2;
-                            int iTrig = j / 2;
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                            if (!_aligner.AddImage(iIllum, iTrig, iCam))
                             {
-                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
+                                Output("Failed to add image!");
+                                return;
                             }
                         }
                     }
@@ -385,6 +377,9 @@ namespace CyberStitchTester
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
             Output("Got an Image!");
+            iBufCount++;
+            if (iBufCount == 120)
+                iBufCount = iBufCount;
             int layer = pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex();
             _mosaicSet.AddImage(pframe.BufferPtr(), layer, pframe.CameraIndex(),
