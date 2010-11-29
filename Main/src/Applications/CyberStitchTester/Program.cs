@@ -22,6 +22,9 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
+        private static int _iDeviceDoneCount = 0;
+
+        private static int iBufCount = 0;
 
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
@@ -185,10 +188,7 @@ namespace CyberStitchTester
                 if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
 
-            int iNum = d.NumberOfCaptureSpecs;
-            // For one illumination test
-            //iNum = 1;
-            for (int i = 0; i < iNum; i++)
+            for (int i = 0; i < d.NumberOfCaptureSpecs; i++)
             {
                 ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(i);
                 ManagedMosaicLayer layer = _mosaicSet.AddLayer(numCameras, pSpec.NumberOfTriggers, false);
@@ -241,8 +241,7 @@ namespace CyberStitchTester
         }
 
         private static void SetupCorrelateFlags()
-        {
-            
+        { 
             for (int i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
             {
                 for (int j = 0; j < _mosaicSet.GetNumMosaicLayers(); j++)
@@ -279,7 +278,8 @@ namespace CyberStitchTester
         /// <param name="triggerIndex"></param>
         private static void OnImageAddedToMosaic(int layerIndex, int cameraIndex, int triggerIndex)
         {
-            Output("Image was added to the Mosaic!!!!!!!");
+            iBufCount++;
+            Output("Image was added to the Mosaic!!!!!!!" + iBufCount);
         }
 
         private static void OnAcquisitionDone(int device, int status, int count)
@@ -289,7 +289,7 @@ namespace CyberStitchTester
                 Output("OnAcquisitionDone Called!");
                 numAcqsComplete++;
 
-                // For two illuminationa
+                // For two illuminations
                 if (_mosaicSet.GetNumMosaicLayers() == 2)
                 {
                     int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
@@ -299,7 +299,11 @@ namespace CyberStitchTester
                         int iTrig = j / 2;
                         for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
                         {
-                            _aligner.AddImage(iIllum, iTrig, iCam);
+                            if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                            {
+                                Output("Failed to add image!");
+                                return;
+                            }
                         }
                     }
                 }
@@ -311,7 +315,58 @@ namespace CyberStitchTester
                     {
                         for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
                         {
-                            _aligner.AddImage(0, iTrig, iCam);
+                            if (!_aligner.AddImage(0, iTrig, iCam))
+                            {
+                                Output("Failed to add image!");
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                int iNum = ManagedCoreAPI.NumberOfDevices();
+
+                // For four illuminationas
+                if (_mosaicSet.GetNumMosaicLayers() == 4)
+                {  
+                    // before two illuminaitons
+                    if (_iDeviceDoneCount == 0)
+                    { 
+                        int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                        for (int j = 0; j < iNumTrigs; j++)
+                        {
+                            int iIllum = j % 2;
+                            int iTrig = j / 2;
+                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                            {
+                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                                {
+                                    Output("Failed to add image!");
+                                    return;
+                                }
+                            }
+                        }
+
+                        _iDeviceDoneCount = 1;
+                        return;
+                    }
+
+                    // After two illuminaitons
+                    if (_iDeviceDoneCount == 1)
+                    {
+                        int iNumTrigs = _mosaicSet.GetLayer(2).GetNumberOfTriggers() + _mosaicSet.GetLayer(3).GetNumberOfTriggers();
+                        for (int j = 0; j < iNumTrigs; j++)
+                        {
+                            int iIllum = j % 2 + 2;
+                            int iTrig = j / 2;
+                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                            {
+                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                                {
+                                    Output("Failed to add image!");
+                                    return;
+                                }
+                            }
                         }
                     }
                 }

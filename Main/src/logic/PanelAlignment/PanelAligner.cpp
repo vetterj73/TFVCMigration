@@ -128,7 +128,11 @@ bool PanelAligner::AddImage(
 
 	// Get image buffer
 	unsigned char* pcBuf = _pSet->GetLayer(iLayerIndex)->GetTile(iCamIndex, iTrigIndex)->GetImageBuffer();
-	if(pcBuf==NULL) return(false);
+	if(pcBuf==NULL)
+	{
+		LOG.FireLogEntry(LogTypeError, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d Buffer is invalid!", iLayerIndex, iTrigIndex, iCamIndex);
+		return(false);
+	}
 
 	// Add buffer to stitching manager
 	_pStitchingManager->AddOneImageBuffer(pcBuf, iLayerIndex, iTrigIndex, iCamIndex);
