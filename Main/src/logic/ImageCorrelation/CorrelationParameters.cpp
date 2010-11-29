@@ -46,9 +46,10 @@ CorrelationParameters::CorrelationParameters(void)
 	sStitchPath = "C:\\Temp\\";
 
 	// make sure the directory exists 
-	_mkdir(sStitchPath.c_str());
-	_mkdir(sOverlapPath.c_str());
-
+	if(bSaveStitchedImage)
+		_mkdir(sStitchPath.c_str());
+	if(bSaveOverlap)
+		_mkdir(sOverlapPath.c_str());
 }
 
 CorrelationParameters::~CorrelationParameters(void)
