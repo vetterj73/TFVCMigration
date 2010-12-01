@@ -154,14 +154,12 @@
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
-    <ClInclude Include="SquareRootCorrelation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorrelationPair.cpp" />
     <ClCompile Include="CorrelationParameters.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
-    <ClCompile Include="SquareRootCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Panel\Panel.vcxproj">

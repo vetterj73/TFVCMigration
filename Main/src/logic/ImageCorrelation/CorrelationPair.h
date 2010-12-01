@@ -109,6 +109,10 @@ public:
 	void DumpImg(string sFileName) const;
 	bool DumpImgWithResult(string sFileName) const;
 
+protected:
+	bool SqRtCorrelation();
+	bool NGCCorrelation();
+
 private:
 	Image* _pImg1;
 	Image* _pImg2;

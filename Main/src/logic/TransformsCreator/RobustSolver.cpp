@@ -425,7 +425,7 @@ bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 
-	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
+	CorrelationPair* pPair = pOverlap->GetCoarsePair();
 
 	// validation check for correlation pair
 	CorrelationResult result;
@@ -500,7 +500,7 @@ bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 
-	CorrelationPair* pPair = pOverlap->GetCoarsePairPtr();
+	CorrelationPair* pPair = pOverlap->GetCoarsePair();
 
 	// Validation check for correlation pair
 	CorrelationResult result;

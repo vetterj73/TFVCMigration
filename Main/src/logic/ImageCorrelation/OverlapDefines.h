@@ -40,7 +40,7 @@ public:
 	bool IsValid() const {return _bValid;};
 	bool IsProcessed() const {return _bProcessed;};
 
-	CorrelationPair* GetCoarsePairPtr() {return &_coarsePair;};
+	CorrelationPair* GetCoarsePair() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
 
 	// Do alignment and reset
@@ -52,7 +52,7 @@ protected:
 	bool ChopOverlap();	
 	bool _bValid;
 	bool _bProcessed;	
-	
+
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;
 

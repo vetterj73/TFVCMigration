@@ -24,9 +24,6 @@
     <ClInclude Include="CorrelationPair.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SquareRootCorrelation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OverlapManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -39,9 +36,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CorrelationPair.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SquareRootCorrelation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OverlapManager.cpp">

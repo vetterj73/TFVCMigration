@@ -21,6 +21,12 @@ protected:
 	static CorrelationParameters* _pInst;
 
 public:
+	// Correlation pair
+	unsigned int iCorrMaxColsToUse;			// Max cols will be used in alignment for a correlation pair
+	unsigned int iCorrMaxRowsToUse;			// Max rows will be used in alignment for a correlation pair
+	unsigned int iCorrPairMinRoiSize;		// The Size of Roi of correlation pair need >= this value to process
+	double dMaskAreaRatioTh;				// NGC will be used only if Mask area/Roi area > this value
+
 	// Coarse correlation
 	unsigned int iCoarseMinDecim;			// Minimum decimatin for coarse correlation
 	unsigned int iCoarseColSearchExpansion; // Search expansion in cols for coarse correlation
@@ -36,10 +42,6 @@ public:
 	unsigned int iFineDecim;				// Decimatin for fine correlation
 	unsigned int iFineColSearchExpansion;	// Search expansion in cols for fine correlation if coarse correlation is successed
 	unsigned int iFineRowSearchExpansion;	// Search expansion in rows for fine correlation if coarse correlation is successed
-
-	// Correlation pair
-	unsigned int iCorrPairMinRoiSize;		// The Size of Roi of correlation pair need >= this value to process
-	double dMaskAreaRatioTh;				// NGC will be used only if Mask area/Roi area > this value
 
 	// Fiducial search expansion
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 

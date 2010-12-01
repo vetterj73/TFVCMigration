@@ -1,6 +1,6 @@
 #include "CorrelationPair.h"
 
-#include "SquareRootCorrelation.h"
+#include "regoff.h"
 #include "VsNgcWrapper.h"
 #include "Logger.h"
 #include "CorrelationParameters.h"
@@ -182,57 +182,163 @@ bool CorrelationPair::DoAlignment()
 		{
 			return(false);
 		}
-		SqRtCorrelation(this, _iDecim, true);
+		
+		if(!SqRtCorrelation())
+			return(false);
 	}
-	else
+	else	// Use Ngc
 	{	
 		// Mask sure ROI size is bigger enough for search
 		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrParams.iCorrPairMinRoiSize ||
 			_roi1.Rows() < 2*_iRowSearchExpansion+CorrParams.iCorrPairMinRoiSize)
 			return(false);
 
-		// Use Ngc
-		// Ngc input parameter
-		NgcParams params;
-		params.pcTemplateBuf	= _pImg1->GetBuffer();
-		params.iTemplateImWidth = _pImg1->Columns();
-		params.iTemplateImHeight= _pImg1->Rows();
-		params.iTemplateImSpan	= _pImg1->PixelRowStride();
-		params.iTemplateLeft	= _roi1.FirstColumn + _iColSearchExpansion;
-		params.iTemplateRight	= _roi1.LastColumn - _iColSearchExpansion;
-		params.iTemplateTop		= _roi1.FirstRow + _iRowSearchExpansion;
-		params.iTemplateBottom	= _roi1.LastRow - _iRowSearchExpansion;
-
-		params.pcSearchBuf		= _pImg2->GetBuffer();
-		params.iSearchImWidth	= _pImg2->Columns();
-		params.iSearchImHeight	= _pImg2->Rows();
-		params.iSearchImSpan	= _pImg2->PixelRowStride();
-		params.iSearchLeft		= _roi2.FirstColumn;
-		params.iSearchRight		= _roi2.LastColumn;
-		params.iSearchTop		= _roi2.FirstRow;
-		params.iSearchBottom	= _roi2.LastRow;
-
-		params.bUseMask			= true;
-		params.pcMaskBuf		= _pMaskImg->GetBuffer();
-
-		// Ngc alignment
-		NgcResults results;
-		VsNgcWrapper ngc;
-		ngc.Align(params, &results);
-
-		/** Check this **/
-		// Create result
-		_result.ColOffset = results.dMatchPosX - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
-		_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
-		_result.CorrCoeff = results.dCoreScore;
-		_result.AmbigScore= results.dAmbigScore;
+		if(!NGCCorrelation())
+			return(false);
 	}
 	
 	_bIsProcessed = true;
-	
 	return(true);
 }
 
+
+// Do the square root correlation and report result
+bool CorrelationPair::SqRtCorrelation()
+{
+	int   nrows = Rows();
+	int   ncols = Columns();
+
+	/*
+	   Note: Due to the fact that a 2-D FFT is taken of the
+	   the decimated image, there are restrictions on the
+	   permissible values of nrows and ncols.  They must
+	   each be factorizable as decim*2^p * 3^q * 5^r.
+	   Furthermore, performance is poor if the image
+	   dimensions are less than 2*HOOD*decim.  A practical
+	   option for images of unsuitable dimensions is to
+	   register based on the largest feasible subsection of
+	   the image.  Subroutine RegoffLength() is provided to
+	   assist in computing suitable dimensions.
+	*/
+	nrows = RegoffLength(nrows, _iDecim);
+	ncols = RegoffLength(ncols, _iDecim);
+
+	// Pointer to first image
+	Byte* first_image_buffer =
+		_pImg1->GetBuffer(GetFirstRoi().FirstColumn, GetFirstRoi().FirstRow);
+
+	// Pointer to second image
+	Byte* second_image_buffer =
+		_pImg2->GetBuffer(GetSecondRoi().FirstColumn, GetSecondRoi().FirstRow);
+
+	int RowStrideA(_pImg1->PixelRowStride());
+	int RowStrideB(_pImg2->PixelRowStride());
+
+	/*
+		Pointer to space large enough to contain complexf
+		array of size at least ncols*nrows/decimx.  The
+		array is filled with the correlogram in the .r member
+		of each element.  If null pointers are passed for
+		this argument, a local array is allocated and freed.
+	*/
+	complexf *z(0);			
+
+
+	REGLIM  *lims(0);   /* Limits of search range for registration offset.  Use
+						   if there is _a priori_ knowledge about the offset.
+						   If a null pointer is passed, the search range
+						   defaults to the entire range of values
+
+							  x = [-ncols/2, ncols/2>
+							  y = [-nrows/2, nrows/2>
+
+						   Excessively large values are clipped to the above
+						   range; inconsistent values result in an error return.
+						*/
+
+	int      job(0);   /* 1 = histogram equalize images, 0 = no EQ */
+	
+	// Enable negative corrlation 
+	job |= REGOFF_ABS; 
+
+	int      histclip(1);   /* Histogram clipping factor; clips peaks to prevent
+						   noise in large flat regions from being excessively
+						   amplified.  Use histclip=1 for no clipping;
+						   histclip>1 for clipping.  Recommended value = 32 */
+
+	int      dump(0);       /* Dump intermediate images to TGA files
+						   (useful for debugging):
+
+						   ZR.TGA and ZI.TGA are decimated (and possibly
+							  histogram-equalized images that are input to the
+							  correlation routine.
+
+						   PCORR.TGA is the correlogram.
+
+						   HOLE.TGA is the correlogram, excluding the vicinity
+							  of the peak. */
+
+
+      /* Address of pointer to error message string.  Display
+						   to obtain verbal description of error return. */
+
+	char myChar[512];
+	char** myCharPtr = (char**)(&myChar);
+
+	CorrelationResult result;
+
+	int iFlag = regoff(	ncols, nrows, first_image_buffer, second_image_buffer, 
+			RowStrideA, RowStrideB, z, _iDecim, _iDecim, lims, job, 
+			histclip, dump, &result.ColOffset, &result.RowOffset,
+			&result.CorrCoeff, &result.AmbigScore, myCharPtr/*&error_msg*/);
+
+	if(iFlag!=0) return(false);
+
+	SetCorrlelationResult(result);
+
+	return(true);
+}
+
+// Calculate correlatin by using NGC
+bool CorrelationPair::NGCCorrelation()
+{
+	// Ngc input parameter
+	NgcParams params;
+	params.pcTemplateBuf	= _pImg1->GetBuffer();
+	params.iTemplateImWidth = _pImg1->Columns();
+	params.iTemplateImHeight= _pImg1->Rows();
+	params.iTemplateImSpan	= _pImg1->PixelRowStride();
+	params.iTemplateLeft	= _roi1.FirstColumn + _iColSearchExpansion;
+	params.iTemplateRight	= _roi1.LastColumn - _iColSearchExpansion;
+	params.iTemplateTop		= _roi1.FirstRow + _iRowSearchExpansion;
+	params.iTemplateBottom	= _roi1.LastRow - _iRowSearchExpansion;
+
+	params.pcSearchBuf		= _pImg2->GetBuffer();
+	params.iSearchImWidth	= _pImg2->Columns();
+	params.iSearchImHeight	= _pImg2->Rows();
+	params.iSearchImSpan	= _pImg2->PixelRowStride();
+	params.iSearchLeft		= _roi2.FirstColumn;
+	params.iSearchRight		= _roi2.LastColumn;
+	params.iSearchTop		= _roi2.FirstRow;
+	params.iSearchBottom	= _roi2.LastRow;
+
+	params.bUseMask			= true;
+	params.pcMaskBuf		= _pMaskImg->GetBuffer();
+
+	// Ngc alignment
+	NgcResults results;
+	VsNgcWrapper ngc;
+	bool bFlag = ngc.Align(params, &results);
+
+	/** Check this **/
+	// Create result
+	_result.ColOffset = results.dMatchPosX - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
+	_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
+	_result.CorrCoeff = results.dCoreScore;
+	_result.AmbigScore= results.dAmbigScore;
+
+	return(bFlag);
+}
 
 // Chop correlation pair into a list of smaller pairs/blocks
 // iNumBlockX and iNumBlockY: Numbers of smaller blocks in X(columns) and y(rows) direction
