@@ -204,9 +204,30 @@ bool CorrelationPair::DoAlignment()
 
 // Do the square root correlation and report result
 bool CorrelationPair::SqRtCorrelation()
-{
+{	
 	int   nrows = Rows();
 	int   ncols = Columns();
+
+	unsigned int iFirstCol1 = _roi1.FirstColumn;
+	unsigned int iFirstRow1 = _roi1.FirstRow;
+	unsigned int iFirstCol2 = _roi2.FirstColumn;
+	unsigned int iFirstRow2 = _roi2.FirstRow;
+
+	// Adjust Rows if it is necessary
+	if(nrows > CorrParams.iCorrMaxRowsToUse) 
+	{
+		iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+		iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+		nrows = CorrParams.iCorrMaxRowsToUse;
+	}
+
+	// Adjust Cols if it is necessary
+	if(ncols > CorrParams.iCorrMaxColsToUse) 
+	{
+		iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+		iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+		ncols = CorrParams.iCorrMaxColsToUse;
+	}
 
 	/*
 	   Note: Due to the fact that a 2-D FFT is taken of the
@@ -225,11 +246,11 @@ bool CorrelationPair::SqRtCorrelation()
 
 	// Pointer to first image
 	Byte* first_image_buffer =
-		_pImg1->GetBuffer(GetFirstRoi().FirstColumn, GetFirstRoi().FirstRow);
+		_pImg1->GetBuffer(iFirstCol1, iFirstRow1);
 
 	// Pointer to second image
 	Byte* second_image_buffer =
-		_pImg2->GetBuffer(GetSecondRoi().FirstColumn, GetSecondRoi().FirstRow);
+		_pImg2->GetBuffer(iFirstCol2, iFirstRow2);
 
 	int RowStrideA(_pImg1->PixelRowStride());
 	int RowStrideB(_pImg2->PixelRowStride());
@@ -302,25 +323,58 @@ bool CorrelationPair::SqRtCorrelation()
 // Calculate correlatin by using NGC
 bool CorrelationPair::NGCCorrelation()
 {
+	int   nrows = Rows();
+	int   ncols = Columns();
+
+	unsigned int iFirstCol1 = _roi1.FirstColumn;
+	unsigned int iFirstRow1 = _roi1.FirstRow;
+	unsigned int iFirstCol2 = _roi2.FirstColumn;
+	unsigned int iFirstRow2 = _roi2.FirstRow;
+
+	unsigned int iLastCol1 = _roi1.LastColumn;
+	unsigned int iLastRow1 = _roi1.LastRow;
+	unsigned int iLastCol2 = _roi2.LastColumn;
+	unsigned int iLastRow2 = _roi2.LastRow;
+
+	// Adjust Rows if it is necessary
+	if(nrows > CorrParams.iCorrMaxRowsToUse) 
+	{
+		iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+		iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+		nrows = CorrParams.iCorrMaxRowsToUse;
+		iLastRow1 = iFirstRow1 + nrows - 1;
+		iLastRow2 = iFirstRow2 + nrows - 1;
+	}
+
+	// Adjust Cols if it is necessary
+	if(ncols > CorrParams.iCorrMaxColsToUse) 
+	{
+		iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+		iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+		ncols = CorrParams.iCorrMaxColsToUse;
+		iLastCol1 = iFirstCol1 + ncols - 1;
+		iLastCol2 = iFirstCol2 + ncols - 1;
+	}
+
 	// Ngc input parameter
 	NgcParams params;
 	params.pcTemplateBuf	= _pImg1->GetBuffer();
 	params.iTemplateImWidth = _pImg1->Columns();
 	params.iTemplateImHeight= _pImg1->Rows();
 	params.iTemplateImSpan	= _pImg1->PixelRowStride();
-	params.iTemplateLeft	= _roi1.FirstColumn + _iColSearchExpansion;
-	params.iTemplateRight	= _roi1.LastColumn - _iColSearchExpansion;
-	params.iTemplateTop		= _roi1.FirstRow + _iRowSearchExpansion;
-	params.iTemplateBottom	= _roi1.LastRow - _iRowSearchExpansion;
+	params.iTemplateLeft	= iFirstCol1 + _iColSearchExpansion;
+	params.iTemplateRight	= iLastCol1 - _iColSearchExpansion;
+	params.iTemplateTop		= iFirstRow1 + _iRowSearchExpansion;
+	params.iTemplateBottom	= iLastRow1 - _iRowSearchExpansion;
 
 	params.pcSearchBuf		= _pImg2->GetBuffer();
 	params.iSearchImWidth	= _pImg2->Columns();
 	params.iSearchImHeight	= _pImg2->Rows();
 	params.iSearchImSpan	= _pImg2->PixelRowStride();
-	params.iSearchLeft		= _roi2.FirstColumn;
-	params.iSearchRight		= _roi2.LastColumn;
-	params.iSearchTop		= _roi2.FirstRow;
-	params.iSearchBottom	= _roi2.LastRow;
+	params.iSearchLeft		= iFirstCol2;
+	params.iSearchRight		= iLastCol2;
+	params.iSearchTop		= iFirstRow2;
+	params.iSearchBottom	= iLastRow2;
 
 	params.bUseMask			= true;
 	params.pcMaskBuf		= _pMaskImg->GetBuffer();
