@@ -256,17 +256,24 @@ namespace CyberStitchTester
                     if (i == j)
                     {
                         flag.SetCameraToCamera(true);
+                        
                         if((_mosaicSet.GetNumMosaicLayers() == 1) ||
                             (_mosaicSet.GetNumMosaicLayers() == 2 && ManagedCoreAPI.NumberOfDevices() ==2))
-                            flag.SetTriggerToTrigger(true); // For one illumination
+                            flag.SetTriggerToTrigger(true); // For one illumination for a SIM
                         else
                             flag.SetTriggerToTrigger(false);
                     }
                     else
                     {
-                        flag.SetTriggerToTrigger(true);
-                        flag.SetCameraToCamera(false);
+                       flag.SetCameraToCamera(false);
+
+                       if((i==0 && j==3) || (i==3 && j==0) ||
+                            (i==1 && j==2) || (i==2 && j==1))
+                            flag.SetTriggerToTrigger(false); // For four illuminaitons
+                        else
+                            flag.SetTriggerToTrigger(true);
                     }
+                    
                     flag.SetMaskNeeded(false);
                 }
             }
