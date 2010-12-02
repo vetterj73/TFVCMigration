@@ -89,7 +89,7 @@ public:
 	bool IsProcessed() const {return _bIsProcessed;};
 
 	// Do alignment and reset
-	bool DoAlignment();	
+	bool DoAlignment(bool bAllowRoiReduce=false, bool* pbRoiReduced=NULL);	
 	bool Reset();
 
 	// For overlap process
@@ -110,8 +110,8 @@ public:
 	bool DumpImgWithResult(string sFileName) const;
 
 protected:
-	bool SqRtCorrelation();
-	bool NGCCorrelation();
+	bool SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced);
+	bool NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced);
 
 private:
 	Image* _pImg1;

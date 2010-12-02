@@ -151,7 +151,7 @@ bool CorrelationPair::Reset()
 
 // Do the alignment
 // Return true if it is processed
-bool CorrelationPair::DoAlignment()
+bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 {
 	bool bSRC = true;
 
@@ -183,7 +183,7 @@ bool CorrelationPair::DoAlignment()
 			return(false);
 		}
 		
-		if(!SqRtCorrelation())
+		if(!SqRtCorrelation(bAllowRoiReduce, pbRoiReduced))
 			return(false);
 	}
 	else	// Use Ngc
@@ -193,7 +193,7 @@ bool CorrelationPair::DoAlignment()
 			_roi1.Rows() < 2*_iRowSearchExpansion+CorrParams.iCorrPairMinRoiSize)
 			return(false);
 
-		if(!NGCCorrelation())
+		if(!NGCCorrelation(bAllowRoiReduce, pbRoiReduced))
 			return(false);
 	}
 	
@@ -203,7 +203,7 @@ bool CorrelationPair::DoAlignment()
 
 
 // Do the square root correlation and report result
-bool CorrelationPair::SqRtCorrelation()
+bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 {	
 	int   nrows = Rows();
 	int   ncols = Columns();
@@ -213,20 +213,29 @@ bool CorrelationPair::SqRtCorrelation()
 	unsigned int iFirstCol2 = _roi2.FirstColumn;
 	unsigned int iFirstRow2 = _roi2.FirstRow;
 
-	// Adjust Rows if it is necessary
-	if(nrows > CorrParams.iCorrMaxRowsToUse && ncols > CorrParams.iCorrMaxColsToUse) 
+	if(bAllowRoiReduce)
 	{
-		iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-		iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-		nrows = CorrParams.iCorrMaxRowsToUse;
-	}
+		*pbRoiReduced = false; 
 
-	// Adjust Cols if it is necessary
-	if(ncols > CorrParams.iCorrMaxColsToUse && nrows > CorrParams.iCorrMaxRowsToUse) 
-	{
-		iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-		iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-		ncols = CorrParams.iCorrMaxColsToUse;
+		// Adjust Rows if it is necessary
+		if(nrows > CorrParams.iCorrMaxRowsToUse && ncols >= CorrParams.iCorrMaxColsToUse/2) 
+		{
+			iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+			iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+			nrows = CorrParams.iCorrMaxRowsToUse;
+
+			*pbRoiReduced = true;
+		}
+
+		// Adjust Cols if it is necessary
+		if(ncols > CorrParams.iCorrMaxColsToUse && nrows >= CorrParams.iCorrMaxRowsToUse/2) 
+		{
+			iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+			iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+			ncols = CorrParams.iCorrMaxColsToUse;
+			
+			*pbRoiReduced = true;
+		}
 	}
 
 	/*
@@ -321,7 +330,7 @@ bool CorrelationPair::SqRtCorrelation()
 }
 
 // Calculate correlatin by using NGC
-bool CorrelationPair::NGCCorrelation()
+bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 {
 	int   nrows = Rows();
 	int   ncols = Columns();
@@ -336,24 +345,33 @@ bool CorrelationPair::NGCCorrelation()
 	unsigned int iLastCol2 = _roi2.LastColumn;
 	unsigned int iLastRow2 = _roi2.LastRow;
 
-	// Adjust Rows if it is necessary
-	if(nrows > CorrParams.iCorrMaxRowsToUse) 
+	if(bAllowRoiReduce)
 	{
-		iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-		iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-		nrows = CorrParams.iCorrMaxRowsToUse;
-		iLastRow1 = iFirstRow1 + nrows - 1;
-		iLastRow2 = iFirstRow2 + nrows - 1;
-	}
+		*pbRoiReduced = false; 
 
-	// Adjust Cols if it is necessary
-	if(ncols > CorrParams.iCorrMaxColsToUse) 
-	{
-		iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-		iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-		ncols = CorrParams.iCorrMaxColsToUse;
-		iLastCol1 = iFirstCol1 + ncols - 1;
-		iLastCol2 = iFirstCol2 + ncols - 1;
+		// Adjust Rows if it is necessary
+		if(nrows > CorrParams.iCorrMaxRowsToUse) 
+		{
+			iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+			iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
+			nrows = CorrParams.iCorrMaxRowsToUse;
+			iLastRow1 = iFirstRow1 + nrows - 1;
+			iLastRow2 = iFirstRow2 + nrows - 1;
+
+			*pbRoiReduced = true; 
+		}
+
+		// Adjust Cols if it is necessary
+		if(ncols > CorrParams.iCorrMaxColsToUse) 
+		{
+			iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+			iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
+			ncols = CorrParams.iCorrMaxColsToUse;
+			iLastCol1 = iFirstCol1 + ncols - 1;
+			iLastCol2 = iFirstCol2 + ncols - 1;
+
+			*pbRoiReduced = true;
+		}
 	}
 
 	// Ngc input parameter

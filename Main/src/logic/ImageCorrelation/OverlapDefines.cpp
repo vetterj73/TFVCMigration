@@ -184,7 +184,21 @@ bool Overlap::DoIt()
 	if(!_bValid) return(false);
 
 	// Do coarse correlation
-	_coarsePair.DoAlignment();
+	bool bAllowRoiReduce = true;
+	bool bRoiReduced = false;
+	_coarsePair.DoAlignment(bAllowRoiReduce, &bRoiReduced);
+
+	// If the Roi size is reduced in correlation
+	if(_coarsePair.IsProcessed() && bRoiReduced) 
+	{	//If the correlation result is not good enough
+		CorrelationResult result= _coarsePair.GetCorrelationResult();
+		if(result.CorrCoeff * (1-result.AmbigScore)<CorrParams.dCoarseResultReliableTh)
+		{
+			// try again without ROI reduce
+			_coarsePair.Reset();
+			_coarsePair.DoAlignment();
+		}
+	}
 
 	if(_type != Fov_To_Fov)
 	{
