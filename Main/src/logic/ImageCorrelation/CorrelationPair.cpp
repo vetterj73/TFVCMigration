@@ -214,7 +214,7 @@ bool CorrelationPair::SqRtCorrelation()
 	unsigned int iFirstRow2 = _roi2.FirstRow;
 
 	// Adjust Rows if it is necessary
-	if(nrows > CorrParams.iCorrMaxRowsToUse) 
+	if(nrows > CorrParams.iCorrMaxRowsToUse && ncols > CorrParams.iCorrMaxColsToUse) 
 	{
 		iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
 		iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
@@ -222,7 +222,7 @@ bool CorrelationPair::SqRtCorrelation()
 	}
 
 	// Adjust Cols if it is necessary
-	if(ncols > CorrParams.iCorrMaxColsToUse) 
+	if(ncols > CorrParams.iCorrMaxColsToUse && nrows > CorrParams.iCorrMaxRowsToUse) 
 	{
 		iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
 		iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
