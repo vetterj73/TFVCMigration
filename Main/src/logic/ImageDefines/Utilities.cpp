@@ -231,3 +231,77 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	return(true);
 }
 
+
+// Modified from Eric Rudd's BayerLum() function
+// Convert Bayer image into Luminance
+// Output data only valid int the range of columns [2, nCols-3] and rows [2 nRows-3]
+void BayerToLum(                
+   int            ncols,		// Image dimensions
+   int            nrows,
+   unsigned char  bayer[],      // Input 8-bit Bayer image 
+   int            bstride,      // Addressed as bayer[col + row*bstride] 
+   unsigned char  lum[],        // output Luminance image 
+   int            lstride)      // Addressed as out[col + row*ostride] 
+{
+   unsigned char *bptr, *optr;
+   int col, row, y;
+
+   bptr = bayer + 2*bstride;
+   optr = lum + 2*lstride;
+   for (row=2; row<nrows-2; row++) {
+      for (col=2; col<ncols-2; col++) {
+         y =
+           + 156*(
+                   +bptr[col                ]
+                 )
+
+           + 30*(
+                   +bptr[col     + 1*bstride]
+                   +bptr[col     - 1*bstride]
+                   +bptr[col - 1            ]
+                   +bptr[col + 1            ]
+                )
+
+           - 20*(
+                   +bptr[col     + 2*bstride]
+                   +bptr[col     - 2*bstride]
+                   +bptr[col + 2            ]
+                   +bptr[col - 2            ]
+                )
+
+           + 16*(
+                   +bptr[col - 1 + 1*bstride]
+                   +bptr[col + 1 + 1*bstride]
+                   +bptr[col - 1 - 1*bstride]
+                   +bptr[col + 1 - 1*bstride]
+                )
+
+           +    (
+                   +bptr[col - 1 + 2*bstride]
+                   +bptr[col + 1 + 2*bstride]
+                   +bptr[col - 2 + 1*bstride]
+                   +bptr[col + 2 + 1*bstride]
+                   +bptr[col - 2 - 1*bstride]
+                   +bptr[col + 2 - 1*bstride]
+                   +bptr[col - 1 - 2*bstride]
+                   +bptr[col + 1 - 2*bstride]
+                )
+
+           -  3*(
+                   +bptr[col - 2 + 2*bstride]
+                   +bptr[col + 2 + 2*bstride]
+                   +bptr[col - 2 + 2*bstride]
+                   +bptr[col + 2 + 2*bstride]
+                )
+         ;
+
+		int iTemp = y/256;
+		if(iTemp >= 255) iTemp = 255;
+		if(iTemp <= 0) iTemp = 0;
+		optr[col] = iTemp;
+	  }    
+      bptr += bstride;
+      optr += lstride;
+   }
+}
+  

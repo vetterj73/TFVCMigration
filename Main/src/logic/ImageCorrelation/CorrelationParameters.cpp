@@ -41,6 +41,9 @@ CorrelationParameters::CorrelationParameters(void)
 	// Overlap
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 
+	// Support Bayer(color image)
+	bGrayScale = true;					// Grey scale image in default
+
 	// debug flage
 	bSaveOverlap = false;
 	sOverlapPath = "C:\\Temp\\Overlaps\\";

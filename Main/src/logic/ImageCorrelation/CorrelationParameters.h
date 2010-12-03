@@ -5,6 +5,13 @@
 #include <string>
 using std::string;
 
+typedef enum {                           /* Don't change order of enums */
+   BGGR,
+   GBRG,
+   GRBG,
+   RGGB
+}BayerPattern;
+
 #pragma once
 
 #define CorrParams CorrelationParameters::Instance() 
@@ -49,6 +56,9 @@ public:
 
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
+
+	// Support Bayer(color image)
+	bool bGrayScale;						// Grey scale image or Bayer(color) image
 
 	// debug flage
 	bool bSaveOverlap;

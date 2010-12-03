@@ -4,7 +4,7 @@
 #include "VsNgcWrapper.h"
 #include "Logger.h"
 #include "CorrelationParameters.h"
-
+#include "Utilities.h"
 
 #pragma region CorrelationResult class
 
@@ -213,6 +213,44 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 	unsigned int iFirstCol2 = _roi2.FirstColumn;
 	unsigned int iFirstRow2 = _roi2.FirstRow;
 
+	// For Bayer image
+	// Create luminance buffer
+	unsigned char* pLumBuf1 = NULL;
+	unsigned char* pLumBuf2 = NULL;
+	unsigned int iLumSpan1, iLumSpan2;
+	if(!CorrParams.bGrayScale)
+	{
+		// Create luminance buffers
+		pLumBuf1 = new unsigned char[nrows*ncols];
+		pLumBuf2 = new unsigned char[nrows*ncols];
+		iLumSpan1 = ncols;
+		iLumSpan2 = ncols;
+
+		BayerToLum(                
+			ncols,		
+			nrows,
+			_pImg1->GetBuffer(iFirstCol1, iFirstRow1),     
+			_pImg1->PixelRowStride(),      
+			pLumBuf1,       
+			iLumSpan1);   
+
+		BayerToLum(                
+			ncols,		
+			nrows,
+			_pImg2->GetBuffer(iFirstCol2, iFirstRow2),     
+			_pImg2->PixelRowStride(),      
+			pLumBuf2,       
+			iLumSpan2);
+		
+		// Reduce the rows and columns
+		nrows -= 4;
+		ncols -= 4;
+		iFirstCol1 = 2;
+		iFirstRow1 = 2;
+		iFirstCol2 = 2;
+		iFirstRow2 = 2;
+	}
+
 	if(bAllowRoiReduce)
 	{
 		*pbRoiReduced = false; 
@@ -263,6 +301,16 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 
 	int RowStrideA(_pImg1->PixelRowStride());
 	int RowStrideB(_pImg2->PixelRowStride());
+
+	// For Bayer image
+	if(!CorrParams.bGrayScale)
+	{
+		RowStrideA = iLumSpan1;
+		RowStrideB = iLumSpan2;
+
+		first_image_buffer = pLumBuf1 + iFirstRow1*RowStrideA + iFirstCol1;
+		second_image_buffer= pLumBuf2 + iFirstRow2*RowStrideB + iFirstCol2;
+	}
 
 	/*
 		Pointer to space large enough to contain complexf
@@ -321,6 +369,13 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			RowStrideA, RowStrideB, z, _iDecim, _iDecim, lims, job, 
 			histclip, dump, &result.ColOffset, &result.RowOffset,
 			&result.CorrCoeff, &result.AmbigScore, myCharPtr/*&error_msg*/);
+
+	// For Bayer image
+	if(!CorrParams.bGrayScale)
+	{
+		delete [] pLumBuf1;
+		delete [] pLumBuf2;
+	}
 
 	if(iFlag!=0) return(false);
 

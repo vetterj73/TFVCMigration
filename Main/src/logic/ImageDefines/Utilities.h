@@ -28,3 +28,15 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3]);
+
+
+// Modified from Eric Rudd's BayerLum() function
+// Convert Bayer image into Luminance
+// Output data only valid int the range of columns [2, nCols-3] and rows [2 nRows-3]
+void BayerToLum(                
+   int            ncols,		// Image dimensions
+   int            nrows,
+   unsigned char  bayer[],      // Input 8-bit Bayer image 
+   int            bstride,      // Addressed as bayer[col + row*bstride] 
+   unsigned char  lum[],        // output Luminance image 
+   int            lstride);      // Addressed as out[col + row*ostride] 
