@@ -36,6 +36,8 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPane
 	}
 
 	_bMasksCreated = false;
+
+	_iCycleCount = 0;
 }
 
 StitchingManager::~StitchingManager(void)
@@ -310,7 +312,8 @@ bool StitchingManager::CreateTransforms()
 		_pSolver->OutputVectorXCSV(s);		
 		
 		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Begin to create stitched images");
-		sprintf_s(cTemp, 100, "%sAligned", CorrParams.sStitchPath.c_str()); 
+		sprintf_s(cTemp, 100, "%sAligned_Cycle%d_", CorrParams.sStitchPath.c_str(), _iCycleCount); 
+		_iCycleCount++;
 		s.clear();
 		s.assign(cTemp);
 		SaveStitchingImages(s, iNumIllums);

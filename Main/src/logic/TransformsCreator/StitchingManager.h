@@ -50,5 +50,9 @@ private:
 	RobustSolver* _pMaskSolver;
 	map<FovIndex, unsigned int> _maskMap;
 	bool _bMasksCreated;
+
+
+	// For debug 
+	unsigned int _iCycleCount;
 };
 
