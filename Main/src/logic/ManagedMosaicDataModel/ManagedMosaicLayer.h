@@ -29,6 +29,11 @@ namespace MMosaicDM
 				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 
+			void ClearAllImages()
+			{
+				return _pMosaicLayer->ClearAllImages();
+			}
+
 			int GetNumberOfTriggers(){return _pMosaicLayer->GetNumberOfTriggers();};
 			int GetNumberOfCameras(){return  _pMosaicLayer->GetNumberOfCameras();};
 

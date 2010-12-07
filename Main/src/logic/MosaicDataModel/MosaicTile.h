@@ -51,6 +51,11 @@ namespace MosaicDM
 			void SetOutputTransform(ImgTransform t) {_outputTransform = t;};
 
 		protected:
+			void ClearImageBuffer()
+			{
+				_pImageBuffer = NULL;
+			}
+
 			bool SetImageBuffer(unsigned char* pImageBuffer)
 			{
 				if(_pImageBuffer != NULL)

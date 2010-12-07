@@ -101,6 +101,12 @@ namespace MosaicDM
 		return true;
 	}
 
+	void MosaicSet::ClearAllImages()
+	{
+		for(int i=0; i<_layerList.size(); i++)
+			_layerList[i]->ClearAllImages();
+	}
+
 	void MosaicSet::RegisterImageAddedCallback(IMAGEADDED_CALLBACK pCallback, void* pContext)
 	{
 		_registeredImageAddedCallback = pCallback;

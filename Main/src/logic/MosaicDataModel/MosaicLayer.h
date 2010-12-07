@@ -52,6 +52,11 @@ namespace MosaicDM
 			bool IsUseCad() {return _correlateWithCAD;};
 			void SetUseCad(bool bUseCad) { _correlateWithCAD = bUseCad;}; 
 
+			///
+			///	Clears all images from this layer
+			///
+			void ClearAllImages();
+
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 

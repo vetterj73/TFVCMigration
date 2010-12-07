@@ -14,8 +14,6 @@ namespace CyberStitchTester
 {
     class Program
     {
-        private const double cCameraOverlap = .4;
-        private const double cTriggerOverlap = .4;
         private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _panel = new CPanel(0, 0); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
@@ -32,23 +30,143 @@ namespace CyberStitchTester
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            // Start the logger
             logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
+
+            // Gather input data.
             string simulationFile = "";
             string panelFile="";
-
+            bool bContinuous = false;
             for(int i=0; i<args.Length; i++)
             {
+                if (args[i] == "-c")
+                    bContinuous = true;
                 if (args[i] == "-s" && i < args.Length - 1)
-                {
                     simulationFile = args[i + 1];
-                }
                 else if (args[i] == "-p" && i < args.Length - 1)
-                {
                     panelFile = args[i + 1];
-                }
-
             }
 
+            // Setup the panel based on panel file
+            if (!SetPanelFile(panelFile))
+            {
+                logger.Kill();
+                return;
+            }
+            // Initialize the SIM CoreAPI
+            if (!InitializeSimCoreAPI(simulationFile))
+            {
+                logger.Kill();
+                return;
+            }
+            
+            SetupMosaic();
+
+   //         _aligner.OnLogEntry += OnLogEntryFromClient;
+     //       _aligner.SetAllLogTypes(true);
+
+            try
+            {
+       //         _aligner.SetPanel(_mosaicSet, _panel);
+
+            }
+            catch (Exception except)
+            {
+                
+                Output("Error during SetPanel: " + except.Message);
+                logger.Kill();
+                return;
+            }
+
+            bool bDone = false;
+            while(!bDone)
+            {
+                numAcqsComplete = 0;
+               
+                _mosaicSet.ClearAllImages();
+                if (!GatherImages())
+                    bDone = true;
+                else
+                {
+                    Output("Waiting for Images...");
+                    mDoneEvent.WaitOne();                  
+                }
+
+                // Verify that mosaic is filled in...
+                if (!_mosaicSet.HasAllImages())
+                    Output("The mosaic does not contain all images!");
+
+                // GEORGE:  Run Stitching Process...
+
+                // should we do another cycle?
+                if (!bContinuous)
+                    bDone = true;
+                else
+                    mDoneEvent.Reset();
+            }
+
+            Output("Processing Complete");
+            logger.Kill();
+        }
+
+        private static bool GatherImages()
+        {
+            for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+            {
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
+            }
+            return true;
+        }
+
+        private static bool InitializeSimCoreAPI(string simulationFile)
+        {
+            bool bSimulating = false;
+            if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
+                bSimulating = true;
+
+            if (bSimulating)
+            {
+                Output("Running with Simulation File: " + simulationFile);
+                ManagedCoreAPI.SetSimulationFile(simulationFile);
+            }
+
+            ManagedSIMDevice.OnFrameDone += OnFrameDone;
+            ManagedSIMDevice.OnAcquisitionDone += OnAcquisitionDone;
+
+            if (ManagedCoreAPI.InitializeAPI() != 0)
+            {
+                Output("Could not initialize CoreAPI!");
+                logger.Kill();
+                return false;
+            }
+
+            if (ManagedCoreAPI.NumberOfDevices() <= 0)
+            {
+                Output("There are no SIM Devices attached!");
+                logger.Kill();
+                return false;
+            }
+
+            if (!bSimulating)
+            {
+                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+                {
+                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+
+                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
+                    if (cs1 == null)
+                    {
+                        Output("Could not create capture spec.");
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static bool SetPanelFile(string panelFile)
+        {
             if (!string.IsNullOrEmpty(panelFile))
             {
                 try
@@ -60,7 +178,7 @@ namespace CyberStitchTester
                     }
                     else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if(!XmlToPanel.CSIMPanelXmlToCPanel(panelFile, ref _panel))
+                        if (!XmlToPanel.CSIMPanelXmlToCPanel(panelFile, ref _panel))
                             throw new ApplicationException("Could not convert xml panel file");
                     }
                 }
@@ -68,87 +186,10 @@ namespace CyberStitchTester
                 {
                     Output("Exception reading Panel file: " + except.Message);
                     logger.Kill();
-                    return;
+                    return false;
                 }
             }
-
-
-            bool bSimulating = false;
-            if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
-                bSimulating = true;
-
-            if(bSimulating)
-            {
-                Output("Running with Simulation File: " + simulationFile);
-                ManagedCoreAPI.SetSimulationFile(simulationFile);
-            }
-
-            ManagedSIMDevice.OnFrameDone += OnFrameDone;
-            ManagedSIMDevice.OnAcquisitionDone += OnAcquisitionDone;
-
-            if(ManagedCoreAPI.InitializeAPI() != 0)
-            {
-                Output("Could not initialize CoreAPI!");
-                logger.Kill();
-                return;
-            }
-
-            if(ManagedCoreAPI.NumberOfDevices() <=0)
-            {
-                Output("There are no SIM Devices attached!");
-                logger.Kill();
-                return;
-            }
-
-            if(!bSimulating)
-            {
-                for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
-                {
-                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                    
-                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
-                    if(cs1==null)
-                    {
-                        Output("Could not create capture spec.");        
-                    }
-                }
-            }
-
-            SetupMosaic();
-
-            _aligner.OnLogEntry += OnLogEntryFromClient;
-            _aligner.SetAllLogTypes(true);
-
-            try
-            {
-                _aligner.SetPanel(_mosaicSet, _panel);
-
-            }
-            catch (Exception except)
-            {
-                
-                Output("Error during SetPanel: " + except.Message);
-            }
-
-            int iNum = ManagedCoreAPI.NumberOfDevices();
-
-            /*for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
-            {
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
-            }*/
-
-            // Lauch only one acquisition to avoid two SIMs feed images in at the same time
-            ManagedSIMDevice device = ManagedCoreAPI.GetDevice(0);
-            device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
-
-            Output("Waiting for Images...");
-            mDoneEvent.WaitOne();
-
-            // Now - Correlate and Stitch...
-            Output("All Done!");
-
-            logger.Kill();
+            return true;
         }
 
         private static void OnLogEntryFromClient( MLOGTYPE logtype, string message)
@@ -297,11 +338,14 @@ namespace CyberStitchTester
 
         private static void OnAcquisitionDone(int device, int status, int count)
         {
-            try
-            {
+    //        try
+     //       {
                 Output("OnAcquisitionDone Called!");
                 numAcqsComplete++;
+                if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
+                    mDoneEvent.Set();
 
+/*
                 int iNumDevices = ManagedCoreAPI.NumberOfDevices();
 
                 // For one illumination
@@ -420,7 +464,6 @@ namespace CyberStitchTester
                         }
                     }
                 }
-            
                 if (iNumDevices == numAcqsComplete)
                 mDoneEvent.Set();
 
@@ -429,12 +472,14 @@ namespace CyberStitchTester
             {
                 Output("Error during OnAcquisitionDone: " + except.Message);
             }
+   */         
 
          }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
-            Output("Got an Image!");
+            Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
+                pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
 
             int layer = pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +

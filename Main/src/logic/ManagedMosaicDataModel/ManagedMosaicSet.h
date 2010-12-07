@@ -100,9 +100,19 @@ namespace MMosaicDM
 				return pCF == NULL?nullptr:gcnew ManagedCorrelationFlags(pCF);
 			}
 
+			bool HasAllImages()
+			{
+				return _pMosaicSet->HasAllImages();
+			}
+			
 			bool AddImage(System::IntPtr pBuffer, int layerIndex, int cameraIndex, int triggerIndex)
 			{
 				return _pMosaicSet->AddImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
+			}
+
+			void ClearAllImages()
+			{
+				_pMosaicSet->ClearAllImages();
 			}
 
 			event ImageAddedDelegate^ OnImageAdded;

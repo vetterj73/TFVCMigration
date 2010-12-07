@@ -105,6 +105,11 @@ namespace MosaicDM
 			///
 			bool AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex);
 
+			///
+			///	Clears all images from all layers in the mosaic.
+			///
+			void ClearAllImages();
+
 		private:
 			int _imageWidth;
 			int _imageHeight;

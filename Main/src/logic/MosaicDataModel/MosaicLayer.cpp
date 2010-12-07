@@ -63,6 +63,13 @@ namespace MosaicDM
 		return true;
 	}
 
+	void MosaicLayer::ClearAllImages()
+	{
+		int numTiles = GetNumberOfTiles();
+		for(int i=0; i<numTiles; i++)
+			_pTileArray[i].ClearImageBuffer();
+	}
+
 	bool MosaicLayer::AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex)
 	{
 		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
