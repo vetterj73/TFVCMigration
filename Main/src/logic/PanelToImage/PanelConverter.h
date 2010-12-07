@@ -1,8 +1,7 @@
 // PanelConverter.h
 
 #pragma once
-
-#include "typedefs.h"
+#include "Image.h"
 class Panel;
 
 namespace PanelToImage 

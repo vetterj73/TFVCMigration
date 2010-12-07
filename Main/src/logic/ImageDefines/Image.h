@@ -2,6 +2,8 @@
 #include "STL.h"
 #include "ImgTransform.h"
 #include "UIRect.h"
+typedef unsigned char Byte;
+typedef unsigned short Word;
 
 /*
 	Describes an image for stitching

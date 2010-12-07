@@ -1,7 +1,6 @@
 #include <math.h>
 #include "Cad2Img.h"
 #include "RenderShape.h"
-#include "System.h"
 
 // Rudd files
 #include "nint.h"
@@ -18,14 +17,14 @@ Cad2Img::Cad2Img(Panel*			p,
 				 _drawApt(true),
 				 _drawCad(true)
 {
-	if(resolution==0.0)
-		G_LOG_0_ERROR("Cad2Img() - zero pixel size");
+	//if(resolution==0.0)
+	//	G_LOG_0_ERROR("Cad2Img() - zero pixel size");
 
-	if(_cadImage.GetBuffer()!=0)
-		G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
+	//if(_cadImage.GetBuffer()!=0)
+	//	G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
 
-	if(_aptImage.GetBuffer()!=0)
-		G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
+	//if(_aptImage.GetBuffer()!=0)
+	//	G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
 
 	if(cadBuffer)
 		_cadImage.Configure(columns, rows, _resolution, _resolution, cadBuffer);
@@ -90,27 +89,29 @@ void Cad2Img::DrawPads(bool drawCADROI)
 					RenderCyberShape(_aptImage, _resolution, static_cast<CyberFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
 				break;
 			case Feature::SHAPE_UNDEFINED:
-				G_LOG_0_ERROR("DrawPads() - undefined shape");
+		//		G_LOG_0_ERROR("DrawPads() - undefined shape");
 				break;
 
 			default:
-				G_LOG_0_ERROR("DrawPads() - undefined default shape");
+		//		G_LOG_0_ERROR("DrawPads() - undefined default shape");
 				break;
 		}
 
-		if(drawCADROI)
-		{
-			Box bounds = (feature->second)->GetBoundingBox();
-			if(_drawCad)
-				_cadImage.DrawBox(bounds);
-			if(_drawApt)
-				_aptImage.DrawBox(bounds);
-			bounds = (feature->second)->GetInspectionArea();
-			if(_drawCad)
-				_cadImage.DrawBox(bounds);
-			if(_drawApt)
-				_aptImage.DrawBox(bounds);
-		}
+		// @todo - This was commented out by Alan to get things to build for cyberstitch...
+		// Do we need it?
+		//if(drawCADROI)
+		//{
+		//	Box bounds = (feature->second)->GetBoundingBox();
+		//	if(_drawCad)
+		//		_cadImage.DrawBox(bounds);
+		//	if(_drawApt)
+		//		_aptImage.DrawBox(bounds);
+		//	bounds = (feature->second)->GetInspectionArea();
+		//	if(_drawCad)
+		//		_cadImage.DrawBox(bounds);
+		//	if(_drawApt)
+		//		_aptImage.DrawBox(bounds);
+		//}
 	}
 
 	if(_drawCad)
@@ -141,11 +142,11 @@ void Cad2Img::DrawPads(bool drawCADROI)
 					RenderCyberShape(_cadImage, _resolution, static_cast<CyberFeature*>(feature->second));
 					break;
 				case Feature::SHAPE_UNDEFINED:
-					G_LOG_0_ERROR("DrawPads() - undefined shape");
+	//				G_LOG_0_ERROR("DrawPads() - undefined shape");
 					break;
 
 				default:
-					G_LOG_0_ERROR("DrawPads() - undefined default shape");
+	//				G_LOG_0_ERROR("DrawPads() - undefined default shape");
 					break;
 			}
 		}
