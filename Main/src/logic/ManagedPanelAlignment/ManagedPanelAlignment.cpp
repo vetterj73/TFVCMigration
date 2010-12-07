@@ -19,17 +19,24 @@ namespace PanelAlignM {
 			delete _pAligner;
 	}
 
-	// Change production/set panel
-	bool ManagedPanelAlignment::SetPanel(ManagedMosaicSet^ set, CPanel^ panel)
+	// Change production
+	bool ManagedPanelAlignment::ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel)
 	{
 		MosaicSet* pMosaicSet = (MosaicSet*)(void*)set->UnmanagedMosaicSet;
 		Panel* pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
 
-		bool bFlag = _pAligner->SetPanel(pMosaicSet, pPanel);
+		bool bFlag = _pAligner->ChangeProduction(pMosaicSet, pPanel);
 
 		return(bFlag);
 	}
 
+	// Reset for next panel
+	void ManagedPanelAlignment::ResetForNextPanel()
+	{
+		_pAligner->ResetForNextPanel();
+	}
+
+	// Add a image
 	bool ManagedPanelAlignment::AddImage(
 			int iLayerIndex, 
 			int iTrigIndex, 

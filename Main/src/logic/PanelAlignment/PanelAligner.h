@@ -16,7 +16,9 @@ public:
 	PanelAligner(void);
 	~PanelAligner(void);
 
-	bool SetPanel(MosaicSet* pSet, Panel *pPanel);
+	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
+
+	void ResetForNextPanel();
 
 	bool AddImage(
 		unsigned int iLayerIndex, 

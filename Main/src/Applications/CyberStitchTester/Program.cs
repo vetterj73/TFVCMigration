@@ -48,7 +48,7 @@ namespace CyberStitchTester
             }
 
             // Setup the panel based on panel file
-            if (!SetPanelFile(panelFile))
+            if (!ChangeProductionFile(panelFile))
             {
                 logger.Kill();
                 return;
@@ -60,18 +60,24 @@ namespace CyberStitchTester
                 return;
             }
             
+            // Set up mosaic set
             SetupMosaic();
 
+            // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
 
+            // Set up production for aligner
             try
             {
-                _aligner.SetPanel(_mosaicSet, _panel);
+                if(!_aligner.ChangeProduction(_mosaicSet, _panel))
+                {
+                    throw new ApplicationException("Aliger failed to change production ");
+                }
             }
             catch (Exception except)
             {
-                Output("Error during SetPanel: " + except.Message);
+                Output("Error: " + except.Message);
                 logger.Kill();
                 return;
             }
@@ -80,6 +86,8 @@ namespace CyberStitchTester
             while(!bDone)
             {
                 numAcqsComplete = 0;
+
+                _aligner.ResetForNextPanel();
                
                 _mosaicSet.ClearAllImages();
                 if (!GatherImages())
@@ -94,7 +102,7 @@ namespace CyberStitchTester
                 if (!_mosaicSet.HasAllImages())
                     Output("The mosaic does not contain all images!");
 
-                // GEORGE:  Run Stitching Process...
+                DoAlignment();
 
                 // should we do another cycle?
                 if (!bContinuous)
@@ -163,7 +171,7 @@ namespace CyberStitchTester
             return true;
         }
 
-        private static bool SetPanelFile(string panelFile)
+        private static bool ChangeProductionFile(string panelFile)
         {
             if (!string.IsNullOrEmpty(panelFile))
             {
@@ -336,142 +344,10 @@ namespace CyberStitchTester
 
         private static void OnAcquisitionDone(int device, int status, int count)
         {
-    //        try
-     //       {
-                Output("OnAcquisitionDone Called!");
-                numAcqsComplete++;
-                if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                    mDoneEvent.Set();
-
-/*
-                int iNumDevices = ManagedCoreAPI.NumberOfDevices();
-
-                // For one illumination
-                if (_mosaicSet.GetNumMosaicLayers() == 1)
-                {
-                    for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
-                    {
-                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
-                        {
-                            if (!_aligner.AddImage(0, iTrig, iCam))
-                            {
-                                Output("Failed to add image!");
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                // For two illuminations from one SIM
-                if (_mosaicSet.GetNumMosaicLayers() == 2 && iNumDevices==1 )
-                {
-                    int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-                    for (int j = 0; j < iNumTrigs; j++)
-                    {
-                        int iIllum = j % 2;
-                        int iTrig = j / 2;
-                        for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
-                        {
-                            if (!_aligner.AddImage(iIllum, iTrig, iCam))
-                            {
-                                Output("Failed to add image!");
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                // For two illuminations from two devices
-                if (_mosaicSet.GetNumMosaicLayers() == 2 && iNumDevices == 2)
-                {
-                    if (numAcqsComplete == 1) // First SIM acquistion done
-                    {
-                        for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
-                        {
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
-                            {
-                                if (!_aligner.AddImage(0, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
-                            }
-                        }
-
-                        // Launch the second SIM acqusition
-                        ManagedSIMDevice d = ManagedCoreAPI.GetDevice(1);
-                        d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
-                    }
-                    else  // Second SIM acquisition done 
-                    {
-                        for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(1).GetNumberOfTriggers(); iTrig++)
-                        {
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(1).GetNumberOfCameras(); iCam++)
-                            {
-                                if (!_aligner.AddImage(1, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // For four illuminations from two devices
-                if (_mosaicSet.GetNumMosaicLayers() == 4 && iNumDevices == 2)
-                {
-                    if (numAcqsComplete == 1) // First SIM acquisition done
-                    {
-                        // before two illuminaitons
-                        int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
-                        for (int j = 0; j < iNumTrigs; j++)
-                        {
-                            int iIllum = j % 2;
-                            int iTrig = j / 2;
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
-                            {
-                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
-                            }
-                        }
-
-                        // Launch the second SIM acqusition
-                        ManagedSIMDevice d = ManagedCoreAPI.GetDevice(1);
-                        d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
-                    }
-                    else // Second SIM acquisition done
-                    {
-                        // After two illuminaitons
-                        int iNumTrigs = _mosaicSet.GetLayer(2).GetNumberOfTriggers() + _mosaicSet.GetLayer(3).GetNumberOfTriggers();
-                        for (int j = 0; j < iNumTrigs; j++)
-                        {
-                            int iIllum = j % 2 + 2;
-                            int iTrig = j / 2;
-                            for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
-                            {
-                                if (!_aligner.AddImage(iIllum, iTrig, iCam))
-                                {
-                                    Output("Failed to add image!");
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
-                if (iNumDevices == numAcqsComplete)
+            Output("OnAcquisitionDone Called!");
+            numAcqsComplete++;
+            if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
                 mDoneEvent.Set();
-
-            }
-            catch (Exception except)
-            {
-                Output("Error during OnAcquisitionDone: " + except.Message);
-            }
-   */         
-
          }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
@@ -490,6 +366,118 @@ namespace CyberStitchTester
         {
             logger.AddObjectToThreadQueue(str);
             logger.AddObjectToThreadQueue(null);
+        }
+
+        // Do alignment/stitching
+        private static void DoAlignment()
+        {
+            int iNumDevices = ManagedCoreAPI.NumberOfDevices();
+
+            // For one illumination
+            if (_mosaicSet.GetNumMosaicLayers() == 1)
+            {
+                for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+                {
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(0, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // For two illuminations from one SIM
+            if (_mosaicSet.GetNumMosaicLayers() == 2 && iNumDevices == 1)
+            {
+                int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                for (int j = 0; j < iNumTrigs; j++)
+                {
+                    int iIllum = j % 2;
+                    int iTrig = j / 2;
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            // For two illuminations from two devices
+            if (_mosaicSet.GetNumMosaicLayers() == 2 && iNumDevices == 2)
+            {
+                // First SIM acquistion done
+                // Before single illumination
+                for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(0).GetNumberOfTriggers(); iTrig++)
+                {
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(0).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(0, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                            
+                        }
+                    }
+                }
+                // Second SIM acquisition done
+                // After single illumination
+                for (int iTrig = 0; iTrig < _mosaicSet.GetLayer(1).GetNumberOfTriggers(); iTrig++)
+                {
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(1).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(1, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                            
+                        }
+                    }
+                }
+            }
+
+            // For four illuminations from two devices
+            if (_mosaicSet.GetNumMosaicLayers() == 4 && iNumDevices == 2)
+            {
+                // First SIM acquistion done
+                // before two illuminaitons
+                int iNumTrigs = _mosaicSet.GetLayer(0).GetNumberOfTriggers() + _mosaicSet.GetLayer(1).GetNumberOfTriggers();
+                for (int j = 0; j < iNumTrigs; j++)
+                {
+                    int iIllum = j % 2;
+                    int iTrig = j / 2;
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                            
+                        }
+                    }
+                }
+                // Second SIM acquisition done
+                // After two illuminaitons
+                iNumTrigs = _mosaicSet.GetLayer(2).GetNumberOfTriggers() + _mosaicSet.GetLayer(3).GetNumberOfTriggers();
+                for (int j = 0; j < iNumTrigs; j++)
+                {
+                    int iIllum = j % 2 + 2;
+                    int iTrig = j / 2;
+                    for (int iCam = 0; iCam < _mosaicSet.GetLayer(iIllum).GetNumberOfCameras(); iCam++)
+                    {
+                        if (!_aligner.AddImage(iIllum, iTrig, iCam))
+                        {
+                            Output("Failed to add image!");
+                            return;
+                                                    }
+                    }
+                }
+            }
         }
     }
 }

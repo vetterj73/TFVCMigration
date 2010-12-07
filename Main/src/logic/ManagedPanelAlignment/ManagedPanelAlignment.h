@@ -18,7 +18,9 @@ namespace PanelAlignM {
 		ManagedPanelAlignment();
 		!ManagedPanelAlignment();
 
-		bool SetPanel(ManagedMosaicSet^ set, CPanel^ panel);
+		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel);
+
+		void ResetForNextPanel();
 
 		bool AddImage(
 			int iLayerIndex, 

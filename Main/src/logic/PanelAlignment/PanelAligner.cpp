@@ -46,10 +46,10 @@ void PanelAligner::CleanUp()
 	_pStitchingManager = NULL;
 }
 
-// Set panel
-bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
+// Change production
+bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 {
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::SetPanel():Begin panel change over");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
 	// CleanUp internal stuff for new production
 	CleanUp();
 
@@ -109,11 +109,19 @@ bool PanelAligner::SetPanel(MosaicSet* pSet, Panel* pPanel)
 	// (Mask image is NULL at this time)
 	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::SetPanel():Panel change over is done");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Panel change over is done");
 
 	return(true);
 }
 
+//Reset for next panel
+void PanelAligner::ResetForNextPanel()
+{
+	_pStitchingManager->Reset();
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
+}
+
+// Add single image
 bool PanelAligner::AddImage(
 	unsigned int iLayerIndex, 
 	unsigned int iTrigIndex, 
@@ -122,7 +130,6 @@ bool PanelAligner::AddImage(
 	// If this is the first image of the cycle, reset
 	if(iLayerIndex==0 && iTrigIndex==0 && iCamIndex==0)
 	{
-		_pStitchingManager->Reset();
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():New Panel Begins!");
 	}
 
