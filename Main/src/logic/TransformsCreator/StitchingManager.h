@@ -36,7 +36,7 @@ protected:
 	bool CreateTransforms();
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex);
 
-	void StitchingManager::SaveStitchingImages(string name, unsigned int iNum);
+	void SaveStitchingImages(string name, unsigned int iNum);
 
 private:
 	OverlapManager* _pOverlapManager;
