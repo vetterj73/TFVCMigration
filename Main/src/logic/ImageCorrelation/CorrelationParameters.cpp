@@ -44,7 +44,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Support Bayer(color image)
 	bGrayScale = true;					// Grey scale image in default
 
-	// debug flage
+	// debug flags
 	bSaveOverlap = false;
 	sOverlapPath = "C:\\Temp\\Overlaps\\";
 	bSaveStitchedImage = true;

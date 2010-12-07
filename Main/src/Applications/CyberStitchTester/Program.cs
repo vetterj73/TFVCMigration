@@ -62,17 +62,15 @@ namespace CyberStitchTester
             
             SetupMosaic();
 
-   //         _aligner.OnLogEntry += OnLogEntryFromClient;
-     //       _aligner.SetAllLogTypes(true);
+            _aligner.OnLogEntry += OnLogEntryFromClient;
+            _aligner.SetAllLogTypes(true);
 
             try
             {
-       //         _aligner.SetPanel(_mosaicSet, _panel);
-
+                _aligner.SetPanel(_mosaicSet, _panel);
             }
             catch (Exception except)
             {
-                
                 Output("Error during SetPanel: " + except.Message);
                 logger.Kill();
                 return;
