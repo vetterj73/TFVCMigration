@@ -193,7 +193,6 @@ namespace CyberStitchTester
         private static void OnLogEntryFromClient( MLOGTYPE logtype, string message)
         {
             Console.WriteLine(logtype + " " + message);
-            DateTime dataTime = DateTime.Now;
             Output(logtype + " " + message);
         }
 
@@ -331,7 +330,8 @@ namespace CyberStitchTester
         /// <param name="triggerIndex"></param>
         private static void OnImageAddedToMosaic(int layerIndex, int cameraIndex, int triggerIndex)
         {
-            Output("Image was added to the Mosaic!!!!!!!" + _iBufCount);
+            Output(string.Format("Image {0} was added to the Mosaic at Layer:{1}, Camera:{2}, Trigger{3}",
+                _iBufCount, layerIndex, cameraIndex, triggerIndex));
         }
 
         private static void OnAcquisitionDone(int device, int status, int count)
