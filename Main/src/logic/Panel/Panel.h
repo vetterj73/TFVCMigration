@@ -30,6 +30,12 @@ public:
 	static double		_padInspectionAreaLong;
 	static double		_padInspectionAreaShort;
 
+	int GetNumPixelsInX(double pixelSizeInMeters)
+	{return(int) floor((LengthX/pixelSizeInMeters)+0.5);}
+
+	int GetNumPixelsInY(double pixelSizeInMeters)
+	{return(int) floor((LengthY/pixelSizeInMeters)+0.5);}
+
 	int					AddFeature(Feature*);
 	void				RemoveFeature(int featureId);
 	unsigned int		NumberOfFeatures();

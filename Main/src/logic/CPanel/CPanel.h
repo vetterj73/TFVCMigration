@@ -154,6 +154,21 @@ namespace Cyber
 			}
 
 
+			///
+			/// Returns the number of pixels, based on a particular panel size in X
+			int GetNumPixelsInX(double pixelSizeInMeters)
+			{
+				return _pPanel->GetNumPixelsInX(pixelSizeInMeters); 
+			}
+
+			///
+			/// Returns the number of pixels, based on a particular panel size in Y
+			int GetNumPixelsInY(double pixelSizeInMeters)
+			{
+				return _pPanel->GetNumPixelsInY(pixelSizeInMeters); 
+			}
+		
+
 			/// \internal
 			property System::IntPtr UnmanagedPanel
 			{

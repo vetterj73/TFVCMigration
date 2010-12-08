@@ -11,7 +11,7 @@ namespace PanelToImage
 		public:	
 			static void ConvertPanel(
 				System::IntPtr panel, double pixelSize, unsigned int columns, unsigned int rows,
-				Byte* cadBuffer, Word* aperatureBuffer, bool drawCADROI);
+				System::IntPtr cadBuffer, System::IntPtr aperatureBuffer, bool drawCADROI);
 
 		protected:
 			PanelConverter(){};

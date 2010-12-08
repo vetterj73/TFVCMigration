@@ -240,6 +240,9 @@
       <Project>{0dceaa00-0cf2-4630-968f-d694dd71f4d9}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Image\proj\Image.vcxproj">
       <Project>{3d0eefea-0a11-4b4c-ad6f-27dc1347326b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

@@ -69,12 +69,16 @@
     <Reference Include="DiagnosticUtils">
       <HintPath>..\..\..\CyberCommon\bin\Release\DiagnosticUtils.dll</HintPath>
     </Reference>
+    <Reference Include="ImageUtils">
+      <HintPath>..\..\..\CyberCommon\bin\Release\ImageUtils.dll</HintPath>
+    </Reference>
     <Reference Include="ManagedCoreAPI, Version=1.0.3894.23336, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\SIMCoreAPI\bin\x64\ManagedCoreAPI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -101,6 +105,10 @@
     <ProjectReference Include="..\..\logic\ManagedPanelAlignment\ManagedPanelAlignment.vcxproj">
       <Project>{D46B74F8-444E-4536-81CC-B08444E7B819}</Project>
       <Name>ManagedPanelAlignment</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\PanelToImage\PanelToImage.vcxproj">
+      <Project>{14420F01-1DD6-498B-B379-101006B6EED0}</Project>
+      <Name>PanelToImage</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

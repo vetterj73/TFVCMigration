@@ -2,7 +2,7 @@
 #include "OverlapManager.h"
 #include "RobustSolver.h"
 #include "CorrelationParameters.h"
-#include <map>;
+#include <map>
 using std::map;
 
 class StitchingManager

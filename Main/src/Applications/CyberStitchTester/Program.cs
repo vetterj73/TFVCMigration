@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using CPanelIO;
 using Cyber.DiagnosticUtils;
+using Cyber.ImageUtils;
 using Cyber.SPIAPI;
 using MCoreAPI;
 using MLOGGER;
 using MMosaicDM;
+using PanelToImage;
 using SIMAPI;
 using PanelAlignM;
 
@@ -14,6 +18,8 @@ namespace CyberStitchTester
 {
     class Program
     {
+        private const double cPixelSizeInMeters = 1.69e-5;
+
         private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _panel = new CPanel(0, 0); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
@@ -53,6 +59,7 @@ namespace CyberStitchTester
                 logger.Kill();
                 return;
             }
+
             // Initialize the SIM CoreAPI
             if (!InitializeSimCoreAPI(simulationFile))
             {
@@ -70,6 +77,27 @@ namespace CyberStitchTester
             // Set up production for aligner
             try
             {
+                // If the production is valid
+                if (_panel.PanelSizeX > 0)
+                {
+                    int width = _panel.GetNumPixelsInX(cPixelSizeInMeters);
+                    int height = _panel.GetNumPixelsInY(cPixelSizeInMeters);
+                    Bitmap bmp = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+                    
+                    CyberBitmapData cbd = new CyberBitmapData();
+                    cbd.Lock(bmp);
+                    int test = cbd.Stride;
+                    if(test != width)
+                    {
+                    
+                    }
+            //        PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)width, (uint)height, cbd.Scan0, IntPtr.Zero, false);
+                    cbd.Unlock();
+
+                    bmp.Save("c:\\temp\\cad.bmp");
+                    bmp.Dispose();
+                }
+                
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aliger failed to change production ");
@@ -214,7 +242,7 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, 1.69e-5, 1.69e-5);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters);
             _mosaicSet.OnImageAdded += OnImageAddedToMosaic;
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
