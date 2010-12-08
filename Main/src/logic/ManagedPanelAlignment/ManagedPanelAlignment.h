@@ -1,4 +1,6 @@
-// ManagedPanelAlignment.h
+/*
+	This is an managed interface class of stitching tool 
+*/
 
 #pragma once
 

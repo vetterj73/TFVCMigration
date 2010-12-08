@@ -1,3 +1,6 @@
+/*
+	This is an unmanaged interface class of stitching tool 
+*/
 #pragma once
 
 #include "MosaicSet.h"
