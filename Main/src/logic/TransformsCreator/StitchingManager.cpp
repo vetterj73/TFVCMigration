@@ -446,8 +446,8 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 	// Create image size
 	double dPixelSize = 16.9e-6; 
 	DRect rect = _pOverlapManager->GetValidRect();
-	unsigned int iNumCols = (unsigned int)((rect.yMax - rect.yMin)/dPixelSize);
-	unsigned int iNumRows = (unsigned int)((rect.xMax - rect.xMin)/dPixelSize);
+	unsigned int iNumCols = _pOverlapManager->GetPanel()->GetNumPixelsInX(dPixelSize);
+	unsigned int iNumRows = _pOverlapManager->GetPanel()->GetNumPixelsInX(dPixelSize);
 	// create image transform
 	double t[3][3];
 	t[0][0] = dPixelSize;

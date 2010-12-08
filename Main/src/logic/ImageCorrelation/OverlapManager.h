@@ -9,7 +9,6 @@
 #include "OverlapDefines.h"
 #include "Panel.h"
 
-
 using namespace MosaicDM;
 
 class OverlapManager
@@ -55,6 +54,8 @@ public:
 	unsigned int MaxNumCameras() {return(_iNumCameras);};
 
 	DRect GetValidRect() {return _validRect;};
+
+	Panel* GetPanel() {return _pPanel;};
 
 protected:
 	void CreateFovFovOverlaps();	
