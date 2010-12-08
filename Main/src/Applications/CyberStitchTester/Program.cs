@@ -89,13 +89,16 @@ namespace CyberStitchTester
                     PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)bmp.Width, (uint)bmp.Height, (uint)cbd.Stride, cbd.Scan0, IntPtr.Zero, false);
                     cbd.Unlock();
 
-                    bmp.Save("c:\\temp\\cad.png");
+                    string fileName = Path.GetDirectoryName(panelFile) + "\\" + Path.GetFileNameWithoutExtension(panelFile) +
+                                      ".png";
+
+                    bmp.Save(fileName);
                     bmp.Dispose();
                 }
                 
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
-                    throw new ApplicationException("Aliger failed to change production ");
+                    throw new ApplicationException("Aligner failed to change production ");
                 }
             }
             catch (Exception except)
