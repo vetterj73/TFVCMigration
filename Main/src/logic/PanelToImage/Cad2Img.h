@@ -20,6 +20,7 @@ public:
 	Cad2Img(	Panel*			p,
 				unsigned int columns,
 				unsigned int rows,
+				unsigned int stride,
 				Byte * cadBuffer,
 				Word * aptBuffer,
 				double resolution,

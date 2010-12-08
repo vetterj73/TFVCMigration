@@ -8,6 +8,7 @@
 Cad2Img::Cad2Img(Panel*			p,
 				 unsigned int columns,
 				 unsigned int rows,
+				 unsigned int stride,
 				 Byte * cadBuffer,
 				 Word * aptBuffer,
 				 double	resolution,
@@ -26,13 +27,15 @@ Cad2Img::Cad2Img(Panel*			p,
 	//if(_aptImage.GetBuffer()!=0)
 	//	G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
 
+	ImgTransform imgTransform(_resolution, _resolution, 0, 0, 0);
+
 	if(cadBuffer)
-		_cadImage.Configure(columns, rows, _resolution, _resolution, cadBuffer);
+		_cadImage.Configure(columns, rows, stride, imgTransform, imgTransform, false, cadBuffer);
 	else
 		_drawCad = false;
 
 	if(aptBuffer)
-		_aptImage.Configure(columns, rows, _resolution, _resolution, (Byte*)aptBuffer);
+		_aptImage.Configure(columns, rows, stride, imgTransform, imgTransform, false, (Byte*)aptBuffer);
 	else
 		_drawApt = false;
 
@@ -114,7 +117,7 @@ void Cad2Img::DrawPads(bool drawCADROI)
 		//}
 	}
 
-	if(_drawCad)
+	if(0)//_drawCad)
 	{
 		for(FeatureListIterator feature = _pPanel->beginFiducials(); feature!=_pPanel->endFiducials(); ++feature)
 		{

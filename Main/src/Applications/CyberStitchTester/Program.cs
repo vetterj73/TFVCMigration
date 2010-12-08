@@ -80,21 +80,16 @@ namespace CyberStitchTester
                 // If the production is valid
                 if (_panel.PanelSizeX > 0)
                 {
-                    int width = _panel.GetNumPixelsInX(cPixelSizeInMeters);
-                    int height = _panel.GetNumPixelsInY(cPixelSizeInMeters);
-                    Bitmap bmp = new Bitmap(width, height, PixelFormat.Format8bppIndexed);
+                    Bitmap bmp = new Bitmap(_panel.GetNumPixelsInY(cPixelSizeInMeters), 
+                        _panel.GetNumPixelsInX(cPixelSizeInMeters), 
+                        PixelFormat.Format8bppIndexed);
                     
                     CyberBitmapData cbd = new CyberBitmapData();
                     cbd.Lock(bmp);
-                    int test = cbd.Stride;
-                    if(test != width)
-                    {
-                    
-                    }
-            //        PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)width, (uint)height, cbd.Scan0, IntPtr.Zero, false);
+                    PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)bmp.Width, (uint)bmp.Height, (uint)cbd.Stride, cbd.Scan0, IntPtr.Zero, false);
                     cbd.Unlock();
 
-                    bmp.Save("c:\\temp\\cad.bmp");
+                    bmp.Save("c:\\temp\\cad.png");
                     bmp.Dispose();
                 }
                 

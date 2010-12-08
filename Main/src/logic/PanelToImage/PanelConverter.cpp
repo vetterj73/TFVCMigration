@@ -8,9 +8,10 @@
 
 namespace PanelToImage 
 {
-	void PanelConverter::ConvertPanel(System::IntPtr panel, double pixelSize, unsigned int columns, unsigned int rows,
+	void PanelConverter::ConvertPanel(System::IntPtr panel, double pixelSize, 
+		unsigned int columns, unsigned int rows, unsigned int stride,
 		System::IntPtr cadBuffer, System::IntPtr aperatureBuffer, bool drawCADROI)
 	{
-		Cad2Img c2i((Panel*)(void*)panel, columns, rows, (Byte*)(void*)cadBuffer, (Word*)(void*)aperatureBuffer, pixelSize, drawCADROI);
+		Cad2Img c2i((Panel*)(void*)panel, columns, rows, stride, (Byte*)(void*)cadBuffer, (Word*)(void*)aperatureBuffer, pixelSize, drawCADROI);
 	}
 }
