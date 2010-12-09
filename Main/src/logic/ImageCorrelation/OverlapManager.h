@@ -18,9 +18,10 @@ public:
 		MosaicImage* pMosaics, 
 		CorrelationFlags** pFlags, 
 		unsigned int iNumIlluminations,
-		Image* pCadImg, 
+		Panel* pPanel,		
 		double dCadImageResolution,
-		Panel* pPanel);
+		Image* pCadImg,
+		Image* pPanelMaskImage);
 	~OverlapManager(void);
 
 	bool ResetforNewPanel();
@@ -54,8 +55,11 @@ public:
 	unsigned int MaxNumCameras() {return(_iNumCameras);};
 
 	DRect GetValidRect() {return _validRect;};
-
 	Panel* GetPanel() {return _pPanel;};
+	double GetCadImageResolution() {return _dCadImageResolution;};
+
+	Image* GetCadImage() {return _pCadImg;};
+	Image* GetPanelMaskImage() {return _pPanelMaskImg;};
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -80,13 +84,14 @@ protected:
 private:	
 	MosaicImage* _pMosaics;
 	CorrelationFlags** _pFlags;	
-	unsigned int _iNumIlluminations;
+	unsigned int _iNumIlluminations;	
 	
-	Image* _pCadImg;
 	Panel* _pPanel;
 	DRect _validRect;
 
 	double _dCadImageResolution;
+	Image* _pCadImg;
+	Image* _pPanelMaskImg;
 
 	unsigned int _iNumCameras;
 	unsigned int _iNumTriggers;

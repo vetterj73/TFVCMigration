@@ -8,17 +8,19 @@ OverlapManager::OverlapManager(
 	MosaicImage* pMosaics, 
 	CorrelationFlags** pFlags, 
 	unsigned int iNumIlluminations,
-	Image* pCadImg, 
+	Panel* pPanel,		
 	double dCadImageResolution,
-	Panel* pPanel)
+	Image* pCadImg,
+	Image* pPanelMaskImg)
 {	
 	// Inputs
 	_pMosaics = pMosaics;	
 	_pFlags = pFlags;	
 	_iNumIlluminations = iNumIlluminations;
-	_pCadImg = pCadImg;
 	_pPanel = pPanel;
 	_dCadImageResolution = dCadImageResolution;	
+	_pCadImg = pCadImg;
+	_pPanelMaskImg = pPanelMaskImg;
 
 	// Valid panel area in world space 
 	_validRect.xMin = 0;

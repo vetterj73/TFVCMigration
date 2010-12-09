@@ -103,11 +103,13 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	rect.xMax = _pSet->GetObjectWidthInMeters();
 	rect.yMin = 0;
 	rect.yMax = _pSet->GetObjectLengthInMeters();
-	_pOverlapManager = new OverlapManager(_pMosaics, _pCorrelationFlags, _iNumIlluminations, NULL, _pSet->GetNominalPixelSizeX(), _pPanel); // nee work
-
+	_pOverlapManager = new OverlapManager(
+		_pMosaics, _pCorrelationFlags, _iNumIlluminations, 
+		_pPanel, _pSet->GetNominalPixelSizeX(),
+		NULL, NULL);
+		
 	// Create stitching manager 
-	// (Mask image is NULL at this time)
-	_pStitchingManager = new StitchingManager(_pOverlapManager, NULL);
+	_pStitchingManager = new StitchingManager(_pOverlapManager);
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Panel change over is done");
 

@@ -8,7 +8,7 @@ using std::map;
 class StitchingManager
 {
 public:
-	StitchingManager(OverlapManager* pOverlapManager, Image* pPanelMaskImage);
+	StitchingManager(OverlapManager* pOverlapManager);
 	~StitchingManager(void);
 
 	bool AddOneImageBuffer(	
@@ -36,12 +36,11 @@ protected:
 	bool CreateTransforms();
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex);
 
-	void SaveStitchingImages(string name, unsigned int iNum);
+	void SaveStitchingImages(string name, unsigned int iNum, bool bCreateColorImg=false);
 
 private:
 	OverlapManager* _pOverlapManager;
-	Image* _pPanelMaskImage;
-
+	
 	int _iMaskCreationStage;
 
 	RobustSolver* _pSolver;

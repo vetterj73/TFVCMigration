@@ -2,10 +2,9 @@
 #include "Logger.h"
 
 #pragma region Constructor and initilization
-StitchingManager::StitchingManager(OverlapManager* pOverlapManager, Image* pPanelMaskImage)
+StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 {
 	_pOverlapManager = pOverlapManager;
-	_pPanelMaskImage = pPanelMaskImage;
 
 	// Create solver for all illuminations
 	bool bProjectiveTrans = false;
@@ -240,7 +239,7 @@ bool StitchingManager::CreateMasks()
 				Image* img = pMosaic->GetMaskImage(iCam, iTrig);
 				
 				UIRect rect(0, 0, img->Columns()-1,  img->Rows()-1);
-				img->MorphFrom(_pPanelMaskImage, rect);
+				img->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 			}
 		}
 	}
@@ -316,7 +315,8 @@ bool StitchingManager::CreateTransforms()
 		_iCycleCount++;
 		s.clear();
 		s.assign(cTemp);
-		SaveStitchingImages(s, iNumIllums);
+		bool bCreateColorImage = true;
+		SaveStitchingImages(s, iNumIllums, bCreateColorImage);
 
 		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Stitched images are created");
 	}
@@ -441,13 +441,13 @@ void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* p
 
 
 //** for debug
-void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
+void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum, bool bCreateColorImg)
 {
 	// Create image size
-	double dPixelSize = 16.9e-6; 
+	double dPixelSize = _pOverlapManager->GetCadImageResolution(); 
 	DRect rect = _pOverlapManager->GetValidRect();
-	unsigned int iNumCols = _pOverlapManager->GetPanel()->GetNumPixelsInX(dPixelSize);
 	unsigned int iNumRows = _pOverlapManager->GetPanel()->GetNumPixelsInX(dPixelSize);
+	unsigned int iNumCols = _pOverlapManager->GetPanel()->GetNumPixelsInY(dPixelSize);
 	// create image transform
 	double t[3][3];
 	t[0][0] = dPixelSize;
@@ -460,53 +460,251 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum)
 	t[2][1] = 0;
 	t[2][2] = 1;
 	ImgTransform trans(t);
-	//Create image
+
+	//Create image(s)
 	bool bCreateOwnBuf = true;
-	unsigned iBytePerpixel = 1;
-	Image panelImage(iNumCols, iNumRows, iNumCols, iBytePerpixel, trans, trans, bCreateOwnBuf);
-
-	// For two illuminaitons debug only
-	unsigned char* tempBuf = NULL;
-	if(iNum==2)
-		tempBuf = new unsigned char[iNumCols*iNumRows];
-
-	// Create stitched images
-	for(unsigned int i=0; i<iNum; i++)
+	Image* pPanelImages = NULL;
+	Image panelImage;
+	if(bCreateColorImg)
 	{
-		panelImage.ZeroBuffer();
-		CreateStitchingImage(i, &panelImage);
-		char cTemp[100];
-		sprintf_s(cTemp, 100, "%s_%d.bmp", sName.c_str(), i); 
-		string s;
-		s.assign(cTemp);
-		panelImage.Save(s);
-
-		// For two illuminations debug only
-		if(iNum==2 && i==0)
-			::memcpy(tempBuf, panelImage.GetBuffer(), iNumCols*iNumRows); 
-
-		if(iNum==2 && i==1)
+		pPanelImages = new Image[iNum];
+		for(int i=0; i<iNum; i++)
 		{
-			Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-				iNumRows, 
-				iNumCols,
-				tempBuf, 
-				panelImage.GetBuffer(),
-				iNumCols,
-				iNumCols);
-
-			sprintf_s(cTemp, 100, "%s.bmp", sName.c_str()); 
-			string s;
-			s.assign(cTemp);
-
-			rbg->write(s);
-			delete rbg;
+			pPanelImages[i].Configure(iNumCols, iNumRows, iNumCols, trans, trans, bCreateOwnBuf);
 		}
 	}
+	else
+	{
+		panelImage.Configure(iNumCols, iNumRows, iNumCols, trans, trans, bCreateOwnBuf);
+	}
 
-	// For two illuminaitons debug only
-	if(tempBuf != NULL)
-		delete [] tempBuf;
+	// Create and stitched images for each illumination
+	char cTemp[100];
+	string s;
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		Image* pTempImg;
+		if(bCreateColorImg)
+		{
+			pTempImg = &pPanelImages[i];
+		}
+		else
+		{
+			pTempImg = &panelImage;
+		}
+		pTempImg->ZeroBuffer();
+
+		CreateStitchingImage(i, pTempImg);
+	
+		sprintf_s(cTemp, 100, "%s_%d.bmp", sName.c_str(), i); 
+		s.clear();
+		s.assign(cTemp);
+		pTempImg->Save(s);
+	}
+
+	// Creat color images
+	if(bCreateColorImg)
+	{
+		Image* pCadImage = _pOverlapManager->GetCadImage();
+		Bitmap* rbg;
+
+		switch(iNum)
+		{
+			case 1:
+			{
+				sprintf_s(cTemp, 100, "%s_color.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+				
+				if(pCadImage != NULL)	// With Cad image
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[0].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+			}
+			break;
+
+			case 2:
+			{
+				sprintf_s(cTemp, 100, "%s_color.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+
+				if(pCadImage != NULL) // With Cad image
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[1].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+				else	// Without Cad image
+				{
+					rbg = Bitmap::New2ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[1].GetBuffer(),
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+			}
+			break;
+
+			case 4:
+			{
+				// Bright field before and after
+				sprintf_s(cTemp, 100, "%s_Bright.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+
+				if(pCadImage != NULL)	
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[2].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+				else
+				{
+					rbg = Bitmap::New2ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[2].GetBuffer(),
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+
+				// Dark field before and after
+				sprintf_s(cTemp, 100, "%s_Dark.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+
+				if(pCadImage != NULL)
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[1].GetBuffer(),
+						pPanelImages[3].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+				else
+				{
+					rbg = Bitmap::New2ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[1].GetBuffer(),
+						pPanelImages[3].GetBuffer(),
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+
+				// Before bright and dark fields
+				sprintf_s(cTemp, 100, "%s_Before.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+
+				if(pCadImage != NULL)
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[1].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+				else
+				{
+					rbg = Bitmap::New2ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[0].GetBuffer(),
+						pPanelImages[1].GetBuffer(),
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+
+				// After bright and dark fields
+				sprintf_s(cTemp, 100, "%s_After.bmp", sName.c_str()); 
+				s.clear();
+				s.assign(cTemp);
+
+				if(pCadImage != NULL)
+				{
+					rbg = Bitmap::New3ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[2].GetBuffer(),
+						pPanelImages[3].GetBuffer(),
+						pCadImage->GetBuffer(),
+						iNumCols,
+						iNumCols,
+						iNumCols);
+				}
+				else
+				{
+					rbg = Bitmap::New2ChannelBitmap( 
+						iNumRows, 
+						iNumCols, 
+						pPanelImages[2].GetBuffer(),
+						pPanelImages[3].GetBuffer(),
+						iNumCols,
+						iNumCols);
+				}
+
+				rbg->write(s);
+				delete rbg;
+			}
+			break;
+
+			default:
+				LOG.FireLogEntry(LogTypeSystem, "StitchingManager::SaveStitchingImages(): Illumination number is not supported");
+		}
+
+		delete [] pPanelImages;
+	}
 }
+
+
+
 
 #pragma endregion
