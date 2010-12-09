@@ -6,6 +6,7 @@
 
 #include "LoggableObject.h"
 #include "Feature.h"
+#include "Image.h"
 #include <map>
 using std::map;
 typedef map<int, Feature*> FeatureList;
@@ -77,7 +78,27 @@ public:
 	Feature *			GetFirstFiducial();
 	Feature *			GetNextFiducial();
 
+	void SetCadBuffer(unsigned char *buffer)
+	{
+		_cadBuffer = buffer;
+	}
+	
+	void SetMaskBuffer(unsigned char *buffer)
+	{
+		_maskBuffer = buffer;
+	}
+	
+	Byte *GetCadBuffer()
+	{return _cadBuffer;}
+
+	Byte *GetMaskBuffer()
+	{return _maskBuffer;}
+
+
 private:
+	Byte *_cadBuffer;
+	Byte *_maskBuffer;
+
 	Panel(const Panel& p){};
 	void operator=(const Panel& p){};
 

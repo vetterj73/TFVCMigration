@@ -18,6 +18,8 @@ Panel::Panel() :
 	_currentFiducial = endFiducials();
 	_padInspectionAreaLong = .60;
 	_padInspectionAreaShort = 1.20;
+	_cadBuffer = NULL;
+	_maskBuffer = NULL;
 }
 
 Panel::~Panel()

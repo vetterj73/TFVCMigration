@@ -153,6 +153,15 @@ namespace Cyber
 				void set(double value);
 			}
 
+			void SetCadBuffer(System::IntPtr buffer)
+			{
+				_pPanel->SetCadBuffer((Byte*)(void*)buffer);
+			}
+	
+			void SetMaskBuffer(System::IntPtr buffer)
+			{
+				_pPanel->SetMaskBuffer((Byte*)(void*)buffer);
+			}
 
 			///
 			/// Returns the number of pixels, based on a particular panel size in X

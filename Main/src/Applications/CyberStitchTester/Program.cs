@@ -74,6 +74,7 @@ namespace CyberStitchTester
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
 
+            CyberBitmapData cbd = null;
             // Set up production for aligner
             try
             {
@@ -84,16 +85,15 @@ namespace CyberStitchTester
                         _panel.GetNumPixelsInX(cPixelSizeInMeters), 
                         PixelFormat.Format8bppIndexed);
                     
-                    CyberBitmapData cbd = new CyberBitmapData();
+                    cbd = new CyberBitmapData();
                     cbd.Lock(bmp);
                     PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)bmp.Width, (uint)bmp.Height, (uint)cbd.Stride, cbd.Scan0, IntPtr.Zero, false);
-                    cbd.Unlock();
+                    _panel.SetCadBuffer(cbd.Scan0);
+//                    string fileName = Path.GetDirectoryName(panelFile) + "\\" + Path.GetFileNameWithoutExtension(panelFile) +
+  //                                    ".png";
 
-                    string fileName = Path.GetDirectoryName(panelFile) + "\\" + Path.GetFileNameWithoutExtension(panelFile) +
-                                      ".png";
-
-                    bmp.Save(fileName);
-                    bmp.Dispose();
+    //                bmp.Save(fileName);
+      //              bmp.Dispose();
                 }
                 
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
@@ -136,6 +136,9 @@ namespace CyberStitchTester
                 else
                     mDoneEvent.Reset();
             }
+
+            if(cbd != null)
+                cbd.Unlock();
 
             Output("Processing Complete");
             logger.Kill();
