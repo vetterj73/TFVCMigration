@@ -10,8 +10,8 @@ OverlapManager::OverlapManager(
 	unsigned int iNumIlluminations,
 	Panel* pPanel,		
 	double dCadImageResolution,
-	Image* pCadImg,
-	Image* pPanelMaskImg)
+	unsigned char* pCadBuf,
+	unsigned char* pPanelMaskBuf)
 {	
 	// Inputs
 	_pMosaics = pMosaics;	
@@ -19,15 +19,51 @@ OverlapManager::OverlapManager(
 	_iNumIlluminations = iNumIlluminations;
 	_pPanel = pPanel;
 	_dCadImageResolution = dCadImageResolution;	
-	_pCadImg = pCadImg;
-	_pPanelMaskImg = pPanelMaskImg;
 
 	// Valid panel area in world space 
 	_validRect.xMin = 0;
 	_validRect.yMin = 0;
 	_validRect.xMax = _pPanel->xLength();
 	_validRect.yMax = _pPanel->yLength();
-	
+
+	// Create Cad and Mask images if their buffers are provided
+	unsigned int iNumRows = _pPanel->GetNumPixelsInX(_dCadImageResolution);
+	unsigned int iNumCols = _pPanel->GetNumPixelsInY(_dCadImageResolution);
+	bool bCreateOwnBuf = false;
+	unsigned int iBytePerPixel = 1;
+		// create image transform
+	double t[3][3];
+	t[0][0] = _dCadImageResolution;
+	t[0][1] = 0;
+	t[0][2] = _validRect.xMin;
+	t[1][0] = 0;
+	t[1][1] = _dCadImageResolution;
+	t[1][2] = _validRect.yMin;
+	t[2][0] = 0;
+	t[2][1] = 0;
+	t[2][2] = 1;
+	ImgTransform trans(t);
+		// Create Cad image
+	if(pCadBuf == NULL)
+	{
+		_pCadImg = NULL;
+	}
+	else
+	{
+		_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+			trans, trans, bCreateOwnBuf, pCadBuf);
+	}
+		// Create Panel Mask image
+	if(pPanelMaskBuf == NULL)
+	{
+		_pPanelMaskImg = NULL;
+	}
+	else
+	{
+		_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+			trans, trans, bCreateOwnBuf, pPanelMaskBuf);
+	}
+
 	// Control parameter
 	_iMinOverlapSize = CorrParams.iMinOverlapSize;
 
@@ -62,9 +98,9 @@ OverlapManager::OverlapManager(
 		}
 	}
 
-	//Create overlaps
+	// Create overlaps
 	CreateFovFovOverlaps();
-	CreateCadFovOverlaps();
+	if(_pCadImg != NULL) CreateCadFovOverlaps();
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask

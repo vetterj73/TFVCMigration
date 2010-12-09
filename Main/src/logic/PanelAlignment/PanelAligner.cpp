@@ -103,10 +103,14 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	rect.xMax = _pSet->GetObjectWidthInMeters();
 	rect.yMin = 0;
 	rect.yMax = _pSet->GetObjectLengthInMeters();
+
+	unsigned char* pCadBuf = _pPanel->GetCadBuffer();
+	unsigned char* pPanelMaskBuf = _pPanel->GetMaskBuffer(); 
+
 	_pOverlapManager = new OverlapManager(
 		_pMosaics, _pCorrelationFlags, _iNumIlluminations, 
 		_pPanel, _pSet->GetNominalPixelSizeX(),
-		NULL, NULL);
+		pCadBuf, pPanelMaskBuf);
 		
 	// Create stitching manager 
 	_pStitchingManager = new StitchingManager(_pOverlapManager);

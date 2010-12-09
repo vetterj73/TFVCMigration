@@ -20,8 +20,8 @@ public:
 		unsigned int iNumIlluminations,
 		Panel* pPanel,		
 		double dCadImageResolution,
-		Image* pCadImg,
-		Image* pPanelMaskImage);
+		unsigned char* pCadBuf,
+		unsigned char* pPanelMaskBuf);
 	~OverlapManager(void);
 
 	bool ResetforNewPanel();
