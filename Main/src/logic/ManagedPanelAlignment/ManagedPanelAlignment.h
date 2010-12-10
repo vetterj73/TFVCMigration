@@ -8,7 +8,7 @@
 
 using namespace System;
 using namespace MMosaicDM; 
-using namespace Cyber::SPIAPI;
+using namespace Cyber::MPanel;
 using namespace MLOGGER;
 
 namespace PanelAlignM {

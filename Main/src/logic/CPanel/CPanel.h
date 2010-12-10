@@ -32,7 +32,7 @@ using namespace System::Collections::Generic;
 
 namespace Cyber
 {
-	namespace SPIAPI
+	namespace MPanel
 	{
 		/// \brief
 		/// The CPanel class is used to communicate panel geometries for a 

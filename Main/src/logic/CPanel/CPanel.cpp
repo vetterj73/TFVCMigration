@@ -27,7 +27,7 @@ using namespace System;
 
 namespace Cyber
 {
-	namespace SPIAPI
+	namespace MPanel
 	{
 		///
 		// CPanel

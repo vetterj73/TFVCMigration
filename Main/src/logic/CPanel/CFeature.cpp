@@ -25,7 +25,7 @@ Environment:
 
 namespace Cyber
 {
-	namespace SPIAPI
+	namespace MPanel
 	{
 		CFeature::CFeature()
 		{

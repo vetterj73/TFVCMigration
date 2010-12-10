@@ -75,14 +75,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedPanelAlignment", "..
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelToImage", "..\..\logic\PanelToImage\PanelToImage.vcxproj", "{14420F01-1DD6-498B-B379-101006B6EED0}"
-	ProjectSection(ProjectDependencies) = postProject
-		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 16
+		SccNumberOfProjects = 15
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -133,9 +128,6 @@ Global
 		SccProjectUniqueName14 = ..\\..\\logic\\ManagedPanelAlignment\\ManagedPanelAlignment.vcxproj
 		SccProjectName14 = ../../logic/ManagedPanelAlignment
 		SccLocalPath14 = ..\\..\\logic\\ManagedPanelAlignment
-		SccProjectUniqueName15 = ..\\..\\logic\\PanelToImage\\PanelToImage.vcxproj
-		SccProjectName15 = ../../logic/PanelToImage
-		SccLocalPath15 = ..\\..\\logic\\PanelToImage
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -286,16 +278,6 @@ Global
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|Win32.Build.0 = Release|Win32
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|x64.ActiveCfg = Release|x64
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|x64.Build.0 = Release|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Debug|Win32.ActiveCfg = Debug|Win32
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Debug|Win32.Build.0 = Debug|Win32
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Debug|x64.ActiveCfg = Debug|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Debug|x64.Build.0 = Debug|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Release|Any CPU.ActiveCfg = Release|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Release|Win32.ActiveCfg = Release|Win32
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Release|Win32.Build.0 = Release|Win32
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Release|x64.ActiveCfg = Release|x64
-		{14420F01-1DD6-498B-B379-101006B6EED0}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

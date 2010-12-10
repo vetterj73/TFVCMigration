@@ -1,14 +1,13 @@
 using System.Collections;
 using System.Drawing;
-using Cyber.SPIAPI;
 using SRF;
-using CCross=Cyber.SPIAPI.CCross;
-using CDiamond=Cyber.SPIAPI.CDiamond;
-using CDisc=Cyber.SPIAPI.CDisc;
-using CDonut=Cyber.SPIAPI.CDonut;
-using CPanel=Cyber.SPIAPI.CPanel;
-using CRectangle=Cyber.SPIAPI.CRectangle;
-using CTriangle=Cyber.SPIAPI.CTriangle;
+using CCross=Cyber.MPanel.CCross;
+using CDiamond = Cyber.MPanel.CDiamond;
+using CDisc = Cyber.MPanel.CDisc;
+using CDonut = Cyber.MPanel.CDonut;
+using CPanel = Cyber.MPanel.CPanel;
+using CRectangle = Cyber.MPanel.CRectangle;
+using CTriangle = Cyber.MPanel.CTriangle;
 
 namespace CPanelIO
 {
@@ -137,7 +136,7 @@ namespace CPanelIO
             {
                 SRFUtilities.VendorShapeFeatureInfo shape = (SRFUtilities.VendorShapeFeatureInfo)features[id];
 
-                Cyber.SPIAPI.CCyberShape cyberShape = new Cyber.SPIAPI.CCyberShape(id, shape.X, shape.Y, shape.Theta);
+                Cyber.MPanel.CCyberShape cyberShape = new Cyber.MPanel.CCyberShape(id, shape.X, shape.Y, shape.Theta);
 
                 //string filename = "c:\\2D_SPI\\LogFiles\\FrmMain-CyberShapes.csv";
                 //bool fileExists = File.Exists(filename);
@@ -154,7 +153,7 @@ namespace CPanelIO
                     //                 segment.ClockwiseArc, segment.PositionX, segment.PositionY,
                     //                 segment.ArcX, segment.ArcY);
 
-                    Cyber.SPIAPI.CCyberSegment cCyberSegment = new Cyber.SPIAPI.CCyberSegment(segment.Line,
+                    Cyber.MPanel.CCyberSegment cCyberSegment = new Cyber.MPanel.CCyberSegment(segment.Line,
                         segment.PenDown, segment.ClockwiseArc, segment.PositionX, segment.PositionY,
                         segment.ArcX, segment.ArcY);
 

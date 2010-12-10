@@ -27,11 +27,9 @@ Environment:
 
 using namespace System::Collections::Generic;
 
-
-
 namespace Cyber
 {
-	namespace SPIAPI
+	namespace MPanel
 	{
 		/// \brief
 		/// The \b CFeature class is the base class for all feature and fiducial 
