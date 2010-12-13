@@ -14,6 +14,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetExternalDeps", "..\..\GetExternalDeps\GetExternalDeps.vcxproj", "{7B804D93-5BED-44B3-94E6-4CC7F32F3B07}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic\ImageDefines\ImageDefines.vcxproj", "{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCorrelation", "..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj", "{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}"
 	ProjectSection(ProjectDependencies) = postProject
