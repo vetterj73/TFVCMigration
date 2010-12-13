@@ -7,6 +7,12 @@
 
 #include "Panel.h"
 
+void ImageAdded(int layerIndex, int cameraIndex, int triggerIndex, void* context)
+{
+	PanelAligner *pPanelAlign = (PanelAligner *)context;
+	pPanelAlign->AddImage(layerIndex, triggerIndex, cameraIndex);
+}
+
 PanelAligner::PanelAligner(void)
 {
 	_pMosaics = NULL;
@@ -55,6 +61,8 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 
 	_pSet = pSet;
 	_pPanel = pPanel;
+
+	_pSet->RegisterImageAddedCallback(ImageAdded, this);
 
 	// Create moasic images
 	_iNumIlluminations = _pSet->GetNumMosaicLayers();
