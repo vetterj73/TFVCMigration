@@ -30,6 +30,9 @@ public:
 
 	LoggableObject* GetLogger() {return &LOG;};
 
+	bool SaveStitchedImage(int layer, string imagePath);
+	bool Save3ChannelImage(int layerInChannel1, int layerInChannel2, bool panelCadInLayer3, string imagePath);
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();

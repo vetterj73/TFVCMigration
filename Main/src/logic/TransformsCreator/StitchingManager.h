@@ -18,7 +18,7 @@ public:
 		unsigned int iCamIndex);	
 	
 	void Reset();
-
+	bool ResultsReady(){return _bResultsReady;};
 	void CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage) const;
 	static void CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage);
 
@@ -49,6 +49,7 @@ private:
 	RobustSolver* _pMaskSolver;
 	map<FovIndex, unsigned int> _maskMap;
 	bool _bMasksCreated;
+	bool _bResultsReady;
 
 
 	// For debug 

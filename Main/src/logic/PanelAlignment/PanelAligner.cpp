@@ -162,3 +162,19 @@ bool PanelAligner::AddImage(
 
 	return(true);
 }
+
+bool PanelAligner::SaveStitchedImage(int layer, string imagePath)
+{
+	if(!_pStitchingManager->ResultsReady())
+		return false;
+
+	return false;
+}
+
+bool PanelAligner::Save3ChannelImage(int layerInChannel1, int layerInChannel2, bool panelCadInLayer3, string imagePath)
+{
+	if(!_pStitchingManager->ResultsReady())
+		return false;
+
+	return false;
+}

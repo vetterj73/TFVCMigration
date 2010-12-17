@@ -35,7 +35,7 @@ StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
 	}
 
 	_bMasksCreated = false;
-
+	_bResultsReady = false;
 	_iCycleCount = 0;
 }
 
@@ -54,6 +54,7 @@ void StitchingManager::Reset()
 		_pMaskSolver->Reset();
 
 	_bMasksCreated = false;
+	_bResultsReady = false;
 }
 
 // For function CreateImageOrderInSolver()
@@ -301,6 +302,7 @@ bool StitchingManager::CreateTransforms()
 
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Transforms are created");
 
+	_bResultsReady = true;
 	// For Debug 
 	if(CorrParams.bSaveStitchedImage)
 	{

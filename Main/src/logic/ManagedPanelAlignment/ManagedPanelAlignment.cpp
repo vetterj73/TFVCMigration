@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include "ManagedPanelAlignment.h"
+using namespace System;
 
 namespace PanelAlignM {
 
@@ -50,4 +51,19 @@ namespace PanelAlignM {
 		return(bFlag);
 	}
 
+	bool ManagedPanelAlignment::SaveStitchedImage(int layer, System::String^ imagePath)
+	{
+		string nativeImagePath = (char*)(System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath)).ToPointer();			
+		return _pAligner->SaveStitchedImage(layer, nativeImagePath);
+	}
+
+	bool ManagedPanelAlignment::Save3ChannelImage(int layerInChannel1, int layerInChannel2, bool panelCadInLayer3, System::String^ imagePath)
+	{
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath))
+		string nativeImagePath = (char*)stringPtr.ToPointer();			
+		bool result = _pAligner->Save3ChannelImage(layerInChannel1, layerInChannel2, panelCadInLayer3, nativeImagePath);
+		Marshal.FreeHGlobal(stringPtr);
+
+		return result;
+	}
 }
