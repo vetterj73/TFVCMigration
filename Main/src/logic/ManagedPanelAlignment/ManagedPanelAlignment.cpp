@@ -4,6 +4,7 @@
 
 #include "ManagedPanelAlignment.h"
 using namespace System;
+using namespace System::Runtime::InteropServices;
 
 namespace PanelAlignM {
 
@@ -59,10 +60,10 @@ namespace PanelAlignM {
 
 	bool ManagedPanelAlignment::Save3ChannelImage(int layerInChannel1, int layerInChannel2, bool panelCadInLayer3, System::String^ imagePath)
 	{
-		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath))
-		string nativeImagePath = (char*)stringPtr.ToPointer();			
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath);
+		std::string nativeImagePath = (char*)stringPtr.ToPointer();			
 		bool result = _pAligner->Save3ChannelImage(layerInChannel1, layerInChannel2, panelCadInLayer3, nativeImagePath);
-		Marshal.FreeHGlobal(stringPtr);
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
 
 		return result;
 	}

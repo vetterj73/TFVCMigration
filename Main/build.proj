@@ -33,28 +33,25 @@
 
   <!--Publish the results-->
   <Target Name="PublishLatestVersion" Condition="$(PUBLISH)==true">
-    <MakeDir Directories="$(REPOROOT)$(VERSION)\images;$(REPOROOT)$(VERSION)\Sentry\win32;$(REPOROOT)$(VERSION)\Sentry\x64;"/>
+    <MakeDir Directories="$(REPOROOT)$(VERSION)\images;"/>
 
     <!--Copy instructions and release notes - the history file is created in the parent build step -->
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)$(VERSION)\Images\&quot;"/>
-<!--    <Exec ContinueOnError="true" Command="xcopy /S /E /Y /Q &quot;$(APPLICATIONS)SIMJukiProduction\Install\release\*&quot; &quot;$(REPOROOT)$(VERSION)\Sentry\win32&quot;"/>
-    <Exec ContinueOnError="true" Command="xcopy /S /E /Y /Q &quot;$(APPLICATIONS)SIMJukiProduction\Install64\release\*&quot; &quot;$(REPOROOT)$(VERSION)\Sentry\x64&quot;"/>
--->  
+    <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
+
   </Target>
 
   <!--Publish the results-->
   <Target Name="PublishTip" Condition="$(CONFIG)=='release'">
-    <MakeDir Directories="$(REPOROOT)Tip\images;$(REPOROOT)Tip\Sentry\win32;$(REPOROOT)Tip\Sentry\x64;"/>
+    <MakeDir Directories="$(REPOROOT)Tip\images;"/>
 
     <!--Copy instructions and release notes - the history file is created in the parent build step -->
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)Tip\Images\&quot;"/>
- <!--   
-    <Exec ContinueOnError="true" Command="xcopy /S /E /Y /Q &quot;$(APPLICATIONS)SIMJukiProduction\Install\release\*&quot; &quot;$(REPOROOT)Tip\Sentry\win32&quot;"/>
-    <Exec ContinueOnError="true" Command="xcopy /S /E /Y /Q &quot;$(APPLICATIONS)SIMJukiProduction\Install64\release\*&quot; &quot;$(REPOROOT)Tip\Sentry\x64&quot;"/>
--->  
+    <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)Tip\&quot;"/>
+
   </Target>
 </Project>

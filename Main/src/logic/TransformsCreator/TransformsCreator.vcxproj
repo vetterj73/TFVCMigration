@@ -66,16 +66,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -92,6 +92,10 @@
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -108,6 +112,10 @@
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -128,6 +136,10 @@
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -148,6 +160,10 @@
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
     </Lib>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="EquationWeights.h" />
