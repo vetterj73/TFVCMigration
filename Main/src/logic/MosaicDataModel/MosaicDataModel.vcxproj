@@ -72,19 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
