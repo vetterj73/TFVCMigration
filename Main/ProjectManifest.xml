@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <?xml-stylesheet type="text/xsl" href="ProjectManifest.xsl" ?>
 <manifest version="1.0">
-  <project name="CyberStitch" version="1.0" build_number="0.8">
+  <project name="CyberStitch" version="1.0" build_number="0.9">
     <dependencies>
       <dependency project_name="Bitmap" version="1.2010.6.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Bitmap" target=".\Bitmap\" />
       <dependency project_name="CyberCommon" version="1.0.42.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\CyberCommon\Managed" target=".\CyberCommon\" />
