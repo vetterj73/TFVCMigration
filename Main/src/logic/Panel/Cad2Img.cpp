@@ -9,7 +9,7 @@ Cad2Img::Cad2Img(Panel*			p,
 				 unsigned int columns,
 				 unsigned int rows,
 				 unsigned int stride,
-				 Byte * cadBuffer,
+				 unsigned char * cadBuffer,
 				 Word * aptBuffer,
 				 double	resolution,
 				 bool drawCADROI) :
@@ -35,7 +35,7 @@ Cad2Img::Cad2Img(Panel*			p,
 		_drawCad = false;
 
 	if(aptBuffer)
-		_aptImage.Configure(columns, rows, stride, imgTransform, imgTransform, false, (Byte*)aptBuffer);
+		_aptImage.Configure(columns, rows, stride, imgTransform, imgTransform, false, (unsigned char*)aptBuffer);
 	else
 		_drawApt = false;
 

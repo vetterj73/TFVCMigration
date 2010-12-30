@@ -155,12 +155,12 @@ namespace Cyber
 
 			void SetCadBuffer(System::IntPtr buffer)
 			{
-				_pPanel->SetCadBuffer((Byte*)(void*)buffer);
+				_pPanel->SetCadBuffer((unsigned char*)(void*)buffer);
 			}
 	
 			void SetMaskBuffer(System::IntPtr buffer)
 			{
-				_pPanel->SetMaskBuffer((Byte*)(void*)buffer);
+				_pPanel->SetMaskBuffer((unsigned char*)(void*)buffer);
 			}
 
 			///

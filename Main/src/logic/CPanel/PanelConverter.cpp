@@ -12,7 +12,7 @@ namespace Cyber
 			unsigned int columns, unsigned int rows, unsigned int stride,
 			System::IntPtr cadBuffer, System::IntPtr aperatureBuffer, bool drawCADROI)
 		{
-			Cad2Img c2i((Panel*)(void*)panel, columns, rows, stride, (Byte*)(void*)cadBuffer, (Word*)(void*)aperatureBuffer, pixelSize, drawCADROI);
+			Cad2Img c2i((Panel*)(void*)panel, columns, rows, stride, (unsigned char*)(void*)cadBuffer, (Word*)(void*)aperatureBuffer, pixelSize, drawCADROI);
 		}
 	}
 }

@@ -88,16 +88,16 @@ public:
 		_maskBuffer = buffer;
 	}
 	
-	Byte *GetCadBuffer()
+	unsigned char* GetCadBuffer()
 	{return _cadBuffer;}
 
-	Byte *GetMaskBuffer()
+	unsigned char* GetMaskBuffer()
 	{return _maskBuffer;}
 
 
 private:
-	Byte *_cadBuffer;
-	Byte *_maskBuffer;
+	unsigned char *_cadBuffer;
+	unsigned char *_maskBuffer;
 
 	Panel(const Panel& p){};
 	void operator=(const Panel& p){};

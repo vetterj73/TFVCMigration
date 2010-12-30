@@ -292,11 +292,11 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 	ncols = RegoffLength(ncols, _iDecim);
 
 	// Pointer to first image
-	Byte* first_image_buffer =
+	unsigned char* first_image_buffer =
 		_pImg1->GetBuffer(iFirstCol1, iFirstRow1);
 
 	// Pointer to second image
-	Byte* second_image_buffer =
+	unsigned char* second_image_buffer =
 		_pImg2->GetBuffer(iFirstCol2, iFirstRow2);
 
 	int RowStrideA(_pImg1->PixelRowStride());
@@ -660,7 +660,7 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 	int iWidth = _roi1.Columns();
 	int iHeight = _roi1.Rows();
 	int iSpan = _pImg2->PixelRowStride();
-	Byte* pcTempBuf = new Byte[iWidth*iHeight];
+	unsigned char* pcTempBuf = new Byte[iWidth*iHeight];
 	::memset(pcTempBuf, 0, iWidth*iHeight);
 
 	int iOffsetX = (int)_result.ColOffset;

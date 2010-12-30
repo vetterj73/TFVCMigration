@@ -21,7 +21,7 @@ public:
 				unsigned int columns,
 				unsigned int rows,
 				unsigned int stride,
-				Byte * cadBuffer,
+				unsigned char* cadBuffer,
 				Word * aptBuffer,
 				double resolution,
 				bool DrawCADROI = true);
