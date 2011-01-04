@@ -88,11 +88,6 @@ namespace CyberStitchTester
                     cbd.Lock(bmp);
                     PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)bmp.Width, (uint)bmp.Height, (uint)cbd.Stride, cbd.Scan0, IntPtr.Zero, false);
                     _panel.SetCadBuffer(cbd.Scan0);
-//                    string fileName = Path.GetDirectoryName(panelFile) + "\\" + Path.GetFileNameWithoutExtension(panelFile) +
-  //                                    ".png";
-
-    //                bmp.Save(fileName);
-      //              bmp.Dispose();
                 }
                 
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
@@ -278,7 +273,7 @@ namespace CyberStitchTester
 
                 // Use camera zero as reference
                 ManagedSIMCamera camera0 = d.GetSIMCamera(0);
-                /// Set up the transform parameters...
+                // Set up the transform parameters...
                 for (int j = 0; j < numCameras; j++)
                 {
                     ManagedSIMCamera camera = d.GetSIMCamera(j);
@@ -291,8 +286,6 @@ namespace CyberStitchTester
                             Output("Could not access tile at: " + j + ", " + k);
                             return;
                         }
-                        double dTmep = pSpec.GetTriggerAtIndex(k);
-
                         // First camera center in X
                         double dTrigOffset = pSpec.GetTriggerAtIndex(k) + pSpec.XOffset();
                         double xOffset = _panel.PanelSizeX- dTrigOffset - camera0.Pixelsize.X * camera0.Rows()/2;
@@ -302,7 +295,7 @@ namespace CyberStitchTester
                         xOffset -= (camera.Pixelsize.X * camera.Rows() / 2);
 
                         // First camera center in Y
-                        double yOffset = (-d.YOffset + camera0.Pixelsize.Y * camera0.Columns() / 2); ;
+                        double yOffset = (-d.YOffset + camera0.Pixelsize.Y * camera0.Columns() / 2); 
                         // The camera center in Y
                         yOffset += (camera.CenterOffset.Y - camera0.CenterOffset.Y);
                         // The camera orign in Y
