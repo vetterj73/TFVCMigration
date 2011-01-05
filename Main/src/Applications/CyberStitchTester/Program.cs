@@ -130,6 +130,7 @@ namespace CyberStitchTester
 
             Output("Processing Complete");
             logger.Kill();
+            ManagedCoreAPI.TerminateAPI();
         }
 
         private static bool GatherImages()
