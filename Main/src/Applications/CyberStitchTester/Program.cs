@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using CPanelIO;
 using Cyber.DiagnosticUtils;
-using Cyber.ImageUtils;
 using Cyber.MPanel;
 using MCoreAPI;
 using MLOGGER;
@@ -25,7 +22,7 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
-        
+        private static ManagedImage8 _cadImage = null;
         // For debug
         private static int _iBufCount = 0;
 
@@ -73,21 +70,23 @@ namespace CyberStitchTester
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
 
-            CyberBitmapData cbd = null;
             // Set up production for aligner
             try
             {
                 // If the production is valid
                 if (_panel.PanelSizeX > 0)
                 {
-                    Bitmap bmp = new Bitmap(_panel.GetNumPixelsInY(cPixelSizeInMeters), 
-                        _panel.GetNumPixelsInX(cPixelSizeInMeters), 
-                        PixelFormat.Format8bppIndexed);
-                    
-                    cbd = new CyberBitmapData();
-                    cbd.Lock(bmp);
-                    PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, (uint)bmp.Width, (uint)bmp.Height, (uint)cbd.Stride, cbd.Scan0, IntPtr.Zero, false);
-                    _panel.SetCadBuffer(cbd.Scan0);
+                    _cadImage = new ManagedImage8((uint)_panel.GetNumPixelsInY(cPixelSizeInMeters), 
+                        (uint)_panel.GetNumPixelsInX(cPixelSizeInMeters));
+
+                    PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, _cadImage.Columns, _cadImage.Rows, _cadImage.RowStrideInBytes, _cadImage.Buffer, IntPtr.Zero, false);
+                    /*
+                    ImageSaver.SaveToFile((int)_cadImage.Columns, (int)_cadImage.Rows,
+                                          (int)_cadImage.Columns, _cadImage.Buffer, "c:\\cad.png",
+                                          PixelFormat.Format8bppIndexed,
+                                          System.Drawing.Imaging.ImageFormat.Png);
+                    */
+                    _panel.SetCadBuffer(_cadImage.Buffer);
                 }
                 
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
@@ -128,9 +127,6 @@ namespace CyberStitchTester
                 else
                     mDoneEvent.Reset();
             }
-
-            if(cbd != null)
-                cbd.Unlock();
 
             Output("Processing Complete");
             logger.Kill();

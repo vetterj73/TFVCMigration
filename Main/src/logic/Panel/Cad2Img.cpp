@@ -21,12 +21,6 @@ Cad2Img::Cad2Img(Panel*			p,
 	//if(resolution==0.0)
 	//	G_LOG_0_ERROR("Cad2Img() - zero pixel size");
 
-	//if(_cadImage.GetBuffer()!=0)
-	//	G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
-
-	//if(_aptImage.GetBuffer()!=0)
-	//	G_LOG_0_ERROR("Cad2Img() - cannot overwrite CadImg");
-
 	ImgTransform imgTransform(_resolution, _resolution, 0, 0, 0);
 
 	if(cadBuffer)
@@ -92,16 +86,13 @@ void Cad2Img::DrawPads(bool drawCADROI)
 					RenderCyberShape(_aptImage, _resolution, static_cast<CyberFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
 				break;
 			case Feature::SHAPE_UNDEFINED:
-		//		G_LOG_0_ERROR("DrawPads() - undefined shape");
-				break;
-
-			default:
-		//		G_LOG_0_ERROR("DrawPads() - undefined default shape");
+			default:  // Do nothing - we don't know how to draw whatever this is...
 				break;
 		}
 
 		// @todo - This was commented out by Alan to get things to build for cyberstitch...
-		// Do we need it?
+		// Instead of having the image draw to itself, we should implement a way to draw
+		// the rectangular box using a render function.
 		//if(drawCADROI)
 		//{
 		//	Box bounds = (feature->second)->GetBoundingBox();
@@ -117,7 +108,7 @@ void Cad2Img::DrawPads(bool drawCADROI)
 		//}
 	}
 
-	if(0)//_drawCad)
+	if(_drawCad)  // Only used for CAD - not SPI Aperatures...
 	{
 		for(FeatureListIterator feature = _pPanel->beginFiducials(); feature!=_pPanel->endFiducials(); ++feature)
 		{
@@ -145,12 +136,8 @@ void Cad2Img::DrawPads(bool drawCADROI)
 					RenderCyberShape(_cadImage, _resolution, static_cast<CyberFeature*>(feature->second));
 					break;
 				case Feature::SHAPE_UNDEFINED:
-	//				G_LOG_0_ERROR("DrawPads() - undefined shape");
-					break;
-
 				default:
-	//				G_LOG_0_ERROR("DrawPads() - undefined default shape");
-					break;
+					break;  // Do nothing - we don't know how to draw whatever this is...
 			}
 		}
 	}

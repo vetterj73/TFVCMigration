@@ -3,6 +3,7 @@
 #include "PanelConverter.h"
 #include "Panel.h"
 #include "Image16.h"
+#include "ManagedImage.h"
 #include "Cad2Img.h"
 
 namespace Cyber

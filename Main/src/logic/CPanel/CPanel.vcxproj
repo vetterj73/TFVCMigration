@@ -200,6 +200,7 @@
   <ItemGroup>
     <ClInclude Include="CFeature.h" />
     <ClInclude Include="CPanel.h" />
+    <ClInclude Include="ManagedImage.h" />
     <ClInclude Include="PanelConverter.h" />
   </ItemGroup>
   <ItemGroup>
