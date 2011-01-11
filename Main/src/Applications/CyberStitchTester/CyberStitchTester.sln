@@ -79,9 +79,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedPanelAlignment", "..
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsFinderWrapper", "..\..\logic\VsFinderWrapper\VsFinderWrapper.vcxproj", "{BF7D0622-E565-4DCB-9219-B767D56F2593}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 15
+		SccNumberOfProjects = 16
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -132,6 +134,9 @@ Global
 		SccProjectUniqueName14 = ..\\..\\logic\\ManagedPanelAlignment\\ManagedPanelAlignment.vcxproj
 		SccProjectName14 = ../../logic/ManagedPanelAlignment
 		SccLocalPath14 = ..\\..\\logic\\ManagedPanelAlignment
+		SccProjectUniqueName15 = ..\\..\\logic\\VsFinderWrapper\\VsFinderWrapper.vcxproj
+		SccProjectName15 = ../../logic/VsFinderWrapper
+		SccLocalPath15 = ..\\..\\logic\\VsFinderWrapper
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -341,6 +346,20 @@ Global
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|Win32.Build.0 = Release|Win32
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|x64.ActiveCfg = Release|x64
 		{D46B74F8-444E-4536-81CC-B08444E7B819}.Release|x64.Build.0 = Release|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|Win32.Build.0 = Debug|Win32
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|x64.ActiveCfg = Debug|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Debug|x64.Build.0 = Debug|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Any CPU.ActiveCfg = Release|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Mixed Platforms.Build.0 = Release|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Win32.ActiveCfg = Release|Win32
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Win32.Build.0 = Release|Win32
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|x64.ActiveCfg = Release|x64
+		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
