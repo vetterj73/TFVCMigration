@@ -711,7 +711,7 @@ bool OverlapManager::DoAlignmentForFov(
 		if(i->IsReadyToProcess())
 		{
 			i->DoIt();
-			//if(CorrParams.bSaveOverlap)
+			if(CorrParams.bSaveOverlap)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
