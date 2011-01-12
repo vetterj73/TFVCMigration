@@ -40,6 +40,18 @@ void Panel::ClearBuffers()
 		delete[] _aperatureBuffer;
 		_aperatureBuffer = NULL;
 	}
+
+	if(_maskBuffer != NULL)
+	{
+		delete[] _maskBuffer;
+		_maskBuffer = NULL;
+	}
+
+	if(_cadBuffer != NULL)
+	{
+		delete[] _cadBuffer;
+		_cadBuffer = NULL;
+	}
 }
 
 void Panel::Name(string name)
@@ -257,7 +269,6 @@ unsigned char* Panel::GetCadBuffer()
 	{
 		_cadBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_cadBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
-
 		Cad2Img::DrawCAD(this, _cadBuffer, false);
 	}
 	return _cadBuffer;
@@ -268,6 +279,8 @@ unsigned char* Panel::GetMaskBuffer()
 	/// @todo !!!!!!!!!!!!!!!!!!
 	/// Not quite sure how to handle this yet... what if we want different scaled masks
 	return NULL;
+
+
 	if(_maskBuffer == NULL)
 	{
 		_maskBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
@@ -283,6 +296,7 @@ unsigned short* Panel::GetAperatureBuffer()
 	{
 		_aperatureBuffer = new unsigned short[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_aperatureBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY()*2);	
+		Cad2Img::DrawAperatures(this, _aperatureBuffer, false);
 	}
 
 	return _aperatureBuffer;

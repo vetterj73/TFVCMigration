@@ -71,6 +71,7 @@ namespace CyberStitchTester
             // Set up production for aligner
             try
             {
+                //IntPtr p = _panel.AperatureBuffer;
                 /*
                 // If the production is valid
                 if (_panel.PanelSizeX > 0)

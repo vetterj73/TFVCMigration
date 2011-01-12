@@ -81,9 +81,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedPanelAlignment", "..
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsFinderWrapper", "..\..\logic\VsFinderWrapper\VsFinderWrapper.vcxproj", "{BF7D0622-E565-4DCB-9219-B767D56F2593}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPanelIOUnitTest", "..\..\logic\CPanelIO\CPanelIOUnitTest\CPanelIOUnitTest.csproj", "{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D52CAE91-2B4B-4061-BD21-1C9F39426386}"
+	ProjectSection(SolutionItems) = preProject
+		CyberStitchTester1.vsmdi = CyberStitchTester1.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 16
+		SccNumberOfProjects = 17
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -137,6 +146,13 @@ Global
 		SccProjectUniqueName15 = ..\\..\\logic\\VsFinderWrapper\\VsFinderWrapper.vcxproj
 		SccProjectName15 = ../../logic/VsFinderWrapper
 		SccLocalPath15 = ..\\..\\logic\\VsFinderWrapper
+		SccProjectUniqueName16 = ..\\..\\logic\\CPanelIO\\CPanelIOUnitTest\\CPanelIOUnitTest.csproj
+		SccProjectTopLevelParentUniqueName16 = CyberStitchTester.sln
+		SccProjectName16 = ../../logic/CPanelIO/CPanelIOUnitTest
+		SccLocalPath16 = ..\\..\\logic\\CPanelIO\\CPanelIOUnitTest
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = CyberStitchTester1.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -360,6 +376,19 @@ Global
 		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|Win32.Build.0 = Release|Win32
 		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|x64.ActiveCfg = Release|x64
 		{BF7D0622-E565-4DCB-9219-B767D56F2593}.Release|x64.Build.0 = Release|x64
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|Win32.Build.0 = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Win32.ActiveCfg = Release|Any CPU
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -371,6 +400,8 @@ Global
 		{472145E5-F493-4DD4-AC4B-05AE3189245F} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{D52CAE91-2B4B-4061-BD21-1C9F39426386} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7

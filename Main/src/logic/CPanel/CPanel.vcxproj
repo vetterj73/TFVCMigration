@@ -195,13 +195,10 @@
   <ItemGroup>
     <ClCompile Include="CFeature.cpp" />
     <ClCompile Include="CPanel.cpp" />
-    <ClCompile Include="PanelConverter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CFeature.h" />
     <ClInclude Include="CPanel.h" />
-    <ClInclude Include="ManagedImage.h" />
-    <ClInclude Include="PanelConverter.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">

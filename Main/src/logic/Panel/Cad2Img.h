@@ -13,36 +13,25 @@
 #include "Panel.h"
 #include "Image16.h"
 
+/// \brief
+/// The Cad@Img class is a static class that is used to convert a CAD representation of an panel
+/// to an image representation of a panel.
+///
 class Cad2Img
 {
 public:
-
-	Cad2Img(	Panel*			p,
-				unsigned int columns,
-				unsigned int rows,
-				unsigned int stride,
-				unsigned char* cadBuffer,
-				Word * aptBuffer,
-				double resolution,
-				bool DrawCADROI = true);
-
+	///
+	///	DrawCAD - Draws a Panel to an 8 bit image pointer 
+	///
 	static bool DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI=false); 
 
-	static bool DrawMask(Panel* pPanel,	unsigned short* cadBuffer, double scale); 
+	///
+	///	DrawAperatures - Draws a Panel to a 16 bit image pointer (for PadStats)
+	///
+	static bool DrawAperatures(Panel* pPanel, unsigned short* aperatureBuffer, bool DrawCADROI = true); 
 
-	static bool DrawAperatures(Panel* pPanel, unsigned short* cadBuffer, bool DrawCADROI = true); 
-
-private:
-
-	void			DrawPads(bool drawCADROI);
-	bool            _drawApt;
-	bool            _drawCad;
-	Panel*			_pPanel;
-	Image			_cadImage;
-	Image16	        _aptImage;
-	double			_resolution;
-
-	// draw the image as columns correspond with x, 
-	// rows correspond with y
-	bool _rightSideUp;
+	///
+	///	DrawMask - Draws cad with scaling (used to mask areas of images that may be cad).
+	///
+	static bool DrawMask(Panel* pPanel,	unsigned short* maskBuffer, double scale); 
 };

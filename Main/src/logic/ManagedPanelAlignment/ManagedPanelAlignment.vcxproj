@@ -205,6 +205,9 @@
     <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
       <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\VsFinderWrapper\VsFinderWrapper.vcxproj">
+      <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\VsNgcWrapper\VsNgcWrapper.vcxproj">
       <Project>{3890952f-8d06-46a8-8731-5131f30fe9f8}</Project>
     </ProjectReference>
