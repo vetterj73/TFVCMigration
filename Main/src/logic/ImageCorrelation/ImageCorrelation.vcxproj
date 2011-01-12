@@ -81,7 +81,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,7 +101,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,7 +123,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,7 +147,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -170,16 +170,21 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
+    <ClInclude Include="VsFinderCorrelation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorrelationPair.cpp" />
     <ClCompile Include="CorrelationParameters.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
+    <ClCompile Include="VsFinderCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\VsFinderWrapper\VsFinderWrapper.vcxproj">
+      <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

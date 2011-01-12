@@ -8,6 +8,7 @@
 #include "CorrelationFlags.h"
 #include "OverlapDefines.h"
 #include "Panel.h"
+#include "VsFinderCorrelation.h"
 
 using namespace MosaicDM;
 
@@ -80,6 +81,8 @@ protected:
 		Feature* pFid, 
 		double resolution, 
 		double dScale);
+
+	bool CreateVsfinderTemplates();
 	
 private:	
 	MosaicImage* _pMosaics;
@@ -106,5 +109,10 @@ private:
 	unsigned int _iMinOverlapSize;
 
 	int _iMaskCreationStage;
+
+	// For vsfinder
+	VsFinderCorrelation* _pVsfinderCorr;
+	unsigned int* _pVsFinderTempIds;
+
 };
 

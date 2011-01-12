@@ -98,9 +98,18 @@ OverlapManager::OverlapManager(
 		}
 	}
 
-	// Create overlaps
+	// Create FovFov overlaps
 	CreateFovFovOverlaps();
+
+	// Create CadFov overlaps
 	if(_pCadImg != NULL) CreateCadFovOverlaps();
+	
+	// Create Fiducial Fov overlaps
+		// The vsfinder should not be used, if the vsNGc is used for mask
+	if(pPanelMaskBuf!=NULL) CorrParams.bUseVsFinder= false;	
+		// Allocate _pVsfinderCorr if it is necessary
+	_pVsfinderCorr = NULL;
+	if(CorrParams.bUseVsFinder)	_pVsfinderCorr = new VsFinderCorrelation();
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -130,6 +139,12 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pFidImages != NULL)
 		delete [] _pFidImages;
+
+	if(_pVsFinderTempIds !=NULL)
+		delete [] _pVsFinderTempIds;
+
+	if(_pVsfinderCorr != NULL)
+		delete _pVsfinderCorr;
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
@@ -439,9 +454,11 @@ bool OverlapManager::CreateFiducialImages()
 	_pFidImages = new Image[iNum];
 
 	unsigned int iCount = 0;
+	double dScale = 1.0;						// The expansion scale for regoff
+	if(CorrParams.bUseVsFinder) dScale = 1.4;	// The expansion scale for vsfinder 
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
-		double dScale = 1.0;
+		
 		RenderFiducial(
 			&_pFidImages[iCount], 
 			i->second, 
@@ -550,6 +567,41 @@ void OverlapManager::RenderFiducial(
 	}
 }
 
+// Create vsfinder templates
+bool OverlapManager::CreateVsfinderTemplates()
+{
+	// Validation check
+	if(_pVsfinderCorr == NULL)
+		return(false);
+
+	_pVsFinderTempIds = NULL;
+	unsigned int iNum = _pPanel->NumberOfFiducials();
+
+	if(iNum <=0) 
+	{
+		LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateVsfinderTemplates():No fiducial avaliable for alignment");
+		return(false);
+	}
+	_pVsFinderTempIds = new unsigned int[iNum];
+
+	unsigned int iCount = 0;
+	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
+	{
+		int iId = _pVsfinderCorr->CreateVsTemplate(i->second);
+		if(iId < 0) 
+		{
+			LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateVsfinderTemplates():Failed to create vsfinder template");
+			return(false);
+		}
+
+		_pVsFinderTempIds[iCount] = iId;
+
+		iCount++;
+	}
+
+	return(true);
+}
+
 // Create Fiducial and Fov overlaps
 void OverlapManager::CreateFidFovOverlaps()
 {
@@ -583,6 +635,10 @@ void OverlapManager::CreateFidFovOverlaps()
 					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
 					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
 						continue;
+
+					if(CorrParams.bUseVsFinder)
+					{
+					}
 
 					// Add overlap
 					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);

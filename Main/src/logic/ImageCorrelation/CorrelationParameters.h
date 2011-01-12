@@ -50,6 +50,9 @@ public:
 	unsigned int iFineColSearchExpansion;	// Search expansion in cols for fine correlation if coarse correlation is successed
 	unsigned int iFineRowSearchExpansion;	// Search expansion in rows for fine correlation if coarse correlation is successed
 
+	// Use Vsfinder
+	bool bUseVsFinder;						// Use vsfinder or regoff for fiducial finding
+	
 	// Fiducial search expansion
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
