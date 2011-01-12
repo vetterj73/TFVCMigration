@@ -544,8 +544,8 @@ bool FidFovOverlap::VsfinderAlign()
 		search_height,							// height of the search region in pixels
 		time_out,								// number of seconds to search maximum. If limit is reached before any results found, an error will be generated	
 		0,										// image origin is top-left				
-		0.4,									// If >0 minimum score to persue at min pyramid level to look for peak override
-		0.4);									// If >0 minumum score to accept at max pyramid level to look for peak override
+		0.5,									// If >0 minimum score to persue at min pyramid level to look for peak override
+		0.5);									// If >0 minumum score to accept at max pyramid level to look for peak override
 
 	CorrelationResult result;
 	result.AmbigScore = ambig;

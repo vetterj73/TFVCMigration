@@ -680,12 +680,8 @@ bool OverlapManager::DoAlignmentForFov(
 			i->DoIt();
 			if(CorrParams.bSaveOverlap)
 			{
-			//if((i->GetFirstMosaicImage()->Index()==0 && i->GetFirstImagePosition().first==5 && i->GetFirstImagePosition().second == 7) ||
-			//	(i->GetSecondMosaicImage()->Index()==0 && i->GetSecondImagePosition().first==5 && i->GetSecondImagePosition().second == 7))
-			//{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
-			//}
 			}
 		}
 	}
@@ -712,7 +708,7 @@ bool OverlapManager::DoAlignmentForFov(
 		if(i->IsReadyToProcess())
 		{
 			i->DoIt();
-			if(CorrParams.bSaveOverlap)
+			//if(CorrParams.bSaveOverlap)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
