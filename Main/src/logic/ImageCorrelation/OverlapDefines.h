@@ -6,6 +6,7 @@
 
 #include "MosaicImage.h"
 #include "CorrelationPair.h"
+#include "VsFinderCorrelation.h"
 
 // Base class for overlap between image and image
 class Overlap		
@@ -148,6 +149,8 @@ public:
 		double _dYcenter,
 		DRect validRect);
 
+	void SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID);
+
 	MosaicImage* GetMosaicImage() const {return _pMosaic;};
 	unsigned int GetTriggerIndex() const {return _imgPos.second;};
 	unsigned int GetCameraIndex() const {return _imgPos.first;};
@@ -158,6 +161,10 @@ public:
 	double GetFiducialYPos() const {return _dFidCenterY;};
 
 	bool IsReadyToProcess() const;
+
+	// For Vsfinder
+	bool UseVsFinder() const {return _bUseVsFinder;};
+	bool VsfinderAlign();
 
 	// For debug
 	bool DumpOvelapImages();
@@ -171,5 +178,9 @@ private:
 
 	double _dFidCenterX;
 	double _dFidCenterY;
+
+	bool _bUseVsFinder;
+	VsFinderCorrelation* _pVsfinderCorr;
+	unsigned int _iTemplateID;
 };
 

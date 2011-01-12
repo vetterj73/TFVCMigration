@@ -463,8 +463,8 @@ bool OverlapManager::CreateFiducialImages()
 			&_pFidImages[iCount], 
 			i->second, 
 			_dCadImageResolution, 
-			dScale);		
-		
+			dScale);	
+
 		// for Debug
 		//string s;
 		//char cTemp[100];
@@ -638,6 +638,7 @@ void OverlapManager::CreateFidFovOverlaps()
 
 					if(CorrParams.bUseVsFinder)
 					{
+						overlap.SetVsFinder(_pVsfinderCorr, _pVsFinderTempIds[iFid]);
 					}
 
 					// Add overlap

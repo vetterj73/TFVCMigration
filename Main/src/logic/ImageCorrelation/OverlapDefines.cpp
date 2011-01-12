@@ -182,6 +182,18 @@ bool Overlap::DoIt()
 {
 	// Validation check
 	if(!_bValid) return(false);
+	
+	// Special process for fiducial use vsfinder 
+	if(_type == Fid_To_Fov)
+	{
+		FidFovOverlap* pTemp =  (FidFovOverlap*)this;
+		if(pTemp->UseVsFinder())
+		{
+			pTemp->VsfinderAlign();
+			_bProcessed = true;
+			return(true);
+		}
+	}
 
 	// Do coarse correlation
 	bool bAllowRoiReduce = true;
@@ -448,7 +460,16 @@ FidFovOverlap::FidFovOverlap(
 
 	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 
+	_bUseVsFinder = false;
+
 	config(pImg1, _pFidImg, validRect, Fid_To_Fov);
+}
+
+void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID)
+{
+	_bUseVsFinder = true;
+	_pVsfinderCorr = pVsfinderCorr;
+	_iTemplateID = iTemplateID;
 }
 
 bool FidFovOverlap::IsReadyToProcess() const
@@ -494,6 +515,63 @@ bool FidFovOverlap::DumpResultImages()
 		
 	s.append(cTemp);
 	_coarsePair.DumpImgWithResult(s);
+
+	return(true);
+}
+
+bool FidFovOverlap::VsfinderAlign()
+{
+	double x, y, corscore, ambig, ngc;
+	double search_center_x = (_coarsePair.GetFirstRoi().FirstColumn + _coarsePair.GetFirstRoi().LastColumn)/2.0; 
+	double search_center_y = (_coarsePair.GetFirstRoi().FirstRow + _coarsePair.GetFirstRoi().LastRow)/2.0; 
+	double search_width = _coarsePair.GetFirstRoi().Columns();
+	double search_height = _coarsePair.GetFirstRoi().Rows();
+	double time_out = 1e5;			// MicroSeconds
+
+	_pVsfinderCorr->Find(
+		_iTemplateID,							// map ID of template  and finder
+		_coarsePair.GetFirstImg()->GetBuffer(),	// buffer containing the image
+		_coarsePair.GetFirstImg()->Columns(),   // width of the image in pixels
+		_coarsePair.GetFirstImg()->Rows(),		// height of the image in pixels
+		x,										// returned x location of the center of the template from the origin
+		y,										// returned x location of the center of the template from the origin
+		corscore,								// match score 0-1
+		ambig,									// ratio of (second best/best match) score 0-1
+		&ngc,									// Normalized Grayscale Correlation Score 0-1
+		search_center_x,						// x center of the search region in pixels
+		search_center_y,						// y center of the search region in pixels
+		search_width,							// width of the search region in pixels
+		search_height,							// height of the search region in pixels
+		time_out,								// number of seconds to search maximum. If limit is reached before any results found, an error will be generated	
+		0,										// image origin is top-left				
+		0.4,									// If >0 minimum score to persue at min pyramid level to look for peak override
+		0.4);									// If >0 minumum score to accept at max pyramid level to look for peak override
+
+	CorrelationResult result;
+	result.AmbigScore = ambig;
+	result.CorrCoeff = corscore;
+	// Unclipped image patch (first image of overlap) center 
+	// matches drawed fiducial center (second image of overlap) in the overlap
+	// alignment offset is the difference of unclipped image patch center 
+	// and idea location of fiducial in first image of overlap
+	// Offset of unclipped center and clipped center
+	double dCenOffsetX = (_coarsePair.GetSecondImg()->Columns()-1)/2.0 - 
+		(_coarsePair.GetSecondRoi().FirstColumn+_coarsePair.GetSecondRoi().LastColumn)/2.0;
+	double dCenOffsetY = (_coarsePair.GetSecondImg()->Rows()-1)/2.0 - 
+		(_coarsePair.GetSecondRoi().FirstRow+_coarsePair.GetSecondRoi().LastRow)/2.0;
+	double dUnclipCenterX = search_center_x + dCenOffsetX;
+	double dUnclipCenterY = search_center_y + dCenOffsetY;
+	result.ColOffset = dUnclipCenterX - x;
+	result.RowOffset = dUnclipCenterY - y;
+
+	_coarsePair.SetCorrlelationResult(result);
+
+	LOG.FireLogEntry(LogTypeDiagnostic, "VsFinder VSScore=%f; ambig=%f; xOffset=%f; yOffset=%f; NgcScore=%f", 
+		result.CorrCoeff, 
+		result.AmbigScore,
+		result.ColOffset,
+		result.RowOffset,
+		ngc);
 
 	return(true);
 }
