@@ -21,7 +21,8 @@ public:
 		unsigned int iImColumns,	// Columns of each image
 		unsigned int iImRows,		// Rows of each image
 		unsigned int iImStride,		// Stride of each image
-		bool bUseCad);				// Flag of whether Cad is used for alignment
+		bool bAlignWithCad,
+		bool bAlignWithFiducial);		// Flag of whether Cad is used for alignment
 
 	void Config(
 		unsigned int iIndex,		
@@ -30,7 +31,8 @@ public:
 		unsigned int iImColumns,	
 		unsigned int iImRows,		
 		unsigned int iImStride,		
-		bool bUseCad);				
+		bool bAlignWithCad,
+		bool bAlignWithFiducial);				
 
 	~MosaicImage(void);	
 	
@@ -51,7 +53,8 @@ public:
 	unsigned int NumCameras() const {return(_iNumCameras);};
 	unsigned int NumTriggers() const {return(_iNumTriggers);};
 	
-	bool UseCad() const {return(_bUseCad);};
+	bool AlignWithCad() const {return(_bAlignWithCad);};
+	bool AlignWithFiducial() const {return(_bAlignWithFiducial);};
 
 	void CameraCentersInY(double* pdCenY) const;
 	void TriggerCentersInX(double* pdCenX) const;
@@ -60,7 +63,8 @@ private:
 	unsigned int _iIndex;			// Mosaic image's index
 	unsigned int _iNumCameras;		// Number of cameras (images in a row)
 	unsigned int _iNumTriggers;		// Number of triggers (images in a column)
-	bool _bUseCad;					// Whether need correlation with CAD
+	bool _bAlignWithCad;			// Whether need align with CAD
+	bool _bAlignWithFiducial;		// Whether need align with Fiducial
 	
 	Image*	_images;				// An array of images
 	bool*	_bImagesAcquired;		// An array of whether image buffer is acquired/added

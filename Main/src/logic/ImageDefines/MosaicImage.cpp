@@ -15,7 +15,8 @@ MosaicImage::MosaicImage(
 	unsigned int iImColumns,
 	unsigned int iImRows,
 	unsigned int iImStride,
-	bool bUseCad)
+	bool bAlignWithCad,
+	bool bAlignWithFiducial)
 {
 	Config(
 		iIndex, 
@@ -24,7 +25,8 @@ MosaicImage::MosaicImage(
 		iImColumns,
 		iImRows,
 		iImStride,
-		bUseCad);
+		bAlignWithCad,
+		bAlignWithFiducial);
 }
 
 MosaicImage::~MosaicImage(void)
@@ -41,12 +43,14 @@ void MosaicImage::Config(
 	unsigned int iImColumns,
 	unsigned int iImRows,
 	unsigned int iImStride,
-	bool bUseCad)
+	bool bAlignWithCad,
+	bool bAlignWithFiducial)
 {
 	_iIndex = iIndex;
 	_iNumCameras = iNumCameras;
 	_iNumTriggers = iNumTriggers;
-	_bUseCad = bUseCad;
+	_bAlignWithCad = bAlignWithCad;
+	_bAlignWithFiducial = bAlignWithFiducial;
 
 	// Create images and mask images
 	_images = new Image[NumImages()];

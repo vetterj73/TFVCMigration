@@ -37,8 +37,11 @@ namespace MMosaicDM
 			int GetNumberOfTriggers(){return _pMosaicLayer->GetNumberOfTriggers();};
 			int GetNumberOfCameras(){return  _pMosaicLayer->GetNumberOfCameras();};
 
-			bool IsUseCad() {return _pMosaicLayer->IsUseCad();};
-			void SetUseCad(bool bUseCad) { _pMosaicLayer->SetUseCad(bUseCad);}; 
+			bool IsAlignWithCad() {return _pMosaicLayer->IsAlignWithCad();};
+			void SetAlignWithCad(bool bAlignWithCad) { _pMosaicLayer->SetAlignWithCad(bAlignWithCad);}; 
+			
+			bool IsAlignWithFiducial() {return _pMosaicLayer->IsAlignWithFiducial();};
+			void SetAlignWithFiducial(bool bAlignWithFiducial) { _pMosaicLayer->SetAlignWithFiducial(bAlignWithFiducial);}; 
 
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;

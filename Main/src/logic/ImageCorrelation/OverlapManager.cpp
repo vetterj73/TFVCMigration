@@ -407,7 +407,7 @@ void OverlapManager::CreateCadFovOverlaps()
 	unsigned int i, iCam, iTrig;
 	for(i=0; i<_iNumIlluminations; i++)
 	{
-		if(!_pMosaics[i].UseCad()) // If not use Cad
+		if(!_pMosaics[i].AlignWithCad()) // If not use Cad
 			continue;
 
 		// If use Cad
@@ -613,6 +613,9 @@ void OverlapManager::CreateFidFovOverlaps()
 	unsigned int i, iCam, iTrig;
 	for(i=0; i<_iNumIlluminations; i++)
 	{
+		if(!_pMosaics[i].AlignWithFiducial()) // If not use Fiducial
+			continue;
+
 		unsigned int iNumCameras = _pMosaics[i].NumCameras();
 		unsigned int iNumTriggers = _pMosaics[i].NumTriggers();
 		for(iTrig=0; iTrig<iNumTriggers; iTrig++)

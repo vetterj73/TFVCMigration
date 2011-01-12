@@ -49,8 +49,10 @@ namespace MosaicDM
 			int GetNumberOfTriggers(){return _numTriggers;};
 			int GetNumberOfCameras(){return _numCameras;};
 
-			bool IsUseCad() {return _correlateWithCAD;};
-			void SetUseCad(bool bUseCad) { _correlateWithCAD = bUseCad;}; 
+			bool IsAlignWithCad() {return _bAlignWithCAD;};
+			bool IsAlignWithFiducial() {return _bAlignWithFiducial;};
+			void SetAlignWithCad(bool bAlignWithCad) { _bAlignWithCAD = bAlignWithCad;};
+			void SetAlignWithFiducial(bool bAlignWithFiducial) { _bAlignWithFiducial = bAlignWithFiducial;};
 
 			///
 			///	Clears all images from this layer
@@ -62,7 +64,8 @@ namespace MosaicDM
 			void Initialize(MosaicSet *pMosaicSet, 
         		int numCameras,
 				int numTriggers,
-				bool correlateWithCAD);
+				bool bAlignWithCAD,
+				bool bAlignWithFiducial);
 
 			///
 			///	Adds an image...
@@ -74,6 +77,7 @@ namespace MosaicDM
 			int _numCameras;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
-			bool _correlateWithCAD;
+			bool _bAlignWithCAD;
+			bool _bAlignWithFiducial;
 	};
 }

@@ -64,11 +64,12 @@ namespace MosaicDM
 			///
 			/// \param numCameras - number of cameras used for this layer
 			/// \param numTriggers - number of triggers used for this layer
-			/// \param correlateWithCAD - should this layer be correlated against CAD?
+			/// \param bAlignWithCAD - should this layer be correlated against CAD?
 			MosaicLayer *AddLayer(
 				int numCameras,
 				int numTriggers,
-				bool correlateWithCAD);
+				bool bAlignWithCAD,
+				bool bAlignWithFiducial);
 			
 			///
 			/// Gets a layer from the MosaicSet

@@ -73,12 +73,14 @@ namespace MMosaicDM
 			ManagedMosaicLayer ^AddLayer(
         		int numCameras,
 				int numTriggers,
-				bool correlateWithCAD)
+				bool bAlignWithCAD,
+				bool bAlignWithFiducial)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(
         			numCameras,
 					numTriggers,
-					correlateWithCAD);
+					bAlignWithCAD,
+					bAlignWithFiducial);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 

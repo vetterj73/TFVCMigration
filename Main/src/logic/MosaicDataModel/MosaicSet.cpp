@@ -54,13 +54,14 @@ namespace MosaicDM
 	MosaicLayer * MosaicSet::AddLayer(
 		int numCameras,
 		int numTriggers,
-		bool correlateWithCAD)
+		bool bAlignWithCAD,
+		bool bAlignWithFiducial)
 	{
 		FireLogEntry(LogTypeDiagnostic, "Layer Added to Mosaic!");
 
 		MosaicLayer *pML = new MosaicLayer();
 
-		pML->Initialize(this, numCameras, numTriggers, correlateWithCAD);
+		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, bAlignWithFiducial);
 		_layerList.push_back(pML);
 
 		// Setup the default correlation Flags...

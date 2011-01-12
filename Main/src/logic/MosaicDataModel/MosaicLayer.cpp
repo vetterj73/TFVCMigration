@@ -11,7 +11,8 @@ namespace MosaicDM
 		_pTileArray = NULL;
 		_numCameras = 0;
 		_numTriggers = 0;
-		_correlateWithCAD = false;
+		_bAlignWithCAD = false;
+		_bAlignWithFiducial = true;
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -22,12 +23,14 @@ namespace MosaicDM
 	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, 
         							int numCameras,
 									int numTriggers,
-									bool correlateWithCAD)
+									bool bAlignWithCAD,
+									bool bAlignWithFiducial)
 	{
 		_pMosaicSet = pMosaicSet;
 		_numCameras = numCameras;
 		_numTriggers = numTriggers;
-		_correlateWithCAD = correlateWithCAD;
+		_bAlignWithCAD = bAlignWithCAD;
+		_bAlignWithFiducial = bAlignWithFiducial;
 
 		int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];

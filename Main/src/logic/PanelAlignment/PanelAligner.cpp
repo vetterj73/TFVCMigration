@@ -78,9 +78,10 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
 		unsigned int iNumTrigs = pLayer->GetNumberOfTriggers();
 		unsigned int iNumCams = pLayer->GetNumberOfCameras();
-		bool bUseCad = pLayer->IsUseCad();
+		bool bAlignWithCad = pLayer->IsAlignWithCad();
+		bool bAlignWithFiducial = pLayer->IsAlignWithFiducial();
 
-		_pMosaics[i].Config(i, iNumCams, iNumTrigs, iImWidth, iImHeight, iImStride, bUseCad);
+		_pMosaics[i].Config(i, iNumCams, iNumTrigs, iImWidth, iImHeight, iImStride, bAlignWithCad, bAlignWithFiducial);
 
 		for(iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
