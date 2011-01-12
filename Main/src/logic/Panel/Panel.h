@@ -24,18 +24,16 @@ public:
 		INSPECTED		= 30
 	 }State;
 	
-	/* constructor */	Panel();
+	/* constructor */	Panel(double lengthX, double lengthY, double pixelSizeX, double pixelSizeY);
 
 	/* destructor */	~Panel();
 
 	static double		_padInspectionAreaLong;
 	static double		_padInspectionAreaShort;
 
-	int GetNumPixelsInX(double pixelSizeInMeters)
-	{return(int) floor((LengthX/pixelSizeInMeters)+0.5);}
+	int GetNumPixelsInX() {return(int) floor((LengthX/PixelSizeX)+0.5);}
 
-	int GetNumPixelsInY(double pixelSizeInMeters)
-	{return(int) floor((LengthY/pixelSizeInMeters)+0.5);}
+	int GetNumPixelsInY() {return(int) floor((LengthY/PixelSizeY)+0.5);}
 
 	int					AddFeature(Feature*);
 	void				RemoveFeature(int featureId);
@@ -52,15 +50,17 @@ public:
 
 	void				ClearFeatures();
 	void				ClearFiducials();
+	void				ClearBuffers();
 	void				Name(string name);
 	string				Name();
 
 	double				xExtentOfPads();
 	double				yExtentOfPads();
-	double				xLength();
-	double				yLength();
-	void				xLength(double x);
-	void				yLength(double y);
+	double				xLength(){return LengthX;};
+	double				yLength(){return LengthY;};
+
+	double				GetPixelSizeX(){return PixelSizeX;};
+	double				GetPixelSizeY(){return PixelSizeX;};
 
 	double				xCadOrigin();
 	double				yCadOrigin();
@@ -78,27 +78,24 @@ public:
 	Feature *			GetFirstFiducial();
 	Feature *			GetNextFiducial();
 
-	void SetCadBuffer(unsigned char *buffer)
-	{
-		_cadBuffer = buffer;
-	}
-	
-	void SetMaskBuffer(unsigned char *buffer)
-	{
-		_maskBuffer = buffer;
-	}
-	
-	unsigned char* GetCadBuffer()
-	{return _cadBuffer;}
-
-	unsigned char* GetMaskBuffer()
-	{return _maskBuffer;}
-
+	/**
+		These buffers are created/populated on first time access.
+		Client can choose when to create this buffer by calling the function
+		at the appropriate time (if it is ever needed).
+	*/
+	unsigned char* GetCadBuffer();
+	unsigned char* GetMaskBuffer();
+	unsigned short* GetAperatureBuffer();
+	bool HasCadBuffer(){return _cadBuffer!=NULL;};
+	bool HasMaskBuffer(){return _maskBuffer!=NULL;};
+	bool HasAperatureBuffer(){return _aperatureBuffer!=NULL;};
 
 private:
-	unsigned char *_cadBuffer;
-	unsigned char *_maskBuffer;
+	unsigned char* _cadBuffer;
+	unsigned char* _maskBuffer;
+	unsigned short* _aperatureBuffer;
 
+	Panel(){};
 	Panel(const Panel& p){};
 	void operator=(const Panel& p){};
 
@@ -112,6 +109,8 @@ private:
 
 	double				LengthX;
 	double				LengthY;
+	double				PixelSizeX;
+	double				PixelSizeY;
 
 	// these values specify the location
 	// of the CAD origin within the Panel's

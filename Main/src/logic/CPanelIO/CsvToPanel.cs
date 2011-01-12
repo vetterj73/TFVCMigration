@@ -6,22 +6,20 @@ namespace CPanelIO
 {
     public class CsvToPanel
     {
-        public static bool parseCSV(string path, ref CPanel panel)
+        public static CPanel parseCSV(string path, double pixelSizeX, double pixelSizeY)
         {
-            panel.ClearFeatures();
-            panel.ClearFiducials();
+            CPanel panel=null;
 
             try
             {
                 using (StreamReader readFile = new StreamReader(path))
                 {
-
                     string line;
 
                     while ((line = readFile.ReadLine()) != null)
                     {
                         bool result;
-                        double length;
+                        double lengthx=0.0, lengthy=0.0;
                         string[] row;
                         int referenceID = -1;
                         double positionX = -1.0;
@@ -33,17 +31,20 @@ namespace CPanelIO
                         switch (row[0])
                         {
                             case "LengthX":
-                                result = Double.TryParse(row[1], out length);
-                                if (result) panel.PanelSizeX = (float) length;
-                                else panel.PanelSizeX = (float)0.0;
+                                result = Double.TryParse(row[1], out lengthx);
+                                if (!result)
+                                    lengthx = 0.0;
                                 break;
                             case "LengthY":
-                                result = Double.TryParse(row[1], out length);
-                                if (result) panel.PanelSizeY = (float)length;
-                                else panel.PanelSizeY = (float)0.0;
+                                result = Double.TryParse(row[1], out lengthy);
+                                if (!result)
+                                    lengthy = 0.0;
+
+                                panel = new CPanel(lengthx, lengthy, pixelSizeX, pixelSizeY);
                                 break;
                             case "Feature":
-
+                                if(panel == null)
+                                    throw new ApplicationException("Panel was not created before attempting to add features");
                                 result = Int32.TryParse(row[1], out referenceID);
                                 if (!result) break;
                                 result = Double.TryParse(row[3], out positionX);
@@ -115,8 +116,7 @@ namespace CPanelIO
                 System.Windows.Forms.MessageBox.Show(e.Message);
             }
 
-#warning - you aren't returning the validatation?
-            return true;
+            return panel;
         }
 
 

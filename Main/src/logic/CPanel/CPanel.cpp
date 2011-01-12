@@ -36,11 +36,9 @@ namespace Cyber
 		//
 		// Constructors
 		//
-		CPanel::CPanel(double lengthX, double lengthY )
+		CPanel::CPanel(double lengthX, double lengthY, double pixelSizeX, double pixelSizeY)
 		{
-			_pPanel = new Panel();
-			_pPanel->xLength(lengthX);
-			_pPanel->yLength(lengthY);
+			_pPanel = new Panel(lengthX, lengthY, pixelSizeX, pixelSizeY);
 		}
 
 		//
@@ -193,27 +191,14 @@ namespace Cyber
 			_pPanel->Name(name); 
 		}
 
-
-
 		double CPanel::PanelSizeX::get() 
 		{ 
 			return _pPanel->xLength();
-		}
-
-		void CPanel::PanelSizeX::set(double X) 
-		{ 
-			_pPanel->xLength(X);
 		}
 
 		double CPanel::PanelSizeY::get() 
 		{ 
 			return _pPanel->yLength();
 		}
-
-		void CPanel::PanelSizeY::set(double Y) 
-		{ 
-			_pPanel->yLength(Y);
-		}
-
 	} // Namespace
 }

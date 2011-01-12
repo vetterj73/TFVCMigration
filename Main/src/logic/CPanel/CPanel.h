@@ -92,7 +92,7 @@ namespace Cyber
 			///
 			/// \param panelSize A \ref PointD class containing the X and Y dimenstions
 			/// of the panel.
-			CPanel(double lengthX, double lengthY );
+			CPanel(double lengthX, double lengthY, double pixelSizeX, double pixelSizeY);
 
 			#pragma endregion
 
@@ -141,48 +141,41 @@ namespace Cyber
 			property double PanelSizeX
 			{
 				double get();
-				void set(double value);
 			}
-
 
 			/// The total PCB panel Y dimension.
 			/// in meters.
 			property double PanelSizeY
 			{
 				double get();
-				void set(double value);
-			}
-
-			void SetCadBuffer(System::IntPtr buffer)
-			{
-				_pPanel->SetCadBuffer((unsigned char*)(void*)buffer);
-			}
-	
-			void SetMaskBuffer(System::IntPtr buffer)
-			{
-				_pPanel->SetMaskBuffer((unsigned char*)(void*)buffer);
 			}
 
 			///
 			/// Returns the number of pixels, based on a particular panel size in X
-			int GetNumPixelsInX(double pixelSizeInMeters)
+			int GetNumPixelsInX()
 			{
-				return _pPanel->GetNumPixelsInX(pixelSizeInMeters); 
+				return _pPanel->GetNumPixelsInX(); 
 			}
 
 			///
 			/// Returns the number of pixels, based on a particular panel size in Y
-			int GetNumPixelsInY(double pixelSizeInMeters)
+			int GetNumPixelsInY()
 			{
-				return _pPanel->GetNumPixelsInY(pixelSizeInMeters); 
-			}
-		
+				return _pPanel->GetNumPixelsInY(); 
+			}	
 
 			/// \internal
 			property System::IntPtr UnmanagedPanel
 			{
 				System::IntPtr get() { return safe_cast<System::IntPtr>(_pPanel); }
 			}
+
+			/// \internal
+			property System::IntPtr CADBuffer
+			{
+				System::IntPtr get() { return safe_cast<System::IntPtr>(_pPanel->GetCadBuffer()); }
+			}
+
 
 			/// Get the number of features in the CPanel object.
 			property int NumberOfFeatures

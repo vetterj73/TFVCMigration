@@ -26,13 +26,17 @@ public:
 				double resolution,
 				bool DrawCADROI = true);
 
+	static bool DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI=false); 
+
+	static bool DrawMask(Panel* pPanel,	unsigned short* cadBuffer, double scale); 
+
+	static bool DrawAperatures(Panel* pPanel, unsigned short* cadBuffer, bool DrawCADROI = true); 
+
 private:
 
 	void			DrawPads(bool drawCADROI);
-
 	bool            _drawApt;
 	bool            _drawCad;
-
 	Panel*			_pPanel;
 	Image			_cadImage;
 	Image16	        _aptImage;

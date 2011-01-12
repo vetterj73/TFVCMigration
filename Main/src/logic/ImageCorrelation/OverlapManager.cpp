@@ -27,8 +27,8 @@ OverlapManager::OverlapManager(
 	_validRect.yMax = _pPanel->yLength();
 
 	// Create Cad and Mask images if their buffers are provided
-	unsigned int iNumRows = _pPanel->GetNumPixelsInX(_dCadImageResolution);
-	unsigned int iNumCols = _pPanel->GetNumPixelsInY(_dCadImageResolution);
+	unsigned int iNumRows = _pPanel->GetNumPixelsInX();
+	unsigned int iNumCols = _pPanel->GetNumPixelsInY();
 	bool bCreateOwnBuf = false;
 	unsigned int iBytePerPixel = 1;
 		// create image transform

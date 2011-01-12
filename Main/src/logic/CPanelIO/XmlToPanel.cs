@@ -35,18 +35,14 @@ namespace CPanelIO
         /// return a Cyber::SPIAPI::CPanel object.
         /// </summary>
         /// <param name="xmlFilename">Path to XML file containing serialized CSIMPanel object.</param>
-        /// <param name="panel">The CPanel object to return.</param>
+        /// <param name="pixelSizeX">The CPanel object to return.</param>
+        /// <param name="pixelSizeY">The CPanel object to return.</param>
         /// <returns>A boolean indicating if reading and converting to CPanel was succesful</returns>
-        static public bool CSIMPanelXmlToCPanel(string xmlFilename, ref CPanel panel)
+        static public CPanel CSIMPanelXmlToCPanel(string xmlFilename, double pixelSizeX, double pixelSizeY)
         {
             CSIMPanel simPanel = DeserializeCSIMPanelXML(xmlFilename);
 
-            if(simPanel == null)
-            {
-                return false;
-            }
-
-            return CSIMPanelToCPanel(simPanel, ref panel);
+            return CSIMPanelToCPanel(simPanel, pixelSizeX, pixelSizeY);
         }
 
         /// <summary>
@@ -287,29 +283,28 @@ namespace CPanelIO
         /// in meters.  This function will perform the conversion.
         /// </note>
         /// <param name="simPanel"></param>
-        /// <param name="panel"></param>
+        /// <param name="pixelSizeX"></param>
+        /// <param name="pixelSizeY"></param>
         /// <returns></returns>
-        static private bool CSIMPanelToCPanel(CSIMPanel simPanel, ref CPanel panel)
+        static private CPanel CSIMPanelToCPanel(CSIMPanel simPanel, double pixelSizeX, double pixelSizeY)
         {
+            if (simPanel == null)
+                return null;
+
+            CPanel panel;
             try
             {
                 _featureErrorList.Clear();
 
-                panel.ClearFeatures();
-                panel.ClearFiducials();
-
-                //panel.CADOriginOffset.X = simPanel.
-                //panel.HomeOffset.X = simPanel.
-
-                /// Get Panel Name
+                panel = new CPanel(
+                    ToCPanelUnits(simPanel.PanelSize.ToPointF().X),
+                    ToCPanelUnits(simPanel.PanelSize.ToPointF().Y),
+                    pixelSizeX, pixelSizeY);
+ 
                 panel.Name = simPanel.PanelName;
 
-                /// Get Panel Size
-                panel.PanelSizeX = ToCPanelUnits(simPanel.PanelSize.ToPointF().X);
-                panel.PanelSizeY = ToCPanelUnits(simPanel.PanelSize.ToPointF().Y);
                 if(panel.PanelSizeX < 0.000001 || panel.PanelSizeY < 0.000001)
                     throw new ArgumentException("Invalid panel size");
-
 
                 /// Add CSIMPanel's fiducials to CPanel's fiducials
                 foreach (CSIMFeature simFid in simPanel.Fiducials)
@@ -442,7 +437,7 @@ namespace CPanelIO
             }
 
 
-            return true;
+            return panel;
         }
 
         private const float UnitsScalingFactor = 1000.0f; // The input Panel is always in mm, the one sent to SIM is always meters.

@@ -19,22 +19,16 @@ namespace CPanelIO
             PAD,
         }
 
-        public static bool parseSRF(string path, CPanel panel)
+        public static CPanel parseSRF(string path, double pixelSizeX, double pixelSizeY)
         {
             SRFUtilities srfUtilities = new SRFUtilities();
 
             if (srfUtilities.Read(path) == false)
             {
-                return false;
+                return null;
             }
-
             PointF srfPanelSize = srfUtilities.GetPanelSize(DistanceType.Meters);
-            panel.PanelSizeX = srfPanelSize.X;
-            panel.PanelSizeY = srfPanelSize.Y;
-
-            //
-            // Get SRF Fiducials and assign them to CSPIAPI.CPanel.Fiducials
-            panel.ClearFiducials();
+            CPanel panel = new CPanel(srfPanelSize.X, srfPanelSize.Y, pixelSizeX, pixelSizeY);
 
             Hashtable fiducials = new Hashtable();
             srfUtilities.GetAllImageFiducials(ref fiducials, AngleType.Degrees, DistanceType.Meters);
@@ -44,11 +38,6 @@ namespace CPanelIO
                 AddFeatures(panel, FeatureType.FIDUCIAL, fidId, fiducials);
             }
 
-
-            //
-            // Get SRF Features and assign them to CSPIAPI.CPanel.Features
-            panel.ClearFeatures();
-
             Hashtable features = new Hashtable();
             srfUtilities.GetAllFeatures(ref features, AngleType.Degrees, DistanceType.Meters);
 
@@ -57,7 +46,7 @@ namespace CPanelIO
                 AddFeatures(panel, FeatureType.PAD, featureId, features);
             }
 
-            return true;
+            return panel;
         }
 
         private static void AddFeatures(CPanel panel, FeatureType type, int id, IDictionary features)

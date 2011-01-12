@@ -1,14 +1,17 @@
 #include "Panel.h"
+#include "Cad2Img.h"
 //#include "System.h"
 
 double Panel::_padInspectionAreaLong;
 double Panel::_padInspectionAreaShort;
 
-Panel::Panel() :
+Panel::Panel(double lengthX, double lengthY, double pixelSizeX, double pixelSizeY) :
 	_name(""),
 	_status(UNINITIALIZED),
-	LengthX(0.0),
-	LengthY(0.0),
+	LengthX(lengthX),
+	LengthY(lengthY),
+	PixelSizeX(pixelSizeX),
+	PixelSizeY(pixelSizeY),
 	XCadOrigin(0.0),
 	YCadOrigin(0.0)
 {
@@ -20,12 +23,23 @@ Panel::Panel() :
 	_padInspectionAreaShort = 1.20;
 	_cadBuffer = NULL;
 	_maskBuffer = NULL;
+	_aperatureBuffer = NULL;
 }
 
 Panel::~Panel()
 {
 	ClearFeatures();
 	ClearFiducials();
+	ClearBuffers();
+}
+
+void Panel::ClearBuffers()
+{
+	if(_aperatureBuffer != NULL)
+	{
+		delete[] _aperatureBuffer;
+		_aperatureBuffer = NULL;
+	}
 }
 
 void Panel::Name(string name)
@@ -46,26 +60,6 @@ void Panel::Status(State newStatus)
 Panel::State Panel::Status()
 {
 	return _status;
-}
-
-void Panel::xLength(double x)
-{
-	LengthX = x;
-}
-
-void Panel::yLength(double y)
-{
-	LengthY = y;
-}
-
-double Panel::xLength()
-{
-	return LengthX;
-}
-
-double Panel::yLength()
-{
-	return LengthY;
 }
 
 // not optimized for speed
@@ -101,6 +95,8 @@ void Panel::ClearFeatures()
 
 	Pads.clear();
 	_apertureIndex = (unsigned short) pow(2.0, (int)(sizeof(unsigned short)*8)) - 1;
+
+	ClearBuffers();
 }
 
 void Panel::ClearFiducials()
@@ -253,5 +249,42 @@ Feature * Panel::GetNextFiducial()
 	}
 
 	return pFiducial;
-
 }
+
+unsigned char* Panel::GetCadBuffer()
+{
+	if(_cadBuffer == NULL)
+	{
+		_cadBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
+		memset(_cadBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
+
+		Cad2Img::DrawCAD(this, _cadBuffer, false);
+	}
+	return _cadBuffer;
+}
+
+unsigned char* Panel::GetMaskBuffer()
+{
+	/// @todo !!!!!!!!!!!!!!!!!!
+	/// Not quite sure how to handle this yet... what if we want different scaled masks
+	return NULL;
+	if(_maskBuffer == NULL)
+	{
+		_maskBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
+		memset(_maskBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
+	}
+
+	return _maskBuffer;
+}
+
+unsigned short* Panel::GetAperatureBuffer()
+{
+	if(_aperatureBuffer == NULL)
+	{
+		_aperatureBuffer = new unsigned short[GetNumPixelsInX()*GetNumPixelsInY()];
+		memset(_aperatureBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY()*2);	
+	}
+
+	return _aperatureBuffer;
+}
+

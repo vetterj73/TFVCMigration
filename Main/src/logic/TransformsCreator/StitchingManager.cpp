@@ -448,8 +448,8 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum, bool
 	// Create image size
 	double dPixelSize = _pOverlapManager->GetCadImageResolution(); 
 	DRect rect = _pOverlapManager->GetValidRect();
-	unsigned int iNumRows = _pOverlapManager->GetPanel()->GetNumPixelsInX(dPixelSize);
-	unsigned int iNumCols = _pOverlapManager->GetPanel()->GetNumPixelsInY(dPixelSize);
+	unsigned int iNumRows = _pOverlapManager->GetPanel()->GetNumPixelsInX();
+	unsigned int iNumCols = _pOverlapManager->GetPanel()->GetNumPixelsInY();
 	// create image transform
 	double t[3][3];
 	t[0][0] = dPixelSize;
@@ -470,7 +470,7 @@ void StitchingManager::SaveStitchingImages(string sName, unsigned int iNum, bool
 	if(bCreateColorImg)
 	{
 		pPanelImages = new Image[iNum];
-		for(int i=0; i<iNum; i++)
+		for(unsigned int i=0; i<iNum; i++)
 		{
 			pPanelImages[i].Configure(iNumCols, iNumRows, iNumCols, trans, trans, bCreateOwnBuf);
 		}

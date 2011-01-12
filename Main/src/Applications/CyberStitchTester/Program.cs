@@ -15,14 +15,12 @@ namespace CyberStitchTester
     class Program
     {
         private const double cPixelSizeInMeters = 1.69e-5;
-
         private static ManagedMosaicSet _mosaicSet = null;
-        private static CPanel _panel = new CPanel(0, 0); 
+        private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
-        private static ManagedImage8 _cadImage = null;
         // For debug
         private static int _iBufCount = 0;
 
@@ -73,22 +71,16 @@ namespace CyberStitchTester
             // Set up production for aligner
             try
             {
+                /*
                 // If the production is valid
                 if (_panel.PanelSizeX > 0)
                 {
-                    _cadImage = new ManagedImage8((uint)_panel.GetNumPixelsInY(cPixelSizeInMeters), 
-                        (uint)_panel.GetNumPixelsInX(cPixelSizeInMeters));
-
-                    PanelConverter.ConvertPanel(_panel.UnmanagedPanel, cPixelSizeInMeters, _cadImage.Columns, _cadImage.Rows, _cadImage.RowStrideInBytes, _cadImage.Buffer, IntPtr.Zero, false);
-                    /*
-                    ImageSaver.SaveToFile((int)_cadImage.Columns, (int)_cadImage.Rows,
-                                          (int)_cadImage.Columns, _cadImage.Buffer, "c:\\cad.png",
+                    ImageSaver.SaveToFile(_panel.GetNumPixelsInX(), _panel.GetNumPixelsInY(),
+                                          _panel.GetNumPixelsInX(), _panel.CADBuffer, "c:\\cad.png",
                                           PixelFormat.Format8bppIndexed,
                                           System.Drawing.Imaging.ImageFormat.Png);
-                    */
-                    _panel.SetCadBuffer(_cadImage.Buffer);
                 }
-                
+                */
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
@@ -160,6 +152,7 @@ namespace CyberStitchTester
 
             if (ManagedCoreAPI.InitializeAPI() != 0)
             {
+
                 Output("Could not initialize CoreAPI!");
                 logger.Kill();
                 return false;
@@ -197,12 +190,14 @@ namespace CyberStitchTester
                 {
                     if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (!SRFToPanel.parseSRF(panelFile, _panel))
+                        _panel = SRFToPanel.parseSRF(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        if (_panel == null)
                             throw new ApplicationException("Could not parse the SRF panel file");
                     }
                     else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (!XmlToPanel.CSIMPanelXmlToCPanel(panelFile, ref _panel))
+                        _panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        if (_panel == null)
                             throw new ApplicationException("Could not convert xml panel file");
                     }
                 }
@@ -244,7 +239,6 @@ namespace CyberStitchTester
 
         private static void AddDeviceToMosaic(ManagedSIMDevice d)
         {
-
             if (d.NumberOfCaptureSpecs <=0)
             {
                 Output("No Capture Specs defined");
