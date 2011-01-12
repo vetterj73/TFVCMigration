@@ -109,7 +109,8 @@ OverlapManager::OverlapManager(
 	if(pPanelMaskBuf!=NULL) CorrParams.bUseVsFinder= false;	
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
-	if(CorrParams.bUseVsFinder)	_pVsfinderCorr = new VsFinderCorrelation();
+	if(CorrParams.bUseVsFinder)	
+		_pVsfinderCorr = new VsFinderCorrelation(dCadImageResolution, iNumCols, iNumRows);
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -606,6 +607,8 @@ bool OverlapManager::CreateVsfinderTemplates()
 void OverlapManager::CreateFidFovOverlaps()
 {
 	CreateFiducialImages();
+	if(CorrParams.bUseVsFinder)
+		CreateVsfinderTemplates();
 
 	unsigned int i, iCam, iTrig;
 	for(i=0; i<_iNumIlluminations; i++)

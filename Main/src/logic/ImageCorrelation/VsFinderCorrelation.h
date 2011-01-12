@@ -6,7 +6,7 @@ class vswrapper;
 class VsFinderCorrelation
 {
 public:
-	VsFinderCorrelation();
+	VsFinderCorrelation(double dResolution, unsigned int iColumn, unsigned int iRows);
 	~VsFinderCorrelation();
 
 	int CreateVsTemplate(Feature* pFid);

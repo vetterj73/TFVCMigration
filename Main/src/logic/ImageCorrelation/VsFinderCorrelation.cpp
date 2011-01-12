@@ -2,9 +2,13 @@
 #include "vswrapper.h"
 #include "Logger.h"
 
-VsFinderCorrelation::VsFinderCorrelation()
+VsFinderCorrelation::VsFinderCorrelation(double dResolution, unsigned int iColumn, unsigned int iRows)
 {
 	_pVsw = new vswrapper();
+
+	_pVsw->set_pixel_size(dResolution);
+	_pVsw->set_fov_cols(iColumn);
+	_pVsw->set_fov_rows(iRows);
 }
 
 VsFinderCorrelation::~VsFinderCorrelation()
