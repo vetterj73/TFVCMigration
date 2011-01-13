@@ -171,15 +171,15 @@ namespace Cyber
 			}
 
 			/// \internal
-			property System::IntPtr CADBuffer
+			System::IntPtr GetCADBuffer()
 			{
-				System::IntPtr get() { return safe_cast<System::IntPtr>(_pPanel->GetCadBuffer()); }
+				return safe_cast<System::IntPtr>(_pPanel->GetCadBuffer());
 			}
 
 			/// \internal
-			property System::IntPtr AperatureBuffer
+			System::IntPtr GetAperatureBuffer()
 			{
-				System::IntPtr get() { return safe_cast<System::IntPtr>(_pPanel->GetAperatureBuffer()); }
+				return safe_cast<System::IntPtr>(_pPanel->GetAperatureBuffer());
 			}
 
 			/// Get the number of features in the CPanel object.

@@ -75,12 +75,18 @@ namespace CPanelIOUnitTest
 
             // Write out a cad image for manual verification
             ImageSaver.SaveToFile(panel.GetNumPixelsInY(), panel.GetNumPixelsInX(),
-                                  panel.GetNumPixelsInY(), panel.CADBuffer,
+                                  panel.GetNumPixelsInY(), panel.GetCADBuffer(),
                                   "..\\..\\..\\..\\..\\testdata\\xmlTest.png",
                                   PixelFormat.Format8bppIndexed,
                                   ImageFormat.Png);
 
-            IntPtr test = panel.AperatureBuffer;
+            IntPtr test = panel.GetAperatureBuffer();
+/*            ImageSaver.SaveToFile(panel.GetNumPixelsInY(), panel.GetNumPixelsInX(),
+                                  panel.GetNumPixelsInY(), panel.GetAperatureBuffer(),
+                                  "..\\..\\..\\..\\..\\testdata\\xmlTest16.Tif",
+                                  PixelFormat.Format16bppGrayScale,
+                                  ImageFormat.Tiff);
+            */
             // Write out a cad image for manual verification
         }
 
@@ -102,7 +108,7 @@ namespace CPanelIOUnitTest
             // Can't save it, but I can create an image in memory and see if it crashes...
             // Write out a cad image for manual verification
             ImageSaver.SaveToFile(panel.GetNumPixelsInY(), panel.GetNumPixelsInX(),
-                                  panel.GetNumPixelsInY(), panel.CADBuffer,
+                                  panel.GetNumPixelsInY(), panel.GetCADBuffer(),
                                   "..\\..\\..\\..\\..\\testdata\\srfTest.png",
                                   PixelFormat.Format8bppIndexed,
                                   ImageFormat.Png);

@@ -322,7 +322,7 @@ void RenderPolygon(IMAGETYPE& image, double resolution,
 
 	// Set up image to draw polygon
 	Image16 polygonImage;
-	polygonImage.Configure(cols, rows, resolution, resolution);
+	polygonImage.Configure(cols, rows, cols, true);
 
 
 	for(int i=0; i<numPolygons; i++)
