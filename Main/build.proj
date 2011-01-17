@@ -15,6 +15,17 @@
 
   <!--Do any needed versioning steps-->
   <Target Name="EstablishVersion" DependsOnTargets="CommonEstablishVersion;CSharpVersionCode">
+
+    <Exec Condition="$(PUBLISH)==true" Command="tf checkout Doxyfile"/>
+    <Exec Condition="$(PUBLISH)==false" Command="attrib -r Doxyfile"/>
+    <CyberBuildTasks.UpdateDoxygenVersionInfo
+			DoxygenFile="Doxyfile"
+			ManifestXmlFile=".\ProjectManifest.xml">
+    </CyberBuildTasks.UpdateDoxygenVersionInfo>
+
+    <!--Check Everything in-->
+    <Exec Condition="$(PUBLISH)==true" Command="tf checkin /comment:&quot;AutoBuild Version Incrementing&quot; /noprompt /recursive *.*"/>
+
   </Target>
 
   <!--Build All Needed Components-->
@@ -32,30 +43,31 @@
   </Target>
 
   <!--Publish the results-->
-  <Target Name="Publish" DependsOnTargets="UnitTestCode;PublishLatestVersion;PublishTip">
+  <Target Name="Publish" DependsOnTargets="UnitTestCode;GenerateDocumentation;PublishLatestVersion;PublishTip">
+  </Target>
+
+  <!--Run the sub-build step specific to this project-->
+  <Target Name="GenerateDocumentation" DependsOnTargets="UnitTestCode">
+    <Exec ContinueOnError="true" Command="doxygen Doxyfile > $(BUILDRESULTS)Doxygen.log" />
   </Target>
 
   <!--Publish the results-->
   <Target Name="PublishLatestVersion" Condition="$(PUBLISH)==true">
     <MakeDir Directories="$(REPOROOT)$(VERSION)\images;"/>
 
-    <!--Copy instructions and release notes - the history file is created in the parent build step -->
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)$(VERSION)\Images\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
-
   </Target>
 
-  <!--Publish the results-->
+  <!--Publish the results to Tip-->
   <Target Name="PublishTip" Condition="$(CONFIG)=='release'">
     <MakeDir Directories="$(REPOROOT)Tip\images;"/>
 
-    <!--Copy instructions and release notes - the history file is created in the parent build step -->
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)Tip\Images\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)Tip\&quot;"/>
-
   </Target>
 </Project>
