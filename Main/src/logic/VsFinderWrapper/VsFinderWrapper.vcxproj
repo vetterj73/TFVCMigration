@@ -98,7 +98,7 @@
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>lib\$(ProjectName)D.lib</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -132,7 +132,7 @@
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>lib\$(ProjectName).lib</OutputFile>
-      <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

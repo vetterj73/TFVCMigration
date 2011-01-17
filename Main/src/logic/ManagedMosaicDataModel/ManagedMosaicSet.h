@@ -9,6 +9,16 @@
 
 using namespace System;
 using namespace MLOGGER;
+
+/// \mainpage
+///
+/// \image html SIM.png CyberOptics' SIM Sensor
+///
+/// \section intro Introduction
+/// This document describes the API interface for CyberStitch.
+/// The CyberStitch Components are used to take a set of images (normally from a SIM Device)
+/// and stitch them together.  The images can be from one or more Devices.  CAD and Mask
+/// information can also be used to help the stitching process.
 namespace MMosaicDM 
 {
 	public delegate void ImageAddedDelegate(int, int, int);
