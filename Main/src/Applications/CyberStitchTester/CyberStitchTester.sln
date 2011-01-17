@@ -81,6 +81,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedPanelAlignment", "..
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsFinderWrapper", "..\..\logic\VsFinderWrapper\VsFinderWrapper.vcxproj", "{BF7D0622-E565-4DCB-9219-B767D56F2593}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CPanelIOUnitTest", "..\..\logic\CPanelIO\CPanelIOUnitTest\CPanelIOUnitTest.csproj", "{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}"
 EndProject

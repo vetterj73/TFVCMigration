@@ -53,21 +53,21 @@
 
   <!--Publish the results-->
   <Target Name="PublishLatestVersion" Condition="$(PUBLISH)==true">
-    <MakeDir Directories="$(REPOROOT)$(VERSION)\images;"/>
-
+    <MakeDir Directories="$(REPOROOT)$(VERSION)\images;$(REPOROOT)$(VERSION)\doc;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)$(VERSION)\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)$(VERSION)\Images\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)$(VERSION)\&quot;"/>
+    <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\doc\output\html\*.chm &quot;$(REPOROOT)$(VERSION)\doc&quot;"/>
   </Target>
 
   <!--Publish the results to Tip-->
   <Target Name="PublishTip" Condition="$(CONFIG)=='release'">
-    <MakeDir Directories="$(REPOROOT)Tip\images;"/>
-
+    <MakeDir Directories="$(REPOROOT)Tip\images;$(REPOROOT)Tip\doc;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\ProjectManifest.* &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\*.htm &quot;$(REPOROOT)Tip\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q .\Images\*.* &quot;$(REPOROOT)Tip\Images\&quot;"/>
     <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\Pub\*.* &quot;$(REPOROOT)Tip\&quot;"/>
+    <Exec ContinueOnError="true" Command="xcopy /Y /Q /S .\doc\output\html\*.chm &quot;$(REPOROOT)Tip\doc&quot;"/>
   </Target>
 </Project>
