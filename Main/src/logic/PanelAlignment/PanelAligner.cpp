@@ -149,7 +149,7 @@ bool PanelAligner::AddImage(
 	}
 
 	// Get image buffer
-	unsigned char* pcBuf = _pSet->GetLayer(iLayerIndex)->GetTile(iCamIndex, iTrigIndex)->GetImageBuffer();
+	unsigned char* pcBuf = _pSet->GetLayer(iLayerIndex)->GetTile(iCamIndex, iTrigIndex)->GetBuffer();
 	if(pcBuf==NULL)
 	{
 		LOG.FireLogEntry(LogTypeError, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d Buffer is invalid!", iLayerIndex, iTrigIndex, iCamIndex);

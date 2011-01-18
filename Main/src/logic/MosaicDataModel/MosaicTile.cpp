@@ -8,7 +8,6 @@ namespace MosaicDM
 	MosaicTile::MosaicTile()
 	{
 		_pMosaicLayer = NULL;
-		_pImageBuffer = NULL;
 	}
 
 	MosaicTile::~MosaicTile(void)
@@ -22,12 +21,18 @@ namespace MosaicDM
 
 	///
 	///	Create transform here
-	/// roatation angle in radians, offset X and y for image origin in world space
+	/// rotation angle in radians, offset X and y for image origin in world space
 	///
 	void MosaicTile::SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
-		double rotation,
-		double offsetXInMeters, double offsetYInMeters)
+		double rotation, double offsetXInMeters, double offsetYInMeters)
 	{
-		_inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters,rotation, offsetXInMeters, offsetYInMeters);
+		ImgTransform inputTransform;
+		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters,rotation, offsetXInMeters, offsetYInMeters);
+		
+		Configure(
+			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 
+			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
+			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
+			inputTransform, inputTransform, false, NULL);
 	}
 }

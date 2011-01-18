@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImgTransform.h"
+#include "Image.h"
 
 namespace MosaicDM 
 {
@@ -9,7 +9,7 @@ namespace MosaicDM
 	///
 	///	MosaicTile is one tile of a MosaicLayer.  It contains the image and its transforms
 	///
-	class MosaicTile
+	class MosaicTile : public Image
 	{
 		public:
 			friend class MosaicLayer;
@@ -25,14 +25,9 @@ namespace MosaicDM
 			~MosaicTile(void);
 
 			///
-			///	Gets/Sets the image buffer (assumed to be the size defined by the MosaicSet
-			///
-			unsigned char *	GetImageBuffer(){return _pImageBuffer;};	
-
-			///
 			///	returns true is this mosaic contains an image.
 			///
-			bool ContainsImage(){return _pImageBuffer != NULL;}
+			bool ContainsImage(){return GetBuffer() != NULL;}
 
 			///
 			///	Called by the MosaicLayer class.
@@ -44,31 +39,24 @@ namespace MosaicDM
 			/// nominal values will be used.
 			///
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
-				double rotation,
-				double centerOffsetXInMeters, double centerOffsetYInMeters);
-
-			ImgTransform GetNominalTransform() {return _inputTransform;};
-			void SetOutputTransform(ImgTransform t) {_outputTransform = t;};
+				double rotation, double centerOffsetXInMeters, double centerOffsetYInMeters);
 
 		protected:
 			void ClearImageBuffer()
 			{
-				_pImageBuffer = NULL;
+				SetBuffer(NULL);
 			}
 
 			bool SetImageBuffer(unsigned char* pImageBuffer)
 			{
-				if(_pImageBuffer != NULL)
+				if(GetBuffer() != NULL)
 					return false;
 
-				_pImageBuffer = pImageBuffer;
+				SetBuffer(pImageBuffer);
 				return true;
 			};
 
 		private:
 			MosaicLayer *_pMosaicLayer;
-			unsigned char * _pImageBuffer;
-			ImgTransform _inputTransform;
-			ImgTransform _outputTransform;
 	};
 }

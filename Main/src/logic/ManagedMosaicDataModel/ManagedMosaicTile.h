@@ -22,7 +22,7 @@ namespace MMosaicDM
 			///
 			System::IntPtr GetImageBuffer()
 			{
-				return (System::IntPtr)_pMosaicTile->GetImageBuffer();
+				return (System::IntPtr)_pMosaicTile->GetBuffer();
 			}
 
 			///

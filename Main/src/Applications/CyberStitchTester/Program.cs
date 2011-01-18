@@ -71,18 +71,6 @@ namespace CyberStitchTester
             // Set up production for aligner
             try
             {
-                IntPtr p = _panel.GetAperatureBuffer();
-             //   IntPtr p = _panel.GetCADBuffer();
-                /*
-                // If the production is valid
-                if (_panel.PanelSizeX > 0)
-                {
-                    ImageSaver.SaveToFile(_panel.GetNumPixelsInX(), _panel.GetNumPixelsInY(),
-                                          _panel.GetNumPixelsInX(), _panel.CADBuffer, "c:\\cad.png",
-                                          PixelFormat.Format8bppIndexed,
-                                          System.Drawing.Imaging.ImageFormat.Png);
-                }
-                */
                 if(!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
