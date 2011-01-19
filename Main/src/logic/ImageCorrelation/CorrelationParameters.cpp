@@ -52,6 +52,7 @@ CorrelationParameters::CorrelationParameters(void)
 	sOverlapPath = "C:\\Temp\\Overlaps\\";
 	bSaveStitchedImage = true;
 	sStitchPath = "C:\\Temp\\";
+	bSaveColorImage = false;
 
 	// make sure the directory exists 
 	if(bSaveStitchedImage)

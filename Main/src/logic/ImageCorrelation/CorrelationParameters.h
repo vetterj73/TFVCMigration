@@ -67,6 +67,7 @@ public:
 	bool bSaveOverlap;
 	string sOverlapPath;
 	bool bSaveStitchedImage;
+	bool bSaveColorImage;
 	string sStitchPath;
 };
 

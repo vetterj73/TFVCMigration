@@ -317,8 +317,7 @@ bool StitchingManager::CreateTransforms()
 		_iCycleCount++;
 		s.clear();
 		s.assign(cTemp);
-		bool bCreateColorImage = true;
-		SaveStitchingImages(s, iNumIllums, bCreateColorImage);
+		SaveStitchingImages(s, iNumIllums, CorrParams.bSaveColorImage);
 
 		LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Stitched images are created");
 	}
