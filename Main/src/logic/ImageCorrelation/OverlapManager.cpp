@@ -2,23 +2,15 @@
 #include "Logger.h"
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
+#include "MosaicLayer.h"
 
 #pragma region constructor and reset
 OverlapManager::OverlapManager(
-	MosaicImage* pMosaics, 
-	CorrelationFlags** pFlags, 
-	unsigned int iNumIlluminations,
-	Panel* pPanel,		
-	double dCadImageResolution,
-	unsigned char* pCadBuf,
-	unsigned char* pPanelMaskBuf)
+	MosaicSet* pMosaicSet,
+	Panel* pPanel)
 {	
-	// Inputs
-	_pMosaics = pMosaics;	
-	_pFlags = pFlags;	
-	_iNumIlluminations = iNumIlluminations;
+	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
-	_dCadImageResolution = dCadImageResolution;	
 
 	// Valid panel area in world space 
 	_validRect.xMin = 0;
@@ -33,35 +25,37 @@ OverlapManager::OverlapManager(
 	unsigned int iBytePerPixel = 1;
 		// create image transform
 	double t[3][3];
-	t[0][0] = _dCadImageResolution;
+	t[0][0] = _pPanel->GetPixelSizeX();
 	t[0][1] = 0;
 	t[0][2] = _validRect.xMin;
 	t[1][0] = 0;
-	t[1][1] = _dCadImageResolution;
+	t[1][1] = _pPanel->GetPixelSizeX();
 	t[1][2] = _validRect.yMin;
 	t[2][0] = 0;
 	t[2][1] = 0;
 	t[2][2] = 1;
 	ImgTransform trans(t);
-		// Create Cad image
-	if(pCadBuf == NULL)
+	
+	// Create Cad image
+	if(_pPanel->GetCadBuffer() == NULL)
 	{
 		_pCadImg = NULL;
 	}
 	else
 	{
 		_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-			trans, trans, bCreateOwnBuf, pCadBuf);
+			trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
 	}
-		// Create Panel Mask image
-	if(pPanelMaskBuf == NULL)
+	
+	// Create Panel Mask image
+	if(_pPanel->GetMaskBuffer() == NULL)
 	{
 		_pPanelMaskImg = NULL;
 	}
 	else
 	{
 		_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-			trans, trans, bCreateOwnBuf, pPanelMaskBuf);
+			trans, trans, bCreateOwnBuf, _pPanel->GetMaskBuffer());
 	}
 
 	// Control parameter
@@ -71,20 +65,20 @@ OverlapManager::OverlapManager(
 	unsigned int i, j;
 	_iNumCameras=0;
 	_iNumTriggers=0;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		if (_iNumCameras < pMosaics[i].NumCameras())
-			_iNumCameras = pMosaics[i].NumCameras();
+		if (_iNumCameras < _pMosaicSet->GetLayer(i)->GetNumberOfCameras())
+			_iNumCameras = _pMosaicSet->GetLayer(i)->GetNumberOfCameras();
 
-		if (_iNumTriggers < pMosaics[i].NumTriggers())
-			_iNumTriggers = pMosaics[i].NumTriggers();
+		if (_iNumTriggers < _pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
+			_iNumTriggers = _pMosaicSet->GetLayer(i)->GetNumberOfTriggers();
 	}
 
 	// Create 3D arrays for storage of overlaps
-	_fovFovOverlapLists = new list<FovFovOverlap>**[_iNumIlluminations];
-	_cadFovOverlapLists = new list<CadFovOverlap>**[_iNumIlluminations];
-	_fidFovOverlapLists = new list<FidFovOverlap>**[_iNumIlluminations];
-	for(i=0; i<_iNumIlluminations; i++)
+	_fovFovOverlapLists = new list<FovFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
+	_cadFovOverlapLists = new list<CadFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
+	_fidFovOverlapLists = new list<FidFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
 		_fovFovOverlapLists[i] = new list<FovFovOverlap>*[_iNumTriggers];
 		_cadFovOverlapLists[i] = new list<CadFovOverlap>*[_iNumTriggers];
@@ -106,11 +100,11 @@ OverlapManager::OverlapManager(
 	
 	// Create Fiducial Fov overlaps
 		// The vsfinder should not be used, if the vsNGc is used for mask
-	if(pPanelMaskBuf!=NULL) CorrParams.bUseVsFinder= false;	
+	if(_pPanelMaskImg!=NULL) CorrParams.bUseVsFinder= false;	
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
 	if(CorrParams.bUseVsFinder)	
-		_pVsfinderCorr = new VsFinderCorrelation(dCadImageResolution, iNumCols, iNumRows);
+		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -121,7 +115,7 @@ OverlapManager::~OverlapManager(void)
 {
 	// Release 3D arrays for storage
 	unsigned int i, j;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
 		for(j=0; j<_iNumTriggers; j++)
 		{
@@ -153,13 +147,11 @@ bool OverlapManager::ResetforNewPanel()
 {
 	// Reset all mosaic images for new panel inspection
 	unsigned int i, iCam , iTrig;
-	for(i=0; i<_iNumIlluminations; i++)
-	{
-		_pMosaics[i].ResetForNextPanel();
-	}
+
+	_pMosaicSet->ClearAllImages();
 
 	// Reset all overlaps for new panel inspection
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
 		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{
@@ -198,31 +190,34 @@ bool OverlapManager::ResetforNewPanel()
 // Create Fov overlap for two illuminations
 bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2)
 {
+	MosaicLayer *pLayer1 = _pMosaicSet->GetLayer(iIndex1);
+	MosaicLayer *pLayer2 = _pMosaicSet->GetLayer(iIndex2);
+
 	// Correlation setting between two layers (illuminations)
-	CorrelationFlags flags = _pFlags[iIndex1][iIndex2];
-	bool bCamCam = flags.GetCameraToCamera();
-	bool bTrigTrig = flags.GetTriggerToTrigger();
-	bool bMask = flags.GetMaskNeeded();
+	CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(iIndex1, iIndex2);
+	bool bCamCam = pFlags->GetCameraToCamera();
+	bool bTrigTrig = pFlags->GetTriggerToTrigger();
+	bool bMask = pFlags->GetMaskNeeded();
 	bool bCad	= false; //need modify
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
 	// Attention: Trgger center X is dcreaseing with trigger index
 	// Cam center Y is increasing with camera index
-	unsigned int iNumTrigs1 = _pMosaics[iIndex1].NumTriggers();
-	unsigned int iNumCams1 = _pMosaics[iIndex1].NumCameras();
+	unsigned int iNumTrigs1 = pLayer1->GetNumberOfTriggers();
+	unsigned int iNumCams1 = pLayer1->GetNumberOfCameras();
 	double* pdCenX1 = new double[iNumTrigs1];
 	double* pdCenY1 = new double[iNumCams1];
-	_pMosaics[iIndex1].TriggerCentersInX(pdCenX1);
-	_pMosaics[iIndex1].CameraCentersInY(pdCenY1);
+	pLayer1->TriggerCentersInX(pdCenX1);
+	pLayer1->CameraCentersInY(pdCenY1);
 	double dSpanTrig = (pdCenX1[0] - pdCenX1[iNumTrigs1-1])/(iNumTrigs1-1);
 	double dSpanCam = (pdCenY1[iNumCams1-1] - pdCenY1[0])/(iNumCams1-1);
 	
-	unsigned int iNumTrigs2 = _pMosaics[iIndex2].NumTriggers();
-	unsigned int iNumCams2 = _pMosaics[iIndex2].NumCameras();
+	unsigned int iNumTrigs2 = pLayer2->GetNumberOfTriggers();
+	unsigned int iNumCams2 = pLayer2->GetNumberOfCameras();
 	double* pdCenX2 = new double[iNumTrigs2];
 	double* pdCenY2 = new double[iNumCams2];
-	_pMosaics[iIndex2].TriggerCentersInX(pdCenX2);
-	_pMosaics[iIndex2].CameraCentersInY(pdCenY2);
+	pLayer2->TriggerCentersInX(pdCenX2);
+	pLayer2->CameraCentersInY(pdCenY2);
 
 	// For each image in first layer (illuminaiton)
 	unsigned int iCam1, iTrig1;
@@ -283,7 +278,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					if(iLeftCamIndex>=0 && iIndex1!= iIndex2)
 					{
 						FovFovOverlap overlap(
-							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
 							_validRect, bMask);
@@ -298,7 +293,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 					if(iRightCamIndex >= 0)
 					{
 						FovFovOverlap overlap(
-							&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
 							_validRect, bMask);
@@ -351,7 +346,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 						if(bValid)
 						{
 							FovFovOverlap overlap(
-								&_pMosaics[iIndex1], &_pMosaics[iIndex2],
+								pLayer1, pLayer2,
 								pair<unsigned int, unsigned int>(iCam1, iTrig1),
 								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
 								_validRect, bMask);
@@ -380,9 +375,9 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 void OverlapManager::CreateFovFovOverlaps()
 {
 	unsigned int i, j;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		for(j=i; j<_iNumIlluminations; j++)
+		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
 		{
 			CreateFovFovOverlapsForTwoIllum(i, j);
 		}
@@ -405,20 +400,21 @@ list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
 void OverlapManager::CreateCadFovOverlaps()
 {
 	unsigned int i, iCam, iTrig;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		if(!_pMosaics[i].AlignWithCad()) // If not use Cad
+		MosaicLayer* pLayer = _pMosaicSet->GetLayer(i);
+		if(!pLayer->IsAlignWithCad()) // If not use Cad
 			continue;
 
 		// If use Cad
-		unsigned int iNumCameras = _pMosaics[i].NumCameras();
-		unsigned int iNumTriggers = _pMosaics[i].NumTriggers();
+		unsigned int iNumCameras = pLayer->GetNumberOfCameras();
+		unsigned int iNumTriggers = pLayer->GetNumberOfTriggers();
 		for(iTrig=0; iTrig<iNumTriggers; iTrig++)
 		{
 			for(iCam=0; iCam<iNumCameras; iCam++)
 			{
 				CadFovOverlap overlap(
-					&_pMosaics[i],
+					pLayer,
 					pair<unsigned int, unsigned int>(iCam, iTrig),
 					_pCadImg,
 					_validRect);
@@ -463,7 +459,7 @@ bool OverlapManager::CreateFiducialImages()
 		RenderFiducial(
 			&_pFidImages[iCount], 
 			i->second, 
-			_dCadImageResolution, 
+			_pPanel->GetPixelSizeX(), 
 			dScale);	
 
 		// for Debug
@@ -611,13 +607,14 @@ void OverlapManager::CreateFidFovOverlaps()
 		CreateVsfinderTemplates();
 
 	unsigned int i, iCam, iTrig;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		if(!_pMosaics[i].AlignWithFiducial()) // If not use Fiducial
+		MosaicLayer *pLayer = _pMosaicSet->GetLayer(i);
+		if(!pLayer->IsAlignWithFiducial()) // If not use Fiducial
 			continue;
 
-		unsigned int iNumCameras = _pMosaics[i].NumCameras();
-		unsigned int iNumTriggers = _pMosaics[i].NumTriggers();
+		unsigned int iNumCameras = pLayer->GetNumberOfCameras();
+		unsigned int iNumTriggers = pLayer->GetNumberOfTriggers();
 		for(iTrig=0; iTrig<iNumTriggers; iTrig++)
 		{
 			for(iCam=0; iCam<iNumCameras; iCam++)
@@ -625,7 +622,7 @@ void OverlapManager::CreateFidFovOverlaps()
 				for(unsigned int iFid=0; iFid<_pPanel->NumberOfFiducials(); iFid++)
 				{
 					FidFovOverlap overlap(
-						&_pMosaics[i],
+						pLayer,
 						pair<unsigned int, unsigned int>(iCam, iTrig),
 						&_pFidImages[iFid],
 						_pFidImages[iFid].CenterX(),
@@ -637,8 +634,8 @@ void OverlapManager::CreateFidFovOverlaps()
 						continue;
 
 					// Overlap size check
-					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrParams.dFiducialSearchExpansionY/_dCadImageResolution);
-					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_dCadImageResolution);
+					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrParams.dFiducialSearchExpansionY/_pPanel->GetPixelSizeX());
+					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
 					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
 						continue;
 
@@ -729,12 +726,12 @@ bool OverlapManager::DoAlignmentForFov(
 void OverlapManager::CalMaskCreationStage()
 {
 	unsigned int i, j;
-	unsigned iMin = _iNumIlluminations+10;
-	for(i=0; i<_iNumIlluminations; i++)
+	unsigned iMin = _pMosaicSet->GetNumMosaicLayers()+10;
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		for(j=i; j<_iNumIlluminations; j++)
+		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
 		{
-			if(_pFlags[i][j].GetMaskNeeded())
+			if(_pMosaicSet->GetCorrelationFlags(i, j)->GetMaskNeeded())
 			{
 				if(i>j)
 				{
@@ -748,7 +745,7 @@ void OverlapManager::CalMaskCreationStage()
 		}
 	}
 
-	if(iMin > _iNumIlluminations)
+	if(iMin > _pMosaicSet->GetNumMosaicLayers())
 		_iMaskCreationStage = -1;
 	else
 		_iMaskCreationStage = iMin;
@@ -761,7 +758,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 	unsigned int iFidFovCount = 0;
 
 	unsigned int i, iTrig, iCam;
-	for(i=0; i<_iNumIlluminations; i++)
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
 		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{

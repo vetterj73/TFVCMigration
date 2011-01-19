@@ -29,9 +29,6 @@ namespace PanelAlignM {
 			int iTrigIndex, 
 			int iCamIndex);
 
-	bool SaveStitchedImage(int layer, System::String^ imagePath);
-	bool Save3ChannelImage(int layerInChannel1, int layerInChannel2, bool panelCadInLayer3, System::String^ imagePath);
-
 	private:
 		PanelAligner* _pAligner;
 	};

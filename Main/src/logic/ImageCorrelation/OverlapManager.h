@@ -3,26 +3,20 @@
 */
 
 #pragma once
-
-#include "MosaicImage.h"
 #include "CorrelationFlags.h"
 #include "OverlapDefines.h"
 #include "Panel.h"
 #include "VsFinderCorrelation.h"
+#include "MosaicSet.h"
 
 using namespace MosaicDM;
-
+class Panel;
 class OverlapManager
 {
 public:
 	OverlapManager(
-		MosaicImage* pMosaics, 
-		CorrelationFlags** pFlags, 
-		unsigned int iNumIlluminations,
-		Panel* pPanel,		
-		double dCadImageResolution,
-		unsigned char* pCadBuf,
-		unsigned char* pPanelMaskBuf);
+		MosaicSet* pMosaicSet,
+		Panel* pPanel);
 	~OverlapManager(void);
 
 	bool ResetforNewPanel();
@@ -47,8 +41,6 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
-	MosaicImage* GetMoaicImage(unsigned int iIndex) const {return &(_pMosaics[iIndex]);};
-	unsigned int NumIlluminations() {return _iNumIlluminations;};
 	int GetMaskCreationStage() {return _iMaskCreationStage;};
 	unsigned int MaxCorrelations() const;
 	unsigned int MaxMaskCorrelations() const;
@@ -57,10 +49,11 @@ public:
 
 	DRect GetValidRect() {return _validRect;};
 	Panel* GetPanel() {return _pPanel;};
-	double GetCadImageResolution() {return _dCadImageResolution;};
+	double GetCadImageResolution() {return _pPanel->GetPixelSizeX();};
 
 	Image* GetCadImage() {return _pCadImg;};
 	Image* GetPanelMaskImage() {return _pPanelMaskImg;};
+	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -84,15 +77,12 @@ protected:
 
 	bool CreateVsfinderTemplates();
 	
+
 private:	
-	MosaicImage* _pMosaics;
-	CorrelationFlags** _pFlags;	
-	unsigned int _iNumIlluminations;	
-	
+	MosaicSet *_pMosaicSet;
 	Panel* _pPanel;
 	DRect _validRect;
 
-	double _dCadImageResolution;
 	Image* _pCadImg;
 	Image* _pPanelMaskImg;
 
@@ -113,6 +103,5 @@ private:
 	// For vsfinder
 	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int* _pVsFinderTempIds;
-
 };
 

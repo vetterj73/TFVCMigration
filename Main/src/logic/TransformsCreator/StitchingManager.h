@@ -20,7 +20,7 @@ public:
 	void Reset();
 	bool ResultsReady(){return _bResultsReady;};
 	void CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage) const;
-	static void CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage);
+	static void CreateStitchingImage(MosaicLayer* pMosaic, Image* pPanelImage);
 
 protected:
 	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const;

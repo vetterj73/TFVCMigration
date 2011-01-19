@@ -1,6 +1,7 @@
 #include "OverlapDefines.h"
 #include "Logger.h"
 #include "CorrelationParameters.h"
+#include "MosaicTile.h"
 
 #pragma region Overlap class
 
@@ -275,8 +276,8 @@ bool Overlap::DoIt()
 #pragma region FovFovOverlap
 
 FovFovOverlap::FovFovOverlap(
-	MosaicImage*	pMosaic1,
-	MosaicImage*	pMosaic2,
+	MosaicLayer*	pMosaic1,
+	MosaicLayer*	pMosaic2,
 	pair<unsigned int, unsigned int> ImgPos1,
 	pair<unsigned int, unsigned int> ImgPos2,
 	DRect validRect,
@@ -297,8 +298,8 @@ FovFovOverlap::FovFovOverlap(
 bool FovFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pMosaic1->IsImageAcquired(_imgPos1.first, _imgPos1.second) &&
-		_pMosaic2->IsImageAcquired(_imgPos2.first, _imgPos2.second) &&
+		_pMosaic1->GetTile(_imgPos1.first, _imgPos1.second)->ContainsImage() &&
+		_pMosaic2->GetTile(_imgPos2.first, _imgPos2.second)->ContainsImage() &&
 		_bValid;
 
 	return(bFlag);
@@ -378,7 +379,7 @@ bool FovFovOverlap::DumpResultImages()
 #pragma region CadFovOverlap class
 
 CadFovOverlap::CadFovOverlap(
-	MosaicImage* pMosaic,
+	MosaicLayer* pMosaic,
 	pair<unsigned int, unsigned int> ImgPos,
 	Image* pCadImg,
 	DRect validRect)
@@ -395,7 +396,7 @@ CadFovOverlap::CadFovOverlap(
 bool CadFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
+		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
 		(_pCadImg != NULL) && (_pCadImg->GetBuffer() != NULL) &&
 		_bValid;
 
@@ -444,7 +445,7 @@ bool CadFovOverlap::DumpResultImages()
 #pragma region FidFovOverlap class
 
 FidFovOverlap::FidFovOverlap(
-	MosaicImage*	pMosaic,
+	MosaicLayer*	pMosaic,
 	pair<unsigned int, unsigned int> ImgPos,
 	Image* pFidImg,
 	double dCenterX,
@@ -475,7 +476,7 @@ void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int
 bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pMosaic->IsImageAcquired(_imgPos.first, _imgPos.second) &&
+		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
 		(_pFidImg != NULL) && (_pFidImg->GetBuffer() != NULL) &&
 		_bValid;
 

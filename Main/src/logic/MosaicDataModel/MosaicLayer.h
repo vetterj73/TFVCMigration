@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Image.h"
 
 namespace MosaicDM 
 {
@@ -30,7 +31,13 @@ namespace MosaicDM
 			/// Returns null if this row or column is out of range.
 			///
 			MosaicTile* GetTile(int cameraIndex, int triggerIndex);
-			
+
+			///
+			///	Get the Image Subclass at a given camera and trigger of the mosaic.
+			/// Returns null if this row or column is out of range.
+			///
+			Image* GetImage(int cameraIndex, int triggerIndex);
+
 			///
 			///	Returns the number of tiles in this (or any?) layer.
 			///
@@ -40,6 +47,8 @@ namespace MosaicDM
 			///	Does this layer have all of its images?
 			///
 			bool HasAllImages();
+
+			unsigned int Index();
 
 			///
 			///	Gets the set this layer belongs to
@@ -59,6 +68,12 @@ namespace MosaicDM
 			///
 			void ClearAllImages();
 
+			void CameraCentersInY(double* pdCenY);
+			void TriggerCentersInX(double* pdCenX);
+
+			Image* GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex);
+			bool PrepareMaskImages();
+
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
@@ -77,6 +92,8 @@ namespace MosaicDM
 			int _numCameras;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
+			Image* _maskImages;				// An array fo mask images 
+			bool _bIsMaskImgValid;			// Flag of whether mask images are valid to use
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 	};

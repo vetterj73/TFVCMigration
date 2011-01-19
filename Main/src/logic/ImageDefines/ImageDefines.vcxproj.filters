@@ -27,9 +27,6 @@
     <ClInclude Include="STL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MosaicImage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UIRect.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -45,9 +42,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MosaicImage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UIRect.cpp">

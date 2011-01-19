@@ -169,7 +169,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
-    <ClInclude Include="MosaicImage.h" />
     <ClInclude Include="STL.h" />
     <ClInclude Include="UIRect.h" />
     <ClInclude Include="Utilities.h" />
@@ -178,7 +177,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Image16.cpp" />
     <ClCompile Include="ImgTransform.cpp" />
-    <ClCompile Include="MosaicImage.cpp" />
     <ClCompile Include="UIRect.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

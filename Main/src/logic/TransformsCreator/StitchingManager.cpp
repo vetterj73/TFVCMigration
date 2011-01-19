@@ -1,5 +1,6 @@
 #include "StitchingManager.h"
 #include "Logger.h"
+#include "MosaicLayer.h"
 
 #pragma region Constructor and initilization
 StitchingManager::StitchingManager(OverlapManager* pOverlapManager)
@@ -81,8 +82,8 @@ bool StitchingManager::CreateImageOrderInSolver(
 	{
 		// Get trigger centers in X
 		unsigned int iIllumIndex = piIllumIndices[i];
-		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
-		unsigned int iNumTrigs = pMosaic->NumTriggers();
+		MosaicLayer* pMosaic = _pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex);
+		unsigned int iNumTrigs = pMosaic->GetNumberOfTriggers();
 		double* dCenX = new double[iNumTrigs];
 		pMosaic->TriggerCentersInX(dCenX);
 
@@ -107,8 +108,8 @@ bool StitchingManager::CreateImageOrderInSolver(
 	{
 		unsigned int iIllumIndex = k->first.IlluminationIndex;
 		unsigned int iTrigIndex = k->first.TriggerIndex;
-		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
-		unsigned int iNumCams = pMosaic->NumCameras();
+		MosaicLayer* pMosaic = _pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex);
+		unsigned int iNumCams = pMosaic->GetNumberOfCameras();
 		for(i=0; i<iNumCams; i++)
 		{
 			FovIndex index(iIllumIndex, iTrigIndex, i);
@@ -122,7 +123,7 @@ bool StitchingManager::CreateImageOrderInSolver(
 
 bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const
 {
-	unsigned int iNumIllums = _pOverlapManager->NumIlluminations();
+	unsigned int iNumIllums = _pOverlapManager->GetMosaicSet()->GetNumMosaicLayers();
 	unsigned int* piIllumIndices = new unsigned int[iNumIllums];
 
 	for(unsigned int i=0; i<iNumIllums; i++)
@@ -150,7 +151,7 @@ bool StitchingManager::AddOneImageBuffer(
 	unsigned int iTrigIndex, 
 	unsigned int iCamIndex)
 {
-	_pOverlapManager->GetMoaicImage(iIllumIndex)->AddImageBuffer(pcBuf, iCamIndex, iTrigIndex);
+//	_pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex)->AddImageBuffer(pcBuf, iCamIndex, iTrigIndex);
 	_pOverlapManager->DoAlignmentForFov(iIllumIndex, iTrigIndex, iCamIndex);
 
 	// Need create masks and masks havn't created
@@ -182,7 +183,7 @@ bool StitchingManager::IsReadyToCreateMasks() const
 
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
-		if(!_pOverlapManager->GetMoaicImage(i)->IsAcquisitionCompleted())
+		if(!_pOverlapManager->GetMosaicSet()->GetLayer(i)->HasAllImages())
 			return(false);
 	}
 
@@ -192,9 +193,9 @@ bool StitchingManager::IsReadyToCreateMasks() const
 // Flags for create transform for each Fov
 bool StitchingManager::IsReadyToCreateTransforms() const
 {
-	for(unsigned int i=0; i<_pOverlapManager->NumIlluminations(); i++)
+	for(unsigned int i=0; i<_pOverlapManager->GetMosaicSet()->GetNumMosaicLayers(); i++)
 	{
-		if(!_pOverlapManager->GetMoaicImage(i)->IsAcquisitionCompleted())
+		if(!_pOverlapManager->GetMosaicSet()->GetLayer(i)->HasAllImages())
 			return(false);
 	}
 
@@ -218,10 +219,10 @@ bool StitchingManager::CreateMasks()
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
 		// Get calculated transforms
-		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(i);
-		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		MosaicLayer* pMosaic = _pOverlapManager->GetMosaicSet()->GetLayer(i);
+		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 			{
 				Image* img = pMosaic->GetImage(iCam, iTrig);
 				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
@@ -233,9 +234,9 @@ bool StitchingManager::CreateMasks()
 		pMosaic->PrepareMaskImages();
 
 		// Create content of mask images
-		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 			{
 				Image* img = pMosaic->GetMaskImage(iCam, iTrig);
 				
@@ -273,7 +274,7 @@ bool StitchingManager::CreateMasks()
 bool StitchingManager::CreateTransforms()
 {
 	LOG.FireLogEntry(LogTypeSystem, "StitchingManager::CreateTransforms():Begin to create transforms");
-	int iNumIllums = _pOverlapManager->NumIlluminations();
+	int iNumIllums = _pOverlapManager->GetMosaicSet()->GetNumMosaicLayers();
 
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
@@ -288,12 +289,12 @@ bool StitchingManager::CreateTransforms()
 	for(int i=0; i<iNumIllums; i++)
 	{
 		// Get calculated transforms
-		MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(i);
-		for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+		MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(i);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetImage(iCam, iTrig);
+				Image* img = pLayer->GetImage(iCam, iTrig);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
@@ -328,10 +329,10 @@ bool StitchingManager::CreateTransforms()
 // Add overlap results for a certain illumation/mosaic image to solver
 void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex)
 {
-	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
-	for(unsigned iTrig=0; iTrig<pMosaic->NumTriggers(); iTrig++)
+	MosaicLayer* pMosaic = _pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex);
+	for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 	{
-		for(unsigned iCam=0; iCam<pMosaic->NumCameras(); iCam++)
+		for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 		{
 			// For certain Fov
 			// Add calibration constraints
@@ -372,7 +373,7 @@ void StitchingManager::AddOverlapResultsForIllum(RobustSolver* solver, unsigned 
 // pPanelImage: output, the stitched image
 void StitchingManager::CreateStitchingImage(unsigned int iIllumIndex, Image* pPanelImage) const
 {
-	MosaicImage* pMosaic = _pOverlapManager->GetMoaicImage(iIllumIndex);
+	MosaicLayer* pMosaic = _pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex);
 	CreateStitchingImage(pMosaic, pPanelImage);
 }
 
@@ -380,11 +381,11 @@ void StitchingManager::CreateStitchingImage(unsigned int iIllumIndex, Image* pPa
 // Create a panel image based on a mosaic image
 // pMosaic: input, mosaic image
 // pPanelImage: output, the stitched image
-void StitchingManager::CreateStitchingImage(const MosaicImage* pMosaic, Image* pPanelImage)
+void StitchingManager::CreateStitchingImage(MosaicLayer* pMosaic, Image* pPanelImage)
 {
 	// Trigger and camera centers in world space
-	unsigned int iNumTrigs = pMosaic->NumTriggers();
-	unsigned int iNumCams = pMosaic->NumCameras();
+	unsigned int iNumTrigs = pMosaic->GetNumberOfTriggers();
+	unsigned int iNumCams = pMosaic->GetNumberOfCameras();
 	double* pdCenX = new double[iNumTrigs];
 	double* pdCenY = new double[iNumCams];
 	pMosaic->TriggerCentersInX(pdCenX);

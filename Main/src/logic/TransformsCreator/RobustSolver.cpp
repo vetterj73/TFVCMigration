@@ -123,10 +123,10 @@ void RobustSolver::ZeroTheSystem()
 
 #pragma region Add equations
 // Add Constraints for one image
-bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex)
+bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex)
 {
 	// Validation check
-	if(iCamIndex>=pMosaic->NumCameras() || iTrigIndex>=pMosaic->NumTriggers())
+	if(iCamIndex>=pMosaic->GetNumberOfCameras() || iTrigIndex>=pMosaic->GetNumberOfTriggers())
 		return(false);
 
 	// Fov transform parameter begin position in column
@@ -147,7 +147,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicImage* pMosaic, unsigned int i
 	int iNextCamFovPos = -1;
 	ImgTransform transNextCamFov;
 	double dNextCamFovCalCenX, dNextCamFovCalCenY;
-	if(index.CameraIndex < pMosaic->NumCameras())
+	if(index.CameraIndex < pMosaic->GetNumberOfCameras())
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
 		transNextCamFov = pMosaic->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();

@@ -4,9 +4,11 @@
 
 #pragma once
 
-#include "MosaicImage.h"
+#include "MosaicLayer.h"
 #include "CorrelationPair.h"
 #include "VsFinderCorrelation.h"
+
+using namespace MosaicDM;
 
 // Base class for overlap between image and image
 class Overlap		
@@ -75,19 +77,19 @@ class FovFovOverlap: public Overlap
 {
 public:
 	FovFovOverlap(
-		MosaicImage*	pMosaic1,
-		MosaicImage*	pMosaic2,
+		MosaicLayer*	pMosaic1,
+		MosaicLayer*	pMosaic2,
 		pair<unsigned int, unsigned int> ImgPos1, // first = camera, second = trigger
 		pair<unsigned int, unsigned int> ImgPos2,
 		DRect validRect,
 		bool bHasMask);
 
-	MosaicImage* GetFirstMosaicImage() const {return _pMosaic1;};
+	MosaicLayer* GetFirstMosaicImage() const {return _pMosaic1;};
 	unsigned int GetFirstTriggerIndex() const {return _imgPos1.second;};
 	unsigned int GetFirstCameraIndex() const {return _imgPos1.first;};
 	pair<unsigned int, unsigned int> GetFirstImagePosition() const {return _imgPos1;};
 
-	MosaicImage* GetSecondMosaicImage() const {return _pMosaic2;};
+	MosaicLayer* GetSecondMosaicImage() const {return _pMosaic2;};
 	unsigned int GetSecondTriggerIndex() const {return _imgPos2.second;};
 	unsigned int GetSecondCameraIndex() const {return _imgPos2.first;};
 	pair<unsigned int, unsigned int> GetSecondImagePosition() const {return _imgPos2;};
@@ -99,8 +101,8 @@ public:
 	bool DumpResultImages();
 
 private:
-	MosaicImage*	_pMosaic1;
-	MosaicImage*	_pMosaic2;
+	MosaicLayer*	_pMosaic1;
+	MosaicLayer*	_pMosaic2;
 	pair<unsigned int, unsigned int> _imgPos1;
 	pair<unsigned int, unsigned int> _imgPos2;
 	bool _bHasMask;
@@ -112,12 +114,12 @@ class CadFovOverlap: public Overlap
 {
 public:
 	CadFovOverlap(
-		MosaicImage* pMosaic,
+		MosaicLayer* pMosaic,
 		pair<unsigned int, unsigned int> ImgPos, // first = camera, second = trigger
 		Image* pCadImg,
 		DRect validRect);
 
-	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	MosaicLayer* GetMosaicImage() const {return _pMosaic;};
 	unsigned int GetTriggerIndex() const {return _imgPos.second;};
 	unsigned int GetCameraIndex() const {return _imgPos.first;};
 	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
@@ -131,7 +133,7 @@ public:
 	bool DumpResultImages();
 
 private:
-	MosaicImage*	_pMosaic;
+	MosaicLayer*	_pMosaic;
 	pair<unsigned int, unsigned int> _imgPos;
 	Image* _pCadImg;
 };
@@ -142,7 +144,7 @@ class FidFovOverlap: public Overlap
 {
 public:
 	FidFovOverlap(
-		MosaicImage*	pMosaic,
+		MosaicLayer*	pMosaic,
 		pair<unsigned int, unsigned int> ImgPos, // first = camera, second = trigger
 		Image* pFidImg,
 		double _dXcenter,
@@ -151,7 +153,7 @@ public:
 
 	void SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID);
 
-	MosaicImage* GetMosaicImage() const {return _pMosaic;};
+	MosaicLayer* GetMosaicImage() const {return _pMosaic;};
 	unsigned int GetTriggerIndex() const {return _imgPos.second;};
 	unsigned int GetCameraIndex() const {return _imgPos.first;};
 	pair<unsigned int, unsigned int> GetImagePosition() const {return _imgPos;};
@@ -171,7 +173,7 @@ public:
 	bool DumpResultImages();
 
 private:
-	MosaicImage*	_pMosaic;
+	MosaicLayer*	_pMosaic;
 	pair<unsigned int, unsigned int> _imgPos;
 
 	Image* _pFidImg;

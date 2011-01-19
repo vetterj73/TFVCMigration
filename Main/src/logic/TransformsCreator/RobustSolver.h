@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "MosaicImage.h"
+#include "MosaicLayer.h"
 #include "OverlapDefines.h"
 
+using namespace MosaicDM;
 class FovIndex
 {
 public:
@@ -38,7 +39,7 @@ public:
 		bool bProjectiveTrans = false);
 	~RobustSolver(void);
 
-	bool AddCalibationConstraints(MosaicImage* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex);
+	bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex);
 	bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
 	bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
 	bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
