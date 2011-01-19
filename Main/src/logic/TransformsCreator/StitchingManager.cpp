@@ -145,22 +145,20 @@ bool StitchingManager::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOr
 // Add an image buffer to a Fov
 // pcBuf: input, image buffer
 // iIllumIndex, iTrigIndex and iCamIndex: indics for a Fov
-bool StitchingManager::AddOneImageBuffer(
-	unsigned char* pcBuf,
+bool StitchingManager::ImageAdded(
 	unsigned int iIllumIndex, 
 	unsigned int iTrigIndex, 
 	unsigned int iCamIndex)
 {
-//	_pOverlapManager->GetMosaicSet()->GetLayer(iIllumIndex)->AddImageBuffer(pcBuf, iCamIndex, iTrigIndex);
 	_pOverlapManager->DoAlignmentForFov(iIllumIndex, iTrigIndex, iCamIndex);
 
-	// Need create masks and masks havn't created
+	// Masks are created after the first layer is stitched...
+	// The assumption being that masks are not needed for the first set...
 	if(_iMaskCreationStage>0 && !_bMasksCreated)
 	{
 		if(IsReadyToCreateMasks())
 		{
-			bool bFlag = CreateMasks();
-			if(bFlag)
+			if(CreateMasks())
 				_bMasksCreated= true;
 			else
 			{
@@ -169,7 +167,8 @@ bool StitchingManager::AddOneImageBuffer(
 		}
 	}
 
-	if(IsReadyToCreateTransforms())
+	// If we are all done with alignment, create the transforms...
+	if(_pOverlapManager->GetMosaicSet()->HasAllImages())
 		CreateTransforms();
 
 	return(true);
@@ -182,18 +181,6 @@ bool StitchingManager::IsReadyToCreateMasks() const
 		return(false);
 
 	for(int i=0; i<_iMaskCreationStage; i++)
-	{
-		if(!_pOverlapManager->GetMosaicSet()->GetLayer(i)->HasAllImages())
-			return(false);
-	}
-
-	return(true);
-}
-
-// Flags for create transform for each Fov
-bool StitchingManager::IsReadyToCreateTransforms() const
-{
-	for(unsigned int i=0; i<_pOverlapManager->GetMosaicSet()->GetNumMosaicLayers(); i++)
 	{
 		if(!_pOverlapManager->GetMosaicSet()->GetLayer(i)->HasAllImages())
 			return(false);

@@ -61,8 +61,9 @@ namespace MosaicDM
 
 		MosaicLayer *pML = new MosaicLayer();
 
-		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, bAlignWithFiducial);
+		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, bAlignWithFiducial, _layerList.size());
 		_layerList.push_back(pML);
+
 
 		// Setup the default correlation Flags...
 		for(int i=0; i<_layerList.size(); i++)

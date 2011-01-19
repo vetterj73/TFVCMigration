@@ -11,8 +11,7 @@ public:
 	StitchingManager(OverlapManager* pOverlapManager);
 	~StitchingManager(void);
 
-	bool AddOneImageBuffer(	
-		unsigned char* pcBuf,
+	bool ImageAdded(	
 		unsigned int iIllumIndex, 
 		unsigned int iTrigIndex, 
 		unsigned int iCamIndex);	
@@ -30,7 +29,6 @@ protected:
 		map<FovIndex, unsigned int>* pOrderMap) const;
 
 	bool IsReadyToCreateMasks() const;
-	bool IsReadyToCreateTransforms() const;
 
 	bool CreateMasks();
 	bool CreateTransforms();

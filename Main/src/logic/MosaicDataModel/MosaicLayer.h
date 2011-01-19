@@ -80,7 +80,8 @@ namespace MosaicDM
         		int numCameras,
 				int numTriggers,
 				bool bAlignWithCAD,
-				bool bAlignWithFiducial);
+				bool bAlignWithFiducial,
+				unsigned int layerIndex);
 
 			///
 			///	Adds an image...
@@ -96,5 +97,6 @@ namespace MosaicDM
 			bool _bIsMaskImgValid;			// Flag of whether mask images are valid to use
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
+			unsigned int _layerIndex;       // Not sure why this is needed but it is used in alignment..
 	};
 }

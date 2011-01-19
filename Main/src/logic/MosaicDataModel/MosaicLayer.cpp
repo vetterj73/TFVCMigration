@@ -27,24 +27,22 @@ namespace MosaicDM
 
 	unsigned int MosaicLayer::Index()
 	{
-		for(unsigned int i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
-			if(_pMosaicSet->GetLayer(i) == this)
-				return i;
-
-		return 0;
+		return _layerIndex;
 	}
 
 	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, 
         							int numCameras,
 									int numTriggers,
 									bool bAlignWithCAD,
-									bool bAlignWithFiducial)
+									bool bAlignWithFiducial,
+									unsigned int layerIndex)
 	{
 		_pMosaicSet = pMosaicSet;
 		_numCameras = numCameras;
 		_numTriggers = numTriggers;
 		_bAlignWithCAD = bAlignWithCAD;
 		_bAlignWithFiducial = bAlignWithFiducial;
+		_layerIndex = layerIndex;
 
 		int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
