@@ -38,17 +38,22 @@ namespace PanelAlignM {
 		_pAligner->ResetForNextPanel();
 	}
 
-	// Add a image
-	bool ManagedPanelAlignment::AddImage(
-			int iLayerIndex, 
-			int iTrigIndex, 
-			int iCamIndex)
+	bool ManagedPanelAlignment::Save3ChannelImage(System::String^ imagePath,
+		System::IntPtr pChannel1, 
+		System::IntPtr pChannel2,	
+		System::IntPtr pChannel3, 
+		int numRows, int numColumns)
 	{
-		bool bFlag = _pAligner->AddImage(
-			(unsigned int)iLayerIndex, 
-			(unsigned int)iTrigIndex, 
-			(unsigned int)iCamIndex);
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath);
+		std::string nativeImagePath = (char*)stringPtr.ToPointer();			
 
-		return(bFlag);
+		bool bSaved = _pAligner->Save3ChannelImage(nativeImagePath, 
+			(unsigned char*)(void*)pChannel1,
+			(unsigned char*)(void*)pChannel2,
+			(unsigned char*)(void*)pChannel3,
+			numRows, numColumns);
+
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
+		return bSaved;
 	}
 }

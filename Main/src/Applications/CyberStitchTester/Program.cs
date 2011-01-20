@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using CPanelIO;
@@ -21,6 +22,7 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
+        private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
 
@@ -102,6 +104,32 @@ namespace CyberStitchTester
                 // Verify that mosaic is filled in...
                 if (!_mosaicSet.HasAllImages())
                     Output("The mosaic does not contain all images!");
+                else
+                {
+                    _cycleCount++;
+
+                    // Save the images...
+                    for(int i=0; i<_mosaicSet.GetNumMosaicLayers(); i++)
+                    {
+                        ManagedMosaicLayer layer = _mosaicSet.GetLayer(i);
+
+                        IntPtr buffer = layer.GetStitchedBuffer();
+
+                        Cyber.ImageUtils.ImageSaver.SaveToFile
+                        (
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX(), _panel.GetNumPixelsInY(),
+                            buffer, "c:\\temp\\stitchedcyle" + _cycleCount + "_" + i + ".png", PixelFormat.Format8bppIndexed, System.Drawing.Imaging.ImageFormat.Png
+                        );
+                    }
+
+                    // Save a 3 channel image with CAD data...
+                    _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(2).GetStitchedBuffer(),
+                        _mosaicSet.GetLayer(3).GetStitchedBuffer(),
+                        _panel.GetCADBuffer(),
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                }
 
                 // should we do another cycle?
                 if (!bContinuous)

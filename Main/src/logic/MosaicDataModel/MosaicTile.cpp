@@ -27,7 +27,7 @@ namespace MosaicDM
 		double rotation, double offsetXInMeters, double offsetYInMeters)
 	{
 		ImgTransform inputTransform;
-		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters,rotation, offsetXInMeters, offsetYInMeters);
+		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters, rotation, offsetXInMeters, offsetYInMeters);
 		
 		Configure(
 			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 

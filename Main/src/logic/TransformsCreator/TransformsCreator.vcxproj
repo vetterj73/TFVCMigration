@@ -166,13 +166,9 @@ copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EquationWeights.h" />
-    <ClInclude Include="RobustSolver.h" />
     <ClInclude Include="StitchingManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EquationWeights.cpp" />
-    <ClCompile Include="RobustSolver.cpp" />
     <ClCompile Include="StitchingManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

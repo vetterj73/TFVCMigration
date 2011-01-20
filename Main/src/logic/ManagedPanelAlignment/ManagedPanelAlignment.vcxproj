@@ -110,7 +110,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\PanelAlignment;..\MosaicDataModel;..\ImageDefines;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\PanelAlignment;..\MosaicDataModel;..\ImageDefines;..\Panel;..\ImageCorrelation;..\..\..\Bitmap\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -201,9 +201,6 @@
     </ProjectReference>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
-      <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\VsFinderWrapper\VsFinderWrapper.vcxproj">
       <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>

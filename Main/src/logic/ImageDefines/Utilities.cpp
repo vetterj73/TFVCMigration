@@ -1,5 +1,6 @@
 #include "Utilities.h"
 #include "lsqrpoly.h" 
+#include "math.h"
 
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
@@ -305,3 +306,7 @@ void BayerToLum(
    }
 }
   
+int GetNumPixels(double sizeInMeters, double pixelSize)
+{
+	return(int)floor((sizeInMeters/pixelSize)+0.5);
+}

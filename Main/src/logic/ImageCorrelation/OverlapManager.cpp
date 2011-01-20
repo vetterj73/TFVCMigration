@@ -15,21 +15,21 @@ OverlapManager::OverlapManager(
 	// Valid panel area in world space 
 	_validRect.xMin = 0;
 	_validRect.yMin = 0;
-	_validRect.xMax = _pPanel->xLength();
-	_validRect.yMax = _pPanel->yLength();
+	_validRect.xMax = pPanel->xLength();
+	_validRect.yMax = pPanel->yLength();
 
 	// Create Cad and Mask images if their buffers are provided
-	unsigned int iNumRows = _pPanel->GetNumPixelsInX();
-	unsigned int iNumCols = _pPanel->GetNumPixelsInY();
+	unsigned int iNumRows = pPanel->GetNumPixelsInX();
+	unsigned int iNumCols = pPanel->GetNumPixelsInY();
 	bool bCreateOwnBuf = false;
 	unsigned int iBytePerPixel = 1;
 		// create image transform
 	double t[3][3];
-	t[0][0] = _pPanel->GetPixelSizeX();
+	t[0][0] = pPanel->GetPixelSizeX();
 	t[0][1] = 0;
 	t[0][2] = _validRect.xMin;
 	t[1][0] = 0;
-	t[1][1] = _pPanel->GetPixelSizeX();
+	t[1][1] = pPanel->GetPixelSizeX();
 	t[1][2] = _validRect.yMin;
 	t[2][0] = 0;
 	t[2][1] = 0;

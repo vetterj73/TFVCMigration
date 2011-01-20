@@ -33,16 +33,11 @@ namespace MosaicDM
 			///
 			/// \param objectWidthInMeters - how wide is the object we are imaging
 			/// \param objectLengthInMeters what length is the object we are imaging
-			/// \param numCameras (columns) in mosaic
-			/// \param cameraOverlapInMeters overlap between cameras
-			/// \param numTriggers # of triggers in the mosaic
-			/// \param triggerOverlapInMeters overlap between triggers
 			/// \param imageWidthInPixels width of each image (tile) in pixels
 			/// \param imageHeightInPixels height of each image (tile) in pixels
 			/// \param imageStrideInPixels stride of each image (tile) in pixels
-			/// \param overlapInMeters The overlap of each image. specified in meters.
-			/// \param pixelSizeXInMeters - size of pixel in X direction.
-			/// \param pixelSizeYInMeters - size of pixel in Y direction.			
+			/// \param nominalPixelSizeXInMeters 
+			/// \param nominalPixelSizeYInMeters 
 			MosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
 					  int imageWidthInPixels,

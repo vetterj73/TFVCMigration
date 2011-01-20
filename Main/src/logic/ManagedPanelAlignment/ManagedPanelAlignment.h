@@ -13,21 +13,32 @@ using namespace MLOGGER;
 
 namespace PanelAlignM {
 
+	///
+	///	Simple Managed Wrapper for Panel Alignment...
+	///
 	public ref class ManagedPanelAlignment : public MLoggableObject
 	{
-		// TODO: Add your methods for this class here.
 	public:
 		ManagedPanelAlignment();
 		!ManagedPanelAlignment();
 
+		///
+		///	Sets up for a new "Run"
+		///
 		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel);
 
+		///
+		///	Reset for the next cycle
+		///
 		void ResetForNextPanel();
 
-		bool AddImage(
-			int iLayerIndex, 
-			int iTrigIndex, 
-			int iCamIndex);
+		///
+		///	A way to save a 3 channel bitmap.  Doesn't necessarily belong here, 
+		/// but didn't have another place to put it...
+		///
+		bool Save3ChannelImage(System::String^ imagePath,
+			System::IntPtr pChannel1, System::IntPtr pChannel2,	System::IntPtr pChannel3, 
+			int numRows, int numColumns);
 
 	private:
 		PanelAligner* _pAligner;

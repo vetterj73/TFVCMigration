@@ -74,6 +74,12 @@ namespace MosaicDM
 			Image* GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex);
 			bool PrepareMaskImages();
 
+			///
+			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
+			///
+			Image *GetStitchedImage();
+
+			
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
@@ -83,12 +89,17 @@ namespace MosaicDM
 				bool bAlignWithFiducial,
 				unsigned int layerIndex);
 
+
+			void CreateStitchedImageIfNecessary();
+			void AllocateStitchedImageIfNecessary();
+
 			///
 			///	Adds an image...
 			///
 			bool AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex);
 
 		private:
+			bool _stitchedImageValid;
 			int _numTriggers;
 			int _numCameras;
 			MosaicSet *_pMosaicSet;
@@ -98,5 +109,7 @@ namespace MosaicDM
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 			unsigned int _layerIndex;       // Not sure why this is needed but it is used in alignment..
+	
+			Image *_pStitchedImage;
 	};
 }

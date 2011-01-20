@@ -40,3 +40,8 @@ void BayerToLum(
    int            bstride,      // Addressed as bayer[col + row*bstride] 
    unsigned char  lum[],        // output Luminance image 
    int            lstride);      // Addressed as out[col + row*ostride] 
+
+// 
+//	This will give the number of pixels in a common way...
+//
+int GetNumPixels(double size, double pixelSize);

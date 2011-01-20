@@ -43,6 +43,12 @@ namespace MMosaicDM
 			bool IsAlignWithFiducial() {return _pMosaicLayer->IsAlignWithFiducial();};
 			void SetAlignWithFiducial(bool bAlignWithFiducial) { _pMosaicLayer->SetAlignWithFiducial(bAlignWithFiducial);}; 
 
+			System::IntPtr GetStitchedBuffer()
+			{
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImage();
+				return (System::IntPtr)stitchedImage->GetBuffer();
+			}
+
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};

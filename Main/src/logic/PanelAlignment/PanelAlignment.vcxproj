@@ -97,7 +97,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -108,6 +108,10 @@ copy *.h ..\..\..\pub\include</Command>
       <Command>mkdir ..\..\..\pub\include
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -150,12 +154,16 @@ copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EquationWeights.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="PanelAligner.h" />
+    <ClInclude Include="RobustSolver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="EquationWeights.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="PanelAligner.cpp" />
+    <ClCompile Include="RobustSolver.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
@@ -169,9 +177,6 @@ copy *.h ..\..\..\pub\include</Command>
     </ProjectReference>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\TransformsCreator\TransformsCreator.vcxproj">
-      <Project>{2c9a3646-95be-4168-ad77-57dbfc0e55a4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\VsNgcWrapper\VsNgcWrapper.vcxproj">
       <Project>{3890952f-8d06-46a8-8731-5131f30fe9f8}</Project>
