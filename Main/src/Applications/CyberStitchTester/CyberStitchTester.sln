@@ -89,9 +89,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIMMosaicUtils", "..\..\logic\SIMMosaicUtils\SIMMosaicUtils.csproj", "{8E644621-D1FB-4845-90EE-0D1365AB42EE}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 16
+		SccNumberOfProjects = 17
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://cybertfs.msp.cyberoptics.com:8080/
 		SccLocalPath0 = .
@@ -146,6 +148,10 @@ Global
 		SccProjectTopLevelParentUniqueName15 = CyberStitchTester.sln
 		SccProjectName15 = ../../logic/CPanelIO/CPanelIOUnitTest
 		SccLocalPath15 = ..\\..\\logic\\CPanelIO\\CPanelIOUnitTest
+		SccProjectUniqueName16 = ..\\..\\logic\\SIMMosaicUtils\\SIMMosaicUtils.csproj
+		SccProjectTopLevelParentUniqueName16 = CyberStitchTester.sln
+		SccProjectName16 = ../../logic/SIMMosaicUtils
+		SccLocalPath16 = ..\\..\\logic\\SIMMosaicUtils
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -371,6 +377,22 @@ Global
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|Win32.ActiveCfg = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.ActiveCfg = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|Win32.Build.0 = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Debug|x64.Build.0 = Debug|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Win32.ActiveCfg = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|Win32.Build.0 = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|x64.ActiveCfg = Release|Any CPU
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -381,6 +403,7 @@ Global
 		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{472145E5-F493-4DD4-AC4B-05AE3189245F} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
+		{8E644621-D1FB-4845-90EE-0D1365AB42EE} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{D52CAE91-2B4B-4061-BD21-1C9F39426386} = {46C64A91-C1B1-48D2-89B0-B102895144B7}

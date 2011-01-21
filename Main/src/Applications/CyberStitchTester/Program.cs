@@ -8,14 +8,14 @@ using Cyber.MPanel;
 using MCoreAPI;
 using MLOGGER;
 using MMosaicDM;
-using SIMAPI;
 using PanelAlignM;
+using SIMMosaicUtils;
 
 namespace CyberStitchTester
 {
     class Program
     {
-        private const double cPixelSizeInMeters = 1.69e-5;
+        private const double cPixelSizeInMeters = 1.70e-5;
         private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
@@ -118,7 +118,7 @@ namespace CyberStitchTester
                         Cyber.ImageUtils.ImageSaver.SaveToFile
                         (
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX(), _panel.GetNumPixelsInY(),
-                            buffer, "c:\\temp\\stitchedcyle" + _cycleCount + "_" + i + ".png", PixelFormat.Format8bppIndexed, System.Drawing.Imaging.ImageFormat.Png
+                            buffer, "c:\\temp\\stitchedcyle" + _cycleCount + "_" + i + ".png", PixelFormat.Format8bppIndexed, ImageFormat.Png
                         );
                     }
 
@@ -249,107 +249,7 @@ namespace CyberStitchTester
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
 
-            for(int i=0; i<ManagedCoreAPI.NumberOfDevices(); i++)
-                AddDeviceToMosaic(ManagedCoreAPI.GetDevice(i));
-
-            SetupCorrelateFlags();
-        }
-
-        private static void AddDeviceToMosaic(ManagedSIMDevice d)
-        {
-            if (d.NumberOfCaptureSpecs <=0)
-            {
-                Output("No Capture Specs defined");
-                return;
-            }
-
-            /// @todo - this should be made part of the SIM Device....
-            int numCameras = 0;
-            for (int i = 0; i < d.NumberOfCameras; i++)
-                if (d.GetSIMCamera(i).Status() == (CameraStatus)1)
-                    numCameras++;
-
-            for (int i = 0; i < d.NumberOfCaptureSpecs; i++)
-            {
-                ManagedSIMCaptureSpec pSpec = d.GetSIMCaptureSpec(i);
-                ManagedMosaicLayer layer = _mosaicSet.AddLayer(numCameras, pSpec.NumberOfTriggers, false, true);
-
-                if (layer == null)
-                {
-                    Output("Could not create Layer: " + i);
-                    return;
-                }
-
-                // Use camera zero as reference
-                ManagedSIMCamera camera0 = d.GetSIMCamera(0);
-                // Set up the transform parameters...
-                for (int j = 0; j < numCameras; j++)
-                {
-                    ManagedSIMCamera camera = d.GetSIMCamera(j);
-                    for (int k = 0; k < pSpec.NumberOfTriggers; k++)
-                    {
-                        ManagedMosaicTile mmt = layer.GetTile(j, k);
-
-                        if (mmt == null)
-                        {
-                            Output("Could not access tile at: " + j + ", " + k);
-                            return;
-                        }
-                        // First camera center in X
-                        double dTrigOffset = pSpec.GetTriggerAtIndex(k) + pSpec.XOffset();
-                        double xOffset = _panel.PanelSizeX- dTrigOffset - camera0.Pixelsize.X * camera0.Rows()/2;
-                        // The camera center in X
-                        xOffset += (camera.CenterOffset.X - camera0.CenterOffset.X);
-                        // The camera's origin in X
-                        xOffset -= (camera.Pixelsize.X * camera.Rows() / 2);
-
-                        // First camera center in Y
-                        double yOffset = (-d.YOffset + camera0.Pixelsize.Y * camera0.Columns() / 2); 
-                        // The camera center in Y
-                        yOffset += (camera.CenterOffset.Y - camera0.CenterOffset.Y);
-                        // The camera orign in Y
-                        yOffset -= (camera.Pixelsize.Y * camera.Columns() / 2);
-
-                        // Trigger offset is initial offset + triggerIndex * overlap...
-                        mmt.SetTransformParameters(camera.Pixelsize.X, camera.Pixelsize.Y,
-                            camera.Rotation,
-                            xOffset, yOffset);
-                    }
-                }
-            }
-        }
-
-        private static void SetupCorrelateFlags()
-        { 
-            for (int i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
-            {
-                for (int j = 0; j < _mosaicSet.GetNumMosaicLayers(); j++)
-                {
-                    ManagedCorrelationFlags flag =_mosaicSet.GetCorrelationSet(i, j);
-                    if (i == j)
-                    {
-                        flag.SetCameraToCamera(true);
-                        
-                        if((_mosaicSet.GetNumMosaicLayers() == 1) ||
-                            (_mosaicSet.GetNumMosaicLayers() == 2 && ManagedCoreAPI.NumberOfDevices() ==2))
-                            flag.SetTriggerToTrigger(true); // For one illumination for a SIM
-                        else
-                            flag.SetTriggerToTrigger(false);
-                    }
-                    else
-                    {
-                       flag.SetCameraToCamera(false);
-
-                       if((i==0 && j==3) || (i==3 && j==0) ||
-                            (i==1 && j==2) || (i==2 && j==1))
-                            flag.SetTriggerToTrigger(false); // For four illuminaitons
-                        else
-                            flag.SetTriggerToTrigger(true);
-                    }
-                    
-                    flag.SetMaskNeeded(false);
-                }
-            }
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet);
         }
 
         private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)

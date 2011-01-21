@@ -106,6 +106,10 @@
       <Project>{D46B74F8-444E-4536-81CC-B08444E7B819}</Project>
       <Name>ManagedPanelAlignment</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\logic\SIMMosaicUtils\SIMMosaicUtils.csproj">
+      <Project>{8E644621-D1FB-4845-90EE-0D1365AB42EE}</Project>
+      <Name>SIMMosaicUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

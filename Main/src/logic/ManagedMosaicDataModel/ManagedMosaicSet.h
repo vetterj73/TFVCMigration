@@ -137,6 +137,9 @@ namespace MMosaicDM
 
 			int GetNumMosaicLayers(){ return _pMosaicSet->GetNumMosaicLayers();}
 
+			double GetObjectWidthInMeters(){return _pMosaicSet->GetObjectWidthInMeters();}
+			double GetObjectLengthInMeters(){return _pMosaicSet->GetObjectLengthInMeters();}
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		
