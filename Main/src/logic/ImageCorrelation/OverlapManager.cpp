@@ -148,8 +148,6 @@ bool OverlapManager::ResetforNewPanel()
 	// Reset all mosaic images for new panel inspection
 	unsigned int i, iCam , iTrig;
 
-	_pMosaicSet->ClearAllImages();
-
 	// Reset all overlaps for new panel inspection
 	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
