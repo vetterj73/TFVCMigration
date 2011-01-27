@@ -388,6 +388,7 @@ bool PanelAligner::Save3ChannelImage(string filePath,
 
 	rbg->write(filePath);
 	delete rbg;
+	return true;
 }
 
 

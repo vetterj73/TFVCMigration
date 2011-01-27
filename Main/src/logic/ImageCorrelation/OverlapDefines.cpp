@@ -372,6 +372,8 @@ bool FovFovOverlap::DumpResultImages()
 
 		iCount++;
 	}
+
+	return true;
 }
 
 #pragma endregion 

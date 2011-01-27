@@ -135,6 +135,6 @@ bool Cad2Img::DrawAperatures(Panel* pPanel, unsigned short* aptBuffer, bool Draw
 		//	aptImage.DrawBox(bounds);
 		//}
 
-		return true;
 	}
+	return true;
 }

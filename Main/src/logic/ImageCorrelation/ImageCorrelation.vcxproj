@@ -66,16 +66,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)</OutDir>
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -170,6 +170,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
+    <ClInclude Include="OverlapThread.h" />
     <ClInclude Include="VsFinderCorrelation.h" />
   </ItemGroup>
   <ItemGroup>
@@ -177,6 +178,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="CorrelationParameters.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
+    <ClCompile Include="OverlapThread.cpp" />
     <ClCompile Include="VsFinderCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -30,6 +30,9 @@
     <ClInclude Include="VsFinderCorrelation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OverlapThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OverlapDefines.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VsFinderCorrelation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OverlapThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
