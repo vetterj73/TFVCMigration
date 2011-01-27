@@ -179,10 +179,10 @@ bool Overlap::CalCoarseCorrPair()
 	return(true);
 }
 
-bool Overlap::DoIt()
+void Overlap::Run()
 {
 	// Validation check
-	if(!_bValid) return(false);
+	if(!_bValid) return;
 	
 	// Special process for fiducial use vsfinder 
 	if(_type == Fid_To_Fov)
@@ -192,7 +192,7 @@ bool Overlap::DoIt()
 		{
 			pTemp->VsfinderAlign();
 			_bProcessed = true;
-			return(true);
+			return;
 		}
 	}
 
@@ -216,7 +216,7 @@ bool Overlap::DoIt()
 	if(_type != Fov_To_Fov)
 	{
 		_bProcessed = true;
-		return(true);
+		return;
 	}
 
 // Fine alignemt (only for Fov and Fov)
@@ -268,7 +268,6 @@ bool Overlap::DoIt()
 	}
 	
 	_bProcessed = true;
-	return(true);
 }
 
 #pragma endregion

@@ -11,6 +11,7 @@
 
 using namespace MosaicDM;
 class Panel;
+class JobManager;
 class OverlapManager
 {
 public:
@@ -54,6 +55,7 @@ public:
 	Image* GetCadImage() {return _pCadImg;};
 	Image* GetPanelMaskImage() {return _pPanelMaskImg;};
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
+	bool FinishOverlaps();
 
 protected:
 	void CreateFovFovOverlaps();	
@@ -76,7 +78,6 @@ protected:
 		double dScale);
 
 	bool CreateVsfinderTemplates();
-	
 
 private:	
 	MosaicSet *_pMosaicSet;
@@ -103,5 +104,6 @@ private:
 	// For vsfinder
 	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int* _pVsFinderTempIds;
+	JobManager *_pJobManager;
 };
 

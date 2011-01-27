@@ -170,7 +170,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
-    <ClInclude Include="OverlapThread.h" />
     <ClInclude Include="VsFinderCorrelation.h" />
   </ItemGroup>
   <ItemGroup>
@@ -178,7 +177,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="CorrelationParameters.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
-    <ClCompile Include="OverlapThread.cpp" />
     <ClCompile Include="VsFinderCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>

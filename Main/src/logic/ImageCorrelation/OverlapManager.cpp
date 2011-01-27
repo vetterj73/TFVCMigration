@@ -3,12 +3,14 @@
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
 #include "MosaicLayer.h"
+#include "JobThread.h"
 
 #pragma region constructor and reset
 OverlapManager::OverlapManager(
 	MosaicSet* pMosaicSet,
 	Panel* pPanel)
 {	
+	_pJobManager = new JobManager("Overlap", 8);
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 
@@ -113,6 +115,8 @@ OverlapManager::OverlapManager(
 
 OverlapManager::~OverlapManager(void)
 {
+	delete _pJobManager;
+
 	// Release 3D arrays for storage
 	unsigned int i, j;
 	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
@@ -674,13 +678,15 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
-		{
-			i->DoIt();
+		{		
+			_pJobManager->AddJob((Job*)&*i);
+			/*
 			if(CorrParams.bSaveOverlap)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
 			}
+			*/
 		}
 	}
 
@@ -690,12 +696,15 @@ bool OverlapManager::DoAlignmentForFov(
 	{
 		if(i->IsReadyToProcess())
 		{
+			_pJobManager->AddJob((Job*)&*i);
+/*
 			i->DoIt();
 			if(CorrParams.bSaveOverlap)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
 			}
+*/
 		}
 	}
 
@@ -705,12 +714,15 @@ bool OverlapManager::DoAlignmentForFov(
 	{
 		if(i->IsReadyToProcess())
 		{
+			_pJobManager->AddJob((Job*)&*i);
+	/*
 			i->DoIt();
 			if(CorrParams.bSaveOverlap)
 			{
 				i->DumpOvelapImages();
 				i->DumpResultImages();
 			}
+	*/	
 		}
 	}
 
@@ -856,4 +868,13 @@ bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned 
 
 	return(bFlag1 && bFlag2);
 }
+
+bool OverlapManager::FinishOverlaps()
+{
+	while(_pJobManager->TotalJobs() > 0)
+		Sleep(10);
+
+	return true;
+}
+
 #pragma endregion

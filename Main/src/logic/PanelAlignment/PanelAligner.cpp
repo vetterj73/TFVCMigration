@@ -132,7 +132,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	}
 
 	// If we are all done with alignment, create the transforms...
-	if(_pSet->HasAllImages())
+	if(_pSet->HasAllImages() && _pOverlapManager->FinishOverlaps())
 	{
 		CreateTransforms();
 	}

@@ -7,11 +7,11 @@
 #include "MosaicLayer.h"
 #include "CorrelationPair.h"
 #include "VsFinderCorrelation.h"
-
+#include "JobThread.h"
 using namespace MosaicDM;
 
 // Base class for overlap between image and image
-class Overlap		
+class Overlap : Job		
 {
 public:
 	Overlap();
@@ -47,7 +47,7 @@ public:
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
 
 	// Do alignment and reset
-	bool DoIt();
+	void Run();
 	bool Reset();
 
 protected:

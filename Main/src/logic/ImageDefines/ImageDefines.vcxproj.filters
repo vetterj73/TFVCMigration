@@ -33,6 +33,9 @@
     <ClInclude Include="Image16.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JobThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -48,6 +51,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Image16.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JobThread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
