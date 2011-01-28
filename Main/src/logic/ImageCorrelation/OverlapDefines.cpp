@@ -10,16 +10,6 @@ Overlap::Overlap()
 	_bValid = false;
 }
 
-Overlap::Overlap(
-		Image* pImg1, 
-		Image* pImg2,
-		DRect validRect,
-		OverlapType type,
-		Image* pMaskImg)
-{
-	config(pImg1, pImg2, validRect, type, pMaskImg);
-}
-
 Overlap::Overlap(const Overlap& overlap) 
 {
 	*this = overlap;
@@ -156,9 +146,9 @@ bool Overlap::CalCoarseCorrPair()
 	}
 
 	// create coarse correlation pair
-	unsigned int iDecim = CorrParams.iCoarseMinDecim;
-	unsigned int iColSearchExpansion = CorrParams.iCoarseColSearchExpansion;
-	unsigned int iRowSearchExpansion = CorrParams.iCoarseRowSearchExpansion;
+	unsigned int iDecim = CorrelationParametersInst.iCoarseMinDecim;
+	unsigned int iColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
+	unsigned int iRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
 	if(_type != Fid_To_Fov)
 	{
 		if(roi1.Columns()>500 && roi1.Rows()>500)
@@ -182,8 +172,17 @@ bool Overlap::CalCoarseCorrPair()
 void Overlap::Run()
 {
 	// Validation check
-	if(!_bValid) return;
-	
+	if(!_bValid)
+	{	
+		if(CorrelationParametersInst.bSaveOverlaps)
+		{
+			DumpOvelapImages();
+			DumpResultImages();
+		}
+		
+		return;
+	}
+
 	// Special process for fiducial use vsfinder 
 	if(_type == Fid_To_Fov)
 	{
@@ -192,6 +191,13 @@ void Overlap::Run()
 		{
 			pTemp->VsfinderAlign();
 			_bProcessed = true;
+
+			if(CorrelationParametersInst.bSaveOverlaps)
+			{
+				DumpOvelapImages();
+				DumpResultImages();
+			}
+
 			return;
 		}
 	}
@@ -205,7 +211,7 @@ void Overlap::Run()
 	if(_coarsePair.IsProcessed() && bRoiReduced) 
 	{	//If the correlation result is not good enough
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		if(result.CorrCoeff * (1-result.AmbigScore)<CorrParams.dCoarseResultReliableTh)
+		if(result.CorrCoeff * (1-result.AmbigScore)<CorrelationParametersInst.dCoarseResultReliableTh)
 		{
 			// try again without ROI reduce
 			_coarsePair.Reset();
@@ -216,6 +222,12 @@ void Overlap::Run()
 	if(_type != Fov_To_Fov)
 	{
 		_bProcessed = true;
+		if(CorrelationParametersInst.bSaveOverlaps)
+		{
+			DumpOvelapImages();
+			DumpResultImages();
+		}
+
 		return;
 	}
 
@@ -229,30 +241,30 @@ void Overlap::Run()
 	if(_coarsePair.IsProcessed())
 	{
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		if(result.CorrCoeff * (1-result.AmbigScore) >CorrParams.dCoarseResultReliableTh)
+		if(result.CorrCoeff * (1-result.AmbigScore) >CorrelationParametersInst.dCoarseResultReliableTh)
 			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
 
 	// Create fine correlation pair list
-	unsigned int iBlockWidth = CorrParams.iFineBlockWidth;
+	unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
 	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
-	if(iNumBlockX > CorrParams.iFineMaxBlocksInCol) iNumBlockX = CorrParams.iFineMaxBlocksInCol;
+	if(iNumBlockX > CorrelationParametersInst.iFineMaxBlocksInCol) iNumBlockX = CorrelationParametersInst.iFineMaxBlocksInCol;
 	if(iNumBlockX < 1) iNumBlockX = 1;
 	if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
 
-	unsigned int iBlockHeight = CorrParams.iFineBlockHeight;
+	unsigned int iBlockHeight = CorrelationParametersInst.iFineBlockHeight;
 	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
-	if(iNumBlockY > CorrParams.iFineMaxBlocksInRow) iNumBlockY = CorrParams.iFineMaxBlocksInRow;
+	if(iNumBlockY > CorrelationParametersInst.iFineMaxBlocksInRow) iNumBlockY = CorrelationParametersInst.iFineMaxBlocksInRow;
 	if(iNumBlockY < 1) iNumBlockY = 1;
 	if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
 
-	unsigned int iBlockDecim = CorrParams.iFineDecim;
-	unsigned int iBlockColSearchExpansion = CorrParams.iFineColSearchExpansion;
-	unsigned int iBlockRowSearchExpansion = CorrParams.iFineRowSearchExpansion;
+	unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
+	unsigned int iBlockColSearchExpansion = CorrelationParametersInst.iFineColSearchExpansion;
+	unsigned int iBlockRowSearchExpansion = CorrelationParametersInst.iFineRowSearchExpansion;
 	if(!bAdjusted)
 	{
-		iBlockColSearchExpansion = CorrParams.iCoarseColSearchExpansion;
-		iBlockRowSearchExpansion = CorrParams.iCoarseRowSearchExpansion;
+		iBlockColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
+		iBlockRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
 	}
 
 	tempPair.ChopCorrPair(
@@ -267,6 +279,11 @@ void Overlap::Run()
 		i->DoAlignment();
 	}
 	
+	if(CorrelationParametersInst.bSaveOverlaps)
+	{
+		DumpOvelapImages();
+		DumpResultImages();
+	}
 	_bProcessed = true;
 }
 
@@ -313,7 +330,7 @@ bool FovFovOverlap::DumpOvelapImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sFovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first);
 		
@@ -324,7 +341,7 @@ bool FovFovOverlap::DumpOvelapImages()
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
 		sprintf_s(cTemp, 100, "%sFovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d.bmp",  
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount);
 
@@ -346,7 +363,7 @@ bool FovFovOverlap::DumpResultImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_I%dT%dC%d_I%dT%dC%d_Score%dAmbig%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
@@ -359,7 +376,7 @@ bool FovFovOverlap::DumpResultImages()
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
 		sprintf_s(cTemp, 100, "%sResult_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp",
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
 		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount,
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
@@ -413,7 +430,7 @@ bool CadFovOverlap::DumpOvelapImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sCadFov_I%dT%dC%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -430,7 +447,7 @@ bool CadFovOverlap::DumpResultImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sResult_CadFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
@@ -493,7 +510,7 @@ bool FidFovOverlap::DumpOvelapImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sFidFov_I%dT%dC%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first);
 		
 	s.append(cTemp);
@@ -510,7 +527,7 @@ bool FidFovOverlap::DumpResultImages()
 	string s;
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sResult_FidFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
-		CorrParams.sOverlapPath.c_str(),
+		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic->Index(), _imgPos.second, _imgPos.first, 
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));

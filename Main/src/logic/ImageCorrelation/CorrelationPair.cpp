@@ -172,13 +172,13 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 			pLineBuf += _pImg1->ByteRowStride();
 		}
 
-		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrParams.dMaskAreaRatioTh*100)
+		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrelationParametersInst.dMaskAreaRatioTh*100)
 			bSRC = false;
 	}
 
 	if(bSRC)
 	{	// use SRC/regoff
-		if(_roi1.Columns()<CorrParams.iCorrPairMinRoiSize || _roi1.Rows()<CorrParams.iCorrPairMinRoiSize)
+		if(_roi1.Columns()<CorrelationParametersInst.iCorrPairMinRoiSize || _roi1.Rows()<CorrelationParametersInst.iCorrPairMinRoiSize)
 		{
 			return(false);
 		}
@@ -189,8 +189,8 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 	else	// Use Ngc
 	{	
 		// Mask sure ROI size is bigger enough for search
-		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrParams.iCorrPairMinRoiSize ||
-			_roi1.Rows() < 2*_iRowSearchExpansion+CorrParams.iCorrPairMinRoiSize)
+		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize ||
+			_roi1.Rows() < 2*_iRowSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize)
 			return(false);
 
 		if(!NGCCorrelation(bAllowRoiReduce, pbRoiReduced))
@@ -218,7 +218,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 	unsigned char* pLumBuf1 = NULL;
 	unsigned char* pLumBuf2 = NULL;
 	unsigned int iLumSpan1, iLumSpan2;
-	if(!CorrParams.bGrayScale)
+	if(!CorrelationParametersInst.bGrayScale)
 	{
 		// Create luminance buffers
 		pLumBuf1 = new unsigned char[nrows*ncols];
@@ -256,21 +256,21 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 		*pbRoiReduced = false; 
 
 		// Adjust Rows if it is necessary
-		if(nrows > CorrParams.iCorrMaxRowsToUse && ncols >= CorrParams.iCorrMaxColsToUse/2) 
+		if(nrows > CorrelationParametersInst.iCorrMaxRowsToUse && ncols >= CorrelationParametersInst.iCorrMaxColsToUse/2) 
 		{
-			iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-			iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-			nrows = CorrParams.iCorrMaxRowsToUse;
+			iFirstRow1 += (nrows - CorrelationParametersInst.iCorrMaxRowsToUse)/2;
+			iFirstRow2 += (nrows - CorrelationParametersInst.iCorrMaxRowsToUse)/2;
+			nrows = CorrelationParametersInst.iCorrMaxRowsToUse;
 
 			*pbRoiReduced = true;
 		}
 
 		// Adjust Cols if it is necessary
-		if(ncols > CorrParams.iCorrMaxColsToUse && nrows >= CorrParams.iCorrMaxRowsToUse/2) 
+		if(ncols > CorrelationParametersInst.iCorrMaxColsToUse && nrows >= CorrelationParametersInst.iCorrMaxRowsToUse/2) 
 		{
-			iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-			iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-			ncols = CorrParams.iCorrMaxColsToUse;
+			iFirstCol1 += (ncols - CorrelationParametersInst.iCorrMaxColsToUse)/2;
+			iFirstCol2 += (ncols - CorrelationParametersInst.iCorrMaxColsToUse)/2;
+			ncols = CorrelationParametersInst.iCorrMaxColsToUse;
 			
 			*pbRoiReduced = true;
 		}
@@ -303,7 +303,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 	int RowStrideB(_pImg2->PixelRowStride());
 
 	// For Bayer image
-	if(!CorrParams.bGrayScale)
+	if(!CorrelationParametersInst.bGrayScale)
 	{
 		RowStrideA = iLumSpan1;
 		RowStrideB = iLumSpan2;
@@ -371,7 +371,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			&result.CorrCoeff, &result.AmbigScore, myCharPtr/*&error_msg*/);
 
 	// For Bayer image
-	if(!CorrParams.bGrayScale)
+	if(!CorrelationParametersInst.bGrayScale)
 	{
 		delete [] pLumBuf1;
 		delete [] pLumBuf2;
@@ -405,11 +405,11 @@ bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 		*pbRoiReduced = false; 
 
 		// Adjust Rows if it is necessary
-		if(nrows > CorrParams.iCorrMaxRowsToUse) 
+		if(nrows > CorrelationParametersInst.iCorrMaxRowsToUse) 
 		{
-			iFirstRow1 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-			iFirstRow2 += (nrows - CorrParams.iCorrMaxRowsToUse)/2;
-			nrows = CorrParams.iCorrMaxRowsToUse;
+			iFirstRow1 += (nrows - CorrelationParametersInst.iCorrMaxRowsToUse)/2;
+			iFirstRow2 += (nrows - CorrelationParametersInst.iCorrMaxRowsToUse)/2;
+			nrows = CorrelationParametersInst.iCorrMaxRowsToUse;
 			iLastRow1 = iFirstRow1 + nrows - 1;
 			iLastRow2 = iFirstRow2 + nrows - 1;
 
@@ -417,11 +417,11 @@ bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 		}
 
 		// Adjust Cols if it is necessary
-		if(ncols > CorrParams.iCorrMaxColsToUse) 
+		if(ncols > CorrelationParametersInst.iCorrMaxColsToUse) 
 		{
-			iFirstCol1 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-			iFirstCol2 += (ncols - CorrParams.iCorrMaxColsToUse)/2;
-			ncols = CorrParams.iCorrMaxColsToUse;
+			iFirstCol1 += (ncols - CorrelationParametersInst.iCorrMaxColsToUse)/2;
+			iFirstCol2 += (ncols - CorrelationParametersInst.iCorrMaxColsToUse)/2;
+			ncols = CorrelationParametersInst.iCorrMaxColsToUse;
 			iLastCol1 = iFirstCol1 + ncols - 1;
 			iLastCol2 = iFirstCol2 + ncols - 1;
 
@@ -588,8 +588,8 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 	int row_offset = (int)(_result.RowOffset + 0.5);
 
 	// validation check
-	if(_roi1.Columns() < abs(col_offset)+CorrParams.iCorrPairMinRoiSize ||
-		_roi1.Rows() < abs(col_offset)+CorrParams.iCorrPairMinRoiSize)
+	if(_roi1.Columns() < abs(col_offset)+CorrelationParametersInst.iCorrPairMinRoiSize ||
+		_roi1.Rows() < abs(col_offset)+CorrelationParametersInst.iCorrPairMinRoiSize)
 		return(false);
 
 	*pPair = *this;

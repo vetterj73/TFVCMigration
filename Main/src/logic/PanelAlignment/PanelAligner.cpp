@@ -3,6 +3,7 @@
 #include "MosaicLayer.h"
 #include "MosaicTile.h"
 #include "Panel.h"
+#include <direct.h> //_mkdir
 
 void ImageAdded(int layerIndex, int cameraIndex, int triggerIndex, void* context)
 {
@@ -42,7 +43,7 @@ void PanelAligner::CleanUp()
 }
 
 // Change production
-bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel, unsigned int numThreads)
+bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
 	// CleanUp internal stuff for new production
@@ -54,7 +55,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel, unsigned int
 	unsigned char* pCadBuf = pPanel->GetCadBuffer();
 	unsigned char* pPanelMaskBuf = pPanel->GetMaskBuffer(); 
 
-	_pOverlapManager = new OverlapManager(_pSet, pPanel, numThreads);
+	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
 		
 	// Create solver for all illuminations
 	bool bProjectiveTrans = false;
@@ -104,6 +105,21 @@ void PanelAligner::ResetForNextPanel()
 	_bResultsReady = false;
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
+}
+
+void PanelAligner::LogOverlaps(bool bLog)
+{
+	CorrelationParametersInst.bSaveOverlaps = bLog;
+}
+
+void PanelAligner::LogMaskVectors(bool bLog)
+{
+	CorrelationParametersInst.bSaveMaskVectors = bLog;
+}
+
+void PanelAligner::NumThreads(unsigned int numThreads)
+{
+	CorrelationParametersInst.NumThreads = numThreads;
 }
 
 // Add single image
@@ -237,13 +253,17 @@ bool PanelAligner::CreateTransforms()
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 
 	_bResultsReady = true;
-	char cTemp[255];
-	string s;
-	sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrParams.sStitchPath.c_str()); 
-	s.clear();
-	s.assign(cTemp);
-	_pSolver->OutputVectorXCSV(s);
-
+	
+	if(CorrelationParametersInst.bSaveMaskVectors)
+	{
+		mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
+		char cTemp[255];
+		string s;
+		sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 
+		s.clear();
+		s.assign(cTemp);
+		_pSolver->OutputVectorXCSV(s);
+	}
 	return(true);
 }
 

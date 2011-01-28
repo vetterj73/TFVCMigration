@@ -18,7 +18,7 @@ public:
 	PanelAligner(void);
 	~PanelAligner(void);
 
-	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel, unsigned int numThreads);
+	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
 
 	void ResetForNextPanel();
 
@@ -36,6 +36,11 @@ public:
 	bool Save3ChannelImage(
 		string filePath, unsigned char *pChannel1, unsigned char* pChannel2, unsigned char* pChannel3, 
 		int numRows, int numColumns);
+
+
+	void LogOverlaps(bool bLog);
+	void LogMaskVectors(bool bLog);
+	void NumThreads(unsigned int numThreads);
 
 protected:
 	// CleanUp internal stuff for new production or desctructor

@@ -15,14 +15,6 @@ class Overlap : CyberJob::Job
 {
 public:
 	Overlap();
-
-	Overlap(
-		Image* pImg1, 
-		Image* pImg2,
-		DRect validRect,
-		OverlapType type,		
-		Image* pMaskImg = NULL);
-
 	Overlap(const Overlap& b);
 	void operator=(const Overlap& b);
 
@@ -58,6 +50,9 @@ protected:
 
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;
+
+	virtual bool DumpOvelapImages()=0;
+	virtual bool DumpResultImages()=0;
 
 private:
 	Image* _pImg1;

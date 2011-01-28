@@ -26,7 +26,7 @@ namespace PanelAlignM {
 		///
 		///	Sets up for a new "Run"
 		///
-		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel, unsigned int numThreads);
+		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel);
 
 		///
 		///	Reset for the next cycle
@@ -40,6 +40,10 @@ namespace PanelAlignM {
 		bool Save3ChannelImage(System::String^ imagePath,
 			System::IntPtr pChannel1, System::IntPtr pChannel2,	System::IntPtr pChannel3, 
 			int numRows, int numColumns);
+
+		void NumThreads(unsigned int numThreads);
+		void LogOverlaps(bool bLog);
+		void LogMaskVectors(bool bLog);	
 
 	private:
 		PanelAligner* _pAligner;

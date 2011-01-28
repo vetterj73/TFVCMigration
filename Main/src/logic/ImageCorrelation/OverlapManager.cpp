@@ -3,6 +3,7 @@
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
 #include "MosaicLayer.h"
+#include <direct.h> //_mkdir
 
 #pragma region constructor and reset
 OverlapManager::OverlapManager(
@@ -61,7 +62,7 @@ OverlapManager::OverlapManager(
 	}
 
 	// Control parameter
-	_iMinOverlapSize = CorrParams.iMinOverlapSize;
+	_iMinOverlapSize = CorrelationParametersInst.iMinOverlapSize;
 
 	// Calculate max number of cameras and triggers for mossiac images
 	unsigned int i, j;
@@ -102,10 +103,10 @@ OverlapManager::OverlapManager(
 	
 	// Create Fiducial Fov overlaps
 		// The vsfinder should not be used, if the vsNGc is used for mask
-	if(_pPanelMaskImg!=NULL) CorrParams.bUseVsFinder= false;	
+	if(_pPanelMaskImg!=NULL) CorrelationParametersInst.bUseVsFinder= false;	
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
-	if(CorrParams.bUseVsFinder)	
+	if(CorrelationParametersInst.bUseVsFinder)	
 		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	CreateFidFovOverlaps();
 
@@ -454,7 +455,7 @@ bool OverlapManager::CreateFiducialImages()
 
 	unsigned int iCount = 0;
 	double dScale = 1.0;						// The expansion scale for regoff
-	if(CorrParams.bUseVsFinder) dScale = 1.4;	// The expansion scale for vsfinder 
+	if(CorrelationParametersInst.bUseVsFinder) dScale = 1.4;	// The expansion scale for vsfinder 
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
 		
@@ -493,8 +494,8 @@ void OverlapManager::RenderFiducial(
 	double dScale)
 {
 	// Area in world space
-	double dExpandX = CorrParams.dFiducialSearchExpansionX;
-	double dExpandY = CorrParams.dFiducialSearchExpansionY;
+	double dExpandX = CorrelationParametersInst.dFiducialSearchExpansionX;
+	double dExpandY = CorrelationParametersInst.dFiducialSearchExpansionY;
 	double dHalfWidth = pFid->GetBoundingBox().Width()/2;
 	double dHalfHeight= pFid->GetBoundingBox().Height()/2;
 	double xMinImg = pFid->GetBoundingBox().Min().x - dHalfWidth*(dScale-1)  - dExpandX; 
@@ -605,7 +606,7 @@ bool OverlapManager::CreateVsfinderTemplates()
 void OverlapManager::CreateFidFovOverlaps()
 {
 	CreateFiducialImages();
-	if(CorrParams.bUseVsFinder)
+	if(CorrelationParametersInst.bUseVsFinder)
 		CreateVsfinderTemplates();
 
 	unsigned int i, iCam, iTrig;
@@ -636,12 +637,12 @@ void OverlapManager::CreateFidFovOverlaps()
 						continue;
 
 					// Overlap size check
-					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrParams.dFiducialSearchExpansionY/_pPanel->GetPixelSizeX());
-					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrParams.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
+					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeX());
+					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
 					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
 						continue;
 
-					if(CorrParams.bUseVsFinder)
+					if(CorrelationParametersInst.bUseVsFinder)
 					{
 						overlap.SetVsFinder(_pVsfinderCorr, _pVsFinderTempIds[iFid]);
 					}
@@ -673,21 +674,17 @@ bool OverlapManager::DoAlignmentForFov(
 	unsigned int iTrigIndex,
 	unsigned int iCamIndex)
 {
+	if(CorrelationParametersInst.bSaveOverlaps)
+	{
+		_mkdir(CorrelationParametersInst.GetOverlapPath().c_str());
+	}
+
 	// process valid FovFov Overlap  
 	list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex];
 	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
-		{		
 			_pJobManager->AddAJob((CyberJob::Job*)&*i);
-			/*
-			if(CorrParams.bSaveOverlap)
-			{
-				i->DumpOvelapImages();
-				i->DumpResultImages();
-			}
-			*/
-		}
 	}
 
 	// Process valid Cad Fov overalp
@@ -695,17 +692,7 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<CadFovOverlap>::iterator i=pCadFovList->begin(); i!=pCadFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
-		{
 			_pJobManager->AddAJob((CyberJob::Job*)&*i);
-/*
-			i->DoIt();
-			if(CorrParams.bSaveOverlap)
-			{
-				i->DumpOvelapImages();
-				i->DumpResultImages();
-			}
-*/
-		}
 	}
 
 	// Process valid fiducial Fov overlap
@@ -713,17 +700,7 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
-		{
 			_pJobManager->AddAJob((CyberJob::Job*)&*i);
-	/*
-			i->DoIt();
-			if(CorrParams.bSaveOverlap)
-			{
-				i->DumpOvelapImages();
-				i->DumpResultImages();
-			}
-	*/	
-		}
 	}
 
 	return(true);
@@ -789,7 +766,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 	iFovFovCount /=2;
 
 	// Double check 3*3
-	unsigned int iSum = CorrParams.iFineMaxBlocksInRow * CorrParams.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
+	unsigned int iSum = CorrelationParametersInst.iFineMaxBlocksInRow * CorrelationParametersInst.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
 	return(iSum);
 }
 

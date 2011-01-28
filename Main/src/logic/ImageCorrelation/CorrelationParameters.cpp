@@ -1,5 +1,4 @@
 #include "CorrelationParameters.h"
-#include <direct.h> //_mkdir
 
 CorrelationParameters* CorrelationParameters::_pInst = 0;
 CorrelationParameters& CorrelationParameters::Instance()
@@ -47,20 +46,21 @@ CorrelationParameters::CorrelationParameters(void)
 	// Support Bayer(color image)
 	bGrayScale = true;					// Grey scale image in default
 
-	// debug flags
-	bSaveOverlap = false;
-	sOverlapPath = "C:\\Temp\\Overlaps\\";
-	bSaveStitchedImage = true;
-	sStitchPath = "C:\\Temp\\";
-	bSaveColorImage = false;
+	// Number of Threads to use for processing
+	NumThreads = 6;
 
-	// make sure the directory exists 
-	if(bSaveStitchedImage)
-		_mkdir(sStitchPath.c_str());
-	if(bSaveOverlap)
-		_mkdir(sOverlapPath.c_str());
+	// debug flags
+	bSaveOverlaps = false;
+	bSaveMaskVectors = false;
+	sDiagnosticPath = "C:\\Temp\\";
+	sOverlapPath = sDiagnosticPath + "Overlaps\\";
 }
 
 CorrelationParameters::~CorrelationParameters(void)
 {
+}
+
+string CorrelationParameters::GetOverlapPath()
+{
+	return sOverlapPath;
 }

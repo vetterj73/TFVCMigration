@@ -14,7 +14,7 @@ typedef enum {                           /* Don't change order of enums */
 
 #pragma once
 
-#define CorrParams CorrelationParameters::Instance() 
+#define CorrelationParametersInst CorrelationParameters::Instance() 
 
 class CorrelationParameters
 {
@@ -64,10 +64,13 @@ public:
 	bool bGrayScale;						// Grey scale image or Bayer(color) image
 
 	// debug flage
-	bool bSaveOverlap;
+	bool bSaveOverlaps;
+	bool bSaveMaskVectors;
+	unsigned int NumThreads;
+	string sDiagnosticPath;
+	string GetOverlapPath();
+
+private:
 	string sOverlapPath;
-	bool bSaveStitchedImage;
-	bool bSaveColorImage;
-	string sStitchPath;
 };
 
