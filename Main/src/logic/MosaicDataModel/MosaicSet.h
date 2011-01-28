@@ -40,9 +40,9 @@ namespace MosaicDM
 			/// \param nominalPixelSizeYInMeters 
 			MosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
-					  int imageWidthInPixels,
-					  int imageHeightInPixels,
-					  int imageStrideInPixels,
+					  unsigned int imageWidthInPixels,
+					  unsigned int imageHeightInPixels,
+					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
 					  double nominalPixelSizeYInMeters);
 
@@ -61,8 +61,8 @@ namespace MosaicDM
 			/// \param numTriggers - number of triggers used for this layer
 			/// \param bAlignWithCAD - should this layer be correlated against CAD?
 			MosaicLayer *AddLayer(
-				int numCameras,
-				int numTriggers,
+				unsigned int numCameras,
+				unsigned int numTriggers,
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial);
 			
@@ -71,16 +71,16 @@ namespace MosaicDM
 			/// Returns null if the index is out of range.
 			///
 			/// \param index - Zero Based Index... 
-			MosaicLayer *GetLayer(int index);
+			MosaicLayer *GetLayer(unsigned int index);
 
 			///
 			///	Getters for all basic Attributes
 			///
-			int GetNumMosaicLayers(){return (int)_layerList.size();}		
-			int GetImageWidthInPixels(){return _imageWidth;}
-			int GetImageHeightInPixels(){return _imageHeight;}
-			int GetImageStrideInPixels(){return _imageStride;}
-			int GetImageStrideInBytes(){return _imageStride;}
+			unsigned int GetNumMosaicLayers(){return (unsigned int)_layerList.size();}		
+			unsigned int GetImageWidthInPixels(){return _imageWidth;}
+			unsigned int GetImageHeightInPixels(){return _imageHeight;}
+			unsigned int GetImageStrideInPixels(){return _imageStride;}
+			unsigned int GetImageStrideInBytes(){return _imageStride;}
 			double GetNominalPixelSizeX(){return _pixelSizeX;};
 			double GetNominalPixelSizeY(){return _pixelSizeY;};
 			double GetObjectWidthInMeters(){return _objectWidthInMeters;};
@@ -89,7 +89,7 @@ namespace MosaicDM
 			///
 			///	Get the correlation flags associated with the certain layers
 			///
-			CorrelationFlags* GetCorrelationFlags(int layerX, int layerY);
+			CorrelationFlags* GetCorrelationFlags(unsigned int layerX, unsigned int layerY);
 
 			///
 			///	Are all of the images from all layers collected?
@@ -99,7 +99,7 @@ namespace MosaicDM
 			///
 			///	Adds an image to the mosaic...
 			///
-			bool AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex);
+			bool AddImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 
 			///
 			///	Clears all images from all layers in the mosaic.
@@ -107,9 +107,9 @@ namespace MosaicDM
 			void ClearAllImages();
 
 		private:
-			int _imageWidth;
-			int _imageHeight;
-			int _imageStride;
+			unsigned int _imageWidth;
+			unsigned int _imageHeight;
+			unsigned int _imageStride;
 			double _pixelSizeX;
 			double _pixelSizeY;
 			LayerList _layerList;
@@ -117,7 +117,7 @@ namespace MosaicDM
 			double _objectLengthInMeters;
 			IMAGEADDED_CALLBACK _registeredImageAddedCallback;
 			void * _pCallbackContext;
-			void FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex);
+			void FireImageAdded(unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 			CorrelationFlagsMap _correlationFlagsMap;
 	};
 }

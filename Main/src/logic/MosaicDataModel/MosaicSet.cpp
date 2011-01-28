@@ -9,9 +9,9 @@ namespace MosaicDM
 {
 	MosaicSet::MosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
-					  int imageWidthInPixels,
-					  int imageHeightInPixels,
-					  int imageStrideInPixels,
+					  unsigned int imageWidthInPixels,
+					  unsigned int imageHeightInPixels,
+					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
 					  double nominalPixelSizeYInMeters)
 	{
@@ -28,11 +28,11 @@ namespace MosaicDM
 
 	MosaicSet::~MosaicSet()
 	{
-		for(int i=0; i<_layerList.size(); i++)
+		for(unsigned int i=0; i<_layerList.size(); i++)
 		{
-			for(int j=i; j<_layerList.size(); j++)
+			for(unsigned int j=i; j<_layerList.size(); j++)
 			{
-				pair<int, int> Pair(i, j);
+				pair<unsigned int, unsigned int> Pair(i, j);
 				delete _correlationFlagsMap[Pair];
 			}
 
@@ -43,7 +43,7 @@ namespace MosaicDM
 		_correlationFlagsMap.clear();
 	}
 
-	MosaicLayer *MosaicSet::GetLayer(int index)
+	MosaicLayer *MosaicSet::GetLayer(unsigned int index)
 	{
 		if(index<0 || index >= _layerList.size())
 			return NULL;
@@ -52,8 +52,8 @@ namespace MosaicDM
 	}
 
 	MosaicLayer * MosaicSet::AddLayer(
-		int numCameras,
-		int numTriggers,
+		unsigned int numCameras,
+		unsigned int numTriggers,
 		bool bAlignWithCAD,
 		bool bAlignWithFiducial)
 	{
@@ -61,12 +61,12 @@ namespace MosaicDM
 
 		MosaicLayer *pML = new MosaicLayer();
 
-		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, bAlignWithFiducial, _layerList.size());
+		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, bAlignWithFiducial, (unsigned int)_layerList.size());
 		_layerList.push_back(pML);
 
 
 		// Setup the default correlation Flags...
-		for(int i=0; i<_layerList.size(); i++)
+		for(unsigned int i=0; i<_layerList.size(); i++)
 		{
 			CorrelationFlags *pFlags = new CorrelationFlags();	
 			pair<int, int> Pair(i, _layerList.size()-1);
@@ -76,7 +76,7 @@ namespace MosaicDM
 		return pML;
 	}
 
-	CorrelationFlags* MosaicSet::GetCorrelationFlags(int layerX, int layerY)
+	CorrelationFlags* MosaicSet::GetCorrelationFlags(unsigned int layerX, unsigned int layerY)
 	{
 		if(layerX > _layerList.size()-1 || layerY > _layerList.size()-1 ||
 			layerX<0 || layerY<0)
@@ -89,14 +89,14 @@ namespace MosaicDM
 			layerY = temp;
 		}
 
-		pair<int, int> Pair(layerX, layerY);
+		pair<unsigned int, unsigned int> Pair(layerX, layerY);
 
 		return _correlationFlagsMap[Pair];
 	}
 
 	bool MosaicSet::HasAllImages()
 	{
-		for(int i=0; i<_layerList.size(); i++)
+		for(unsigned int i=0; i<_layerList.size(); i++)
 			if(!_layerList[i]->HasAllImages())
 				return false;
 
@@ -105,7 +105,7 @@ namespace MosaicDM
 
 	void MosaicSet::ClearAllImages()
 	{
-		for(int i=0; i<_layerList.size(); i++)
+		for(unsigned int i=0; i<_layerList.size(); i++)
 			_layerList[i]->ClearAllImages();
 	}
 
@@ -121,7 +121,7 @@ namespace MosaicDM
 		_pCallbackContext = NULL;
 	}
 
-	bool MosaicSet::AddImage(unsigned char *pBuffer, int layerIndex, int cameraIndex, int triggerIndex)
+	bool MosaicSet::AddImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		MosaicLayer *pLayer = GetLayer(layerIndex);
 		if(pLayer == NULL)
@@ -135,7 +135,7 @@ namespace MosaicDM
 		return true;
 	}
 
-	void MosaicSet::FireImageAdded(int layerIndex, int cameraIndex, int triggerIndex)
+	void MosaicSet::FireImageAdded(unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		if(_registeredImageAddedCallback != NULL)
 			_registeredImageAddedCallback(layerIndex, cameraIndex, triggerIndex, _pCallbackContext);

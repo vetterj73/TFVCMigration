@@ -19,6 +19,15 @@ namespace PanelAlignM {
 	{
 		if(_pAligner!=NULL)
 			delete _pAligner;
+		_pAligner = NULL;
+	}
+
+	ManagedPanelAlignment::~ManagedPanelAlignment()
+	{
+		if(_pAligner!=NULL)
+			delete _pAligner;
+
+		_pAligner = NULL;
 	}
 
 	// Change production

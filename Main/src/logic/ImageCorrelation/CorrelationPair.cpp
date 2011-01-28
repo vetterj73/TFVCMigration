@@ -205,8 +205,8 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 // Do the square root correlation and report result
 bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 {	
-	int   nrows = Rows();
-	int   ncols = Columns();
+	unsigned int nrows = Rows();
+	unsigned int ncols = Columns();
 
 	unsigned int iFirstCol1 = _roi1.FirstColumn;
 	unsigned int iFirstRow1 = _roi1.FirstRow;
@@ -387,8 +387,8 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 // Calculate correlatin by using NGC
 bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 {
-	int   nrows = Rows();
-	int   ncols = Columns();
+	unsigned int nrows = Rows();
+	unsigned int ncols = Columns();
 
 	unsigned int iFirstCol1 = _roi1.FirstColumn;
 	unsigned int iFirstRow1 = _roi1.FirstRow;

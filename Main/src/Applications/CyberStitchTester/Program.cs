@@ -109,7 +109,7 @@ namespace CyberStitchTester
                     _cycleCount++;
 
                     // Save the images...
-                    for(int i=0; i<_mosaicSet.GetNumMosaicLayers(); i++)
+                    for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
                     {
                         ManagedMosaicLayer layer = _mosaicSet.GetLayer(i);
 
@@ -271,10 +271,10 @@ namespace CyberStitchTester
                 pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
 
-            int layer = pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
-                        pframe.CaptureSpecIndex();
-            _mosaicSet.AddImage(pframe.BufferPtr(), layer, pframe.CameraIndex(),
-                                pframe.TriggerIndex());
+            uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
+                        pframe.CaptureSpecIndex());
+            _mosaicSet.AddImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+                                (uint)pframe.TriggerIndex());
         }
 
         private static void Output(string str)

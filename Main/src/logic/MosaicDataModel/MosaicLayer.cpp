@@ -3,7 +3,9 @@
 #include "MosaicSet.h"
 #include "MosaicTile.h"
 #include "Utilities.h"
-
+#include "MorphJob.h"
+#include "JobManager.h"
+using namespace CyberJob;
 namespace MosaicDM 
 {
 	MosaicLayer::MosaicLayer()
@@ -36,8 +38,8 @@ namespace MosaicDM
 	}
 
 	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, 
-        							int numCameras,
-									int numTriggers,
+        							unsigned int numCameras,
+									unsigned int numTriggers,
 									bool bAlignWithCAD,
 									bool bAlignWithFiducial,
 									unsigned int layerIndex)
@@ -49,11 +51,11 @@ namespace MosaicDM
 		_bAlignWithFiducial = bAlignWithFiducial;
 		_layerIndex = layerIndex;
 
-		int numTiles = GetNumberOfTiles();
+		unsigned int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
 		_maskImages = new Image[numTiles];
 
-		for(int i=0; i<numTiles; i++)
+		for(unsigned int i=0; i<numTiles; i++)
 		{
 			// @todo - set X/Y center offsets nominally...
 			_pTileArray[i].Initialize(this, 0.0, 0.0);
@@ -93,6 +95,10 @@ namespace MosaicDM
 	// @todo - Need to redo this for each new panel!!!!
 	void MosaicLayer::CreateStitchedImageIfNecessary()
 	{
+		if(_stitchedImageValid)
+			return;
+
+		_stitchedImageValid = true;
 		AllocateStitchedImageIfNecessary();
 
 		// Trigger and camera centers in world space
@@ -131,29 +137,39 @@ namespace MosaicDM
 		}
 		piRectCols[iNumCams] = _pStitchedImage->Columns();
 
+		char buf[20];
+		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
+		CyberJob::JobManager jm(buf, 4);
+		vector<MorphJob*> morphJobs;
 		// Morph each Fov to create stitched panel image
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
 			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 			{
-				Image* pFov = GetImage(iCam, iTrig);
-			
-				UIRect rect((unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
-					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1));
-				// Validation check
-				if(!rect.IsValid()) continue;
+				Image* pFOV = GetImage(iCam, iTrig);
 
-				_pStitchedImage->MorphFrom(pFov, rect);
+				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
+					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
+					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1));
+				jm.AddAJob((Job*)pJob);
+				morphJobs.push_back(pJob);
 			}
 		}
-		_stitchedImageValid = true;
+
+		// Wait until it is complete...
+		while(jm.TotalJobs() > 0)
+			Sleep(10);
+
+		for(unsigned int i=0; i<morphJobs.size(); i++)
+			delete morphJobs[i];
+		morphJobs.clear();
 		delete [] pdCenX;
 		delete [] pdCenY;
 		delete [] piRectRows;
 		delete [] piRectCols;
 	}
 
-	MosaicTile* MosaicLayer::GetTile(int cameraIndex, int triggerIndex)
+	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())
 			return NULL;
@@ -170,15 +186,15 @@ namespace MosaicDM
 		return (Image*)pTile;
 	}
 
-	int MosaicLayer::GetNumberOfTiles()
+	unsigned int MosaicLayer::GetNumberOfTiles()
 	{
 		return GetNumberOfTriggers()*GetNumberOfCameras();
 	}
 	
 	bool MosaicLayer::HasAllImages()
 	{
-		int numTiles = GetNumberOfTiles();
-		for(int i=0; i<numTiles; i++)
+		unsigned int numTiles = GetNumberOfTiles();
+		for(unsigned int i=0; i<numTiles; i++)
 			if(!_pTileArray[i].ContainsImage())
 				return false;
 
@@ -187,8 +203,8 @@ namespace MosaicDM
 
 	void MosaicLayer::ClearAllImages()
 	{
-		int numTiles = GetNumberOfTiles();
-		for(int i=0; i<numTiles; i++)
+		unsigned int numTiles = GetNumberOfTiles();
+		for(unsigned int i=0; i<numTiles; i++)
 		{
 			_pTileArray[i].ClearImageBuffer();
 			_pTileArray[i].SetTransform(_pTileArray[i].GetNominalTransform());
@@ -198,7 +214,7 @@ namespace MosaicDM
 		_stitchedImageValid = false;
 	}
 
-	bool MosaicLayer::AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex)
+	bool MosaicLayer::AddImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
 		if(pTile == NULL)
@@ -210,7 +226,7 @@ namespace MosaicDM
 	// Camera centers in Y of world space
 	void MosaicLayer::CameraCentersInY(double* pdCenY)
 	{
-		for(int iCam=0; iCam<GetNumberOfCameras(); iCam++)
+		for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
 		{
 			pdCenY[iCam] = 0;
 			for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)

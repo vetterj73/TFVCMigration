@@ -11,7 +11,7 @@
 using namespace MosaicDM;
 
 // Base class for overlap between image and image
-class Overlap : Job		
+class Overlap : CyberJob::Job		
 {
 public:
 	Overlap();

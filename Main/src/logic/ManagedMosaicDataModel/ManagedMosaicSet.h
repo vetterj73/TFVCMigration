@@ -21,7 +21,7 @@ using namespace MLOGGER;
 /// information can also be used to help the stitching process.
 namespace MMosaicDM 
 {
-	public delegate void ImageAddedDelegate(int, int, int);
+	public delegate void ImageAddedDelegate(unsigned int, unsigned int, unsigned int);
 	
 	///
 	///	Simple Wrapper around unmanaged MosaicSet.  Only exposes what is necessary.
@@ -36,9 +36,9 @@ namespace MMosaicDM
 			///
 			ManagedMosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
-					  int imageWidthInPixels,
-					  int imageHeightInPixels,
-					  int imageStrideInPixels,
+					  unsigned int imageWidthInPixels,
+					  unsigned int imageHeightInPixels,
+					  unsigned int imageStrideInPixels,
 					  double pixelSizeXInMeters,
 					  double pixelSizeYInMeters)
 			{
@@ -59,6 +59,11 @@ namespace MMosaicDM
 				_pMosaicSet->RegisterImageAddedCallback((MosaicDM::IMAGEADDED_CALLBACK)Marshal::GetFunctionPointerForDelegate(_imageAddedDelegate).ToPointer(), NULL);	
 			}
 
+			~ManagedMosaicSet()
+			{
+				delete _pMosaicSet;
+				_pMosaicSet = NULL;
+			}
 
 			///
 			///	Finalizer (deletes the unmanaged pointer).
@@ -66,23 +71,15 @@ namespace MMosaicDM
 			!ManagedMosaicSet()
 			{
 				delete _pMosaicSet;
+				_pMosaicSet = NULL;
 			}
 
-			///
-			///	Destructor - not called, but defining it avoids warnngs (and I verified that
-			/// the finalizer is called.
-			///
-			~ManagedMosaicSet()
-			{
-			//	delete _pMosaicSet;
-			}		
-	
 			///
 			///	Adds a layer (see unmanaged MosaicSet for details)
 			///
 			ManagedMosaicLayer ^AddLayer(
-        		int numCameras,
-				int numTriggers,
+        		unsigned int numCameras,
+				unsigned int numTriggers,
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial)
 			{
@@ -97,7 +94,7 @@ namespace MMosaicDM
 			///
 			///	Gets a layer (see unmanaged MosaicSet for details)
 			///
-			ManagedMosaicLayer ^GetLayer(int index)
+			ManagedMosaicLayer ^GetLayer(unsigned int index)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->GetLayer(index);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
@@ -106,7 +103,7 @@ namespace MMosaicDM
 			///
 			///	Gets a CorrelationFlags structure to fill in.
 			///
-			ManagedCorrelationFlags ^GetCorrelationSet(int layerX, int layerY)
+			ManagedCorrelationFlags ^GetCorrelationSet(unsigned int layerX, unsigned int layerY)
 			{		
 				MosaicDM::CorrelationFlags* pCF = _pMosaicSet->GetCorrelationFlags(layerX, layerY);
 				return pCF == NULL?nullptr:gcnew ManagedCorrelationFlags(pCF);
@@ -117,7 +114,7 @@ namespace MMosaicDM
 				return _pMosaicSet->HasAllImages();
 			}
 			
-			bool AddImage(System::IntPtr pBuffer, int layerIndex, int cameraIndex, int triggerIndex)
+			bool AddImage(System::IntPtr pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 			{
 				return _pMosaicSet->AddImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
 			}
@@ -144,7 +141,7 @@ namespace MMosaicDM
 			MosaicDM::MosaicSet *_pMosaicSet;
 		
 			ImageAddedDelegate ^_imageAddedDelegate;
-			void RaiseImageAdded(int layerIndex, int cameraIndex, int triggerIndex)
+			void RaiseImageAdded(unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 			{
 				OnImageAdded(layerIndex, cameraIndex, triggerIndex);
 			}

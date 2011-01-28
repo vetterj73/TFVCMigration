@@ -21,6 +21,7 @@ namespace PanelAlignM {
 	public:
 		ManagedPanelAlignment();
 		!ManagedPanelAlignment();
+		~ManagedPanelAlignment();
 
 		///
 		///	Sets up for a new "Run"

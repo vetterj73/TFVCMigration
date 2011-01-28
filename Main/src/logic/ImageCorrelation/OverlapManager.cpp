@@ -3,14 +3,13 @@
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
 #include "MosaicLayer.h"
-#include "JobThread.h"
 
 #pragma region constructor and reset
 OverlapManager::OverlapManager(
 	MosaicSet* pMosaicSet,
 	Panel* pPanel)
 {	
-	_pJobManager = new JobManager("Overlap", 8);
+	_pJobManager = new CyberJob::JobManager("Overlap", 8);
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 
@@ -679,7 +678,7 @@ bool OverlapManager::DoAlignmentForFov(
 	{
 		if(i->IsReadyToProcess())
 		{		
-			_pJobManager->AddJob((Job*)&*i);
+			_pJobManager->AddAJob((CyberJob::Job*)&*i);
 			/*
 			if(CorrParams.bSaveOverlap)
 			{
@@ -696,7 +695,7 @@ bool OverlapManager::DoAlignmentForFov(
 	{
 		if(i->IsReadyToProcess())
 		{
-			_pJobManager->AddJob((Job*)&*i);
+			_pJobManager->AddAJob((CyberJob::Job*)&*i);
 /*
 			i->DoIt();
 			if(CorrParams.bSaveOverlap)
@@ -714,7 +713,7 @@ bool OverlapManager::DoAlignmentForFov(
 	{
 		if(i->IsReadyToProcess())
 		{
-			_pJobManager->AddJob((Job*)&*i);
+			_pJobManager->AddAJob((CyberJob::Job*)&*i);
 	/*
 			i->DoIt();
 			if(CorrParams.bSaveOverlap)

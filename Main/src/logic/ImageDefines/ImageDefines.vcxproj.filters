@@ -36,6 +36,9 @@
     <ClInclude Include="JobThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="JobManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -54,6 +57,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="JobThread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JobManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

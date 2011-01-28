@@ -30,15 +30,15 @@ namespace SIMMosaicUtils
                 throw new ApplicationException("AddDeviceToMosaic - There are not CaptureSpecs defined for teh device!");
 
             /// @todo - this should be made part of the SIM Device....
-            int numCameras = 0;
+            uint numCameras = 0;
             for (int i = 0; i < device.NumberOfCameras; i++)
                 if (device.GetSIMCamera(i).Status() == (CameraStatus)1)
                     numCameras++;
 
-            for (int i = 0; i < device.NumberOfCaptureSpecs; i++)
+            for (uint i = 0; i < device.NumberOfCaptureSpecs; i++)
             {
-                ManagedSIMCaptureSpec pSpec = device.GetSIMCaptureSpec(i);
-                ManagedMosaicLayer layer = set.AddLayer(numCameras, pSpec.NumberOfTriggers, false, true);
+                ManagedSIMCaptureSpec pSpec = device.GetSIMCaptureSpec((int)i);
+                ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, false, true);
 
                 if (layer == null)
                     throw new ApplicationException("AddDeviceToMosaic - Layer was null - this should never happen!");
@@ -46,10 +46,10 @@ namespace SIMMosaicUtils
                 // Use camera zero as reference
                 ManagedSIMCamera camera0 = device.GetSIMCamera(0);
                 // Set up the transform parameters...
-                for (int j = 0; j < numCameras; j++)
+                for (uint j = 0; j < numCameras; j++)
                 {
-                    ManagedSIMCamera camera = device.GetSIMCamera(j);
-                    for (int k = 0; k < pSpec.NumberOfTriggers; k++)
+                    ManagedSIMCamera camera = device.GetSIMCamera((int)j);
+                    for (uint k = 0; k < pSpec.NumberOfTriggers; k++)
                     {
                         ManagedMosaicTile mmt = layer.GetTile(j, k);
 
@@ -57,7 +57,7 @@ namespace SIMMosaicUtils
                             throw new ApplicationException("AddDeviceToMosaic - Tile was null - this should never happen");
                         
                         // First camera center in X
-                        double dTrigOffset = pSpec.GetTriggerAtIndex(k) + pSpec.XOffset();
+                        double dTrigOffset = pSpec.GetTriggerAtIndex((int)k) + pSpec.XOffset();
                         double xOffset = set.GetObjectWidthInMeters() - dTrigOffset - camera0.Pixelsize.X * camera0.Rows() / 2;
                         // The camera center in X
                         xOffset += (camera.CenterOffset.X - camera0.CenterOffset.X);
@@ -82,9 +82,9 @@ namespace SIMMosaicUtils
 
         private static void SetDefaultCorrelationFlags(ManagedMosaicSet set)
         {
-            for (int i = 0; i < set.GetNumMosaicLayers(); i++)
+            for (uint i = 0; i < set.GetNumMosaicLayers(); i++)
             {
-                for (int j = 0; j < set.GetNumMosaicLayers(); j++)
+                for (uint j = 0; j < set.GetNumMosaicLayers(); j++)
                 {
                     ManagedCorrelationFlags flag = set.GetCorrelationSet(i, j);
                     if (i == j)

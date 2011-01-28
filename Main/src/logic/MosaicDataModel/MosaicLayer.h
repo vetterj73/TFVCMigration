@@ -30,7 +30,7 @@ namespace MosaicDM
 			///	Get the tile at a given camera and trigger of the mosaic.
 			/// Returns null if this row or column is out of range.
 			///
-			MosaicTile* GetTile(int cameraIndex, int triggerIndex);
+			MosaicTile* GetTile(unsigned int cameraIndex, unsigned int triggerIndex);
 
 			///
 			///	Get the Image Subclass at a given camera and trigger of the mosaic.
@@ -41,7 +41,7 @@ namespace MosaicDM
 			///
 			///	Returns the number of tiles in this (or any?) layer.
 			///
-			int GetNumberOfTiles();
+			unsigned int GetNumberOfTiles();
 
 			///
 			///	Does this layer have all of its images?
@@ -55,8 +55,8 @@ namespace MosaicDM
 			///
 			MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 
-			int GetNumberOfTriggers(){return _numTriggers;};
-			int GetNumberOfCameras(){return _numCameras;};
+			unsigned int GetNumberOfTriggers(){return _numTriggers;};
+			unsigned int GetNumberOfCameras(){return _numCameras;};
 
 			bool IsAlignWithCad() {return _bAlignWithCAD;};
 			bool IsAlignWithFiducial() {return _bAlignWithFiducial;};
@@ -83,8 +83,8 @@ namespace MosaicDM
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
-        		int numCameras,
-				int numTriggers,
+        		unsigned int numCameras,
+				unsigned int numTriggers,
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial,
 				unsigned int layerIndex);
@@ -96,12 +96,12 @@ namespace MosaicDM
 			///
 			///	Adds an image...
 			///
-			bool AddImage(unsigned char *pBuffer, int cameraIndex, int triggerIndex);
+			bool AddImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex);
 
 		private:
 			bool _stitchedImageValid;
-			int _numTriggers;
-			int _numCameras;
+			unsigned int _numTriggers;
+			unsigned int _numCameras;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
 			Image* _maskImages;				// An array fo mask images 

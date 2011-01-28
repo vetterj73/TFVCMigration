@@ -8,10 +8,10 @@
 #include "Panel.h"
 #include "VsFinderCorrelation.h"
 #include "MosaicSet.h"
+#include "JobManager.h"
 
 using namespace MosaicDM;
 class Panel;
-class JobManager;
 class OverlapManager
 {
 public:
@@ -104,6 +104,6 @@ private:
 	// For vsfinder
 	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int* _pVsFinderTempIds;
-	JobManager *_pJobManager;
+	CyberJob::JobManager *_pJobManager;
 };
 
