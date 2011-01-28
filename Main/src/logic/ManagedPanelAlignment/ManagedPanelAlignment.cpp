@@ -31,12 +31,12 @@ namespace PanelAlignM {
 	}
 
 	// Change production
-	bool ManagedPanelAlignment::ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel)
+	bool ManagedPanelAlignment::ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel, unsigned int numThreads)
 	{
 		MosaicSet* pMosaicSet = (MosaicSet*)(void*)set->UnmanagedMosaicSet;
 		Panel* pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
 
-		bool bFlag = _pAligner->ChangeProduction(pMosaicSet, pPanel);
+		bool bFlag = _pAligner->ChangeProduction(pMosaicSet, pPanel, numThreads);
 
 		return(bFlag);
 	}

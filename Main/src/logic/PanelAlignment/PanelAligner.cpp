@@ -42,7 +42,7 @@ void PanelAligner::CleanUp()
 }
 
 // Change production
-bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
+bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel, unsigned int numThreads)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
 	// CleanUp internal stuff for new production
@@ -54,7 +54,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	unsigned char* pCadBuf = pPanel->GetCadBuffer();
 	unsigned char* pPanelMaskBuf = pPanel->GetMaskBuffer(); 
 
-	_pOverlapManager = new OverlapManager(_pSet, pPanel);
+	_pOverlapManager = new OverlapManager(_pSet, pPanel, numThreads);
 		
 	// Create solver for all illuminations
 	bool bProjectiveTrans = false;

@@ -22,6 +22,7 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
+        private static uint _numThreads = 5;
         private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
@@ -45,6 +46,8 @@ namespace CyberStitchTester
                     bContinuous = true;
                 if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
+                if (args[i] == "-t" && i < args.Length - 1)
+                    _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
             }
@@ -73,7 +76,7 @@ namespace CyberStitchTester
             // Set up production for aligner
             try
             {
-                if(!_aligner.ChangeProduction(_mosaicSet, _panel))
+                if (!_aligner.ChangeProduction(_mosaicSet, _panel, _numThreads))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
                 }

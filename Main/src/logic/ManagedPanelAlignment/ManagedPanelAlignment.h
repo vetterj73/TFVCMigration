@@ -26,7 +26,7 @@ namespace PanelAlignM {
 		///
 		///	Sets up for a new "Run"
 		///
-		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel);
+		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel, unsigned int numThreads);
 
 		///
 		///	Reset for the next cycle

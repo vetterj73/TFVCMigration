@@ -7,9 +7,10 @@
 #pragma region constructor and reset
 OverlapManager::OverlapManager(
 	MosaicSet* pMosaicSet,
-	Panel* pPanel)
+	Panel* pPanel,
+	unsigned int numThreads)
 {	
-	_pJobManager = new CyberJob::JobManager("Overlap", 8);
+	_pJobManager = new CyberJob::JobManager("Overlap", numThreads);
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 

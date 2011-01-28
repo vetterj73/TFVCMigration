@@ -17,7 +17,8 @@ class OverlapManager
 public:
 	OverlapManager(
 		MosaicSet* pMosaicSet,
-		Panel* pPanel);
+		Panel* pPanel,
+		unsigned int numThreads);
 	~OverlapManager(void);
 
 	bool ResetforNewPanel();

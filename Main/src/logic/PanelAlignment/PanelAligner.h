@@ -18,7 +18,7 @@ public:
 	PanelAligner(void);
 	~PanelAligner(void);
 
-	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
+	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel, unsigned int numThreads);
 
 	void ResetForNextPanel();
 
