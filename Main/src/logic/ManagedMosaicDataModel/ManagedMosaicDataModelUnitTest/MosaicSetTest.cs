@@ -109,7 +109,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) != null);
 
-            for (int i = 0; i < 1; i++)
+            for (uint i = 0; i < 1; i++)
             {
                 Assert.IsTrue(mSet.GetLayer(i).GetTile(0, 0) != null);
                 Assert.IsTrue(mSet.GetLayer(i).GetTile(1, 1) != null);
