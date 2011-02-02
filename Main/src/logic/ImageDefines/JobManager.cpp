@@ -2,14 +2,22 @@
 #include "JobThread.h"
 namespace CyberJob
 {
-
+	const unsigned int cMaxNameSize = 36;
 	JobManager::JobManager(string baseName, unsigned int numThreads)
 	{
 		_currentThread = 0;
+
+		// Validation of lengths...
+		string name = baseName;
+		if(name.length() > cMaxNameSize-4)
+			name = baseName.substr(0, cMaxNameSize-4);
+		if(numThreads > 99)
+			numThreads = 99;
+
 		for(unsigned int i=0; i<numThreads; i++)
 		{
-			char buf[20];
-			sprintf_s(buf, 19, "%s%d", baseName.c_str(), i);
+			char buf[cMaxNameSize];
+			sprintf_s(buf, cMaxNameSize-1, "%s%d", name.c_str(), i);
 			string name = buf;
 			JobThread* pJT = new JobThread(name);
 			_jobThreads.push_back(pJT);
@@ -18,7 +26,7 @@ namespace CyberJob
 
 	JobManager::~JobManager()
 	{
-		for(int i=0; i<_jobThreads.size(); i++)
+		for(unsigned int i=0; i<_jobThreads.size(); i++)
 		{
 			_jobThreads[i]->Kill();
 			delete _jobThreads[i];
@@ -43,6 +51,12 @@ namespace CyberJob
 		if(_currentThread >= _jobThreads.size())
 			_currentThread = 0;
 	}	
+
+	void JobManager::MarkAsFinished()
+	{
+		for(unsigned int i=0; i<_jobThreads.size(); i++)
+			_jobThreads[i]->MarkAsFinished();
+	}
 
 	unsigned int JobManager::TotalJobs()
 	{

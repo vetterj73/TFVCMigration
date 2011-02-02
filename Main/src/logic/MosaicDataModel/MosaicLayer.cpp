@@ -157,6 +157,7 @@ namespace MosaicDM
 		}
 
 		// Wait until it is complete...
+		jm.MarkAsFinished();
 		while(jm.TotalJobs() > 0)
 			Sleep(10);
 

@@ -63,6 +63,11 @@ namespace CyberJob
 		return count;
 	}
 
+	void JobThread::MarkAsFinished()
+	{
+		AddJob(&_lastJob);
+	}
+
 	void JobThread::Kill()
 	{
 		if(_thread == NULL)

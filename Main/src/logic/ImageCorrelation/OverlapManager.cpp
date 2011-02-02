@@ -848,6 +848,8 @@ bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned 
 
 bool OverlapManager::FinishOverlaps()
 {
+	// Wait for all job threads to finish...
+	_pJobManager->MarkAsFinished();
 	while(_pJobManager->TotalJobs() > 0)
 		Sleep(10);
 

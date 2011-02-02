@@ -17,7 +17,9 @@ namespace CyberJob
 	public:
 
 		///
-		///	Constructor
+		///	Constructor.  
+		/// Max size of baseName is 32 (truncated to 32 if over 32).
+		/// Max number of threads is 99 (changed to 99 if over 99).
 		///	
 		JobManager(string baseName, unsigned int numThreads);
 
@@ -33,6 +35,15 @@ namespace CyberJob
 		void AddAJob(Job* pJob);
 
 		///
+		///	MarkAsFinished
+		/// This lets the manager know that you are done.  It does not reset anything, it just 
+		/// adds a "complete" event to each thread so that the manager can accurately track
+		/// the progress of real jobs through the system.  User Beware, this does not stop you from
+		/// adding legitimate jobs after you specify that you are done!
+		///
+		void MarkAsFinished();
+
+		///
 		///	Count of all jobs currently waiting or in process.  When this is 0, we
 		/// are done.
 		///
@@ -41,6 +52,6 @@ namespace CyberJob
 
 	private:
 		vector<JobThread*> _jobThreads;
-		int _currentThread;
+		unsigned int _currentThread;
 	};
 };

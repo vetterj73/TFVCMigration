@@ -17,6 +17,17 @@ namespace CyberJob
 	};
 
 	///
+	///	The purpose of this job is clear the queue for a job thread.  
+	/// i.e. - After all legitimate jobs are added, add a LastJob to the queue.
+	/// When the queue is empty, you know the thread is not processing anything meaningful.
+	///
+	class LastJob : public Job
+	{
+		public:
+			void Run(){};
+	};
+
+	///
 	///	Encapsulates a Thread for running jobs.
 	///
 	class JobThread
@@ -46,6 +57,11 @@ namespace CyberJob
 		unsigned int QueueCount();
 
 		///
+		///
+		///
+		void MarkAsFinished();
+
+		///
 		///	This should not be called by client.
 		///
 		DWORD RunThread();
@@ -67,5 +83,6 @@ namespace CyberJob
 		HANDLE _addSignal;
 		HANDLE _killSignal;
 		queue<Job*>	_jobQueue;
+		LastJob _lastJob;
 	};
 }
