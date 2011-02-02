@@ -173,15 +173,7 @@ void Overlap::Run()
 {
 	// Validation check
 	if(!_bValid)
-	{	
-		if(CorrelationParametersInst.bSaveOverlaps)
-		{
-			DumpOvelapImages();
-			DumpResultImages();
-		}
-		
 		return;
-	}
 
 	// Special process for fiducial use vsfinder 
 	if(_type == Fid_To_Fov)
@@ -222,6 +214,7 @@ void Overlap::Run()
 	if(_type != Fov_To_Fov)
 	{
 		_bProcessed = true;
+
 		if(CorrelationParametersInst.bSaveOverlaps)
 		{
 			DumpOvelapImages();
@@ -277,14 +270,15 @@ void Overlap::Run()
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
 		i->DoAlignment();
-	}
+	}	
+	
+	_bProcessed = true;
 	
 	if(CorrelationParametersInst.bSaveOverlaps)
 	{
 		DumpOvelapImages();
 		DumpResultImages();
 	}
-	_bProcessed = true;
 }
 
 #pragma endregion
