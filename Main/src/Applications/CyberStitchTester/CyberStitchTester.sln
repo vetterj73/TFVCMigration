@@ -91,7 +91,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIMMosaicUtils", "..\..\logic\SIMMosaicUtils\SIMMosaicUtils.csproj", "{8E644621-D1FB-4845-90EE-0D1365AB42EE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIMCalibrator", "..\SIMCalibrator\SIMCalibrator.csproj", "{CD366ABE-A728-49E5-8CF1-83E634AB4504}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIMCalibrator", "..\..\logic\SIMCalibrator\SIMCalibrator.csproj", "{CD366ABE-A728-49E5-8CF1-83E634AB4504}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -154,9 +154,9 @@ Global
 		SccProjectTopLevelParentUniqueName16 = CyberStitchTester.sln
 		SccProjectName16 = ../../logic/SIMMosaicUtils
 		SccLocalPath16 = ..\\..\\logic\\SIMMosaicUtils
-		SccProjectUniqueName17 = ..\\SIMCalibrator\\SIMCalibrator.csproj
-		SccProjectName17 = ../SIMCalibrator
-		SccLocalPath17 = ..\\SIMCalibrator
+		SccProjectUniqueName17 = ..\\..\\logic\\SIMCalibrator\\SIMCalibrator.csproj
+		SccProjectName17 = ../../logic/SIMCalibrator
+		SccLocalPath17 = ..\\..\\logic\\SIMCalibrator
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
