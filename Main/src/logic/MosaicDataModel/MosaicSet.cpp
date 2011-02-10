@@ -4,6 +4,7 @@
 #include "MosaicSet.h"
 #include "MosaicLayer.h"
 #include "CorrelationFlags.h"
+#include "Utilities.h"
 
 namespace MosaicDM 
 {
@@ -139,5 +140,15 @@ namespace MosaicDM
 	{
 		if(_registeredImageAddedCallback != NULL)
 			_registeredImageAddedCallback(layerIndex, cameraIndex, triggerIndex, _pCallbackContext);
+	}
+
+	unsigned int MosaicSet::GetObjectWidthInPixels()
+	{
+		return GetNumPixels(GetObjectWidthInMeters(), GetNominalPixelSizeX());
+	}
+	
+	unsigned int MosaicSet::GetObjectLengthInPixels()
+	{
+		return GetNumPixels(GetObjectLengthInMeters(), GetNominalPixelSizeY());
 	}
 }

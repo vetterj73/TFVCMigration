@@ -85,6 +85,8 @@ namespace MosaicDM
 			double GetNominalPixelSizeY(){return _pixelSizeY;};
 			double GetObjectWidthInMeters(){return _objectWidthInMeters;};
 			double GetObjectLengthInMeters(){return _objectLengthInMeters;};
+			unsigned int GetObjectWidthInPixels();
+			unsigned int GetObjectLengthInPixels();
 
 			///
 			///	Get the correlation flags associated with the certain layers

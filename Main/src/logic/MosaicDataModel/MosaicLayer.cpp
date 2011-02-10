@@ -2,9 +2,9 @@
 #include "MosaicLayer.h"
 #include "MosaicSet.h"
 #include "MosaicTile.h"
-#include "Utilities.h"
 #include "MorphJob.h"
 #include "JobManager.h"
+
 using namespace CyberJob;
 namespace MosaicDM 
 {
@@ -86,8 +86,8 @@ namespace MosaicDM
 		inputTransform.Config(_pMosaicSet->GetNominalPixelSizeX(), 
 			_pMosaicSet->GetNominalPixelSizeY(), 0, 0, 0);
 			
-		unsigned int iNumRows = GetNumPixels(_pMosaicSet->GetObjectWidthInMeters(), _pMosaicSet->GetNominalPixelSizeX());
-		unsigned int iNumCols = GetNumPixels(_pMosaicSet->GetObjectLengthInMeters(), _pMosaicSet->GetNominalPixelSizeY());
+		unsigned int iNumRows = _pMosaicSet->GetObjectWidthInPixels();
+		unsigned int iNumCols = _pMosaicSet->GetObjectLengthInPixels();
 
 		_pStitchedImage->Configure(iNumCols, iNumRows, iNumCols, inputTransform, inputTransform, true);
 	}
