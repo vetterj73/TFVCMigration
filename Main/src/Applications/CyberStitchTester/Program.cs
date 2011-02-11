@@ -79,10 +79,12 @@ namespace CyberStitchTester
                 _aligner.NumThreads(_numThreads);
                 _aligner.LogOverlaps(true);
                 _aligner.LogMaskVectors(true);
+                Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
                 }
+                Output("After ChangeProduction");
             }
             catch (Exception except)
             {
