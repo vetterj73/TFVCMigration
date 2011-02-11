@@ -700,7 +700,15 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
 	{
 		if(i->IsReadyToProcess())
-			_pJobManager->AddAJob((CyberJob::Job*)&*i);
+		{ 
+			// Let vsfinder run on a single thread (temporary solution)
+			// PanelAligner::ImageAddedToMosaicCallback() works on single thread as Alan Claimed
+			// so all the vsfinder will work on single thread as well
+			// The solver will be filled after all the overlap (include fiducials) are calculated
+			i->Run(); 
+
+			//_pJobManager->AddAJob((CyberJob::Job*)&*i);
+		}
 	}
 
 	return(true);
