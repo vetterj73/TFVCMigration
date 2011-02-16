@@ -102,11 +102,14 @@ namespace CyberStitchTester
                
                 _mosaicSet.ClearAllImages();
                 if (!GatherImages())
+                {
+                    Output("Issue with StartAcquisition");
                     bDone = true;
+                }
                 else
                 {
                     Output("Waiting for Images...");
-                    mDoneEvent.WaitOne();                  
+                    mDoneEvent.WaitOne();
                 }
 
                 // Verify that mosaic is filled in...
@@ -130,13 +133,13 @@ namespace CyberStitchTester
                         );
                     }
 
-                    // Save a 3 channel image with CAD data...
+  /*                  // Save a 3 channel image with CAD data...
                     _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(2).GetStitchedBuffer(),
                         _mosaicSet.GetLayer(3).GetStitchedBuffer(),
                         _panel.GetCADBuffer(),
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
+*/
                 }
 
                 // should we do another cycle?
@@ -156,7 +159,8 @@ namespace CyberStitchTester
             for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
             {
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
+                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                    return false;
             }
             return true;
         }
@@ -196,6 +200,9 @@ namespace CyberStitchTester
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                    int bufferCount = 128;// (triggerCount + 1) * GetNumberOfEnabledCameras(0) * 2;
+                    int desiredCount = bufferCount;
+                    d.AllocateFrameBuffers(ref bufferCount);
 
                     ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                     if (cs1 == null)
