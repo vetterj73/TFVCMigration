@@ -13,6 +13,27 @@ using namespace MLOGGER;
 
 namespace PanelAlignM {
 
+	/*
+	public ref class ManagedFidInfo
+	{
+		public:
+			ManagedFidInfo();
+
+			double GetNominalXPosition(){return _nominalXPosition;};
+			double GetNominalYPosition(){return _nominalYPosition;};
+			double RowDifference(){return _rowDifference;};
+			double ColumnDifference(){return _columnDifference;};
+			double CorrelationScore(){return _correlationScore;};
+
+		protected:
+			double _nominalXPosition;
+			double _nominalYPosition;
+			double _rowDifference;
+			double _columnDifference;
+			double _correlationScore;
+	};
+	*/
+
 	///
 	///	Simple Managed Wrapper for Panel Alignment...
 	///

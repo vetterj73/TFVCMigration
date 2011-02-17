@@ -112,5 +112,19 @@ namespace SIMMosaicUtils
                 }
             }
         }
+
+        public static void SetCorrelationFlagsFIDOnly(ManagedMosaicSet set)
+        {
+            for (uint i = 0; i < set.GetNumMosaicLayers(); i++)
+            {
+                for (uint j = 0; j < set.GetNumMosaicLayers(); j++)
+                {
+                    ManagedCorrelationFlags flag = set.GetCorrelationSet(i, j);
+                    flag.SetCameraToCamera(false);
+                    flag.SetTriggerToTrigger(false);
+                    flag.SetMaskNeeded(false);
+                }
+            }
+        }
     }
 }
