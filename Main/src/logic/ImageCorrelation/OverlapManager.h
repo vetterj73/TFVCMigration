@@ -12,6 +12,14 @@
 
 using namespace MosaicDM;
 class Panel;
+
+typedef list<CadFovOverlap> CadFovOverlapList;
+typedef CadFovOverlapList::iterator CadFovOverlapListIterator;
+typedef list<FovFovOverlap> FovFovOverlapList;
+typedef FovFovOverlapList::iterator FovFovOverlapListIterator;
+typedef list<FidFovOverlap> FidFovOverlapList;
+typedef FidFovOverlapList::iterator FidFovOverlapListIterator;
+
 class OverlapManager
 {
 public:
@@ -28,17 +36,17 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex);
 
-	list<FovFovOverlap>* GetFovFovListForFov(
+	FovFovOverlapList* GetFovFovListForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
-	list<CadFovOverlap>* GetCadFovListForFov(
+	CadFovOverlapList* GetCadFovListForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
-	list<FidFovOverlap>* GetFidFovListForFov(
+	FidFovOverlapList* GetFidFovListForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
@@ -94,9 +102,9 @@ private:
 	Image* _pFidImages;
 	
 	// A[Mosaic Index][Row(y) Index][Column(x) Index]
-	list<FovFovOverlap>*** _fovFovOverlapLists;
-	list<CadFovOverlap>*** _cadFovOverlapLists;
-	list<FidFovOverlap>*** _fidFovOverlapLists;
+	FovFovOverlapList*** _fovFovOverlapLists;
+	CadFovOverlapList*** _cadFovOverlapLists;
+	FidFovOverlapList*** _fidFovOverlapLists;
 
 	unsigned int _iMinOverlapSize;
 

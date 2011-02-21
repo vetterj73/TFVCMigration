@@ -24,7 +24,7 @@ namespace SIMMosaicUtils
         /// </summary>
         /// <param name="device"></param>
         /// <param name="set"></param>
-        private static void AddDeviceToMosaic(ManagedSIMDevice device, ManagedMosaicSet set)
+        public static void AddDeviceToMosaic(ManagedSIMDevice device, ManagedMosaicSet set)
         {
             if (device.NumberOfCaptureSpecs <= 0)
                 throw new ApplicationException("AddDeviceToMosaic - There are not CaptureSpecs defined for teh device!");

@@ -280,24 +280,24 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			solver->AddCalibationConstraints(pMosaic, iCam, iTrig);
 
 			// Add Fov and Fov overlap results
-			list<FovFovOverlap>* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
-			for(list<FovFovOverlap>::iterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
+			for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
 			{
 				if(ite->IsProcessed())
 					solver->AddFovFovOvelapResults(&(*ite));
 			}
 
 			// Add Cad and Fov overlap results
-			list<CadFovOverlap>* pCadFovList =_pOverlapManager->GetCadFovListForFov(iIllumIndex, iTrig, iCam);
-			for(list<CadFovOverlap>::iterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
+			CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iIllumIndex, iTrig, iCam);
+			for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
 			{
 				if(ite->IsProcessed())
 					solver->AddCadFovOvelapResults(&(*ite));
 			}
 
 			// Add Fiducial and Fov overlap results
-			list<FidFovOverlap>* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
-			for(list<FidFovOverlap>::iterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+			FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+			for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 			{
 				if(ite->IsProcessed())
 					solver->AddFidFovOvelapResults(&(*ite));

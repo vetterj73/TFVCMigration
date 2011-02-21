@@ -140,6 +140,8 @@ namespace MMosaicDM
 			double GetNominalPixelSizeY(){return _pMosaicSet->GetNominalPixelSizeY();}
 			unsigned int GetObjectWidthInPixels(){return _pMosaicSet->GetObjectWidthInPixels();}
 			unsigned int GetObjectLengthInPixels(){return _pMosaicSet->GetObjectLengthInPixels();}
+			unsigned int GetImageWidthInPixels(){return _pMosaicSet->GetImageWidthInPixels();}
+			unsigned int GetImageLengthInPixels(){return _pMosaicSet->GetImageHeightInPixels();}
 
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;

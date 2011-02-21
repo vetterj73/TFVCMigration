@@ -200,5 +200,7 @@ namespace Cyber
 		{ 
 			return _pPanel->yLength();
 		}
+
 	} // Namespace
+
 }

@@ -1,20 +1,26 @@
-﻿using Cyber.MPanel;
+﻿using System;
+using System.Drawing;
+using System.Threading;
+using Cyber.ImageUtils;
+using Cyber.MPanel;
 using MCoreAPI;
+using MMosaicDM;
+using SIMMosaicUtils;
 
 namespace SIMCalibrator
 {
     /// <summary>
     /// When the client starts a calibration acquisition, there are 4 possible outcomes:
     /// </summary>
-    public enum AquisitionStatus
+    public enum CalibrationStatus
     {
-        AquisitionFailed,           // Could not get images
-        AquisitionNotLegitimate,    // Got images, but can't find fiducials user suggests
-        AquisitionNotInTolerance,   // Found fiducials out of tolerance
-        AquisitionInTolerance,      // Found fiducials in tolerance (no further work needed).
+        AquisitionFailed,            // Could not get images
+        CalibrationNotLegitimate,    // Got images, but can't find fiducials user suggests
+        CalibrationNotInTolerance,   // Found fiducials out of tolerance
+        CalibrationInTolerance,      // Found fiducials in tolerance (no further work needed).
     }
 
-    public delegate void CalibrationAcquisitionComplete(AquisitionStatus status);
+    public delegate void CalibrationComplete(CalibrationStatus status);
 
     /// <summary>
     /// This class is used to adjust the positional calibration of a SIM device based on collected images
@@ -27,18 +33,86 @@ namespace SIMCalibrator
     /// </summary>
     public class PositionCalibrator
     {
+        private const double cPixelSizeInMeters = 1.70e-5;
+        private CPanel _panel;
+        private ManagedSIMDevice _device;
+        private ManagedMosaicSet _mosaicSet;
+        private readonly static ManualResetEvent _doneEvent = new ManualResetEvent(false);
+        private uint _layerIndex = 0;
+
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
         /// </summary>
-        public event CalibrationAcquisitionComplete CalibrationAcquisitionComplete;
+        public event CalibrationComplete CalibrationComplete;
 
         /// <summary>
         /// Constructor:  Given a valid CPanel Object and a valid SIM Device
         /// </summary>
         /// <param name="panel"></param>
         /// <param name="device"></param>
-        PositionCalibrator(CPanel panel, ManagedSIMDevice device)
+        /// <param name="bSimulating"></param>
+        public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating)
         {
+            if (panel == null)
+                throw new ApplicationException("The input panel is null!");
+
+            if (device == null)
+                throw new ApplicationException("The input device is null!");
+
+            // Events fired for images.
+            ManagedSIMDevice.OnFrameDone += FrameDone;
+            ManagedSIMDevice.OnAcquisitionDone += AcquisitionDone;
+
+            _panel = panel;
+            _device = device;
+            SetupCaptureSpecs(bSimulating);
+
+            // Sets up the mosaic from the device...
+            SetupMosaic();
+        }
+
+        /// <summary>
+        /// Constructor:  Given a valid CPanel Object and a populated mosaic,
+        /// Figure out calibration.
+        /// </summary>
+        /// <param name="panel"></param>
+        /// <param name="mosaic"></param>
+        public PositionCalibrator(CPanel panel, ManagedMosaicSet mosaic, uint layerIndex)
+        {
+            if (panel == null)
+                throw new ApplicationException("The input panel is null!");
+
+            if (mosaic == null)
+                throw new ApplicationException("The input mosaic is null!");
+
+            if(layerIndex > mosaic.GetNumMosaicLayers()-1)
+                throw new ApplicationException("Layer Index is out of range");
+
+            _layerIndex = layerIndex;
+            _panel = panel;
+            _device = null;
+            _mosaicSet = mosaic;
+        }
+
+        /// <summary>
+        /// Acquire a row image with the device.  This will return null if the device is
+        /// null.
+        /// </summary>
+        /// <returns></returns>
+        public Bitmap AquireRowImage()
+        {
+            /// If we started with a mosaic - just return the first row in the mosaic...
+            if (_device == null)
+                return StitchRowImageFromMosaic();
+
+            if (_device.StartAcquisition(ACQUISITION_MODE.SINGLE_TRIGGER_MODE) != 0)
+                throw new ApplicationException("Could not start a Row Acquisition");
+
+            // Wait for all images to be gathered...
+            _doneEvent.WaitOne();
+
+            // Stitch together using basic stitcher (for now).
+            return StitchRowImageFromMosaic();
         }
 
         /// <summary>
@@ -47,6 +121,17 @@ namespace SIMCalibrator
         /// </summary>
         public void StartAcquisition()
         {
+            if (_device == null)
+                return;
+
+            if (_device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                throw new ApplicationException("Could not start a Panel Capture Acquisition");
+
+            // Wait for all images to be gathered...
+            _doneEvent.WaitOne();
+
+            // @todo - Run Calibration... Perhaps by running the panel aligner...
+            
         }
 
         /// <summary>
@@ -87,6 +172,88 @@ namespace SIMCalibrator
         public double GetSpeedDifference()
         {
             return 0.0;
+        }
+
+        /// <summary>
+        /// Fires a messages to client that lets them know that calibration is complete
+        /// </summary>
+        /// <param name="calStatus"></param>
+        protected void FireCalibrationComplete(CalibrationStatus calStatus)
+        {
+            if (CalibrationComplete == null)
+                return;
+
+            CalibrationComplete(calStatus);
+        }
+
+        private void SetupCaptureSpecs(bool bSimulating)
+        {
+            if (!bSimulating)
+            {
+                int bufferCount = 128;
+                int desiredCount = bufferCount;
+                _device.AllocateFrameBuffers(ref bufferCount);
+
+                if(desiredCount != bufferCount)
+                    throw new ApplicationException("Could not allocate buffers...");
+
+                ManagedSIMCaptureSpec cs1 = _device.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
+                if (cs1 == null)
+                {
+                    throw new ApplicationException("Could not setup captureSpec for calibration");
+                }
+            }
+            else
+            {
+                // This is needed to initialize row acquisition in Simulation Mode...
+                // @todo - change CoreAPI to make this not needed (perhaps)
+                _device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
+                // Wait for all images to be gathered...
+                _doneEvent.WaitOne();
+            }
+        }
+
+        private void SetupMosaic()
+        {
+            ManagedSIMCamera cam = _device.GetSIMCamera(0);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters);
+            SimMosaicTranslator.AddDeviceToMosaic(_device, _mosaicSet);
+            SimMosaicTranslator.SetCorrelationFlagsFIDOnly(_mosaicSet);
+        }
+
+        private void AcquisitionDone(int device, int status, int count)
+        {
+            // Set the acquisition complete event...
+            _doneEvent.Set();
+        }
+
+        private void FrameDone(ManagedSIMFrame pframe)
+        {
+            if (_mosaicSet == null)
+                return;
+
+            _mosaicSet.AddImage(pframe.BufferPtr(), 0,
+                                (uint) pframe.CameraIndex(), (uint) pframe.TriggerIndex());
+        }
+
+        /// <summary>
+        /// @TODO - Do we want to rely on BasicStitcher for this?
+        /// </summary>
+        /// <returns></returns>
+        private Bitmap StitchRowImageFromMosaic()
+        {
+            // NOTE from Alan.  I am currently using the BasicStitcher for this (same as existing 2DSPI.
+            // This adds a dependency on CyberCommon that I don't like.
+            // @todo... Todd has also expressed an interest in using the camera cal for this stitching.. Necessary?
+            BasicStitcher stitcher = new BasicStitcher();
+            stitcher.Initialize(_mosaicSet.GetLayer(0).GetNumberOfCameras(),
+                0, 1, (int)_mosaicSet.GetImageWidthInPixels(), 
+                (int)_mosaicSet.GetImageLengthInPixels(), 0, 0, false);
+
+            for (int i = 0; i < _mosaicSet.GetLayer(0).GetNumberOfCameras(); i++)
+                stitcher.AddTile(_mosaicSet.GetLayer(0).GetTile((uint) i, 0).GetImageBuffer(), i, 0);
+
+            return stitcher.CurrentBitmap;
         }
     }
 }

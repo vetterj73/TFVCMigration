@@ -35,11 +35,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ImageUtils">
+      <HintPath>..\..\..\CyberCommon\bin\Release\ImageUtils.dll</HintPath>
+    </Reference>
     <Reference Include="ManagedCoreAPI">
       <HintPath>..\..\..\SIMCoreAPI\bin\ManagedCoreAPI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -54,6 +58,14 @@
     <ProjectReference Include="..\..\logic\CPanel\CPanel.vcxproj">
       <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
       <Name>CPanel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
+      <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
+      <Name>ManagedMosaicDataModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SIMMosaicUtils\SIMMosaicUtils.csproj">
+      <Project>{8E644621-D1FB-4845-90EE-0D1365AB42EE}</Project>
+      <Name>SIMMosaicUtils</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

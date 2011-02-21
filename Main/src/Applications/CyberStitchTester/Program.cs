@@ -77,8 +77,8 @@ namespace CyberStitchTester
             try
             {
                 _aligner.NumThreads(_numThreads);
-                _aligner.LogOverlaps(true);
-                _aligner.LogMaskVectors(true);
+     //           _aligner.LogOverlaps(true);
+     //           _aligner.LogMaskVectors(true);
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
