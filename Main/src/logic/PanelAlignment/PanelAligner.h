@@ -37,7 +37,7 @@ public:
 		string filePath, unsigned char *pChannel1, unsigned char* pChannel2, unsigned char* pChannel3, 
 		int numRows, int numColumns);
 
-
+	void LogFiducialOverlaps(bool bLog);
 	void LogOverlaps(bool bLog);
 	void LogMaskVectors(bool bLog);
 	void NumThreads(unsigned int numThreads);

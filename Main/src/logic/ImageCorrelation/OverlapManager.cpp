@@ -674,7 +674,7 @@ bool OverlapManager::DoAlignmentForFov(
 	unsigned int iTrigIndex,
 	unsigned int iCamIndex)
 {
-	if(CorrelationParametersInst.bSaveOverlaps)
+	if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
 	{
 		_mkdir(CorrelationParametersInst.GetOverlapPath().c_str());
 	}

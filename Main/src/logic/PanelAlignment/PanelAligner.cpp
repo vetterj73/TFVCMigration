@@ -107,6 +107,11 @@ void PanelAligner::ResetForNextPanel()
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
 }
 
+void PanelAligner::LogFiducialOverlaps(bool bLog)
+{
+	CorrelationParametersInst.bSaveFiducialOverlaps = bLog;
+}
+
 void PanelAligner::LogOverlaps(bool bLog)
 {
 	CorrelationParametersInst.bSaveOverlaps = bLog;

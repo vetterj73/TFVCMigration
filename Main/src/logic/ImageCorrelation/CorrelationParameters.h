@@ -64,6 +64,7 @@ public:
 	bool bGrayScale;						// Grey scale image or Bayer(color) image
 
 	// debug flage
+	bool bSaveFiducialOverlaps;
 	bool bSaveOverlaps;
 	bool bSaveMaskVectors;
 	unsigned int NumThreads;

@@ -45,6 +45,11 @@ namespace PanelAlignM {
 	{
 		_pAligner->NumThreads(numThreads);
 	}
+
+	void ManagedPanelAlignment::LogFiducialOverlaps(bool bLog)
+	{
+		_pAligner->LogFiducialOverlaps(bLog);
+	}
 	
 	void ManagedPanelAlignment::LogOverlaps(bool bLog)
 	{

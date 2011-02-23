@@ -184,7 +184,7 @@ void Overlap::Run()
 			pTemp->VsfinderAlign();
 			_bProcessed = true;
 
-			if(CorrelationParametersInst.bSaveOverlaps)
+			if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
 			{
 				DumpOvelapImages();
 				DumpResultImages();
@@ -215,7 +215,8 @@ void Overlap::Run()
 	{
 		_bProcessed = true;
 
-		if(CorrelationParametersInst.bSaveOverlaps)
+		if(CorrelationParametersInst.bSaveOverlaps || 
+			(_type == Fid_To_Fov && CorrelationParametersInst.bSaveFiducialOverlaps))
 		{
 			DumpOvelapImages();
 			DumpResultImages();

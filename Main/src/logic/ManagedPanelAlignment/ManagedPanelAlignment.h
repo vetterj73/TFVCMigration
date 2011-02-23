@@ -63,6 +63,7 @@ namespace PanelAlignM {
 			int numRows, int numColumns);
 
 		void NumThreads(unsigned int numThreads);
+		void LogFiducialOverlaps(bool bLog);
 		void LogOverlaps(bool bLog);
 		void LogMaskVectors(bool bLog);	
 
