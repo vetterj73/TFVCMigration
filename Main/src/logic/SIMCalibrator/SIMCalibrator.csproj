@@ -63,6 +63,10 @@
       <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
       <Name>ManagedMosaicDataModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ManagedPanelAlignment\ManagedPanelAlignment.vcxproj">
+      <Project>{D46B74F8-444E-4536-81CC-B08444E7B819}</Project>
+      <Name>ManagedPanelAlignment</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SIMMosaicUtils\SIMMosaicUtils.csproj">
       <Project>{8E644621-D1FB-4845-90EE-0D1365AB42EE}</Project>
       <Name>SIMMosaicUtils</Name>

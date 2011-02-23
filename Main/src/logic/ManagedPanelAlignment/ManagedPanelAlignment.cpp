@@ -30,6 +30,11 @@ namespace PanelAlignM {
 		_pAligner = NULL;
 	}
 
+	int ManagedPanelAlignment::GetNumberOfFidsProcessed()
+	{
+		return 	_pAligner->GetLastProcessedFids()->size();
+	}
+
 	// Change production
 	bool ManagedPanelAlignment::ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel)
 	{

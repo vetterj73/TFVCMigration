@@ -4,7 +4,9 @@ using System.Threading;
 using Cyber.ImageUtils;
 using Cyber.MPanel;
 using MCoreAPI;
+using MLOGGER;
 using MMosaicDM;
+using PanelAlignM;
 using SIMMosaicUtils;
 
 namespace SIMCalibrator
@@ -39,6 +41,7 @@ namespace SIMCalibrator
         private ManagedMosaicSet _mosaicSet;
         private readonly static ManualResetEvent _doneEvent = new ManualResetEvent(false);
         private uint _layerIndex = 0;
+        private ManagedPanelAlignment _panelAligner;
 
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
@@ -69,6 +72,12 @@ namespace SIMCalibrator
 
             // Sets up the mosaic from the device...
             SetupMosaic();
+
+            _panelAligner = new ManagedPanelAlignment();
+            _panelAligner.OnLogEntry += OnLogEntryFromClient;
+            _panelAligner.SetAllLogTypes(true);
+            _panelAligner.NumThreads(8);
+            _panelAligner.ChangeProduction(_mosaicSet, _panel);
         }
 
         /// <summary>
@@ -85,7 +94,7 @@ namespace SIMCalibrator
             if (mosaic == null)
                 throw new ApplicationException("The input mosaic is null!");
 
-            if(layerIndex > mosaic.GetNumMosaicLayers()-1)
+            if (layerIndex > mosaic.GetNumMosaicLayers()-1)
                 throw new ApplicationException("Layer Index is out of range");
 
             _layerIndex = layerIndex;
@@ -100,11 +109,12 @@ namespace SIMCalibrator
         /// </summary>
         /// <returns></returns>
         public Bitmap AquireRowImage()
-        {
+        {        
             /// If we started with a mosaic - just return the first row in the mosaic...
             if (_device == null)
                 return StitchRowImageFromMosaic();
 
+            _doneEvent.Reset();
             if (_device.StartAcquisition(ACQUISITION_MODE.SINGLE_TRIGGER_MODE) != 0)
                 throw new ApplicationException("Could not start a Row Acquisition");
 
@@ -124,14 +134,23 @@ namespace SIMCalibrator
             if (_device == null)
                 return;
 
+            _panelAligner.ResetForNextPanel();
+            _doneEvent.Reset();
             if (_device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                 throw new ApplicationException("Could not start a Panel Capture Acquisition");
+
+            // @todo - Run Calibration... Perhaps by running the panel aligner...
 
             // Wait for all images to be gathered...
             _doneEvent.WaitOne();
 
-            // @todo - Run Calibration... Perhaps by running the panel aligner...
-            
+            int numFids = _panelAligner.GetNumberOfFidsProcessed();
+            numFids++;
+        }
+
+        private void OnLogEntryFromClient(MLOGTYPE logtype, string message)
+        {
+            Console.WriteLine(logtype + ": " + message);
         }
 
         /// <summary>
@@ -190,6 +209,9 @@ namespace SIMCalibrator
         {
             if (!bSimulating)
             {
+                // @todo - talk to hogan about what the number of buffers should be....
+                // Chicken and egg problem with allocation... you don't know how many buffer to use
+                // until you setup capture specs and you can't set up capture specs until you have buffers.
                 int bufferCount = 128;
                 int desiredCount = bufferCount;
                 _device.AllocateFrameBuffers(ref bufferCount);
@@ -251,7 +273,7 @@ namespace SIMCalibrator
                 (int)_mosaicSet.GetImageLengthInPixels(), 0, 0, false);
 
             for (int i = 0; i < _mosaicSet.GetLayer(0).GetNumberOfCameras(); i++)
-                stitcher.AddTile(_mosaicSet.GetLayer(0).GetTile((uint) i, 0).GetImageBuffer(), i, 0);
+                stitcher.AddTile(_mosaicSet.GetLayer(_layerIndex).GetTile((uint) i, 0).GetImageBuffer(), i, 0);
 
             return stitcher.CurrentBitmap;
         }

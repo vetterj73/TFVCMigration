@@ -7,11 +7,11 @@
 #include "RobustSolver.h"
 #include "CorrelationParameters.h"
 #include <map>
+#include "OverlapManager.h"
 using std::map;
 
 using namespace MosaicDM;
 
-class OverlapManager;
 class PanelAligner
 {
 public:
@@ -42,6 +42,8 @@ public:
 	void LogMaskVectors(bool bLog);
 	void NumThreads(unsigned int numThreads);
 
+	FidFovOverlapList* GetLastProcessedFids();
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();
@@ -57,7 +59,10 @@ protected:
 	bool CreateTransforms();
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex);
 
+
 private:
+	FidFovOverlapList _lastProcessedFids;
+
 	// Inputs
 	MosaicSet* _pSet;		
 	OverlapManager* _pOverlapManager;

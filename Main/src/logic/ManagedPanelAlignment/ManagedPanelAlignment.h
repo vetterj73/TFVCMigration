@@ -67,6 +67,8 @@ namespace PanelAlignM {
 		void LogOverlaps(bool bLog);
 		void LogMaskVectors(bool bLog);	
 
+		int GetNumberOfFidsProcessed();
+
 	private:
 		PanelAligner* _pAligner;
 	};

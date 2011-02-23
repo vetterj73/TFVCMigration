@@ -179,6 +179,9 @@ bool PanelAligner::IsReadyToCreateMasks() const
 bool PanelAligner::CreateMasks()
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateMasks():begin to create mask");
+	
+	_lastProcessedFids.clear();
+
 	// Create matrix and vector for solver
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
@@ -305,12 +308,21 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 			{
 				if(ite->IsProcessed())
+				{
 					solver->AddFidFovOvelapResults(&(*ite));
+
+					// These are used to verify that the last fids actually worked...
+					_lastProcessedFids.push_back(*ite);
+				}
 			}
 		}
 	}
 }
 
+FidFovOverlapList* PanelAligner::GetLastProcessedFids()
+{
+	return &_lastProcessedFids;
+}
 
 // For function CreateImageOrderInSolver()
 typedef pair<FovIndex, double> TriggerOffsetPair;

@@ -56,7 +56,7 @@ namespace SIMCalibratorTester
 
             PositionCalibrator posCal = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(0),
                 bSimulating);
-            Bitmap bmp = posCal.AquireRowImage();
+/*            Bitmap bmp = posCal.AquireRowImage();
 
             if (bmp == null)
             {
@@ -66,6 +66,9 @@ namespace SIMCalibratorTester
             {
                 bmp.Save("c:\\temp\\rowImage.png");
             }
+*/
+            posCal.StartAcquisition();
+
 
             Output("Processing Complete");
             logger.Kill();
