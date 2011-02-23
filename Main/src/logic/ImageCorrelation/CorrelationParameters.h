@@ -52,6 +52,7 @@ public:
 
 	// Use Vsfinder
 	bool bUseVsFinder;						// Use vsfinder or regoff for fiducial finding
+	double dVsFinderMinCorrScore;			// The minimum correlation score for vsFinder
 	
 	// Fiducial search expansion
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 

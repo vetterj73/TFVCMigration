@@ -541,7 +541,8 @@ bool FidFovOverlap::VsfinderAlign()
 	double search_width = _coarsePair.GetFirstRoi().Columns();
 	double search_height = _coarsePair.GetFirstRoi().Rows();
 	double time_out = 1e5;			// MicroSeconds
-
+	double dMinScore = CorrelationParametersInst.dVsFinderMinCorrScore;
+	
 	_pVsfinderCorr->Find(
 		_iTemplateID,							// map ID of template  and finder
 		_coarsePair.GetFirstImg()->GetBuffer(),	// buffer containing the image
@@ -558,25 +559,35 @@ bool FidFovOverlap::VsfinderAlign()
 		search_height,							// height of the search region in pixels
 		time_out,								// number of seconds to search maximum. If limit is reached before any results found, an error will be generated	
 		0,										// image origin is top-left				
-		0.5,									// If >0 minimum score to persue at min pyramid level to look for peak override
-		0.5);									// If >0 minumum score to accept at max pyramid level to look for peak override
+		dMinScore/3,							// If >0 minimum score to persue at min pyramid level to look for peak override
+		dMinScore/3);							// If >0 minumum score to accept at max pyramid level to look for peak override
+												// Use a lower minimum score for vsfinder so that we can get a reliable ambig score
 
 	CorrelationResult result;
-	result.AmbigScore = ambig;
-	result.CorrCoeff = corscore;
-	// Unclipped image patch (first image of overlap) center 
-	// matches drawed fiducial center (second image of overlap) in the overlap
-	// alignment offset is the difference of unclipped image patch center 
-	// and idea location of fiducial in first image of overlap
-	// Offset of unclipped center and clipped center
-	double dCenOffsetX = (_coarsePair.GetSecondImg()->Columns()-1)/2.0 - 
-		(_coarsePair.GetSecondRoi().FirstColumn+_coarsePair.GetSecondRoi().LastColumn)/2.0;
-	double dCenOffsetY = (_coarsePair.GetSecondImg()->Rows()-1)/2.0 - 
-		(_coarsePair.GetSecondRoi().FirstRow+_coarsePair.GetSecondRoi().LastRow)/2.0;
-	double dUnclipCenterX = search_center_x + dCenOffsetX;
-	double dUnclipCenterY = search_center_y + dCenOffsetY;
-	result.ColOffset = dUnclipCenterX - x;
-	result.RowOffset = dUnclipCenterY - y;
+	if(corscore > dMinScore)	// Valid results
+	{
+		result.CorrCoeff = corscore;
+		result.AmbigScore = ambig;
+		
+		// Unclipped image patch (first image of overlap) center 
+		// matches drawed fiducial center (second image of overlap) in the overlap
+		// alignment offset is the difference of unclipped image patch center 
+		// and idea location of fiducial in first image of overlap
+		// Offset of unclipped center and clipped center
+		double dCenOffsetX = (_coarsePair.GetSecondImg()->Columns()-1)/2.0 - 
+			(_coarsePair.GetSecondRoi().FirstColumn+_coarsePair.GetSecondRoi().LastColumn)/2.0;
+		double dCenOffsetY = (_coarsePair.GetSecondImg()->Rows()-1)/2.0 - 
+			(_coarsePair.GetSecondRoi().FirstRow+_coarsePair.GetSecondRoi().LastRow)/2.0;
+		double dUnclipCenterX = search_center_x + dCenOffsetX;
+		double dUnclipCenterY = search_center_y + dCenOffsetY;
+		result.ColOffset = dUnclipCenterX - x;
+		result.RowOffset = dUnclipCenterY - y;
+	}
+	else	// Invalid results
+	{
+		result.CorrCoeff = 0;
+		result.AmbigScore = 1;
+	}
 
 	_coarsePair.SetCorrlelationResult(result);
 

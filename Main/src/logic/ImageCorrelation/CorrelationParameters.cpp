@@ -35,6 +35,7 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// Use Vsfinder
 	bUseVsFinder = true;				// Use vsfinder or regoff for fiducial finding
+	dVsFinderMinCorrScore = 0.5;		// The minimum correlation score for vsFinder
 
 	// Fiducial search expansion
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
