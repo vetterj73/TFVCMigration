@@ -32,7 +32,31 @@ namespace PanelAlignM {
 
 	int ManagedPanelAlignment::GetNumberOfFidsProcessed()
 	{
-		return 	_pAligner->GetLastProcessedFids()->size();
+		return _pAligner->GetLastProcessedFids()->size();
+	}
+
+	ManagedFidInfo^ ManagedPanelAlignment::GetFidAtIndex(unsigned int index)
+	{
+		if(index >= _pAligner->GetLastProcessedFids()->size())
+			return nullptr;
+
+		ManagedFidInfo ^fidM = nullptr;
+		unsigned int count = 0;
+		FidFovOverlapList* pFidFovList = _pAligner->GetLastProcessedFids();
+		for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+		{
+			if(count == index)
+			{
+				FidFovOverlap fid = *ite;		
+				fidM = gcnew ManagedFidInfo(fid.GetFiducialXPos(), fid.GetFiducialYPos(), 
+					fid.GetCoarsePair()->GetCorrelationResult().ColOffset, 
+					fid.GetCoarsePair()->GetCorrelationResult().RowOffset, 
+					fid.GetCoarsePair()->GetCorrelationResult().CorrCoeff);
+				break;
+			}
+			count++;
+		}
+		return fidM;
 	}
 
 	// Change production

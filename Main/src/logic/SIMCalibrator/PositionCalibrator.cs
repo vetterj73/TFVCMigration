@@ -145,7 +145,20 @@ namespace SIMCalibrator
             _doneEvent.WaitOne();
 
             int numFids = _panelAligner.GetNumberOfFidsProcessed();
-            numFids++;
+
+            string[] fids = new string[numFids];
+            for(uint i=0; i<numFids; i++)
+            {
+                ManagedFidInfo fidM = _panelAligner.GetFidAtIndex(i);
+
+                if(fidM == null)
+                    throw new ApplicationException("Invalid Fid at position " + i);
+                fids[i] = string.Format("Fiducial Info: x={0}, y={1}, colOffset={2}, rowOffsetx={3}, score={4}",
+                    fidM.GetNominalXPosition(), fidM.GetNominalYPosition(), fidM.ColumnDifference(),
+                    fidM.RowDifference(), fidM.CorrelationScore());
+            }
+
+            System.IO.File.WriteAllLines("c:\\fidInfo.txt", fids);
         }
 
         private void OnLogEntryFromClient(MLOGTYPE logtype, string message)

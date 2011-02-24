@@ -6,7 +6,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{83A6E92A-C9C4-4634-B1E7-357467A9340E}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\build.proj = ..\..\..\build.proj
-		..\..\..\Doxyfile = ..\..\..\Doxyfile
 		..\..\..\ProjectManifest.xml = ..\..\..\ProjectManifest.xml
 		..\..\..\ProjectManifest.xsl = ..\..\..\ProjectManifest.xsl
 		..\..\..\release_notes.htm = ..\..\..\release_notes.htm

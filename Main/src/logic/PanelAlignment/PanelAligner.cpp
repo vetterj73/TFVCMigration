@@ -233,6 +233,7 @@ bool PanelAligner::CreateTransforms()
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms");
 	int iNumIllums = _pSet->GetNumMosaicLayers();
 
+	_lastProcessedFids.clear();
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
 	{

@@ -13,12 +13,19 @@ using namespace MLOGGER;
 
 namespace PanelAlignM {
 
-	/*
 	public ref class ManagedFidInfo
 	{
 		public:
-			ManagedFidInfo();
-
+			ManagedFidInfo(double nominalXPosition, double nominalYPosition,
+				double rowDifference, double columnDifference, double correlationScore)
+			{
+				_nominalXPosition = nominalXPosition;
+				_nominalYPosition = nominalYPosition;
+				_rowDifference = rowDifference;
+				_columnDifference = columnDifference;
+				_correlationScore = correlationScore;			
+			}
+			
 			double GetNominalXPosition(){return _nominalXPosition;};
 			double GetNominalYPosition(){return _nominalYPosition;};
 			double RowDifference(){return _rowDifference;};
@@ -32,7 +39,6 @@ namespace PanelAlignM {
 			double _columnDifference;
 			double _correlationScore;
 	};
-	*/
 
 	///
 	///	Simple Managed Wrapper for Panel Alignment...
@@ -68,8 +74,10 @@ namespace PanelAlignM {
 		void LogMaskVectors(bool bLog);	
 
 		int GetNumberOfFidsProcessed();
+		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 
 	private:
 		PanelAligner* _pAligner;
+
 	};
 }
