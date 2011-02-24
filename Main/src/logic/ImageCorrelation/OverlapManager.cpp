@@ -636,10 +636,15 @@ void OverlapManager::CreateFidFovOverlaps()
 					if(!overlap.IsValid())
 						continue;
 
-					// Overlap size check
-					int iMinOverlapCols = _pFidImages[iFid].Columns() + 20-(int)(CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeX());
-					int iMinOverlapRows = _pFidImages[iFid].Rows() + 20-(int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
-					if((int)overlap.Columns()<iMinOverlapCols || (int)overlap.Rows()<iMinOverlapRows)
+					// Make sure fiducial template area is inside overlap 
+					int iSafePixels = 15;
+					UIRect rectFid= overlap.GetCoarsePair()->GetSecondRoi();
+					unsigned int iExpPixelsCol = (unsigned int)(CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeY());
+					unsigned int iExpPixelsRow = (unsigned int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
+					if(rectFid.FirstColumn >  iExpPixelsCol-iSafePixels ||
+						rectFid.LastColumn < _pFidImages[iFid].Columns()-1 - (iExpPixelsCol-iSafePixels) || 
+						rectFid.FirstRow >  iExpPixelsRow-iSafePixels ||
+						rectFid.LastRow < _pFidImages[iFid].Rows()-1 - (iExpPixelsRow-iSafePixels))
 						continue;
 
 					if(CorrelationParametersInst.bUseVsFinder)

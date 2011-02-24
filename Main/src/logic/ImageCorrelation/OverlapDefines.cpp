@@ -86,12 +86,17 @@ bool Overlap::CalCoarseCorrPair()
 	overlapWorld.yMin = rectWorld1.yMin>rectWorld2.yMin ? rectWorld1.yMin : rectWorld2.yMin;
 	overlapWorld.yMax = rectWorld1.yMax<rectWorld2.yMax ? rectWorld1.yMax : rectWorld2.yMax;
 
-	if(overlapWorld.xMin < _validRect.xMin) overlapWorld.xMin = _validRect.xMin;
-	if(overlapWorld.xMax > _validRect.xMax) overlapWorld.xMax = _validRect.xMax;
-	if(overlapWorld.yMin < _validRect.yMin) overlapWorld.yMin = _validRect.yMin;
-	if(overlapWorld.yMax > _validRect.yMax) overlapWorld.yMax = _validRect.yMax;
-
-		// validation check
+	// Make sure the overlap is inside the panel area
+	// For Fiducail and Fov overalp, this is not necessary.  
+	if(_type != Fid_To_Fov) 
+	{
+		if(overlapWorld.xMin < _validRect.xMin) overlapWorld.xMin = _validRect.xMin;
+		if(overlapWorld.xMax > _validRect.xMax) overlapWorld.xMax = _validRect.xMax;
+		if(overlapWorld.yMin < _validRect.yMin) overlapWorld.yMin = _validRect.yMin;
+		if(overlapWorld.yMax > _validRect.yMax) overlapWorld.yMax = _validRect.yMax;
+	}
+	
+	// validation check
 	if(overlapWorld.xMin>=overlapWorld.xMax ||
 		overlapWorld.yMin>=overlapWorld.yMax)
 		return(false);
