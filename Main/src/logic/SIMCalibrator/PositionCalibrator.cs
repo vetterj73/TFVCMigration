@@ -77,6 +77,7 @@ namespace SIMCalibrator
             _panelAligner.OnLogEntry += OnLogEntryFromClient;
             _panelAligner.SetAllLogTypes(true);
             _panelAligner.NumThreads(8);
+            _panelAligner.LogFiducialOverlaps(true);
             _panelAligner.ChangeProduction(_mosaicSet, _panel);
         }
 
@@ -147,16 +148,38 @@ namespace SIMCalibrator
             int numFids = _panelAligner.GetNumberOfFidsProcessed();
 
             string[] fids = new string[numFids];
+
+            double yOffset = 0.0;
+            double xOffset = 0.0;
+            int numUsed = 0;
             for(uint i=0; i<numFids; i++)
             {
                 ManagedFidInfo fidM = _panelAligner.GetFidAtIndex(i);
 
                 if(fidM == null)
                     throw new ApplicationException("Invalid Fid at position " + i);
+
+                if (fidM.CorrelationScore() < .85)
+                    continue;
+
+                numUsed++;
+
+                yOffset += fidM.RowDifference() * _mosaicSet.GetNominalPixelSizeY();
+                xOffset += fidM.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX(); 
+
                 fids[i] = string.Format("Fiducial Info: x={0}, y={1}, colOffset={2}, rowOffsetx={3}, score={4}",
                     fidM.GetNominalXPosition(), fidM.GetNominalYPosition(), fidM.ColumnDifference(),
                     fidM.RowDifference(), fidM.CorrelationScore());
             }
+
+            if (numUsed > 0)
+            {
+                yOffset /= numUsed;
+                xOffset /= numUsed;
+            }
+
+            _device.YOffset = _device.YOffset - yOffset;
+            _device.HomeOffset = _device.HomeOffset + yOffset;
 
             System.IO.File.WriteAllLines("c:\\fidInfo.txt", fids);
         }
