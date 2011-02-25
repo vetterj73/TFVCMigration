@@ -200,9 +200,8 @@ void Overlap::Run()
 	}
 
 	// Do coarse correlation
-	bool bAllowRoiReduce = true;
 	bool bRoiReduced = false;
-	_coarsePair.DoAlignment(bAllowRoiReduce, &bRoiReduced);
+	_coarsePair.DoAlignment(CorrelationParametersInst.bAllowRoiReduce, &bRoiReduced);
 
 	// If the Roi size is reduced in correlation
 	if(_coarsePair.IsProcessed() && bRoiReduced) 
@@ -237,10 +236,12 @@ void Overlap::Run()
 	// Adjust ROI base on the coarse results
 	bool bAdjusted = false;
 	CorrelationPair tempPair = _coarsePair;
+	double dCoarseReliableScore = 0;
 	if(_coarsePair.IsProcessed())
 	{
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		if(result.CorrCoeff * (1-result.AmbigScore) >CorrelationParametersInst.dCoarseResultReliableTh)
+		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+		if(dCoarseReliableScore >CorrelationParametersInst.dCoarseResultReliableTh)
 			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
 
@@ -276,6 +277,34 @@ void Overlap::Run()
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
 		i->DoAlignment();
+
+		// Validation check
+		// To prevent wrong correlation results between different illuminaitons to be used
+		if(bAdjusted) 
+		{
+			bool bValid = true;
+			CorrelationResult result = i->GetCorrelationResult();;
+			if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion ||
+				fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion)
+			{ // If the offset is too big
+				bValid = false;
+			}
+			else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColSearchExpansion ||
+				fabs(result.RowOffset) > CorrelationParametersInst.iFineColSearchExpansion)
+			{	// If offset is big
+				if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
+				{	// If fine result is less reliable than coarse one 
+					bValid = false;
+				}
+			}
+
+			// If fine result is not valid, ignore this result by set a faiure one
+			if(bValid == false)
+			{
+				CorrelationResult failureResult;			// Default result is a failure result;
+				i->SetCorrlelationResult(failureResult);	
+			}
+		}
 	}	
 	
 	_bProcessed = true;

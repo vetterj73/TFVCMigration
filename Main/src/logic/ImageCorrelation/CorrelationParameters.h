@@ -29,8 +29,9 @@ protected:
 
 public:
 	// Correlation pair
-	unsigned int iCorrMaxColsToUse;			// Max cols will be used in alignment for a correlation pair
-	unsigned int iCorrMaxRowsToUse;			// Max rows will be used in alignment for a correlation pair
+	bool bAllowRoiReduce;					// Allow reduce ROI size for correlation to speed up (may sacrify reliability) 
+	unsigned int iCorrMaxColsToUse;			// Max cols will be used in alignment for a correlation pair if bAllowRoiReduce==true
+	unsigned int iCorrMaxRowsToUse;			// Max rows will be used in alignment for a correlation pair if bAllowRoiReduce==true
 	unsigned int iCorrPairMinRoiSize;		// The Size of Roi of correlation pair need >= this value to process
 	double dMaskAreaRatioTh;				// NGC will be used only if Mask area/Roi area > this value
 
