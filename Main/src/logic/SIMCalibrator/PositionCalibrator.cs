@@ -17,7 +17,7 @@ namespace SIMCalibrator
     public enum CalibrationStatus
     {
         AquisitionFailed,            // Could not get images
-        CalibrationNotLegitimate,    // Got images, but can't find fiducials user suggests
+        CalibrationNotLegitimate,    // Got images, but can't find fiducials from the panel input
         CalibrationNotInTolerance,   // Found fiducials out of tolerance
         CalibrationInTolerance,      // Found fiducials in tolerance (no further work needed).
     }
@@ -36,6 +36,9 @@ namespace SIMCalibrator
     public class PositionCalibrator
     {
         private const double cPixelSizeInMeters = 1.70e-5;
+        private const double cYInTolerance = .0005;
+        private const double cXInTolerance = .0005;
+        
         private CPanel _panel;
         private ManagedSIMDevice _device;
         private ManagedMosaicSet _mosaicSet;
@@ -46,6 +49,8 @@ namespace SIMCalibrator
         private double _yOffsetInMeters=0.0;
         private double _xOffsetInMeters = 0.0;
         private double _velocityOffsetInMetersPerSecond = 0.0;
+        private CalibrationStatus _calibrationStatus = CalibrationStatus.AquisitionFailed;
+        private bool _waitingForImages = false;
 
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
@@ -119,6 +124,7 @@ namespace SIMCalibrator
             if (_device == null)
                 return StitchRowImageFromMosaic();
 
+            _waitingForImages = true;
             _doneEvent.Reset();
             if (_device.StartAcquisition(ACQUISITION_MODE.SINGLE_TRIGGER_MODE) != 0)
                 throw new ApplicationException("Could not start a Row Acquisition");
@@ -140,16 +146,10 @@ namespace SIMCalibrator
                 return;
 
             _panelAligner.ResetForNextPanel();
+            _waitingForImages = false;
             _doneEvent.Reset();
             if (_device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                 throw new ApplicationException("Could not start a Panel Capture Acquisition");
-
-            // @todo - Run Calibration... Perhaps by running the panel aligner...
-
-            // Wait for all images to be gathered - this means the alignment is complete.
-            _doneEvent.WaitOne();
-
-            CalculateCalibrationResults();
         }
 
         /// <summary>
@@ -157,13 +157,15 @@ namespace SIMCalibrator
         /// </summary>
         private void CalculateCalibrationResults()
         {
+            _calibrationStatus = CalibrationStatus.CalibrationNotLegitimate;
+
             _yOffsetInMeters = 0.0;
             _xOffsetInMeters = 0.0;
             _velocityOffsetInMetersPerSecond = 0.0;
             int numFids = _panelAligner.GetNumberOfFidsProcessed();
             string[] fids = new string[numFids];
 
-            int numUsed = 0;
+            int numFidsUsed = 0;
             for (uint i = 0; i < numFids; i++)
             {
                 ManagedFidInfo fidM = _panelAligner.GetFidAtIndex(i);
@@ -174,7 +176,7 @@ namespace SIMCalibrator
                 if (fidM.CorrelationScore() < .85)
                     continue;
 
-                numUsed++;
+                numFidsUsed++;
 
                 _yOffsetInMeters += fidM.RowDifference() * _mosaicSet.GetNominalPixelSizeY();
                 _xOffsetInMeters += fidM.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX();
@@ -184,15 +186,22 @@ namespace SIMCalibrator
                     fidM.RowDifference(), fidM.CorrelationScore());
             }
 
-            if (numUsed > 0)
+            if (numFidsUsed > 0)
             {
-                _yOffsetInMeters /= numUsed;
-                _xOffsetInMeters /= numUsed;
-            }
+                _yOffsetInMeters /= numFidsUsed;
+                _xOffsetInMeters /= numFidsUsed;
+
+                if (_yOffsetInMeters <= cYInTolerance && _xOffsetInMeters <= cXInTolerance)
+                    _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
+                else
+                {
+                    _calibrationStatus = CalibrationStatus.CalibrationNotInTolerance;
+                    AdjustCalibrationBasedOnLastAcquisition();                   
+                }
+            } 
 
             System.IO.File.WriteAllLines("c:\\fidInfo.txt", fids);
-
-            AdjustCalibrationBasedOnLastAcquisition();
+            FireCalibrationComplete(_calibrationStatus);
         }
 
         private void OnLogEntryFromClient(MLOGTYPE logtype, string message)
@@ -279,6 +288,7 @@ namespace SIMCalibrator
             {
                 // This is needed to initialize row acquisition in Simulation Mode...
                 // @todo - change CoreAPI to make this not needed (perhaps)
+                _waitingForImages = true;
                 _device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE);
                 // Wait for all images to be gathered...
                 _doneEvent.WaitOne();
@@ -295,8 +305,12 @@ namespace SIMCalibrator
 
         private void AcquisitionDone(int device, int status, int count)
         {
-            // Set the acquisition complete event...
-            _doneEvent.Set();
+            if (_waitingForImages)
+               _doneEvent.Set();
+            else
+            {
+                CalculateCalibrationResults();
+            }
         }
 
         private void FrameDone(ManagedSIMFrame pframe)

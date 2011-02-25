@@ -1,12 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using CPanelIO;
 using Cyber.DiagnosticUtils;
 using Cyber.MPanel;
 using MCoreAPI;
 using MLOGGER;
 using SIMCalibrator;
-using System.Drawing;
 
 namespace SIMCalibratorTester
 {
@@ -15,7 +15,8 @@ namespace SIMCalibratorTester
         private const double cPixelSizeInMeters = 1.70e-5;
         private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
         private static LoggingThread logger = new LoggingThread(null);
-
+        private static PositionCalibrator _positionCalibrator = null;
+        private static ManualResetEvent _calDoneEvent = new ManualResetEvent(false);
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -54,8 +55,10 @@ namespace SIMCalibratorTester
             if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
                 bSimulating = true;
 
-            PositionCalibrator posCal = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(0),
+            _positionCalibrator = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(0),
                 bSimulating);
+
+            _positionCalibrator.CalibrationComplete += CalibrationComplete;
 /*            Bitmap bmp = posCal.AquireRowImage();
 
             if (bmp == null)
@@ -67,12 +70,29 @@ namespace SIMCalibratorTester
                 bmp.Save("c:\\temp\\rowImage.png");
             }
 */
-            posCal.StartAcquisition();
+            _positionCalibrator.StartAcquisition();
 
+            _calDoneEvent.WaitOne();
 
             Output("Processing Complete");
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
+        }
+
+        private static void CalibrationComplete(CalibrationStatus status)
+        {
+            Output("Calibration Completed with status " + status);
+
+            if(status == CalibrationStatus.CalibrationNotInTolerance)
+            {
+                string msg = string.Format("XOffset={0}, YOffset={1}, Velocity={2}",
+                                           _positionCalibrator.GetXOffsetInMeters(),
+                                           _positionCalibrator.GetYOffsetInMeters(),
+                                           _positionCalibrator.GetVelocityOffsetInMetersPerSecond());
+                Output(msg);
+            }
+
+            _calDoneEvent.Set();
         }
 
         private static bool InitializeSimCoreAPI(string simulationFile)
