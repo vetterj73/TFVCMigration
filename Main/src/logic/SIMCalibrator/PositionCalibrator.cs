@@ -43,6 +43,10 @@ namespace SIMCalibrator
         private uint _layerIndex = 0;
         private ManagedPanelAlignment _panelAligner;
 
+        private double _yOffsetInMeters=0.0;
+        private double _xOffsetInMeters = 0.0;
+        private double _velocityOffsetInMetersPerSecond = 0.0;
+
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
         /// </summary>
@@ -111,7 +115,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public Bitmap AquireRowImage()
         {        
-            /// If we started with a mosaic - just return the first row in the mosaic...
+            // If we started with a mosaic - just return the first row in the mosaic...
             if (_device == null)
                 return StitchRowImageFromMosaic();
 
@@ -142,21 +146,29 @@ namespace SIMCalibrator
 
             // @todo - Run Calibration... Perhaps by running the panel aligner...
 
-            // Wait for all images to be gathered...
+            // Wait for all images to be gathered - this means the alignment is complete.
             _doneEvent.WaitOne();
 
-            int numFids = _panelAligner.GetNumberOfFidsProcessed();
+            CalculateCalibrationResults();
+        }
 
+        /// <summary>
+        /// Currren
+        /// </summary>
+        private void CalculateCalibrationResults()
+        {
+            _yOffsetInMeters = 0.0;
+            _xOffsetInMeters = 0.0;
+            _velocityOffsetInMetersPerSecond = 0.0;
+            int numFids = _panelAligner.GetNumberOfFidsProcessed();
             string[] fids = new string[numFids];
 
-            double yOffset = 0.0;
-            double xOffset = 0.0;
             int numUsed = 0;
-            for(uint i=0; i<numFids; i++)
+            for (uint i = 0; i < numFids; i++)
             {
                 ManagedFidInfo fidM = _panelAligner.GetFidAtIndex(i);
 
-                if(fidM == null)
+                if (fidM == null)
                     throw new ApplicationException("Invalid Fid at position " + i);
 
                 if (fidM.CorrelationScore() < .85)
@@ -164,8 +176,8 @@ namespace SIMCalibrator
 
                 numUsed++;
 
-                yOffset += fidM.RowDifference() * _mosaicSet.GetNominalPixelSizeY();
-                xOffset += fidM.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX(); 
+                _yOffsetInMeters += fidM.RowDifference() * _mosaicSet.GetNominalPixelSizeY();
+                _xOffsetInMeters += fidM.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX();
 
                 fids[i] = string.Format("Fiducial Info: x={0}, y={1}, colOffset={2}, rowOffsetx={3}, score={4}",
                     fidM.GetNominalXPosition(), fidM.GetNominalYPosition(), fidM.ColumnDifference(),
@@ -174,14 +186,13 @@ namespace SIMCalibrator
 
             if (numUsed > 0)
             {
-                yOffset /= numUsed;
-                xOffset /= numUsed;
+                _yOffsetInMeters /= numUsed;
+                _xOffsetInMeters /= numUsed;
             }
 
-            _device.YOffset = _device.YOffset - yOffset;
-            _device.HomeOffset = _device.HomeOffset + yOffset;
-
             System.IO.File.WriteAllLines("c:\\fidInfo.txt", fids);
+
+            AdjustCalibrationBasedOnLastAcquisition();
         }
 
         private void OnLogEntryFromClient(MLOGTYPE logtype, string message)
@@ -195,8 +206,11 @@ namespace SIMCalibrator
         /// and then try again.  This will only be allowed if 
         /// AquisitionStatus >= AquisitionLegitimate
         /// </summary>
-        public void AdjustCalibrationBasedOnLastAcquisition()
+        private void AdjustCalibrationBasedOnLastAcquisition()
         {
+            _device.YOffset = _device.YOffset - _yOffsetInMeters;
+            _device.HomeOffset = _device.HomeOffset + _xOffsetInMeters;
+            _device.ConveyorVelocity = _device.ConveyorVelocity + _velocityOffsetInMetersPerSecond;
         }
 
         /// <summary>
@@ -204,9 +218,9 @@ namespace SIMCalibrator
         /// it should be.  This would be for UI (display) purposes during calibration.
         /// </summary>
         /// <returns></returns>
-        public double GetYOffsetDifference()
+        public double GetYOffsetInMeters()
         {
-            return 0.0;
+            return _yOffsetInMeters;
         }
 
         /// <summary>
@@ -214,9 +228,9 @@ namespace SIMCalibrator
         /// it should be.  This would be for UI (display) purposes during calibration.
         /// </summary>
         /// <returns></returns>
-        public double GetXOffsetDifference()
+        public double GetXOffsetInMeters()
         {
-            return 0.0;
+            return _xOffsetInMeters;
         }
 
         /// <summary>
@@ -224,9 +238,9 @@ namespace SIMCalibrator
         /// it should be.  This would be for UI (display) purposes during calibration.
         /// </summary>
         /// <returns></returns>
-        public double GetSpeedDifference()
+        public double GetVelocityOffsetInMetersPerSecond()
         {
-            return 0.0;
+            return _velocityOffsetInMetersPerSecond;
         }
 
         /// <summary>
@@ -300,9 +314,9 @@ namespace SIMCalibrator
         /// <returns></returns>
         private Bitmap StitchRowImageFromMosaic()
         {
-            // NOTE from Alan.  I am currently using the BasicStitcher for this (same as existing 2DSPI.
+            // NOTE from Alan.  I am currently using the BasicStitcher for this (same as existing 2DSPI).
             // This adds a dependency on CyberCommon that I don't like.
-            // @todo... Todd has also expressed an interest in using the camera cal for this stitching.. Necessary?
+            // @todo... Todd has also expressed an interest in using the camera cal for this stitching... Necessary?
             BasicStitcher stitcher = new BasicStitcher();
             stitcher.Initialize(_mosaicSet.GetLayer(0).GetNumberOfCameras(),
                 0, 1, (int)_mosaicSet.GetImageWidthInPixels(), 
