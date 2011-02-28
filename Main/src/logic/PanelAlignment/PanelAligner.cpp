@@ -125,12 +125,12 @@ void PanelAligner::NumThreads(unsigned int numThreads)
 	CorrelationParametersInst.NumThreads = numThreads;
 }
 
-void FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
+void PanelAligner::FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
 {
 	CorrelationParametersInst.dFiducialSearchExpansionX = fidSearchXInMeters;
 }
 
-void FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
+void PanelAligner::FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
 {
 	CorrelationParametersInst.dFiducialSearchExpansionY = fidSearchYInMeters;
 }

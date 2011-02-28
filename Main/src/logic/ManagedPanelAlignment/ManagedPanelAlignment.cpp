@@ -32,7 +32,7 @@ namespace PanelAlignM {
 
 	int ManagedPanelAlignment::GetNumberOfFidsProcessed()
 	{
-		return _pAligner->GetLastProcessedFids()->size();
+		return (int)_pAligner->GetLastProcessedFids()->size();
 	}
 
 	ManagedFidInfo^ ManagedPanelAlignment::GetFidAtIndex(unsigned int index)

@@ -86,6 +86,8 @@ namespace SIMCalibrator
             _panelAligner.OnLogEntry += OnLogEntryFromClient;
             _panelAligner.SetAllLogTypes(true);
             _panelAligner.NumThreads(8);
+            _panelAligner.FiducialSearchExpansionXInMeters(.008); // 8 mm in X
+            _panelAligner.FiducialSearchExpansionYInMeters(.008); // 8 mm in Y
             _panelAligner.LogFiducialOverlaps(true);
             _panelAligner.ChangeProduction(_mosaicSet, _panel);
         }
