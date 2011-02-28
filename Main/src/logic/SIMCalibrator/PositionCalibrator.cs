@@ -193,9 +193,9 @@ namespace SIMCalibrator
                 _yOffsetInMeters /= numFidsUsed;
                 _xOffsetInMeters /= numFidsUsed;
 
-                if (_yOffsetInMeters <= cYInTolerance && _xOffsetInMeters <= cXInTolerance)
-                    _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
-                else
+ //               if (_yOffsetInMeters <= cYInTolerance && _xOffsetInMeters <= cXInTolerance)
+   //                 _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
+     //           else
                 {
                     _calibrationStatus = CalibrationStatus.CalibrationNotInTolerance;
                     AdjustCalibrationBasedOnLastAcquisition();                   
