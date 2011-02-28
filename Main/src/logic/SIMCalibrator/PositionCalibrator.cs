@@ -245,8 +245,9 @@ namespace SIMCalibrator
                                      _fidClosestToLeadingEdge.GetNominalXPosition();
 
 
-            double actualDistance = _fidFarthestToLeadingEdge.GetNominalXPosition() -
-                         _fidClosestToLeadingEdge.GetNominalXPosition();
+            double actualDistance =
+                (_fidFarthestToLeadingEdge.GetNominalXPosition() + _fidFarthestToLeadingEdge.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX()) -
+                (_fidClosestToLeadingEdge.GetNominalXPosition() + _fidClosestToLeadingEdge.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX());
 
             double ratio =  nominalDistance/actualDistance;
 
