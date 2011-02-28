@@ -41,6 +41,8 @@ public:
 	void LogOverlaps(bool bLog);
 	void LogMaskVectors(bool bLog);
 	void NumThreads(unsigned int numThreads);
+	void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
+	void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
 
 	FidFovOverlapList* GetLastProcessedFids();
 

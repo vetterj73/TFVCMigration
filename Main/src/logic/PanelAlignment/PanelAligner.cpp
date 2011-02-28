@@ -38,8 +38,6 @@ void PanelAligner::CleanUp()
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
-
-
 }
 
 // Change production
@@ -125,6 +123,16 @@ void PanelAligner::LogMaskVectors(bool bLog)
 void PanelAligner::NumThreads(unsigned int numThreads)
 {
 	CorrelationParametersInst.NumThreads = numThreads;
+}
+
+void FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
+{
+	CorrelationParametersInst.dFiducialSearchExpansionX = fidSearchXInMeters;
+}
+
+void FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
+{
+	CorrelationParametersInst.dFiducialSearchExpansionY = fidSearchYInMeters;
 }
 
 // Add single image

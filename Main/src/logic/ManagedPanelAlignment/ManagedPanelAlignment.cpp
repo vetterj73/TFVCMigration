@@ -88,7 +88,16 @@ namespace PanelAlignM {
 	void ManagedPanelAlignment::LogMaskVectors(bool bLog)	
 	{
 		_pAligner->LogMaskVectors(bLog);
+	}
 
+	void ManagedPanelAlignment::FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
+	{
+		_pAligner->FiducialSearchExpansionXInMeters(fidSearchXInMeters);
+	}
+	
+	void ManagedPanelAlignment::FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
+	{
+		_pAligner->FiducialSearchExpansionYInMeters(fidSearchYInMeters);
 	}
 
 	// Reset for next panel

@@ -72,7 +72,8 @@ namespace PanelAlignM {
 		void LogFiducialOverlaps(bool bLog);
 		void LogOverlaps(bool bLog);
 		void LogMaskVectors(bool bLog);	
-
+		void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
+		void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
 		int GetNumberOfFidsProcessed();
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 
