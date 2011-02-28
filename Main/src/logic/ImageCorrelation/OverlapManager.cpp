@@ -201,7 +201,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
 	bool bMask = pFlags->GetMaskNeeded();
-	bool bCad	= false; //need modify
+	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
 	// Attention: Trgger center X is dcreaseing with trigger index
@@ -284,7 +284,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
-							_validRect, bMask);
+							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
 						{
@@ -299,7 +299,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
-							_validRect, bMask);
+							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -352,7 +352,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pair<unsigned int, unsigned int>(iCam1, iTrig1),
 								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
-								_validRect, bMask);
+								_validRect, bApplyCorSizeUpLimit, bMask);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{

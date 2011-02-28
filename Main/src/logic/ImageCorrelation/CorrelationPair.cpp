@@ -151,7 +151,7 @@ bool CorrelationPair::Reset()
 
 // Do the alignment
 // Return true if it is processed
-bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
+bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {
 	bool bSRC = true;
 
@@ -183,7 +183,7 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 			return(false);
 		}
 		
-		if(!SqRtCorrelation(bAllowRoiReduce, pbRoiReduced))
+		if(!SqRtCorrelation(bApplyCorrSizeUpLimit, pbCorrSizeReduced))
 			return(false);
 	}
 	else	// Use Ngc
@@ -193,7 +193,7 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 			_roi1.Rows() < 2*_iRowSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize)
 			return(false);
 
-		if(!NGCCorrelation(bAllowRoiReduce, pbRoiReduced))
+		if(!NGCCorrelation(bApplyCorrSizeUpLimit, pbCorrSizeReduced))
 			return(false);
 	}
 	
@@ -203,7 +203,7 @@ bool CorrelationPair::DoAlignment(bool bAllowRoiReduce, bool* pbRoiReduced)
 
 
 // Do the square root correlation and report result
-bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
+bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {	
 	unsigned int nrows = Rows();
 	unsigned int ncols = Columns();
@@ -251,9 +251,9 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 		iFirstRow2 = 2;
 	}
 
-	if(bAllowRoiReduce)
+	if(bApplyCorrSizeUpLimit)
 	{
-		*pbRoiReduced = false; 
+		*pbCorrSizeReduced = false; 
 
 		// Adjust Rows if it is necessary
 		if(nrows > CorrelationParametersInst.iCorrMaxRowsToUse && ncols >= CorrelationParametersInst.iCorrMaxColsToUse/2) 
@@ -262,7 +262,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			iFirstRow2 += (nrows - CorrelationParametersInst.iCorrMaxRowsToUse)/2;
 			nrows = CorrelationParametersInst.iCorrMaxRowsToUse;
 
-			*pbRoiReduced = true;
+			*pbCorrSizeReduced = true;
 		}
 
 		// Adjust Cols if it is necessary
@@ -272,7 +272,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			iFirstCol2 += (ncols - CorrelationParametersInst.iCorrMaxColsToUse)/2;
 			ncols = CorrelationParametersInst.iCorrMaxColsToUse;
 			
-			*pbRoiReduced = true;
+			*pbCorrSizeReduced = true;
 		}
 	}
 
@@ -385,7 +385,7 @@ bool CorrelationPair::SqRtCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 }
 
 // Calculate correlatin by using NGC
-bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
+bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {
 	unsigned int nrows = Rows();
 	unsigned int ncols = Columns();
@@ -400,9 +400,9 @@ bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 	unsigned int iLastCol2 = _roi2.LastColumn;
 	unsigned int iLastRow2 = _roi2.LastRow;
 
-	if(bAllowRoiReduce)
+	if(bApplyCorrSizeUpLimit)
 	{
-		*pbRoiReduced = false; 
+		*pbCorrSizeReduced = false; 
 
 		// Adjust Rows if it is necessary
 		if(nrows > CorrelationParametersInst.iCorrMaxRowsToUse) 
@@ -413,7 +413,7 @@ bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			iLastRow1 = iFirstRow1 + nrows - 1;
 			iLastRow2 = iFirstRow2 + nrows - 1;
 
-			*pbRoiReduced = true; 
+			*pbCorrSizeReduced = true; 
 		}
 
 		// Adjust Cols if it is necessary
@@ -425,7 +425,7 @@ bool CorrelationPair::NGCCorrelation(bool bAllowRoiReduce, bool* pbRoiReduced)
 			iLastCol1 = iFirstCol1 + ncols - 1;
 			iLastCol2 = iFirstCol2 + ncols - 1;
 
-			*pbRoiReduced = true;
+			*pbCorrSizeReduced = true;
 		}
 	}
 

@@ -25,6 +25,8 @@ void Overlap::operator=(const Overlap& b)
 
 	_type = b._type;
 
+	_bApplyCorrSizeUpLimit = b._bApplyCorrSizeUpLimit;
+
 	_bValid = b._bValid;
 	_bProcessed = b._bProcessed;
 
@@ -35,7 +37,8 @@ void Overlap::config(
 	Image* pImg1, 
 	Image* pImg2,
 	DRect validRect,
-	OverlapType type,		
+	OverlapType type,
+	bool bApplyCorrSizeUpLimit,
 	Image* pMaskImg)
 {
 	_pImg1 = pImg1; 
@@ -45,6 +48,8 @@ void Overlap::config(
 	_validRect = validRect;
 
 	_type = type;
+
+	_bApplyCorrSizeUpLimit = bApplyCorrSizeUpLimit;
 
 	_bValid = CalCoarseCorrPair();
 	_bProcessed = false;
@@ -200,11 +205,11 @@ void Overlap::Run()
 	}
 
 	// Do coarse correlation
-	bool bRoiReduced = false;
-	_coarsePair.DoAlignment(CorrelationParametersInst.bAllowRoiReduce, &bRoiReduced);
+	bool bCorrSizeReduced = false;
+	_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
 
 	// If the Roi size is reduced in correlation
-	if(_coarsePair.IsProcessed() && bRoiReduced) 
+	if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
 	{	//If the correlation result is not good enough
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
 		if(result.CorrCoeff * (1-result.AmbigScore)<CorrelationParametersInst.dCoarseResultReliableTh)
@@ -326,6 +331,7 @@ FovFovOverlap::FovFovOverlap(
 	pair<unsigned int, unsigned int> ImgPos1,
 	pair<unsigned int, unsigned int> ImgPos2,
 	DRect validRect,
+	bool bApplyCorrSizeUpLimit,
 	bool bHasMask)
 {
 	_pMosaic1 = pMosaic1;
@@ -337,7 +343,7 @@ FovFovOverlap::FovFovOverlap(
 	Image* pImg1 = _pMosaic1->GetImage(ImgPos1.first, ImgPos1.second);
 	Image* pImg2 = _pMosaic2->GetImage(ImgPos2.first, ImgPos2.second);
 
-	config(pImg1, pImg2, validRect, Fov_To_Fov, NULL);
+	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
 }
 
 bool FovFovOverlap::IsReadyToProcess() const
@@ -437,7 +443,7 @@ CadFovOverlap::CadFovOverlap(
 
 	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 
-	config(pImg1, _pCadImg, validRect, Cad_To_Fov);
+	config(pImg1, _pCadImg, validRect, Cad_To_Fov, false);
 }
 
 bool CadFovOverlap::IsReadyToProcess() const
@@ -510,7 +516,7 @@ FidFovOverlap::FidFovOverlap(
 
 	_bUseVsFinder = false;
 
-	config(pImg1, _pFidImg, validRect, Fid_To_Fov);
+	config(pImg1, _pFidImg, validRect, Fid_To_Fov, false);
 }
 
 void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID)

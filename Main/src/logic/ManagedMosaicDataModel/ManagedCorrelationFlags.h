@@ -40,6 +40,21 @@ public:
 		_pCorrelationFlags->SetMaskNeeded(maskNeeded);
 	}
 
+	// When ApplyCorrelationAreaSizeUpLimit == true; (default = false)
+	// If the size of correlation pair is bigger than an internal defined size,
+	// only the area with intern define size will be used for correlation calculation
+	// This setting is used to speed up the stitching process.
+	// However, sometime it will make the stitching for bare panel without paste unreliable
+	bool GetApplyCorrelationAreaSizeUpLimit()
+	{
+		return _pCorrelationFlags->GetApplyCorrelationAreaSizeUpLimit();
+	}
+	
+	void SetApplyCorrelationAreaSizeUpLimit(bool ApplyCorrelationAreaSizeUpLimit)
+	{
+		_pCorrelationFlags->SetApplyCorrelationAreaSizeUpLimit(ApplyCorrelationAreaSizeUpLimit);
+	};
+
 private:
 	MosaicDM::CorrelationFlags *_pCorrelationFlags;
 };

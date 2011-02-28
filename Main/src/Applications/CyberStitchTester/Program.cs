@@ -134,13 +134,13 @@ namespace CyberStitchTester
                         );
                     }
 
-  /*                  // Save a 3 channel image with CAD data...
+                   // Save a 3 channel image with CAD data...
                     _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(2).GetStitchedBuffer(),
                         _mosaicSet.GetLayer(3).GetStitchedBuffer(),
                         _panel.GetCADBuffer(),
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-*/
+
                 }
 
                 // should we do another cycle?

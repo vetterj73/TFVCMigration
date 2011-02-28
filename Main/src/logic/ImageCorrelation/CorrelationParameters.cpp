@@ -12,9 +12,8 @@ CorrelationParameters& CorrelationParameters::Instance()
 CorrelationParameters::CorrelationParameters(void)
 {
 	// Correlation pair
-	bAllowRoiReduce = false;			// Allow reduce ROI size for correlation to speed up (may sacrify reliability)
-	iCorrMaxColsToUse = 1024;			// Max cols will be used in alignment for a correlation pair if bAllowRoiReduce==true
-	iCorrMaxRowsToUse = 1024;			// Max rows will be used in alignment for a correlation pair if bAllowRoiReduce==true
+	iCorrMaxColsToUse = 1024;			// Max cols will be used in alignment for a correlation pair if bApplyCorrSizeUpLimit==true
+	iCorrMaxRowsToUse = 1024;			// Max rows will be used in alignment for a correlation pair if bApplyCorrSizeUpLimit==true
 	iCorrPairMinRoiSize = 20;			// The Size of Roi of correlation pair need >= this value to process
 	dMaskAreaRatioTh = 0.05;			// NGC will be used only if Mask area/Roi area > this value
 

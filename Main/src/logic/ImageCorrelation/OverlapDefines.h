@@ -22,7 +22,8 @@ public:
 		Image* pImg1, 
 		Image* pImg2,
 		DRect validRect,
-		OverlapType type,		
+		OverlapType type,	
+		bool bApplyCorrSizeUpLimit,
 		Image* pMaskImg = NULL);
 
 	// Get/set
@@ -64,6 +65,8 @@ private:
 
 	unsigned int _iColumns;
 	unsigned int _iRows;
+
+	bool _bApplyCorrSizeUpLimit;
 };
 
 // Overlap between FOV image and FOV image
@@ -77,6 +80,7 @@ public:
 		pair<unsigned int, unsigned int> ImgPos1, // first = camera, second = trigger
 		pair<unsigned int, unsigned int> ImgPos2,
 		DRect validRect,
+		bool bApplyCorrSizeUpLimit,
 		bool bHasMask);
 
 	MosaicLayer* GetFirstMosaicImage() const {return _pMosaic1;};

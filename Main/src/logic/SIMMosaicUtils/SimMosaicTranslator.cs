@@ -106,6 +106,9 @@ namespace SIMMosaicUtils
                             flag.SetTriggerToTrigger(false); // For four illuminaitons
                         else
                             flag.SetTriggerToTrigger(true);
+
+                        if (Math.Abs((int)i-(int)j)==2) // For four illuminations, (0, 2) and (1,3) are the same illumination type
+                            flag.SetApplyCorrelationAreaSizeUpLimit(true);
                     }
 
                     flag.SetMaskNeeded(false);
