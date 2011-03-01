@@ -8,7 +8,7 @@ namespace SIMCalibrator
     /// <summary>
     /// This class is used to capture details about a set of fiducials needed for calibration...
     /// </summary>
-    class FiducialList
+    public class FiducialList
     {
         private List<ManagedFidInfo> _fidList = new List<ManagedFidInfo>();
         public const double cLowestAcceptibleCorrelationScore = .85;
@@ -89,6 +89,9 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetAverageXOffset(double pixelSize)
         {
+            if(_fidList.Count == 0)
+                return 0.0;
+
             double xOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
@@ -105,6 +108,9 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetAverageYOffset(double pixelSize)
         {
+            if (_fidList.Count == 0)
+                return 0.0;
+
             double yOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
