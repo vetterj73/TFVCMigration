@@ -56,7 +56,7 @@ namespace SIMCalibratorTester
                 bSimulating = true;
 
             _positionCalibrator = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(0),
-                bSimulating);
+                bSimulating, .008, .008);
 
             _positionCalibrator.CalibrationComplete += CalibrationComplete;
 /*            Bitmap bmp = posCal.AquireRowImage();

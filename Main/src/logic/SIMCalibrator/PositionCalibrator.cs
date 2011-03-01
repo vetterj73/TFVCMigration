@@ -35,10 +35,12 @@ namespace SIMCalibrator
     /// </summary>
     public class PositionCalibrator
     {
+        private const double cMaximumAcceptibleVelocityOffset = .001;
         private const double cPixelSizeInMeters = 1.70e-5;
         private const double cYInTolerance = .0005;
         private const double cXInTolerance = .0005;
-        
+
+        private FiducialList _fidList = new FiducialList();
         private CPanel _panel;
         private ManagedSIMDevice _device;
         private ManagedMosaicSet _mosaicSet;
@@ -46,19 +48,15 @@ namespace SIMCalibrator
         private uint _layerIndex = 0;
         private ManagedPanelAlignment _panelAligner;
 
-        private double _yOffsetInMeters=0.0;
-        private double _xOffsetInMeters = 0.0;
-        private double _velocityOffsetInMetersPerSecond = 0.0;
         private CalibrationStatus _calibrationStatus = CalibrationStatus.AquisitionFailed;
         private bool _waitingForImages = false;
-        private ManagedFidInfo _fidClosestToLeadingEdge;
-        private ManagedFidInfo _fidFarthestToLeadingEdge;
-
 
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
         /// </summary>
         public event CalibrationComplete CalibrationComplete;
+        public double FiducialSearchSizeXInMeters { get; set; }
+        public double FiducialSearchSizeYInMeters { get; set; }
 
         /// <summary>
         /// Constructor:  Given a valid CPanel Object and a valid SIM Device
@@ -66,7 +64,10 @@ namespace SIMCalibrator
         /// <param name="panel"></param>
         /// <param name="device"></param>
         /// <param name="bSimulating"></param>
-        public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating)
+        /// <param name="fiducialSearchSizeXInMeters"></param>
+        /// <param name="fiducialSearchSizeYInMeters"></param>
+        public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
@@ -89,8 +90,8 @@ namespace SIMCalibrator
             _panelAligner.OnLogEntry += OnLogEntryFromClient;
             _panelAligner.SetAllLogTypes(true);
             _panelAligner.NumThreads(8);
-            _panelAligner.FiducialSearchExpansionXInMeters(.008); // 8 mm in X
-            _panelAligner.FiducialSearchExpansionYInMeters(.008); // 8 mm in Y
+            _panelAligner.FiducialSearchExpansionXInMeters(fiducialSearchSizeXInMeters); // 8 mm in X
+            _panelAligner.FiducialSearchExpansionYInMeters(fiducialSearchSizeYInMeters); // 8 mm in Y
             _panelAligner.LogFiducialOverlaps(true);
             _panelAligner.ChangeProduction(_mosaicSet, _panel);
         }
@@ -142,50 +143,21 @@ namespace SIMCalibrator
         /// </summary>
         private void CalculateCalibrationResults()
         {
+            _fidList.Clear();
             _calibrationStatus = CalibrationStatus.CalibrationNotLegitimate;
-
-            _yOffsetInMeters = 0.0;
-            _xOffsetInMeters = 0.0;
-            _velocityOffsetInMetersPerSecond = 0.0;
             int numFids = _panelAligner.GetNumberOfFidsProcessed();
-            string[] fids = new string[numFids];
-
-            int numFidsUsed = 0;
 
             for (uint i = 0; i < numFids; i++)
             {
                 ManagedFidInfo fidM = _panelAligner.GetFidAtIndex(i);
-
                 if (fidM == null)
                     throw new ApplicationException("Invalid Fid at position " + i);
 
-                if (fidM.CorrelationScore() < .85)
-                    continue;
-
-                numFidsUsed++;
-
-                if (_fidClosestToLeadingEdge == null || 
-                    _fidClosestToLeadingEdge.GetNominalXPosition()>fidM.GetNominalXPosition())
-                    _fidClosestToLeadingEdge = fidM;
-
-                if (_fidFarthestToLeadingEdge == null || 
-                    _fidFarthestToLeadingEdge.GetNominalXPosition()<fidM.GetNominalXPosition())
-                    _fidFarthestToLeadingEdge = fidM;
-
-
-                _yOffsetInMeters += fidM.RowDifference() * _mosaicSet.GetNominalPixelSizeY();
-                _xOffsetInMeters += fidM.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX();
-
-                fids[i] = string.Format("Fiducial Info: x={0}, y={1}, colOffset={2}, rowOffsetx={3}, score={4}",
-                    fidM.GetNominalXPosition(), fidM.GetNominalYPosition(), fidM.ColumnDifference(),
-                    fidM.RowDifference(), fidM.CorrelationScore());
+                _fidList.Add(fidM);
             }
 
-            if (numFidsUsed > 0)
+            if (_fidList.Count > 0)
             {
-                _yOffsetInMeters /= numFidsUsed;
-                _xOffsetInMeters /= numFidsUsed;
-
  //               if (_yOffsetInMeters <= cYInTolerance && _xOffsetInMeters <= cXInTolerance)
    //                 _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
      //           else
@@ -195,7 +167,6 @@ namespace SIMCalibrator
                 }
             } 
 
-            System.IO.File.WriteAllLines("c:\\fidInfo.txt", fids);
             FireCalibrationComplete(_calibrationStatus);
         }
 
@@ -213,56 +184,24 @@ namespace SIMCalibrator
         private void AdjustCalibrationBasedOnLastAcquisition()
         {
             // Always Adjust Y...
-            _device.YOffset = _device.YOffset - _yOffsetInMeters;
-            
-            _velocityOffsetInMetersPerSecond = GetVelocityOffset();
-
-            if (Math.Abs(_velocityOffsetInMetersPerSecond) > .001)
+            _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset(_mosaicSet.GetNominalPixelSizeY());
+            double velocityOffsetInMetersPerSecond = GetVelocityOffsetInMetersPerSecond();
+            if (Math.Abs(velocityOffsetInMetersPerSecond) > cMaximumAcceptibleVelocityOffset)
             {
-                // If Speed needs setting Off, only use the first fid for home offset adjustment...
-                // Other will be further off...
-                _xOffsetInMeters = _fidClosestToLeadingEdge.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX();
-                _device.HomeOffset = _device.HomeOffset + _xOffsetInMeters;               
-                _device.ConveyorVelocity = _device.ConveyorVelocity + _velocityOffsetInMetersPerSecond;
+                _device.ConveyorVelocity = _device.ConveyorVelocity + velocityOffsetInMetersPerSecond;
             }
             else
             {
-                _device.HomeOffset = _device.HomeOffset + _xOffsetInMeters;               
+                // If speed is in tolerance - adjust X
+                _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());               
             }
-        }
-
-        private double GetVelocityOffset()
-        {
-            if (_fidClosestToLeadingEdge == null || _fidFarthestToLeadingEdge == null)
-                return 0.0;
-
-            // If Fids are not far apart, we can't adjust speed...
-            if (Math.Abs(_fidFarthestToLeadingEdge.GetNominalXPosition() - _fidClosestToLeadingEdge.GetNominalXPosition()) < .009)
-                return 0.0;
-
-            // We can try to calculate an offset for speed...
-            double nominalDistance = _fidFarthestToLeadingEdge.GetNominalXPosition() -
-                                     _fidClosestToLeadingEdge.GetNominalXPosition();
-
-
-            double actualDistance =
-                (_fidFarthestToLeadingEdge.GetNominalXPosition() + _fidFarthestToLeadingEdge.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX()) -
-                (_fidClosestToLeadingEdge.GetNominalXPosition() + _fidClosestToLeadingEdge.ColumnDifference() * _mosaicSet.GetNominalPixelSizeX());
-
-            double ratio =  nominalDistance/actualDistance;
-
-            return _device.ConveyorVelocity - _device.ConveyorVelocity*ratio;
         }
 
         private void ResetForAcquisition()
         {
-            _yOffsetInMeters = 0.0;
-            _xOffsetInMeters = 0.0;
-            _velocityOffsetInMetersPerSecond = 0.0;
+            _fidList.Clear();
             _calibrationStatus = CalibrationStatus.AquisitionFailed;
             _waitingForImages = false;
-            _fidClosestToLeadingEdge = null;
-            _fidFarthestToLeadingEdge = null;
         }
 
         /// <summary>
@@ -272,7 +211,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetYOffsetInMeters()
         {
-            return _yOffsetInMeters;
+            return _fidList.GetAverageYOffset(_mosaicSet.GetNominalPixelSizeY());
         }
 
         /// <summary>
@@ -282,7 +221,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetXOffsetInMeters()
         {
-            return _xOffsetInMeters;
+            return _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeY());
         }
 
         /// <summary>
@@ -292,7 +231,8 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetVelocityOffsetInMetersPerSecond()
         {
-            return _velocityOffsetInMetersPerSecond;
+            double ratio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
+            return _device.ConveyorVelocity - _device.ConveyorVelocity * ratio; 
         }
 
         /// <summary>
