@@ -93,7 +93,6 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            // Testing that correlation scores need to be > .85
             ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
             ManagedFidInfo info2 = new ManagedFidInfo(.009, .001, 100.0, 100.0, .93);
             fidList.Add(info1);
@@ -113,7 +112,6 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            // Testing that correlation scores need to be > .85
             ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
             ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, .93);
             fidList.Add(info1);
@@ -126,7 +124,5 @@ namespace SIMCalibratorUnitTest
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() != null);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() != fidList.GetFidFarthestFromLeadingEdge());
         }
-    
-    
     }
 }
