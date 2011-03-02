@@ -198,7 +198,7 @@ namespace SIMCalibrator
             // Always update the velocity...
             _beginningVelocity = _device.ConveyorVelocity;
             double vRatio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
-            _device.ConveyorVelocity = GetVelocityFromRatio(vRatio);
+            _device.ConveyorVelocity = _beginningVelocity + GetVelocityOffsetInMetersPerSecond();
             
             // Update the X if velocity is in tolerance...
             if (_fidList.IsVelocityRatioInTolerance(vRatio))
@@ -245,19 +245,9 @@ namespace SIMCalibrator
         public double GetVelocityOffsetInMetersPerSecond()
         {
             double ratio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
-            return GetVelocityFromRatio(ratio);
+            return _beginningVelocity - (_beginningVelocity * ratio);
         }
 
-        /// <summary>
-        /// Gets the difference between the current SIM Setting and what the Calibrator is suggesting
-        /// it should be.  This would be for UI (display) purposes during calibration.
-        /// </summary>
-        /// <returns></returns>
-        protected double GetVelocityFromRatio(double ratio)
-        {
-            return _beginningVelocity - _beginningVelocity * ratio; 
-        }
- 
         /// <summary>
         /// Fires a messages to client that lets them know that calibration is complete
         /// </summary>

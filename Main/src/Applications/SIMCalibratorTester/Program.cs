@@ -168,6 +168,8 @@ namespace SIMCalibratorTester
         {
             logger.AddObjectToThreadQueue(str);
             logger.AddObjectToThreadQueue(null);
+
+            Console.WriteLine(str);
         }
     }
 }
