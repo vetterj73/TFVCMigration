@@ -2,7 +2,7 @@
 using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
-using CPanelIO;
+using MPanelIO;
 using Cyber.DiagnosticUtils;
 using Cyber.MPanel;
 using MCoreAPI;

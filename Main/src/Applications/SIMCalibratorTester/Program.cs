@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using CPanelIO;
+using MPanelIO;
 using Cyber.DiagnosticUtils;
 using Cyber.MPanel;
 using MCoreAPI;
