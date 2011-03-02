@@ -56,6 +56,16 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CPanelIOTests.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\ManagedPanel\ManagedPanel.vcxproj">
+      <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
+      <Name>ManagedPanel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ManagedPanelIO.csproj">
+      <Project>{A06AD1D0-414A-496D-89AC-8667F1019D75}</Project>
+      <Name>ManagedPanelIO</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

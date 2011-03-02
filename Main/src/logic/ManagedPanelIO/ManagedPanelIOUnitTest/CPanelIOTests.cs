@@ -63,7 +63,7 @@ namespace CPanelIOUnitTest
         [TestMethod]
         public void TestXmlConvert()
         {
-            CPanel panel = CPanelIO.XmlToPanel.CSIMPanelXmlToCPanel(
+            CPanel panel = MPanelIO.XmlToPanel.CSIMPanelXmlToCPanel(
                 "..\\..\\..\\..\\..\\testdata\\5-540-206-00 Rev B1-T1_OffsetApplied.xml",
                 cPixelSizeInMeters, cPixelSizeInMeters);
 
@@ -93,7 +93,7 @@ namespace CPanelIOUnitTest
         [TestMethod]
         public void TestSrfConvert()
         {
-            CPanel panel = CPanelIO.SRFToPanel.parseSRF(
+            CPanel panel = MPanelIO.SRFToPanel.parseSRF(
                 "..\\..\\..\\..\\..\\testdata\\DEK_VG.srf",
                 cPixelSizeInMeters, cPixelSizeInMeters);
 
