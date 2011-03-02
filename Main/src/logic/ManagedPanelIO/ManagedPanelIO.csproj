@@ -8,8 +8,8 @@
     <ProjectGuid>{A06AD1D0-414A-496D-89AC-8667F1019D75}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CPanelIO</RootNamespace>
-    <AssemblyName>CPanelIO</AssemblyName>
+    <RootNamespace>ManagedPanelIO</RootNamespace>
+    <AssemblyName>ManagedPanelIO</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -62,7 +62,7 @@
     <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CPanel\CPanel.vcxproj">
+    <ProjectReference Include="..\ManagedPanel\ManagedPanel.vcxproj">
       <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
       <Name>CPanel</Name>
     </ProjectReference>

@@ -190,6 +190,9 @@
     <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
       <Project>{84c9e16a-93e3-4105-a3af-0533131eb43d}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\ManagedPanel\ManagedPanel.vcxproj">
+      <Project>{d6409417-3fc6-4ef2-9afc-04cc54cc71cf}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\MosaicDataModel\MosaicDataModel.vcxproj">
       <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
     </ProjectReference>

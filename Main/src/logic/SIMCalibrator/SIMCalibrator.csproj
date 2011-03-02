@@ -65,6 +65,10 @@
       <Project>{D46B74F8-444E-4536-81CC-B08444E7B819}</Project>
       <Name>ManagedPanelAlignment</Name>
     </ProjectReference>
+    <ProjectReference Include="..\ManagedPanel\ManagedPanel.vcxproj">
+      <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
+      <Name>ManagedPanel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SIMMosaicUtils\SIMMosaicUtils.csproj">
       <Project>{8E644621-D1FB-4845-90EE-0D1365AB42EE}</Project>
       <Name>SIMMosaicUtils</Name>
