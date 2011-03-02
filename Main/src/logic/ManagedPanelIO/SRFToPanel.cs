@@ -9,7 +9,7 @@ using CPanel = Cyber.MPanel.CPanel;
 using CRectangle = Cyber.MPanel.CRectangle;
 using CTriangle = Cyber.MPanel.CTriangle;
 
-namespace CPanelIO
+namespace MPanelIO
 {
     public class SRFToPanel
     {

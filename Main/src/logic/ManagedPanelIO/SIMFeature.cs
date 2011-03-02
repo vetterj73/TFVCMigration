@@ -26,7 +26,7 @@ using System.Runtime.Serialization;
 using System.Collections;
 using System.Drawing;
 
-namespace CPanelIO
+namespace MPanelIO
 {
 	////////////////////////////////////////////////////////////////////////
 	/// <summary>

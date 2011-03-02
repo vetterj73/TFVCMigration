@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using Cyber.MPanel;
 
-namespace CPanelIO
+namespace MPanelIO
 {
     public class XmlToPanel
     {

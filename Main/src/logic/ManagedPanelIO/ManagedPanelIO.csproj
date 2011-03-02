@@ -8,7 +8,7 @@
     <ProjectGuid>{A06AD1D0-414A-496D-89AC-8667F1019D75}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ManagedPanelIO</RootNamespace>
+    <RootNamespace>MPanelIO</RootNamespace>
     <AssemblyName>ManagedPanelIO</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
