@@ -93,14 +93,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\logic\CPanelIO\CPanelIO.csproj">
-      <Project>{A06AD1D0-414A-496D-89AC-8667F1019D75}</Project>
-      <Name>CPanelIO</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\logic\CPanel\CPanel.vcxproj">
-      <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
-      <Name>CPanel</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
       <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
       <Name>ManagedMosaicDataModel</Name>

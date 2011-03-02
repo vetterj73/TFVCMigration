@@ -181,9 +181,6 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CPanel\CPanel.vcxproj">
-      <Project>{d6409417-3fc6-4ef2-9afc-04cc54cc71cf}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
       <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
     </ProjectReference>
