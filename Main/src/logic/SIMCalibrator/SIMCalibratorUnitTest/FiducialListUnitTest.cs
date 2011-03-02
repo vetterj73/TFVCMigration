@@ -122,8 +122,8 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
             ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, .93);
+            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
             fidList.Add(info1);
             fidList.Add(info2);
             Assert.IsTrue(fidList.Count == 2);
