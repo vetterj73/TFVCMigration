@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{CD366ABE-A728-49E5-8CF1-83E634AB4504}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SIMCalibrator</RootNamespace>
+    <AssemblyName>SIMCalibrator</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="ImageUtils">
+      <HintPath>..\..\..\CyberCommon\bin\Release\ImageUtils.dll</HintPath>
+    </Reference>
+    <Reference Include="ManagedCoreAPI">
+      <HintPath>..\..\..\SIMCoreAPI\bin\ManagedCoreAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="FiducialList.cs" />
+    <Compile Include="PositionCalibrator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj">
+      <Project>{84C9E16A-93E3-4105-A3AF-0533131EB43D}</Project>
+      <Name>ManagedMosaicDataModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ManagedPanelAlignment\ManagedPanelAlignment.vcxproj">
+      <Project>{D46B74F8-444E-4536-81CC-B08444E7B819}</Project>
+      <Name>ManagedPanelAlignment</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\ManagedPanel\ManagedPanel.vcxproj">
+      <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
+      <Name>ManagedPanel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SIMMosaicUtils\SIMMosaicUtils.csproj">
+      <Project>{8E644621-D1FB-4845-90EE-0D1365AB42EE}</Project>
+      <Name>SIMMosaicUtils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)\$(ProjectName).dll  ..\..\..\..\..\pub\bin\
+copy $(TargetDir)\$(ProjectName).pdb  ..\..\..\..\..\pub\bin\
+</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
