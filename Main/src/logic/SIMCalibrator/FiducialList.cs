@@ -12,7 +12,10 @@ namespace SIMCalibrator
     {
         private List<ManagedFidInfo> _fidList = new List<ManagedFidInfo>();
         public const double cLowestAcceptibleCorrelationScore = .85;
-        public const double cMinimumAcceptibleSpeedDistanceBetweenFids = .009;
+        public const double cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc = .009;
+        public const double cMaximumVelocityRatioStillInTolerance = .01;
+        private const double cYInTolerance = .0005;
+        private const double cXInTolerance = .0005;
 
         /// <summary>
         /// Clear all fids in the list
@@ -65,7 +68,7 @@ namespace SIMCalibrator
         }
 
         /// <summary>
-        /// Get the fid that is farthest away from the leading edge.
+        /// Get the fid that is farthest away from the leading edge of the board
         /// </summary>
         /// <returns></returns>
         public ManagedFidInfo GetFidFarthestFromLeadingEdge()
@@ -120,7 +123,12 @@ namespace SIMCalibrator
             return yOffset;
         }
 
-
+        /// <summary>
+        /// Gets the ratio of the nominal fid positions to actual fid positions
+        /// for the 2 fids that are farthest apart.
+        /// </summary>
+        /// <param name="pixelSize"></param>
+        /// <returns></returns>
         public double GetNominalToActualVelocityRatio(double pixelSize)
         {
             ManagedFidInfo closestFid = GetFidClosestToLeadingEdge();
@@ -130,7 +138,7 @@ namespace SIMCalibrator
                 return 1.0;
 
             // If Fids are not far apart, we can't adjust speed...
-            if (Math.Abs(farthestFid.GetNominalXPosition() - closestFid.GetNominalXPosition()) < cMinimumAcceptibleSpeedDistanceBetweenFids)
+            if (Math.Abs(farthestFid.GetNominalXPosition() - closestFid.GetNominalXPosition()) < cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc)
                 return 1.0;
 
             // We can try to calculate an offset for speed...
@@ -142,6 +150,35 @@ namespace SIMCalibrator
                 (closestFid.GetNominalXPosition() + closestFid.ColumnDifference() * pixelSize);
 
             return nominalDistance / actualDistance;
+        }
+
+        /// <summary>
+        /// Is the velocity ratio in tolerance?
+        /// </summary>
+        /// <param name="ratio"></param>
+        /// <returns></returns>
+        public bool IsVelocityRatioInTolerance(double ratio)
+        {
+            if (Math.Abs(1.0 - ratio) < cMaximumVelocityRatioStillInTolerance)
+                return true;
+
+            return false;
+        }
+
+        public bool IsXInTolerance(double XOffset)
+        {
+            if (Math.Abs(XOffset) < cXInTolerance)
+                return true;
+
+            return false;
+        }
+
+        public bool IsYInTolerance(double YOffset)
+        {
+            if (Math.Abs(YOffset) < cYInTolerance)
+                return true;
+
+            return false;
         }
 
     }

@@ -35,10 +35,7 @@ namespace SIMCalibrator
     /// </summary>
     public class PositionCalibrator
     {
-        private const double cMaximumAcceptibleVelocityOffset = .001;
         private const double cPixelSizeInMeters = 1.70e-5;
-        private const double cYInTolerance = .0005;
-        private const double cXInTolerance = .0005;
 
         private FiducialList _fidList = new FiducialList();
         private CPanel _panel;
@@ -50,6 +47,7 @@ namespace SIMCalibrator
 
         private CalibrationStatus _calibrationStatus = CalibrationStatus.AquisitionFailed;
         private bool _waitingForImages = false;
+        private double _beginningVelocity = 0;
 
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
@@ -139,7 +137,7 @@ namespace SIMCalibrator
         }
 
         /// <summary>
-        /// Currren
+        /// Calculate the calibration results
         /// </summary>
         private void CalculateCalibrationResults()
         {
@@ -158,9 +156,9 @@ namespace SIMCalibrator
 
             if (_fidList.Count > 0)
             {
- //               if (_yOffsetInMeters <= cYInTolerance && _xOffsetInMeters <= cXInTolerance)
-   //                 _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
-     //           else
+                if(IsInTolerance())
+                    _calibrationStatus = CalibrationStatus.CalibrationInTolerance;
+                else
                 {
                     _calibrationStatus = CalibrationStatus.CalibrationNotInTolerance;
                     AdjustCalibrationBasedOnLastAcquisition();                   
@@ -168,6 +166,17 @@ namespace SIMCalibrator
             } 
 
             FireCalibrationComplete(_calibrationStatus);
+        }
+
+        private bool IsInTolerance()
+        {
+            if(_fidList.IsXInTolerance(GetXOffsetInMeters()) &&
+               _fidList.IsYInTolerance(GetYOffsetInMeters())&&
+               _fidList.IsVelocityRatioInTolerance(
+                    _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX())))
+                return true;
+
+            return false;
         }
 
         private void OnLogEntryFromClient(MLOGTYPE logtype, string message)
@@ -183,25 +192,39 @@ namespace SIMCalibrator
         /// </summary>
         private void AdjustCalibrationBasedOnLastAcquisition()
         {
-            // Always Adjust Y...
+            // Always Adjust YOffset...
             _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset(_mosaicSet.GetNominalPixelSizeY());
-            double velocityOffsetInMetersPerSecond = GetVelocityOffsetInMetersPerSecond();
-            if (Math.Abs(velocityOffsetInMetersPerSecond) > cMaximumAcceptibleVelocityOffset)
+
+            // Always update the velocity...
+            _beginningVelocity = _device.ConveyorVelocity;
+            double vRatio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
+            _device.ConveyorVelocity = GetVelocityFromRatio(vRatio);
+            
+            // Update the X if velocity is in tolerance...
+            if (_fidList.IsVelocityRatioInTolerance(vRatio))
             {
-                _device.ConveyorVelocity = _device.ConveyorVelocity + velocityOffsetInMetersPerSecond;
-            }
-            else
-            {
-                // If speed is in tolerance - adjust X
-                _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());               
+                _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());
             }
         }
 
+        /// <summary>
+        /// Resets for a new acquisition
+        /// </summary>
         private void ResetForAcquisition()
         {
             _fidList.Clear();
             _calibrationStatus = CalibrationStatus.AquisitionFailed;
             _waitingForImages = false;
+        }
+
+        /// <summary>
+        /// Gets the difference between the current SIM Setting and what the Calibrator is suggesting
+        /// it should be.  This would be for UI (display) purposes during calibration.
+        /// </summary>
+        /// <returns></returns>
+        public double GetXOffsetInMeters()
+        {
+            return _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());
         }
 
         /// <summary>
@@ -219,9 +242,10 @@ namespace SIMCalibrator
         /// it should be.  This would be for UI (display) purposes during calibration.
         /// </summary>
         /// <returns></returns>
-        public double GetXOffsetInMeters()
+        public double GetVelocityOffsetInMetersPerSecond()
         {
-            return _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeY());
+            double ratio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
+            return GetVelocityFromRatio(ratio);
         }
 
         /// <summary>
@@ -229,12 +253,11 @@ namespace SIMCalibrator
         /// it should be.  This would be for UI (display) purposes during calibration.
         /// </summary>
         /// <returns></returns>
-        public double GetVelocityOffsetInMetersPerSecond()
+        protected double GetVelocityFromRatio(double ratio)
         {
-            double ratio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
-            return _device.ConveyorVelocity - _device.ConveyorVelocity * ratio; 
+            return _beginningVelocity - _beginningVelocity * ratio; 
         }
-
+ 
         /// <summary>
         /// Fires a messages to client that lets them know that calibration is complete
         /// </summary>
@@ -247,13 +270,14 @@ namespace SIMCalibrator
             CalibrationComplete(calStatus);
         }
 
+        /// <summary>
+        /// setup the capture specs based on panel size
+        /// </summary>
+        /// <param name="bSimulating"></param>
         private void SetupCaptureSpecs(bool bSimulating)
         {
             if (!bSimulating)
             {
-                // @todo - talk to hogan about what the number of buffers should be....
-                // Chicken and egg problem with allocation... you don't know how many buffer to use
-                // until you setup capture specs and you can't set up capture specs until you have buffers.
                 int bufferCount = 128;
                 int desiredCount = bufferCount;
                 _device.AllocateFrameBuffers(ref bufferCount);
