@@ -17,20 +17,22 @@ namespace PanelAlignM {
 	{
 		public:
 			ManagedFidInfo(double nominalXPosition, double nominalYPosition,
-				double rowDifference, double columnDifference, double correlationScore)
+				double rowDifference, double columnDifference, double correlationScore, double ambiguityScore)
 			{
 				_nominalXPosition = nominalXPosition;
 				_nominalYPosition = nominalYPosition;
 				_rowDifference = rowDifference;
 				_columnDifference = columnDifference;
 				_correlationScore = correlationScore;			
+				_ambiguityScore = ambiguityScore;			
 			}
 			
 			double GetNominalXPosition(){return _nominalXPosition;};
 			double GetNominalYPosition(){return _nominalYPosition;};
-			double RowDifference(){return _rowDifference;};
-			double ColumnDifference(){return _columnDifference;};
-			double CorrelationScore(){return _correlationScore;};
+			double GetRowDifference(){return _rowDifference;};
+			double GetColumnDifference(){return _columnDifference;};
+			double GetCorrelationScore(){return _correlationScore;};
+			double GetAmbiguityScore(){return _ambiguityScore;};
 
 		protected:
 			double _nominalXPosition;
@@ -38,6 +40,7 @@ namespace PanelAlignM {
 			double _rowDifference;
 			double _columnDifference;
 			double _correlationScore;
+			double _ambiguityScore;
 	};
 
 	///

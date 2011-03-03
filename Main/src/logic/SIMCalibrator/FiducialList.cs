@@ -11,7 +11,8 @@ namespace SIMCalibrator
     public class FiducialList
     {
         private List<ManagedFidInfo> _fidList = new List<ManagedFidInfo>();
-        public const double cLowestAcceptibleCorrelationScore = .85;
+        public const double cLowestAcceptibleCorrelationScore = 0.7;
+        public const double cHighestAcceptibleAmbiguityScore = 0.4;
         public const double cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc = .009;
         public const double cMaximumVelocityRatioStillInTolerance = .01;
         private const double cYInTolerance = .0005;
@@ -32,7 +33,8 @@ namespace SIMCalibrator
         /// <returns></returns>
         public bool Add(ManagedFidInfo fid)
         {
-            if (fid.CorrelationScore() >= cLowestAcceptibleCorrelationScore)
+            if (fid.GetCorrelationScore() >= cLowestAcceptibleCorrelationScore &&
+                fid.GetAmbiguityScore() <= cHighestAcceptibleAmbiguityScore)
             {
                 _fidList.Add(fid);
                 return true;
@@ -98,7 +100,7 @@ namespace SIMCalibrator
             double xOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
-                xOffset += curFid.ColumnDifference() * pixelSize;
+                xOffset += curFid.GetColumnDifference() * pixelSize;
             }
             xOffset /= _fidList.Count;
             return xOffset;
@@ -117,7 +119,7 @@ namespace SIMCalibrator
             double yOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
-                yOffset += curFid.RowDifference() * pixelSize;
+                yOffset += curFid.GetRowDifference() * pixelSize;
             }
             yOffset /= _fidList.Count;
             return yOffset;
@@ -146,8 +148,8 @@ namespace SIMCalibrator
                                      closestFid.GetNominalXPosition();
 
             double actualDistance =
-                (farthestFid.GetNominalXPosition() + farthestFid.ColumnDifference() * pixelSize) -
-                (closestFid.GetNominalXPosition() + closestFid.ColumnDifference() * pixelSize);
+                (farthestFid.GetNominalXPosition() + farthestFid.GetColumnDifference() * pixelSize) -
+                (closestFid.GetNominalXPosition() + closestFid.GetColumnDifference() * pixelSize);
 
             return nominalDistance / actualDistance;
         }

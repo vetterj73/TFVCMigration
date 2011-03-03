@@ -51,7 +51,8 @@ namespace PanelAlignM {
 				fidM = gcnew ManagedFidInfo(fid.GetFiducialXPos(), fid.GetFiducialYPos(), 
 					fid.GetCoarsePair()->GetCorrelationResult().ColOffset, 
 					fid.GetCoarsePair()->GetCorrelationResult().RowOffset, 
-					fid.GetCoarsePair()->GetCorrelationResult().CorrCoeff);
+					fid.GetCoarsePair()->GetCorrelationResult().CorrCoeff,
+					fid.GetCoarsePair()->GetCorrelationResult().AmbigScore);
 				break;
 			}
 			count++;
