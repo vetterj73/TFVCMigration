@@ -106,8 +106,10 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -129,8 +131,10 @@ copy *.h ..\..\..\pub\include</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -148,8 +152,10 @@ copy *.h ..\..\..\pub\include</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Rudd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -170,8 +176,10 @@ copy *.h ..\..\..\pub\include</Command>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Rudd.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
