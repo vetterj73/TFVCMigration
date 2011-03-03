@@ -19,9 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <ProjectGuid>{472145E5-F493-4DD4-AC4B-05AE3189245F}</ProjectGuid>
     <RootNamespace>Panel</RootNamespace>
-    <SccProjectName>$/CyberStitch/Main/src/logic/Panel</SccProjectName>
+    <SccProjectName>$/CyberStitch/Development/DotNet20/src/logic/Panel</SccProjectName>
     <SccAuxPath>http://cybertfs.msp.cyberoptics.com:8080</SccAuxPath>
     <SccLocalPath>.</SccLocalPath>
     <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
@@ -33,22 +34,26 @@
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

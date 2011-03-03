@@ -24,7 +24,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
     <SccProvider>SAK</SccProvider>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <Keyword>ManagedCProj</Keyword>
     <RootNamespace>ManagedCyberStitch</RootNamespace>
     <ProjectName>ManagedMosaicDataModel</ProjectName>

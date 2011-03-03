@@ -19,9 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <ProjectGuid>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</ProjectGuid>
     <RootNamespace>CPanel</RootNamespace>
-    <SccProjectName>$/CyberStitch/Main/src/logic/ManagedPanel</SccProjectName>
+    <SccProjectName>$/CyberStitch/Development/DotNet20/src/logic/ManagedPanel</SccProjectName>
     <SccAuxPath>http://cybertfs.msp.cyberoptics.com:8080</SccAuxPath>
     <SccLocalPath>.</SccLocalPath>
     <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>
