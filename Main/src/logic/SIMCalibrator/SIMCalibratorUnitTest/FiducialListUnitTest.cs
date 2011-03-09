@@ -78,7 +78,7 @@ namespace SIMCalibratorUnitTest
             FiducialList fidList = new FiducialList();
 
             // Testing that correlation scores need to be > .85
-            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .84, .3);
+            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .69, .3);
             fidList.Add(info);
             Assert.IsTrue(fidList.Count == 0);
 
