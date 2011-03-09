@@ -11,8 +11,8 @@ namespace SIMCalibrator
     public class FiducialList
     {
         private List<ManagedFidInfo> _fidList = new List<ManagedFidInfo>();
-        public const double cLowestAcceptibleCorrelationScore = 0.7;
-        public const double cHighestAcceptibleAmbiguityScore = 0.4;
+        public const double cLowestAcceptibleCorrelationScore = 0.75;
+        public const double cHighestAcceptibleAmbiguityScore = 0.55;
         public const double cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc = .009;
         public const double cMaximumVelocityRatioStillInTolerance = .01;
         private const double cYInTolerance = .0005;
@@ -137,7 +137,7 @@ namespace SIMCalibrator
                 return 1.0;
 
             // If Fids are not far apart, we can't adjust speed...
-            if (Math.Abs(farthestFid.GetNominalXPositionInMeters() - closestFid.GetNominalXPositionInMeters()) < cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc)
+            if ((farthestFid.GetNominalXPositionInMeters() - closestFid.GetNominalXPositionInMeters()) < cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc)
                 return 1.0;
 
             // We can try to calculate an offset for speed...

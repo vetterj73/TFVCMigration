@@ -74,7 +74,8 @@ namespace SIMCalibratorTester
 
             _calDoneEvent.WaitOne();
 
-            Output("Processing Complete");
+            Output("Processing Complete - Press any key.");
+            Console.ReadKey();
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
         }
