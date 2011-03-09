@@ -173,7 +173,7 @@ namespace SIMCalibrator
             if(_fidList.IsXInTolerance(GetXOffsetInMeters()) &&
                _fidList.IsYInTolerance(GetYOffsetInMeters())&&
                _fidList.IsVelocityRatioInTolerance(
-                    _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX())))
+                    _fidList.GetNominalToActualVelocityRatio()))
                 return true;
 
             return false;
@@ -193,17 +193,17 @@ namespace SIMCalibrator
         private void AdjustCalibrationBasedOnLastAcquisition()
         {
             // Always Adjust YOffset...
-            _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset(_mosaicSet.GetNominalPixelSizeY());
+            _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset();
 
             // Always update the velocity...
             _beginningVelocity = _device.ConveyorVelocity;
-            double vRatio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
+            double vRatio = _fidList.GetNominalToActualVelocityRatio();
             _device.ConveyorVelocity = _beginningVelocity + GetVelocityOffsetInMetersPerSecond();
             
             // Update the X if velocity is in tolerance...
             if (_fidList.IsVelocityRatioInTolerance(vRatio))
             {
-                _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());
+                _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset();
             }
         }
 
@@ -224,7 +224,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetXOffsetInMeters()
         {
-            return _fidList.GetAverageXOffset(_mosaicSet.GetNominalPixelSizeX());
+            return _fidList.GetAverageXOffset();
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetYOffsetInMeters()
         {
-            return _fidList.GetAverageYOffset(_mosaicSet.GetNominalPixelSizeY());
+            return _fidList.GetAverageYOffset();
         }
 
         /// <summary>
@@ -244,7 +244,7 @@ namespace SIMCalibrator
         /// <returns></returns>
         public double GetVelocityOffsetInMetersPerSecond()
         {
-            double ratio = _fidList.GetNominalToActualVelocityRatio(_mosaicSet.GetNominalPixelSizeX());
+            double ratio = _fidList.GetNominalToActualVelocityRatio();
             return _beginningVelocity - (_beginningVelocity * ratio);
         }
 

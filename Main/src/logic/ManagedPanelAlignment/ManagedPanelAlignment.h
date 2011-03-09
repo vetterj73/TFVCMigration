@@ -16,29 +16,29 @@ namespace PanelAlignM {
 	public ref class ManagedFidInfo
 	{
 		public:
-			ManagedFidInfo(double nominalXPosition, double nominalYPosition,
-				double rowDifference, double columnDifference, double correlationScore, double ambiguityScore)
+			ManagedFidInfo(double nominalXPositionInMeters, double nominalYPositionInMeters,
+				double xOffsetInMeters, double yOffsetInMeters, double correlationScore, double ambiguityScore)
 			{
-				_nominalXPosition = nominalXPosition;
-				_nominalYPosition = nominalYPosition;
-				_rowDifference = rowDifference;
-				_columnDifference = columnDifference;
+				_nominalXPosition = nominalXPositionInMeters;
+				_nominalYPosition = nominalYPositionInMeters;
+				_xOffset = xOffsetInMeters;
+				_yOffset = yOffsetInMeters;
 				_correlationScore = correlationScore;			
 				_ambiguityScore = ambiguityScore;			
 			}
 			
-			double GetNominalXPosition(){return _nominalXPosition;};
-			double GetNominalYPosition(){return _nominalYPosition;};
-			double GetRowDifference(){return _rowDifference;};
-			double GetColumnDifference(){return _columnDifference;};
+			double GetNominalXPositionInMeters(){return _nominalXPosition;};
+			double GetNominalYPositionInMeters(){return _nominalYPosition;};
+			double GetXOffsetInMeters(){return _xOffset;};
+			double GetYOffsetInMeters(){return _yOffset;};
 			double GetCorrelationScore(){return _correlationScore;};
 			double GetAmbiguityScore(){return _ambiguityScore;};
 
 		protected:
 			double _nominalXPosition;
 			double _nominalYPosition;
-			double _rowDifference;
-			double _columnDifference;
+			double _xOffset;
+			double _yOffset;
 			double _correlationScore;
 			double _ambiguityScore;
 	};
@@ -82,6 +82,8 @@ namespace PanelAlignM {
 
 	private:
 		PanelAligner* _pAligner;
+		double _pixelSizeX;
+		double _pixelSizeY;
 
 	};
 }

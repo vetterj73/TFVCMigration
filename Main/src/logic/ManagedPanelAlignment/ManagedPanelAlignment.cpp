@@ -11,7 +11,8 @@ namespace PanelAlignM {
 	ManagedPanelAlignment::ManagedPanelAlignment()
 	{
 		_pAligner = new PanelAligner();
-
+		_pixelSizeX=1.70e-5;
+		_pixelSizeY=1.70e-5;
 		SetLoggableObject((System::IntPtr)(void*)_pAligner->GetLogger());
 	}
 
@@ -49,8 +50,8 @@ namespace PanelAlignM {
 			{
 				FidFovOverlap fid = *ite;		
 				fidM = gcnew ManagedFidInfo(fid.GetFiducialXPos(), fid.GetFiducialYPos(), 
-					fid.GetCoarsePair()->GetCorrelationResult().ColOffset, 
-					fid.GetCoarsePair()->GetCorrelationResult().RowOffset, 
+					fid.GetCoarsePair()->GetCorrelationResult().RowOffset*_pixelSizeX, 
+					fid.GetCoarsePair()->GetCorrelationResult().ColOffset*_pixelSizeY, 
 					fid.GetCoarsePair()->GetCorrelationResult().CorrCoeff,
 					fid.GetCoarsePair()->GetCorrelationResult().AmbigScore);
 				break;
@@ -66,8 +67,9 @@ namespace PanelAlignM {
 		MosaicSet* pMosaicSet = (MosaicSet*)(void*)set->UnmanagedMosaicSet;
 		Panel* pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
 
+		_pixelSizeX = set->GetNominalPixelSizeX();
+		_pixelSizeY = set->GetNominalPixelSizeY();
 		bool bFlag = _pAligner->ChangeProduction(pMosaicSet, pPanel);
-
 		return(bFlag);
 	}
 

@@ -62,7 +62,7 @@ namespace SIMCalibrator
             {
                 if (fid == null)
                     fid = curFid;
-                else if (fid.GetNominalXPosition() > curFid.GetNominalXPosition())
+                else if (fid.GetNominalXPositionInMeters() > curFid.GetNominalXPositionInMeters())
                     fid = curFid;
             }
             
@@ -80,7 +80,7 @@ namespace SIMCalibrator
             {
                 if (fid == null)
                     fid = curFid;
-                else if (fid.GetNominalXPosition() < curFid.GetNominalXPosition())
+                else if (fid.GetNominalXPositionInMeters() < curFid.GetNominalXPositionInMeters())
                     fid = curFid;
             }
             return fid;
@@ -90,9 +90,8 @@ namespace SIMCalibrator
         /// Gets the average X Offset from the list...
         /// NOTE:  This should only be used if the client decides that velocity is in tolerance
         /// </summary>
-        /// <param name="pixelSize"></param>
         /// <returns></returns>
-        public double GetAverageXOffset(double pixelSize)
+        public double GetAverageXOffset()
         {
             if(_fidList.Count == 0)
                 return 0.0;
@@ -100,7 +99,7 @@ namespace SIMCalibrator
             double xOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
-                xOffset += curFid.GetColumnDifference() * pixelSize;
+                xOffset += curFid.GetXOffsetInMeters();
             }
             xOffset /= _fidList.Count;
             return xOffset;
@@ -109,9 +108,8 @@ namespace SIMCalibrator
         /// <summary>
         /// Gets the average Y Offset from the list...
         /// </summary>
-        /// <param name="pixelSize"></param>
         /// <returns></returns>
-        public double GetAverageYOffset(double pixelSize)
+        public double GetAverageYOffset()
         {
             if (_fidList.Count == 0)
                 return 0.0;
@@ -119,7 +117,7 @@ namespace SIMCalibrator
             double yOffset = 0.0;
             foreach (ManagedFidInfo curFid in _fidList)
             {
-                yOffset += curFid.GetRowDifference() * pixelSize;
+                yOffset += curFid.GetYOffsetInMeters();
             }
             yOffset /= _fidList.Count;
             return yOffset;
@@ -129,9 +127,8 @@ namespace SIMCalibrator
         /// Gets the ratio of the nominal fid positions to actual fid positions
         /// for the 2 fids that are farthest apart.
         /// </summary>
-        /// <param name="pixelSize"></param>
         /// <returns></returns>
-        public double GetNominalToActualVelocityRatio(double pixelSize)
+        public double GetNominalToActualVelocityRatio()
         {
             ManagedFidInfo closestFid = GetFidClosestToLeadingEdge();
             ManagedFidInfo farthestFid = GetFidFarthestFromLeadingEdge();
@@ -140,16 +137,16 @@ namespace SIMCalibrator
                 return 1.0;
 
             // If Fids are not far apart, we can't adjust speed...
-            if (Math.Abs(farthestFid.GetNominalXPosition() - closestFid.GetNominalXPosition()) < cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc)
+            if (Math.Abs(farthestFid.GetNominalXPositionInMeters() - closestFid.GetNominalXPositionInMeters()) < cMinimumAcceptibleDistanceBetweenFidsForSpeedCalc)
                 return 1.0;
 
             // We can try to calculate an offset for speed...
-            double nominalDistance = farthestFid.GetNominalXPosition() -
-                                     closestFid.GetNominalXPosition();
+            double nominalDistance = farthestFid.GetNominalXPositionInMeters() -
+                                     closestFid.GetNominalXPositionInMeters();
 
             double actualDistance =
-                (farthestFid.GetNominalXPosition() + farthestFid.GetColumnDifference() * pixelSize) -
-                (closestFid.GetNominalXPosition() + closestFid.GetColumnDifference() * pixelSize);
+                (farthestFid.GetNominalXPositionInMeters() + farthestFid.GetXOffsetInMeters()) -
+                (closestFid.GetNominalXPositionInMeters() + closestFid.GetXOffsetInMeters());
 
             return nominalDistance / actualDistance;
         }
