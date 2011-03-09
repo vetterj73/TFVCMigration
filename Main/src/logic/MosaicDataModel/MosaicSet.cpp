@@ -5,6 +5,7 @@
 #include "MosaicLayer.h"
 #include "CorrelationFlags.h"
 #include "Utilities.h"
+#include "Bitmap.h"
 
 namespace MosaicDM 
 {
@@ -108,6 +109,72 @@ namespace MosaicDM
 	{
 		for(unsigned int i=0; i<_layerList.size(); i++)
 			_layerList[i]->ClearAllImages();
+	}
+
+	bool MosaicSet::SaveAllStitchedImagesToDirectory(string directoryName)
+	{
+		string fullDir = directoryName;
+		if(directoryName[directoryName.size()-1] != '/' &&
+		   directoryName[directoryName.size()-1] != '\\')
+		   fullDir += "\\";
+
+		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
+		{
+			MosaicLayer *pLayer = GetLayer(i);
+			Image *pImage = pLayer->GetStitchedImage();
+			if(pImage == NULL)
+				return false;
+
+			char buffer[20];
+			sprintf(buffer, "layer%d.bmp", i);
+			string file = fullDir + buffer;
+			
+			// Save the image using Bitmap Library...
+			Bitmap *bmp = Bitmap::NewBitmapFromBuffer( 
+				GetObjectWidthInPixels(), 
+				GetObjectLengthInPixels(), 
+				GetObjectLengthInPixels(),
+				pImage->GetBuffer(),
+				8);
+
+			if(bmp == NULL)
+				return false;
+
+			bmp->write(file);
+			delete bmp;
+		}
+
+		return true;
+	}
+
+	bool MosaicSet::LoadAllStitchedImagesFromDirectory(string directoryName)
+	{
+		string fullDir = directoryName;
+		if(directoryName[directoryName.size()-1] != '/' &&
+		   directoryName[directoryName.size()-1] != '\\')
+		   fullDir += "\\";
+
+		// if we are loading from disk, remove all of the existing raw images...
+		ClearAllImages();
+		
+		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
+		{
+			MosaicLayer *pLayer = GetLayer(i);
+
+			char buffer[20];
+			sprintf(buffer, "layer%d.bmp", i);
+			string file = fullDir + buffer;
+			
+			Bitmap bmp;
+			bmp.read(file);
+			if(bmp.width() != GetObjectLengthInPixels() ||
+			   bmp.height() != GetObjectWidthInPixels())
+				return false;
+
+			pLayer->SetStitchedBuffer(bmp.GetBuffer());
+		}
+
+		return true;
 	}
 
 	void MosaicSet::RegisterImageAddedCallback(IMAGEADDED_CALLBACK pCallback, void* pContext)

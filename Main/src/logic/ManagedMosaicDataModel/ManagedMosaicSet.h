@@ -143,6 +143,12 @@ namespace MMosaicDM
 			unsigned int GetImageWidthInPixels(){return _pMosaicSet->GetImageWidthInPixels();}
 			unsigned int GetImageLengthInPixels(){return _pMosaicSet->GetImageHeightInPixels();}
 
+			/// Saves all stitched images to a folder...
+			bool SaveAllStitchedImagesToDirectory(System::String^ directoryName);
+
+			/// Loads all stitched images from a folder...
+			bool LoadAllStitchedImagesFromDirectory(System::String^ dirrectoryName);
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		

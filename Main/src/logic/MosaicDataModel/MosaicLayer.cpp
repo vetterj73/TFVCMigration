@@ -67,6 +67,13 @@ namespace MosaicDM
 		}
 	}
 
+	void MosaicLayer::SetStitchedBuffer(unsigned char *pBuffer)
+	{
+		AllocateStitchedImageIfNecessary();
+		memcpy(_pStitchedImage->GetBuffer(), pBuffer, _pMosaicSet->GetObjectWidthInPixels()*_pMosaicSet->GetObjectLengthInPixels());
+		_stitchedImageValid = true;
+	}
+
 	Image *MosaicLayer::GetStitchedImage()
 	{
 		CreateStitchedImageIfNecessary();
@@ -74,7 +81,6 @@ namespace MosaicDM
 		return _pStitchedImage;
 	}
 
-	// @todo - Need to redo this for each new panel!!!!
 	void MosaicLayer::AllocateStitchedImageIfNecessary()
 	{
 		// Create it once for each panel type...

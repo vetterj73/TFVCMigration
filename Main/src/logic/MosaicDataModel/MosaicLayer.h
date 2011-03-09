@@ -79,6 +79,7 @@ namespace MosaicDM
 			///
 			Image *GetStitchedImage();
 
+			void SetStitchedBuffer(unsigned char *pBuffer);
 			
 		protected:
 			/// Called from MosaicSet when a layer is added.

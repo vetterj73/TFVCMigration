@@ -108,6 +108,12 @@ namespace MosaicDM
 			///
 			void ClearAllImages();
 
+			/// Saves all stitched images to a folder...
+			bool SaveAllStitchedImagesToDirectory(string directoryName);
+
+			/// Loads all stitched images from a folder...
+			bool LoadAllStitchedImagesFromDirectory(string directoryName);
+
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;

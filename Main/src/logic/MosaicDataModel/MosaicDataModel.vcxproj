@@ -92,7 +92,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -110,7 +110,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -127,7 +127,7 @@ copy *.h ..\..\..\pub\include</Command>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -144,7 +144,7 @@ copy *.h ..\..\..\pub\include</Command>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -119,21 +119,16 @@ namespace CyberStitchTester
                 else
                 {
                     _cycleCount++;
+                    if(_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
+                        Output("Could not save mosaic images");
 
-                    // Save the images...
-                    for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
-                    {
-                        ManagedMosaicLayer layer = _mosaicSet.GetLayer(i);
+/*
+                    if(_mosaicSet.LoadAllStitchedImagesFromDirectory("c:\\temp\\") == false)
+                        Output("Could not load mosaic images");
 
-                        IntPtr buffer = layer.GetStitchedBuffer();
-
-                        Cyber.ImageUtils.ImageSaver.SaveToFile
-                        (
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX(), _panel.GetNumPixelsInY(),
-                            buffer, "c:\\temp\\stitchedcyle" + _cycleCount + "_" + i + ".png", PixelFormat.Format8bppIndexed, ImageFormat.Png
-                        );
-                    }
-
+                    if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp2\\") == false)
+                        Output("Could not save mosaic images");
+*/
                    // Save a 3 channel image with CAD data...
                     _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(2).GetStitchedBuffer(),
