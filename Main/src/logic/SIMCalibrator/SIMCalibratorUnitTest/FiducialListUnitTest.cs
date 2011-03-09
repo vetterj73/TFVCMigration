@@ -77,12 +77,13 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            // Testing that correlation scores need to be > .85
-            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .69, .3);
+            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, FiducialList.cLowestAcceptibleCorrelationScore - .1, FiducialList.cHighestAcceptibleAmbiguityScore);
+            fidList.Add(info);
+            info = new ManagedFidInfo(.001, .001, 10.0, 10.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore+.01);
             fidList.Add(info);
             Assert.IsTrue(fidList.Count == 0);
 
-            info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .85, .3);
+            info = new ManagedFidInfo(.001, .001, 10.0, 10.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore);
             fidList.Add(info);
             Assert.IsTrue(fidList.Count == 1);
 
@@ -99,8 +100,8 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86, .3);
-            ManagedFidInfo info2 = new ManagedFidInfo(.009, .001, 100.0, 100.0, .93, .3);
+            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore);
+            ManagedFidInfo info2 = new ManagedFidInfo(.009, .001, 100.0, 100.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore);
             fidList.Add(info1);
             fidList.Add(info2);
             Assert.IsTrue(fidList.Count == 2);
@@ -121,8 +122,8 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, .93, .2);
-            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86, .2);
+            ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore);
+            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, FiducialList.cLowestAcceptibleCorrelationScore, FiducialList.cHighestAcceptibleAmbiguityScore);
             fidList.Add(info1);
             fidList.Add(info2);
             Assert.IsTrue(fidList.Count == 2);
