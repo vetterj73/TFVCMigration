@@ -11,7 +11,6 @@ namespace SIMCalibratorUnitTest
     [TestClass]
     public class FiducialListUnitTest
     {
-        private const double cPixelSizeInMeters = 1.70e-5;
 
         private TestContext testContextInstance;
 
@@ -58,9 +57,9 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
             Assert.IsTrue(fidList.Count == 0);
-            Assert.IsTrue(fidList.GetAverageXOffset(cPixelSizeInMeters) == 0.0);
-            Assert.IsTrue(fidList.GetAverageYOffset(cPixelSizeInMeters) == 0.0);
-            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio(cPixelSizeInMeters) == 1.0);
+            Assert.IsTrue(fidList.GetAverageXOffset() == 0.0);
+            Assert.IsTrue(fidList.GetAverageYOffset() == 0.0);
+            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio() == 1.0);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() == null);
             Assert.IsTrue(fidList.GetFidFarthestFromLeadingEdge() == null);
             
@@ -79,17 +78,17 @@ namespace SIMCalibratorUnitTest
             FiducialList fidList = new FiducialList();
 
             // Testing that correlation scores need to be > .85
-            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .84);
+            ManagedFidInfo info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .84, .3);
             fidList.Add(info);
             Assert.IsTrue(fidList.Count == 0);
 
-            info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .85);
+            info = new ManagedFidInfo(.001, .001, 10.0, 10.0, .85, .3);
             fidList.Add(info);
             Assert.IsTrue(fidList.Count == 1);
 
-            Assert.IsTrue(fidList.GetAverageXOffset(cPixelSizeInMeters) == info.ColumnDifference() * cPixelSizeInMeters);
-            Assert.IsTrue(fidList.GetAverageYOffset(cPixelSizeInMeters) == info.RowDifference() * cPixelSizeInMeters);
-            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio(cPixelSizeInMeters) == 1.0);
+            Assert.IsTrue(fidList.GetAverageXOffset() == info.GetXOffsetInMeters());
+            Assert.IsTrue(fidList.GetAverageYOffset() == info.GetYOffsetInMeters());
+            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio() == 1.0);
             Assert.IsTrue(fidList.GetFidFarthestFromLeadingEdge() != null);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() != null);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() == fidList.GetFidFarthestFromLeadingEdge());
@@ -100,21 +99,21 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
-            ManagedFidInfo info2 = new ManagedFidInfo(.009, .001, 100.0, 100.0, .93);
+            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86, .3);
+            ManagedFidInfo info2 = new ManagedFidInfo(.009, .001, 100.0, 100.0, .93, .3);
             fidList.Add(info1);
             fidList.Add(info2);
             Assert.IsTrue(fidList.Count == 2);
 
-            Assert.IsTrue(fidList.GetAverageXOffset(cPixelSizeInMeters) == info2.ColumnDifference() * cPixelSizeInMeters / 2.0);
-            Assert.IsTrue(fidList.GetAverageYOffset(cPixelSizeInMeters) == info2.RowDifference() * cPixelSizeInMeters / 2.0);
+            Assert.IsTrue(fidList.GetAverageXOffset() == info2.GetXOffsetInMeters()/ 2.0);
+            Assert.IsTrue(fidList.GetAverageYOffset() == info2.GetYOffsetInMeters()/2.0);
 
             // This is an indication that speed will not be calculated.
-            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio(cPixelSizeInMeters) == 1.0);
+            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio() == 1.0);
             Assert.IsTrue(fidList.GetFidFarthestFromLeadingEdge() != null);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() != null);
-            Assert.IsTrue(fidList.GetFidClosestToLeadingEdge().GetNominalXPosition() < 
-                fidList.GetFidFarthestFromLeadingEdge().GetNominalXPosition());
+            Assert.IsTrue(fidList.GetFidClosestToLeadingEdge().GetNominalXPositionInMeters() <
+                fidList.GetFidFarthestFromLeadingEdge().GetNominalXPositionInMeters());
         }
 
         [TestMethod]
@@ -122,20 +121,18 @@ namespace SIMCalibratorUnitTest
         {
             FiducialList fidList = new FiducialList();
 
-            ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, .93);
-            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86);
+            ManagedFidInfo info2 = new ManagedFidInfo(.011, .001, 100.0, 100.0, .93, .2);
+            ManagedFidInfo info1 = new ManagedFidInfo(.001, .001, 0.0, 0.0, .86, .2);
             fidList.Add(info1);
             fidList.Add(info2);
             Assert.IsTrue(fidList.Count == 2);
-            Assert.IsTrue(fidList.GetAverageXOffset(cPixelSizeInMeters) == info2.ColumnDifference() * cPixelSizeInMeters / 2.0);
-            Assert.IsTrue(fidList.GetAverageYOffset(cPixelSizeInMeters) == info2.RowDifference() * cPixelSizeInMeters / 2.0);
-
+ 
             // This is an indication that speed will be calculated.
-            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio(cPixelSizeInMeters) != 1.0);
+            Assert.IsTrue(fidList.GetNominalToActualVelocityRatio() != 1.0);
             Assert.IsTrue(fidList.GetFidFarthestFromLeadingEdge() != null);
             Assert.IsTrue(fidList.GetFidClosestToLeadingEdge() != null);
-            Assert.IsTrue(fidList.GetFidClosestToLeadingEdge().GetNominalXPosition() <
-                fidList.GetFidFarthestFromLeadingEdge().GetNominalXPosition());
+            Assert.IsTrue(fidList.GetFidClosestToLeadingEdge().GetNominalXPositionInMeters() <
+                fidList.GetFidFarthestFromLeadingEdge().GetNominalXPositionInMeters());
         }
     }
 }
