@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+	<Product Id="3d23f9b9-d9e0-447c-b97b-e4d1d2f11a9a" Name="SIMCalibrator" Language="1033" Version="1.0.0.0" Manufacturer="CyberOptics" UpgradeCode="6ec83630-c6d7-4da8-916b-08c2f4e6f2d8">
+		<Package InstallerVersion="200" Compressed="yes" Platform="x64" />
+
+		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFiles64Folder' Name='PFiles'>
+        <Directory Id='CyberOptics' Name='CyberOptics'>
+          <Directory Id='INSTALLDIR' Name='SIMCalibrator'>
+
+            <Component Id='MainExecutable' Guid='{B1633FA9-B33C-4F9E-B9DE-DF0632C68AE5}'>
+              <File Id='SIMCalibratorTester' Name='SIMCalibratorTester.exe' DiskId='1' Source='..\bin\release\SIMCalibratorTester.exe' KeyPath='yes'>
+   <!-- Uncomment for shortcut... <Shortcut Id="startmenuSIMCal" Directory="ProgramMenuDir" Name="SimCalibrator" WorkingDirectory='INSTALLDIR' Advertise="yes" />
+       -->    </File>
+            </Component>
+
+            <Component Id='CyberCommonDiagnosticsDLL' Guid='{529A4437-2927-4D83-A77D-113949108EB5}'>
+              <File Id='DiagnosticUtils' Name='DiagnosticUtils.dll' Source='..\..\..\..\CyberCommon\bin\Release\DiagnosticUtils.dll'></File>
+            </Component>
+
+            <Component Id='CyberCommonImageUtilsDLL' Guid='{311485BC-F494-4F73-ABBC-2A55FFDD4C66}'>
+              <File Id='ImageUtils' Name='ImageUtils.dll' Source='..\..\..\..\CyberCommon\bin\Release\ImageUtils.dll'></File>
+            </Component>
+
+            <Component Id='CyberCommonIOUtilsDLL' Guid='{E8CCDD80-2488-454F-B28D-D36ECD5C3FAC}'>
+              <File Id='IOUtils' Name='IOUtils.dll' Source='..\..\..\..\CyberCommon\bin\Release\IOUtils.dll'></File>
+            </Component>
+
+            <Component Id='ManagedSIMCoreAPIDLL' Guid='{EF3376EA-576B-4A49-BC8E-7A0BA73A267C}'>
+              <File Id='SIMCoreAPI' Name='ManagedCoreAPI.dll' Source='..\..\..\..\SIMCoreAPI\bin\x64\ManagedCoreAPI.dll'></File>
+            </Component>
+
+            <Component Id='SIMCalibratorDLL' Guid='{3249FCA7-D472-4741-B95B-28F708681474}'>
+              <File Id='SIMCalibrator' Name='SIMCalibrator.dll' Source='..\..\..\..\src\logic\SimCalibrator\bin\Release\SIMCalibrator.dll'></File>
+            </Component>
+
+            <Component Id='ManagedPanelDLL' Guid='{8C97486A-961B-43CB-A895-B1D84C1722B6}'>
+              <File Id='ManagedPanel' Name='ManagedPanel.dll' Source='..\..\..\..\pub\bin\x64\Release\ManagedPanel.dll'></File>
+            </Component>
+
+            <Component Id='ManagedPanelIODLL' Guid='{314DB65C-D605-49B8-B85A-26D342592333}'>
+              <File Id='ManagedPanelIO' Name='ManagedPanelIO.dll' Source='..\..\..\..\pub\bin\ManagedPanelIO.dll'></File>
+            </Component>
+
+            <Component Id='SIMMosaicUtilsDLL' Guid='{2C288F9E-CF3E-4929-BFCC-166109D8992B}'>
+              <File Id='SIMMosaicUtils' Name='SIMMosaicUtils.dll' Source='..\..\..\..\pub\bin\SIMMosaicUtils.dll'></File>
+            </Component>
+
+            <Component Id='SRFDLL' Guid='{CF0A2227-5477-4C2A-A4A9-635AA714DAE0}'>
+              <File Id='SRF' Name='SRF.dll' Source='..\..\..\..\pub\bin\SRF.dll'></File>
+            </Component>
+
+            <Component Id='ManagedPanelAlignmentDLL' Guid='{C5D0241C-C76F-4632-BA97-47B05F6227C7}'>
+              <File Id='ManagedPanelAlignmentDLL' Name='ManagedPanelAlignment.dll' Source='..\..\..\..\pub\bin\x64\Release\ManagedPanelAlignment.dll'></File>
+            </Component>
+
+            <Component Id='ManagedMosaicDataModelDLL' Guid='{EE516C18-3607-400B-B3F3-F65F8E9AC7E7}'>
+              <File Id='ManagedMosaicDataModel' Name='ManagedMosaicDataModel.dll' Source='..\..\..\..\pub\bin\x64\Release\ManagedMosaicDataModel.dll'></File>
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+      <!--
+      <Directory Id="ProgramMenuFolder" Name="Programs">
+        <Directory Id="ProgramMenuDir" Name="CyberOptics">
+          <Component Id="ProgramMenuDir" Guid="{2CB3354C-86DC-4A01-AFB5-8EBB9DD71AF8}">
+            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+            <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+-->
+      <Directory Id="DesktopFolder" Name="Desktop" />
+    </Directory>
+
+
+    <Feature Id='Complete' Title='SIMCalibrator' Description='The complete package.'
+      Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR'>
+      <Feature Id='MainProgram' Title='Program' Description='The main executable.' Level='1'>
+        <ComponentRef Id='MainExecutable' />
+<!--        <ComponentRef Id='ProgramMenuDir' />-->
+        <ComponentRef Id='CyberCommonDiagnosticsDLL' />
+        <ComponentRef Id='CyberCommonImageUtilsDLL' />
+        <ComponentRef Id='CyberCommonIOUtilsDLL' />
+        <ComponentRef Id='ManagedSIMCoreAPIDLL' />
+        <ComponentRef Id='SIMCalibratorDLL' />
+        <ComponentRef Id='ManagedPanelDLL' />
+        <ComponentRef Id='ManagedPanelIODLL' />
+        <ComponentRef Id='SIMMosaicUtilsDLL' />
+        <ComponentRef Id='SRFDLL' />
+        <ComponentRef Id='ManagedPanelAlignmentDLL' />
+        <ComponentRef Id='ManagedMosaicDataModelDLL' />
+      </Feature>
+    </Feature>
+<!--  UNCOMMENT THIS FOR A MINIMAL UI (Instead of none).
+    <WixVariable Id="WixUILicenseRtf" Value="..\..\..\..\license3.rtf" />
+
+    <UI Id="MyWixUI_Minimal">
+      <UIRef Id="WixUI_Minimal" />
+    </UI>
+-->
+  </Product>
+</Wix>
