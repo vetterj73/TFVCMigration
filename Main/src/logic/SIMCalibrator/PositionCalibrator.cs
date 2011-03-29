@@ -36,7 +36,7 @@ namespace SIMCalibrator
     public class PositionCalibrator
     {
         private const double cPixelSizeInMeters = 1.70e-5;
-
+        public LoggingDelegate LogEvent;
         private FiducialList _fidList = new FiducialList();
         private CPanel _panel;
         private ManagedSIMDevice _device;
@@ -64,8 +64,9 @@ namespace SIMCalibrator
         /// <param name="bSimulating"></param>
         /// <param name="fiducialSearchSizeXInMeters"></param>
         /// <param name="fiducialSearchSizeYInMeters"></param>
+        /// <param name="loggingOn"></param>
         public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
-            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters)
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
@@ -82,11 +83,11 @@ namespace SIMCalibrator
             SetupCaptureSpecs(bSimulating);
 
             // Sets up the mosaic from the device...
-            SetupMosaic();
+            SetupMosaic(loggingOn);
 
             _panelAligner = new ManagedPanelAlignment();
-            _panelAligner.OnLogEntry += OnLogEntryFromClient;
-            _panelAligner.SetAllLogTypes(true);
+            _panelAligner.OnLogEntry += OnLogEntryFromAligner;
+            _panelAligner.SetAllLogTypes(loggingOn);
             _panelAligner.NumThreads(8);
             _panelAligner.FiducialSearchExpansionXInMeters(fiducialSearchSizeXInMeters); // 8 mm in X
             _panelAligner.FiducialSearchExpansionYInMeters(fiducialSearchSizeYInMeters); // 8 mm in Y
@@ -179,9 +180,20 @@ namespace SIMCalibrator
             return false;
         }
 
-        private void OnLogEntryFromClient(MLOGTYPE logtype, string message)
+        private void OnLogEntryFromAligner(MLOGTYPE logtype, string message)
         {
-            Console.WriteLine(logtype + ": " + message);
+            if (LogEvent == null)
+                return;
+
+            LogEvent(logtype, message);
+        }
+
+        private void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
+        {
+            if (LogEvent == null)
+                return;
+
+            LogEvent(logtype, message);
         }
 
         /// <summary>
@@ -292,12 +304,14 @@ namespace SIMCalibrator
             }
         }
 
-        private void SetupMosaic()
+        private void SetupMosaic(bool loggingOn)
         {
             ManagedSIMCamera cam = _device.GetSIMCamera(0);
             _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters);
             SimMosaicTranslator.AddDeviceToMosaic(_device, _mosaicSet);
             SimMosaicTranslator.SetCorrelationFlagsFIDOnly(_mosaicSet);
+            _mosaicSet.SetAllLogTypes(loggingOn);
+            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
         }
 
         private void AcquisitionDone(int device, int status, int count)
