@@ -91,7 +91,7 @@ namespace SIMCalibratorTester
 
             _positionCalibrator.LogEvent += OnLogEntryFromClient;
 
-            Output("SIM SETTINGS PRIOR TO CALIBRATION");
+            Output("SIM SETTINGS BEFORE CALIBRATION");
             OutputSIMCalibrationSettings(deviceIndex);
 
             _positionCalibrator.CalibrationComplete += CalibrationComplete;
