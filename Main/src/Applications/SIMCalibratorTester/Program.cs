@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using MPanelIO;
 using Cyber.DiagnosticUtils;
@@ -59,6 +60,7 @@ namespace SIMCalibratorTester
 
             // Start the logger
             logger.Start("Logger", @"c:\\", "SimCalibratorTester.log", true, -1);
+            Output("SIMAPICalibratorTester Version:" + Assembly.GetExecutingAssembly().GetName().Version);
 
             // Setup the panel based on panel file
             if (!ChangeProductionFile(panelFile))

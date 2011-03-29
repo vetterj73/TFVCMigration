@@ -76,6 +76,10 @@
     <Reference Include="ImageUtils">
       <HintPath>..\..\..\CyberCommon\bin\Release\ImageUtils.dll</HintPath>
     </Reference>
+    <Reference Include="IOUtils, Version=1.0.42.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\CyberCommon\bin\Release\IOUtils.dll</HintPath>
+    </Reference>
     <Reference Include="ManagedCoreAPI">
       <HintPath>..\..\..\SIMCoreAPI\bin\x64\ManagedCoreAPI.dll</HintPath>
     </Reference>
