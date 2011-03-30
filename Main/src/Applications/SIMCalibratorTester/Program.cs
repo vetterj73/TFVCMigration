@@ -108,7 +108,7 @@ namespace SIMCalibratorTester
 
             if (WaitForKeyboardInput)
             {
-                Output("Press any key to terminate the program.");
+                Console.WriteLine("Press any key to terminate the program.");
                 Console.ReadKey();
             }
 

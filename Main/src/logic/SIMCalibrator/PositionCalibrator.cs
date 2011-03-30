@@ -152,7 +152,15 @@ namespace SIMCalibrator
                 if (fidM == null)
                     throw new ApplicationException("Invalid Fid at position " + i);
 
-                _fidList.Add(fidM);
+                bool fidAdded = _fidList.Add(fidM);
+
+                string msg =
+                    string.Format(
+                        "Attempted To Add Fiducial: X:{0}, Y:{1}, XOffset:{2}, YOffset:{3}, CorScore:{4}, AmbigScore:{5}, Success:{6}",
+                        fidM.GetNominalXPositionInMeters(), fidM.GetNominalYPositionInMeters(),
+                        fidM.GetXOffsetInMeters(), fidM.GetXOffsetInMeters(),
+                        fidM.GetCorrelationScore(), fidM.GetAmbiguityScore(), fidAdded);
+                FireLogEvent(MLOGTYPE.LogTypeDiagnostic, msg);
             }
 
             if (_fidList.Count > 0)
@@ -182,13 +190,15 @@ namespace SIMCalibrator
 
         private void OnLogEntryFromAligner(MLOGTYPE logtype, string message)
         {
-            if (LogEvent == null)
-                return;
-
-            LogEvent(logtype, message);
+            FireLogEvent(logtype, "(From Aligner): " + message);
         }
 
         private void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
+        {
+            FireLogEvent(logtype, "(From Mosaic): " + message);
+        }
+
+        private void FireLogEvent(MLOGTYPE logtype, string message)
         {
             if (LogEvent == null)
                 return;
