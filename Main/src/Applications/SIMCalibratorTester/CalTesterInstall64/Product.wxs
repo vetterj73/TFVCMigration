@@ -3,6 +3,7 @@
 	<Product Id="3d23f9b9-d9e0-447c-b97b-e4d1d2f11a9a" Name="SIMCalibrator" Language="1033" Version="1.0.0.0" Manufacturer="CyberOptics" UpgradeCode="6ec83630-c6d7-4da8-916b-08c2f4e6f2d8">
 		<Package InstallerVersion="200" Compressed="yes" Platform="x64" />
 
+    
 		<Media Id="1" Cabinet="media1.cab" EmbedCab="yes" />
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
