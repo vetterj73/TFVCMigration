@@ -9,7 +9,7 @@ using MMosaicDM;
 using PanelAlignM;
 using SIMMosaicUtils;
 
-namespace SIMCalibrator
+namespace SIMCalibrator 
 {
     /// <summary>
     /// When the client starts a calibration acquisition, there are 4 possible outcomes:
@@ -33,7 +33,7 @@ namespace SIMCalibrator
     /// results).
     /// XOffset, YOffset and Conveyor Speed are calibrated with this class.
     /// </summary>
-    public class PositionCalibrator
+    public class PositionCalibrator : IDisposable
     {
         private const double cPixelSizeInMeters = 1.70e-5;
         public LoggingDelegate LogEvent;
@@ -128,9 +128,10 @@ namespace SIMCalibrator
                 return;
 
             _panelAligner.ResetForNextPanel();
-
             ResetForAcquisition();
 
+            // Force this to happen prior to acsync start acquisition...
+            _device.UpdatePanelIlluminationCompensation();
             _waitingForImages = false;
             _doneEvent.Reset();
             if (_device.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
@@ -361,6 +362,17 @@ namespace SIMCalibrator
                 stitcher.AddTile(_mosaicSet.GetLayer(_layerIndex).GetTile((uint) i, 0).GetImageBuffer(), i, 0);
 
             return stitcher.CurrentBitmap;
+        }
+
+        public void Dispose()
+        {
+            if (_panelAligner == null)
+                return;
+
+            _panelAligner.Dispose();
+
+            ManagedSIMDevice.OnFrameDone -= FrameDone;
+            ManagedSIMDevice.OnAcquisitionDone -= AcquisitionDone;       
         }
     }
 }
