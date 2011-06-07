@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Threading;
 using MPanelIO;
@@ -40,8 +39,11 @@ namespace CyberStitchTester
             string simulationFile = "";
             string panelFile="";
             bool bContinuous = false;
+            bool bOwnBuffers = false;
             for(int i=0; i<args.Length; i++)
             {
+                if (args[i] == "-b")
+                    bOwnBuffers = true;
                 if (args[i] == "-c")
                     bContinuous = true;
                 if (args[i] == "-s" && i < args.Length - 1)
@@ -67,7 +69,7 @@ namespace CyberStitchTester
             }
             
             // Set up mosaic set
-            SetupMosaic();
+            SetupMosaic(bOwnBuffers);
 
             // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
@@ -101,7 +103,7 @@ namespace CyberStitchTester
 
                 _aligner.ResetForNextPanel();
                
-       //         _mosaicSet.ClearAllImages();
+                _mosaicSet.ClearAllImages();
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -200,6 +202,13 @@ namespace CyberStitchTester
                     int desiredCount = bufferCount;
                     d.AllocateFrameBuffers(ref bufferCount);
 
+                    if(desiredCount != bufferCount)
+                    {
+                        Output("Could not allocate all buffers!  Desired = " + desiredCount + " Actual = " + bufferCount);
+                        logger.Kill();
+                        return false;
+                    }
+
                     ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                     if (cs1 == null)
                     {
@@ -249,7 +258,7 @@ namespace CyberStitchTester
         /// <summary>
         /// Given a SIM setup and a mosaic for stitching, setup the stich...
         /// </summary>
-        private static void SetupMosaic()
+        private static void SetupMosaic(bool bOwnBuffers)
         {
             if (ManagedCoreAPI.NumberOfDevices() <= 0)
             {
@@ -258,7 +267,7 @@ namespace CyberStitchTester
             }
             _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, true);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
-            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, bOwnBuffers);
 
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet);
         }
