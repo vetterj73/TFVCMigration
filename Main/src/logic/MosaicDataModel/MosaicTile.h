@@ -27,7 +27,7 @@ namespace MosaicDM
 			///
 			///	returns true is this mosaic contains an image.
 			///
-			bool ContainsImage(){return GetBuffer() != NULL;}
+			bool ContainsImage(){return (GetBuffer() != NULL) && (_containsImage==true);}
 
 			///
 			///	Called by the MosaicLayer class.
@@ -44,19 +44,14 @@ namespace MosaicDM
 		protected:
 			void ClearImageBuffer()
 			{
+				_containsImage = false;
 				SetBuffer(NULL);
 			}
 
-			bool SetImageBuffer(unsigned char* pImageBuffer)
-			{
-				if(GetBuffer() != NULL)
-					return false;
-
-				SetBuffer(pImageBuffer);
-				return true;
-			};
+			bool SetImageBuffer(unsigned char* pImageBuffer);
 
 		private:
 			MosaicLayer *_pMosaicLayer;
+			bool _containsImage;
 	};
 }

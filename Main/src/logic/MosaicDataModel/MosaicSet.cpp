@@ -15,7 +15,8 @@ namespace MosaicDM
 					  unsigned int imageHeightInPixels,
 					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
-					  double nominalPixelSizeYInMeters)
+					  double nominalPixelSizeYInMeters,
+					  bool ownBuffers)
 	{
 		_objectWidthInMeters = objectWidthInMeters;
 		_objectLengthInMeters = objectLengthInMeters;
@@ -26,6 +27,7 @@ namespace MosaicDM
 		_pixelSizeY = nominalPixelSizeYInMeters;
 		_registeredImageAddedCallback = NULL;
 		_pCallbackContext = NULL;
+		_ownBuffers = ownBuffers;
 	}
 
 	MosaicSet::~MosaicSet()

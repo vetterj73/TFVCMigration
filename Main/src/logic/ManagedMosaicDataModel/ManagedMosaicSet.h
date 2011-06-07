@@ -40,7 +40,8 @@ namespace MMosaicDM
 					  unsigned int imageHeightInPixels,
 					  unsigned int imageStrideInPixels,
 					  double pixelSizeXInMeters,
-					  double pixelSizeYInMeters)
+					  double pixelSizeYInMeters,
+					  bool ownBuffers)
 			{
 				_pMosaicSet = new MosaicDM::MosaicSet(
 						objectWidthInMeters,
@@ -49,7 +50,8 @@ namespace MMosaicDM
 						imageHeightInPixels,
 						imageStrideInPixels,
 						pixelSizeXInMeters,
-						pixelSizeYInMeters
+						pixelSizeYInMeters,
+						ownBuffers
 					);
 
 				// This sets up the Logging interface from unmanaged...

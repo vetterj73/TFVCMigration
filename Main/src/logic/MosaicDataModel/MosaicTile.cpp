@@ -8,6 +8,7 @@ namespace MosaicDM
 	MosaicTile::MosaicTile()
 	{
 		_pMosaicLayer = NULL;
+		_containsImage = false;
 	}
 
 	MosaicTile::~MosaicTile(void)
@@ -33,6 +34,21 @@ namespace MosaicDM
 			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
-			inputTransform, inputTransform, false, NULL);
+			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->GetOwnBuffers(), NULL);
 	}
+
+	bool MosaicTile::SetImageBuffer(unsigned char* pImageBuffer)
+	{
+		if(_pMosaicLayer->GetMosaicSet()->GetOwnBuffers())
+		{
+			memcpy(GetBuffer(), pImageBuffer, BufferSizeInBytes());	
+		} else
+		{
+			SetBuffer(pImageBuffer);
+		}
+
+		_containsImage = true;
+		return true;
+	}
+
 }

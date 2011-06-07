@@ -44,7 +44,8 @@ namespace MosaicDM
 					  unsigned int imageHeightInPixels,
 					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
-					  double nominalPixelSizeYInMeters);
+					  double nominalPixelSizeYInMeters,
+					  bool ownBuffers);
 
 			///
 			///	Destructor
@@ -87,6 +88,7 @@ namespace MosaicDM
 			double GetObjectLengthInMeters(){return _objectLengthInMeters;};
 			unsigned int GetObjectWidthInPixels();
 			unsigned int GetObjectLengthInPixels();
+			bool GetOwnBuffers(){return _ownBuffers;}
 
 			///
 			///	Get the correlation flags associated with the certain layers
@@ -127,5 +129,6 @@ namespace MosaicDM
 			void * _pCallbackContext;
 			void FireImageAdded(unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 			CorrelationFlagsMap _correlationFlagsMap;
+			bool _ownBuffers;
 	};
 }

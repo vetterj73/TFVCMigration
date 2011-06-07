@@ -101,7 +101,7 @@ namespace CyberStitchTester
 
                 _aligner.ResetForNextPanel();
                
-                _mosaicSet.ClearAllImages();
+       //         _mosaicSet.ClearAllImages();
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -256,7 +256,7 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, true);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
 
