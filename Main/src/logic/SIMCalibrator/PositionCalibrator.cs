@@ -318,7 +318,7 @@ namespace SIMCalibrator
         private void SetupMosaic(bool loggingOn)
         {
             ManagedSIMCamera cam = _device.GetSIMCamera(0);
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters, false);
             SimMosaicTranslator.AddDeviceToMosaic(_device, _mosaicSet);
             SimMosaicTranslator.SetCorrelationFlagsFIDOnly(_mosaicSet);
             _mosaicSet.SetAllLogTypes(loggingOn);

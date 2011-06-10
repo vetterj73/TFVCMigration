@@ -53,7 +53,7 @@ namespace ManagedCyberStitchUnitTest
         public void TestCalFlags()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet
-                (.2, .25, 2592, 1944, 2592, .000017, .000017);
+                (.2, .25, 2592, 1944, 2592, .000017, .000017, false);
 
             Assert.IsTrue(mSet.GetCorrelationSet(0, 0) == null);
             Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
@@ -99,7 +99,7 @@ namespace ManagedCyberStitchUnitTest
         public void BasicMosaicSetTest()
         {
             ManagedMosaicSet mSet = new ManagedMosaicSet
-                (.2, .25, 2592, 1944, 2592, .000017, .000017);
+                (.2, .25, 2592, 1944, 2592, .000017, .000017, false);
             Assert.IsTrue(mSet.GetLayer(0) == null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
             mSet.AddLayer(3, 4, false, true);
