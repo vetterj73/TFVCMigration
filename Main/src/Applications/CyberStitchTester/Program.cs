@@ -265,9 +265,9 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, true);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
-            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, bOwnBuffers);
+            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
 
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet);
         }
