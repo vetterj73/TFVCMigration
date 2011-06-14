@@ -102,7 +102,7 @@ protected:
 	unsigned int		_rows;
 	unsigned int		_columns;
 	unsigned int		_pixelRowStride;
-	unsigned int				_bytesPerPixel;
+	unsigned int		_bytesPerPixel;
 
 	bool				_IOwnMyOwnBuffer;	// Whether image class create and maintain image buffer 
 	unsigned char*		_buffer;			// Image buffer

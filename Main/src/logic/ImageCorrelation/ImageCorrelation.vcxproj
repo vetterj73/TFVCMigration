@@ -101,7 +101,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper;..\CyberNgc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,7 +147,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\ImageDefines;..\VsNgcWrapper;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper;..\CyberNgc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -180,6 +180,9 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="VsFinderCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CyberNgc\CyberNgc.vcxproj">
+      <Project>{b3929c54-7f1e-406d-b58e-6cfed2deebf7}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
     </ProjectReference>

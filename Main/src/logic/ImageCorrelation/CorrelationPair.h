@@ -112,6 +112,7 @@ public:
 protected:
 	bool SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced);
 	bool NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced);
+	int MaskedNgc(UIRect tempRoi, UIRect searchRoi);
 
 private:
 	Image* _pImg1;

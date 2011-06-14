@@ -1,7 +1,8 @@
 #include "CorrelationPair.h"
 
 #include "regoff.h"
-#include "VsNgcWrapper.h"
+//#include "VsNgcWrapper.h"
+#include "Ngc.h"
 #include "Logger.h"
 #include "CorrelationParameters.h"
 #include "Utilities.h"
@@ -429,7 +430,30 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 		}
 	}
 
-	// Ngc input parameter
+	UIRect tempRect;
+	tempRect.FirstColumn = iFirstCol1 + _iColSearchExpansion;
+	tempRect.LastColumn = iLastCol1 - _iColSearchExpansion;
+	tempRect.FirstRow = iFirstRow1 + _iRowSearchExpansion;
+	tempRect.LastRow = iLastRow1 - _iRowSearchExpansion;
+
+	if(!tempRect.IsValid() || 
+		tempRect.Columns() < CorrelationParametersInst.iCorrPairMinRoiSize ||
+		tempRect.Rows() < CorrelationParametersInst.iCorrPairMinRoiSize)
+		return(false);
+
+	UIRect searchRect;
+	searchRect.FirstColumn = iFirstCol2;
+	searchRect.LastColumn = iLastCol2;
+	searchRect.FirstRow = iFirstRow2;
+	searchRect.LastColumn = iLastRow2;
+
+	int iFlag = MaskedNgc(tempRect, searchRect);
+	if(iFlag>0)
+		return(true);
+	else
+		return(false);
+
+	/*/ Ngc input parameter
 	NgcParams params;
 	params.pcTemplateBuf	= _pImg1->GetBuffer();
 	params.iTemplateImWidth = _pImg1->Columns();
@@ -457,14 +481,112 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 	VsNgcWrapper ngc;
 	bool bFlag = ngc.Align(params, &results);
 
-	/** Check this **/
 	// Create result
 	_result.ColOffset = results.dMatchPosX - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
 	_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
 	_result.CorrCoeff = results.dCoreScore;
 	_result.AmbigScore= results.dAmbigScore;
-
+	
 	return(bFlag);
+	*/	
+}
+
+// Cyber Ngc correlation with mask
+int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
+{
+	// Create template
+	SvImage oTempImage;
+	oTempImage.pdData = _pImg1->GetBuffer();
+	oTempImage.iWidth = _pImg1->Columns();
+	oTempImage.iHeight = _pImg1->Rows();
+	oTempImage.iSpan = _pImg1->PixelRowStride();
+	
+	VsStRect templateRect;
+	templateRect.lXMin = tempRoi.FirstColumn;
+	templateRect.lXMax = tempRoi.LastColumn;
+	templateRect.lYMin = tempRoi.FirstRow;
+	templateRect.lYMax = tempRoi.LastRow;
+	
+	int iDepth = 5;
+	
+	VsStCTemplate tTemplate;
+	int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, iDepth, &tTemplate);
+	if(iFlag<0) return(-1);
+
+	// Add mask
+	unsigned char* pMaskLine = NULL;
+	pMaskLine = (unsigned char*)_pMaskImg->GetBuffer() + _pMaskImg->PixelRowStride()  *templateRect.lYMin + templateRect.lXMin;
+	int iCount = 0;
+	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+	{
+		for(int ix = 0; ix < (int)templateRect.Width(); ix++)
+		{
+			if(pMaskLine[ix]>0)
+				tTemplate.pbMask[iCount] = 1; //masked
+			else
+				tTemplate.pbMask[iCount] = 0;
+
+			iCount++;
+		}
+		pMaskLine += _pMaskImg->PixelRowStride();
+	}	
+	iFlag = vsMask2DNgcTemplate(&tTemplate);
+	if(iFlag < 0)
+	{
+		vsDispose2DTemplate(&tTemplate);
+		return(-2);
+	}
+	
+	// Search
+	SvImage oSearchImage;
+	oSearchImage.pdData = _pImg2->GetBuffer();
+	oSearchImage.iWidth = _pImg2->Columns();
+	oSearchImage.iHeight = _pImg2->Rows();
+	oSearchImage.iSpan = _pImg2->PixelRowStride();
+    
+	VsStRect searchRect;
+	searchRect.lXMin = searchRoi.FirstColumn;
+	searchRect.lXMax = searchRoi.LastColumn;
+	searchRect.lYMin = searchRoi.FirstRow;
+	searchRect.lYMax = searchRoi.LastRow;
+	
+	// Set correlation paramter	
+	VsStCorrelate tCorrelate;
+	tCorrelate.dGainTolerance			= 0.3;
+	tCorrelate.dLoResMinScore			= 0.5;
+    tCorrelate.dHiResMinScore			= 0.5;
+    tCorrelate.iMaxResultPoints			= 2;
+    tCorrelate.iDepth					= iDepth;
+	tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
+    tCorrelate.iFlatPeakRadiusThresh	= 5;
+
+	iFlag =vs2DCorrelate(
+		&tTemplate, &oSearchImage, 
+		searchRect, iDepth, &tCorrelate);
+	if(iFlag < 0)
+	{
+		vsDispose2DTemplate(&tTemplate);	
+		vsDispose2DCorrelate(&tCorrelate);	
+		return(-5);
+	}
+	if(tCorrelate.iNumResultPoints == 0) 
+	{
+		vsDispose2DTemplate(&tTemplate);	
+		vsDispose2DCorrelate(&tCorrelate);
+		return(-6);
+	}
+
+	// Get results
+	_result.ColOffset = tCorrelate.ptCPoint[0].dLoc[0] - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
+	_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - (_roi2.FirstRow+_roi2.LastRow)/2.0;
+	_result.CorrCoeff = tCorrelate.ptCPoint[0].dScore;
+	_result.AmbigScore= tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore;
+
+	// Clean up
+	vsDispose2DTemplate(&tTemplate);	
+	vsDispose2DCorrelate(&tCorrelate);		
+
+	return(1);
 }
 
 // Chop correlation pair into a list of smaller pairs/blocks
@@ -649,25 +771,50 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
 	if(!_bIsProcessed) return(false);
 
+// For first channel
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
-		+ _roi1.FirstColumn;
+		+ _roi1.FirstColumn;	
+	
+	unsigned char* pcTempBuf1 = pcBuf1;
 
+	int iWidth = _roi1.Columns();
+	int iHeight = _roi1.Rows();
+	int ix, iy;
+
+	// Draw mask if the mask is available
+	if(_pMaskImg != NULL)
+	{
+		pcTempBuf1 = new Byte[iWidth*iHeight];
+		unsigned char* pcBufMask = _pMaskImg->GetBuffer() 
+			+ _pMaskImg->PixelRowStride()*_roi1.FirstRow
+			+ _roi1.FirstColumn;	
+		for(iy=0; iy<iHeight; iy++)
+		{
+			for(ix=0; ix<iWidth; ix++)
+			{
+				if(pcBufMask[iy*_pMaskImg->PixelRowStride()+ ix]>0) // masked
+					pcTempBuf1[iy*iWidth+ ix]=0;
+				else
+					pcTempBuf1[iy*iWidth+ ix] = pcBuf1[iy*_pImg1->PixelRowStride()+ ix];
+			}
+		}
+	}
+
+// For second channel
 	unsigned char* pcBuf2 = _pImg2->GetBuffer() 
 		+ _pImg2->PixelRowStride()*_roi2.FirstRow
 		+ _roi2.FirstColumn;
 
-	int iWidth = _roi1.Columns();
-	int iHeight = _roi1.Rows();
 	int iSpan = _pImg2->PixelRowStride();
-	unsigned char* pcTempBuf = new Byte[iWidth*iHeight];
-	::memset(pcTempBuf, 0, iWidth*iHeight);
+	unsigned char* pcTempBuf2 = new Byte[iWidth*iHeight];
+	::memset(pcTempBuf2, 0, iWidth*iHeight);
 
 	int iOffsetX = (int)_result.ColOffset;
 	int iOffsetY = (int)_result.RowOffset;
 
 	// Move second ROI image patch to match first ROI image patch
-	int ix, iy, iLocX, iLocY;
+	int iLocX, iLocY;
 	for(iy=0; iy<iHeight; iy++)
 	{
 		for(ix=0; ix<iWidth; ix++)
@@ -679,15 +826,16 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 			if(iLocX<0 || iLocY<0 || iLocX>=iWidth || iLocY>=iHeight)
 				continue;
 
-			pcTempBuf[iy*iWidth+ ix] =pcBuf2[iSpan*iLocY+iLocX]; 
+			pcTempBuf2[iy*iWidth+ ix] =pcBuf2[iSpan*iLocY+iLocX]; 
 		}
 	}
 
+// Create bmp
 	Bitmap* rbg = Bitmap::New2ChannelBitmap( 
 		_roi1.Rows(), 
 		_roi1.Columns(),
-		pcBuf1, 
-		pcTempBuf,
+		pcTempBuf1, 
+		pcTempBuf2,
 		_pImg1->PixelRowStride(),
 		iWidth );
 
@@ -695,7 +843,8 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 
 	delete rbg;
 
-	delete [] pcTempBuf;
+	if(_pMaskImg != NULL) delete [] pcTempBuf1;
+	delete [] pcTempBuf2;
 
 	return(true);
 }
