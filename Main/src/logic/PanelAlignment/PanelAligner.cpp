@@ -50,9 +50,6 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	_pSet = pSet;
 	_pSet->RegisterImageAddedCallback(ImageAdded, this);
 
-	unsigned char* pCadBuf = pPanel->GetCadBuffer();
-	unsigned char* pPanelMaskBuf = pPanel->GetMaskBuffer(); 
-
 	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
 		
 	// Create solver for all illuminations
@@ -149,7 +146,8 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	// The assumption being that masks are not needed for the first set...
 	if(_iMaskCreationStage>0 && !_bMasksCreated)
 	{
-		if(IsReadyToCreateMasks())
+		// Wait all current overlap jobs done, then create mask
+		if(IsReadyToCreateMasks() && _pOverlapManager->FinishOverlaps())
 		{
 			if(CreateMasks())
 				_bMasksCreated= true;
@@ -222,10 +220,20 @@ bool PanelAligner::CreateMasks()
 		{
 			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetMaskImage(iCam, iTrig);
+				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);
 				
-				UIRect rect(0, 0, img->Columns()-1,  img->Rows()-1);
-				img->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
+				UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
+				maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
+				
+				/*/ for Debug
+				string s;
+				char cTemp[100];
+				sprintf_s(cTemp, 100, "MaskI%dT%dC%d.bmp", 
+					CorrelationParametersInst.GetOverlapPath().c_str(),
+					i, iTrig, iCam);
+				s.append(cTemp);
+				
+				maskImg->Save(s);*/
 			}
 		}
 	}

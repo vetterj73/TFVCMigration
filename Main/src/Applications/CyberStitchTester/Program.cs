@@ -25,7 +25,7 @@ namespace CyberStitchTester
         private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
-
+ 
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -40,12 +40,16 @@ namespace CyberStitchTester
             string panelFile="";
             bool bContinuous = false;
             bool bOwnBuffers = false;
+            bool bMaskForDiffDevices = false;
+
             for(int i=0; i<args.Length; i++)
             {
                 if (args[i] == "-b")
                     bOwnBuffers = true;
                 if (args[i] == "-c")
                     bContinuous = true;
+                if (args[i] == "-m")
+                    bMaskForDiffDevices = true;
                 if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
                 if (args[i] == "-t" && i < args.Length - 1)
@@ -69,7 +73,7 @@ namespace CyberStitchTester
             }
             
             // Set up mosaic set
-            SetupMosaic(bOwnBuffers);
+            SetupMosaic(bOwnBuffers, bMaskForDiffDevices);
 
             // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
@@ -258,7 +262,7 @@ namespace CyberStitchTester
         /// <summary>
         /// Given a SIM setup and a mosaic for stitching, setup the stich...
         /// </summary>
-        private static void SetupMosaic(bool bOwnBuffers)
+        private static void SetupMosaic(bool bOwnBuffers, bool bMaskForDiffDevices)
         {
             if (ManagedCoreAPI.NumberOfDevices() <= 0)
             {
@@ -269,7 +273,7 @@ namespace CyberStitchTester
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
 
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet);
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
         }
 
         private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)

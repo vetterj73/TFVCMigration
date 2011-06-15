@@ -342,8 +342,11 @@ FovFovOverlap::FovFovOverlap(
 
 	Image* pImg1 = _pMosaic1->GetImage(ImgPos1.first, ImgPos1.second);
 	Image* pImg2 = _pMosaic2->GetImage(ImgPos2.first, ImgPos2.second);
-
-	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
+	
+	Image* pMaskImg = NULL;
+	if(bHasMask)
+		pMaskImg = _pMosaic1->GetMaskImage(ImgPos1.first, ImgPos1.second);
+	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskImg);
 }
 
 bool FovFovOverlap::IsReadyToProcess() const

@@ -11,12 +11,12 @@ namespace SIMMosaicUtils
         /// Uses the static SIM CoreAPI to initialize the MosaicSet Layers as needed...
         /// </summary>
         /// <param name="set"></param>
-        public static void InitializeMosaicFromCurrentSimConfig(ManagedMosaicSet set)
+        public static void InitializeMosaicFromCurrentSimConfig(ManagedMosaicSet set, bool bMaskForDiffDevices)
         {
             for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 AddDeviceToMosaic(ManagedCoreAPI.GetDevice(i), set);
 
-            SetDefaultCorrelationFlags(set);
+            SetDefaultCorrelationFlags(set, bMaskForDiffDevices);
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace SIMMosaicUtils
             }
         }
 
-        private static void SetDefaultCorrelationFlags(ManagedMosaicSet set)
+        private static void SetDefaultCorrelationFlags(ManagedMosaicSet set, bool bMaskForDiffDevices)
         {
             for (uint i = 0; i < set.GetNumMosaicLayers(); i++)
             {
@@ -112,6 +112,11 @@ namespace SIMMosaicUtils
                     }
 
                     flag.SetMaskNeeded(false);
+                    if (bMaskForDiffDevices)
+                    {
+                        if(Math.Abs(i-j)>=2)    // For layrer in difference device
+                            flag.SetMaskNeeded(true);
+                    }   
                 }
             }
         }

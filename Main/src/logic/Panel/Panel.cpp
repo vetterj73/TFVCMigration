@@ -2,6 +2,34 @@
 #include "Cad2Img.h"
 //#include "System.h"
 
+#include "morpho.h"
+
+// 2D Morphological process (a Warp up of Rudd's morpho2D 
+void Morpho_2D(
+	unsigned char* pbBuf,
+	unsigned int iSpan,
+	unsigned int iXStart,
+	unsigned int iYStart,
+	unsigned int iBlockWidth,
+	unsigned int iBlockHeight,
+	unsigned int iKernelWidth, 
+	unsigned int iKernelHeight, 
+	int iType)
+{
+	int CACHE_REPS = CACHE_LINE/sizeof(unsigned char);
+	int MORPHOBUF1 = 2+CACHE_REPS;
+
+	// Morphological process
+	unsigned char *pbWork;
+	int iMem  = (2 * iBlockWidth) > ((int)(MORPHOBUF1)*iBlockHeight) ? (2 * iBlockWidth) : ((int)(MORPHOBUF1)*iBlockHeight); 
+	pbWork = new unsigned char[iMem];
+
+	morpho2d(iBlockWidth, iBlockHeight, pbBuf+ iYStart*iSpan + iXStart, iSpan, pbWork, iKernelWidth, iKernelHeight, iType);
+
+	delete [] pbWork;
+}
+
+
 double Panel::_padInspectionAreaLong;
 double Panel::_padInspectionAreaShort;
 
@@ -274,17 +302,21 @@ unsigned char* Panel::GetCadBuffer()
 	return _cadBuffer;
 }
 
-unsigned char* Panel::GetMaskBuffer()
+unsigned char* Panel::GetMaskBuffer(int iCadExpansion)
 {
 	/// @todo !!!!!!!!!!!!!!!!!!
 	/// Not quite sure how to handle this yet... what if we want different scaled masks
-	return NULL;
-
+	//return NULL;
 
 	if(_maskBuffer == NULL)
 	{
 		_maskBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_maskBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
+		Cad2Img::DrawCAD(this, _maskBuffer, false);
+		Morpho_2D(_maskBuffer, GetNumPixelsInX(),		// buffer and stride
+			0, 0, GetNumPixelsInX(), GetNumPixelsInY(), // Roi
+			iCadExpansion*2+1, iCadExpansion*2+1,		// Kernael size
+			DILATE);									// Type
 	}
 
 	return _maskBuffer;

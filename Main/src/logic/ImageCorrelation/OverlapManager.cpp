@@ -51,14 +51,16 @@ OverlapManager::OverlapManager(
 	}
 	
 	// Create Panel Mask image
-	if(_pPanel->GetMaskBuffer() == NULL)
+	int iCadExpansion = 10;
+	unsigned char* pcMaskBuf = _pPanel->GetMaskBuffer(iCadExpansion);
+	if(pcMaskBuf == NULL)
 	{
 		_pPanelMaskImg = NULL;
 	}
 	else
 	{
 		_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-			trans, trans, bCreateOwnBuf, _pPanel->GetMaskBuffer());
+			trans, trans, bCreateOwnBuf, pcMaskBuf);
 	}
 
 	// Control parameter
@@ -859,6 +861,7 @@ bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned 
 	return(bFlag1 && bFlag2);
 }
 
+// Just wait all threads finish current jobs, not kill threads and their manager
 bool OverlapManager::FinishOverlaps()
 {
 	// Wait for all job threads to finish...

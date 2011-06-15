@@ -84,7 +84,7 @@ public:
 		at the appropriate time (if it is ever needed).
 	*/
 	unsigned char* GetCadBuffer();
-	unsigned char* GetMaskBuffer();
+	unsigned char* GetMaskBuffer(int iCadExpansion);
 	unsigned short* GetAperatureBuffer();
 	bool HasCadBuffer(){return _cadBuffer!=NULL;};
 	bool HasMaskBuffer(){return _maskBuffer!=NULL;};
