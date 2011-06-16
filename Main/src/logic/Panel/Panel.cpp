@@ -313,8 +313,8 @@ unsigned char* Panel::GetMaskBuffer(int iCadExpansion)
 		_maskBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_maskBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
 		Cad2Img::DrawCAD(this, _maskBuffer, false);
-		Morpho_2D(_maskBuffer, GetNumPixelsInX(),		// buffer and stride
-			0, 0, GetNumPixelsInX(), GetNumPixelsInY(), // Roi
+		Morpho_2D(_maskBuffer, GetNumPixelsInY(),		// buffer and stride
+			0, 0, GetNumPixelsInY(), GetNumPixelsInX(), // Roi
 			iCadExpansion*2+1, iCadExpansion*2+1,		// Kernael size
 			DILATE);									// Type
 	}

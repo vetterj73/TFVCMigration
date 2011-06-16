@@ -181,6 +181,9 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CyberNgc\CyberNgc.vcxproj">
+      <Project>{b3929c54-7f1e-406d-b58e-6cfed2deebf7}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
       <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
     </ProjectReference>

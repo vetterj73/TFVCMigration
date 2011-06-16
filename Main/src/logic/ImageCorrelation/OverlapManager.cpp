@@ -48,6 +48,8 @@ OverlapManager::OverlapManager(
 	{
 		_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
 			trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
+
+		//_pCadImg->Save("C:\\Temp\\cad.bmp");
 	}
 	
 	// Create Panel Mask image
@@ -61,6 +63,7 @@ OverlapManager::OverlapManager(
 	{
 		_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
 			trans, trans, bCreateOwnBuf, pcMaskBuf);
+		//_pPanelMaskImg->Save("C:\\Temp\\mask.bmp");
 	}
 
 	// Control parameter
@@ -792,6 +795,8 @@ unsigned int OverlapManager::MaxMaskCorrelations() const
 		return(0);
 
 	unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
+	for(int i=0; i<_iMaskCreationStage; i++)
+		piIllumIndices[i] = i;
 
 	unsigned int iNum =MaxCorrelations(piIllumIndices, _iMaskCreationStage);
 

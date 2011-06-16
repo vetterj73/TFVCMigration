@@ -25,6 +25,7 @@ namespace CyberStitchTester
         private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
+        private static bool _bSimulating = false;
  
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
@@ -136,9 +137,29 @@ namespace CyberStitchTester
                         Output("Could not save mosaic images");
 */
                    // Save a 3 channel image with CAD data...
+                    uint iLayerIndex1 = 0;
+                    uint iLayerIndex2 = 0;
+                    switch (_mosaicSet.GetNumMosaicLayers())
+                    {
+                        case 1:
+                            iLayerIndex1 = 0;
+                            iLayerIndex2 = 0;
+                            break;
+
+                        case 2:
+                            iLayerIndex1 = 0;
+                            iLayerIndex2 = 1;
+                            break;
+
+                        case 4:
+                            iLayerIndex1 = 2;
+                            iLayerIndex2 = 3;
+                            break;
+                    }
+
                     _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(2).GetStitchedBuffer(),
-                        _mosaicSet.GetLayer(3).GetStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
                         _panel.GetCADBuffer(),
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
@@ -158,9 +179,18 @@ namespace CyberStitchTester
 
         private static bool GatherImages()
         {
-            for(int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+            if (!_bSimulating)
             {
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+                {
+                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                    if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                        return false;
+                }
+            }
+            else
+            {   // launch device one by one in simulation case
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return false;
             }
@@ -169,11 +199,11 @@ namespace CyberStitchTester
 
         private static bool InitializeSimCoreAPI(string simulationFile)
         {
-            bool bSimulating = false;
+            //bool bSimulating = false;
             if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
-                bSimulating = true;
+                _bSimulating = true;
 
-            if (bSimulating)
+            if (_bSimulating)
             {
                 Output("Running with Simulation File: " + simulationFile);
                 ManagedCoreAPI.SetSimulationFile(simulationFile);
@@ -197,7 +227,7 @@ namespace CyberStitchTester
                 return false;
             }
 
-            if (!bSimulating)
+            if (!_bSimulating)
             {
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 {
@@ -285,9 +315,17 @@ namespace CyberStitchTester
         {
             Output("OnAcquisitionDone Called!");
             numAcqsComplete++;
+            // lauch next device in simulation case
+            if (_bSimulating && numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
+            {
+                Thread.Sleep(10000);
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(numAcqsComplete);
+                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                    return;
+            }
             if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
                 mDoneEvent.Set();
-         }
+        }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {

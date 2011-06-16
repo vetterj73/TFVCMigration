@@ -65,6 +65,8 @@ protected:
 private:
 	FidFovOverlapList _lastProcessedFids;
 
+	HANDLE _queueMutex;
+
 	// Inputs
 	MosaicSet* _pSet;		
 	OverlapManager* _pOverlapManager;

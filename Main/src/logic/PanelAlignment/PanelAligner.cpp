@@ -16,6 +16,8 @@ PanelAligner::PanelAligner(void)
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
+
+	_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
 }
 
 PanelAligner::~PanelAligner(void)
@@ -38,6 +40,8 @@ void PanelAligner::CleanUp()
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
+
+	CloseHandle(_queueMutex);
 }
 
 // Change production
@@ -75,7 +79,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		delete [] piIllumIndices;
 		iMaxNumCorrelation =  _pOverlapManager->MaxMaskCorrelations();
 		_pMaskSolver = new RobustSolver(
-			&_solverMap, 
+			&_maskMap, 
 			iMaxNumCorrelation, 
 			bProjectiveTrans);
 	}
@@ -132,28 +136,39 @@ void PanelAligner::FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
 	CorrelationParametersInst.dFiducialSearchExpansionY = fidSearchYInMeters;
 }
 
-// Add single image
+// Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(
 	unsigned int iLayerIndex, 
 	unsigned int iTrigIndex, 
 	unsigned int iCamIndex)
 {
+	// The image is suppose to enter one by one
+	WaitForSingleObject(_queueMutex, INFINITE);
+
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
 
 	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
-
+	
+	// Release mutex
+	ReleaseMutex(_queueMutex);
+	
 	// Masks are created after the first layer is aligned...
 	// The assumption being that masks are not needed for the first set...
 	if(_iMaskCreationStage>0 && !_bMasksCreated)
 	{
+		if(iTrigIndex == 9 && iCamIndex == 5)
+			iTrigIndex = 9;
 		// Wait all current overlap jobs done, then create mask
-		if(IsReadyToCreateMasks() && _pOverlapManager->FinishOverlaps())
+		if(IsReadyToCreateMasks())
 		{
-			if(CreateMasks())
-				_bMasksCreated= true;
-			else
+			if(_pOverlapManager->FinishOverlaps())
 			{
-				//log fatal error
+				if(CreateMasks())
+					_bMasksCreated= true;
+				else
+				{
+					//log fatal error
+				}
 			}
 		}
 	}
@@ -163,6 +178,9 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	{
 		CreateTransforms();
 	}
+
+
+
 	return(true);
 }
 
@@ -225,15 +243,16 @@ bool PanelAligner::CreateMasks()
 				UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
 				maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 				
-				/*/ for Debug
+				//* for Debug
 				string s;
 				char cTemp[100];
-				sprintf_s(cTemp, 100, "MaskI%dT%dC%d.bmp", 
+				sprintf_s(cTemp, 100, "%sMaskI%dT%dC%d.bmp", 
 					CorrelationParametersInst.GetOverlapPath().c_str(),
 					i, iTrig, iCam);
 				s.append(cTemp);
 				
-				maskImg->Save(s);*/
+				maskImg->Save(s);
+				//*/
 			}
 		}
 	}
