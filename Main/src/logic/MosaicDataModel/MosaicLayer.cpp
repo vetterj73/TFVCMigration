@@ -263,7 +263,7 @@ namespace MosaicDM
 	bool MosaicLayer::PrepareMaskImages()
 	{
 		// Validation check
-		if(!HasAllImages()) return(false);
+		//if(!HasAllImages()) return(false);
 
 		for(unsigned int i=0 ; i<GetNumberOfTiles(); i++)
 		{
@@ -281,8 +281,8 @@ namespace MosaicDM
 	Image* MosaicLayer::GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex) 
 	{
 		// Validation check
-		if(!_bIsMaskImgValid)
-			return NULL;
+		//if(!_bIsMaskImgValid)
+			//return NULL;
 
 		unsigned int iPos = iTrigIndex* GetNumberOfCameras() + iCamIndex;
 		return(&_maskImages[iPos]);

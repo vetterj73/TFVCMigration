@@ -220,30 +220,29 @@ bool PanelAligner::CreateMasks()
 	{
 		// Get calculated transforms
 		MosaicLayer* pMosaic = _pSet->GetLayer(i);
-		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		/*for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 		{
 			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 			{
-				Image* img = pMosaic->GetImage(iCam, iTrig);
-				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
-				img->SetTransform(t);
-			}
-		}
+				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);
 
-		// Prepare mask images
-		pMosaic->PrepareMaskImages();
+
+			}
+		}*/
 
 		// Create content of mask images
 		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 		{
 			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 			{
-				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);
+				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);				
+				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
+				maskImg->SetTransform(t);
 				
 				UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
 				maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 				
-				//* for Debug
+				/* for Debug
 				string s;
 				char cTemp[100];
 				sprintf_s(cTemp, 100, "%sMaskI%dT%dC%d.bmp", 

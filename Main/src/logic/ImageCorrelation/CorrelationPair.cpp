@@ -161,16 +161,16 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 	{
 		unsigned int iCount = 0;
 		unsigned char* pLineBuf = _pMaskImg->GetBuffer() + 
-			_roi1.FirstRow*_pImg1->ByteRowStride();
-		for(unsigned int iy=_roi1.FirstRow; iy=_roi1.LastRow; iy++)
+			_roi1.FirstRow*_pMaskImg->ByteRowStride();
+		for(unsigned int iy=_roi1.FirstRow; iy<=_roi1.LastRow; iy++)
 		{
-			for(unsigned int ix=_roi1.FirstColumn; ix<_roi1.LastColumn; ix++)
+			for(unsigned int ix=_roi1.FirstColumn; ix<=_roi1.LastColumn; ix++)
 			{
 				if(pLineBuf[ix] > 0 )
 					iCount++;
 			}
 
-			pLineBuf += _pImg1->ByteRowStride();
+			pLineBuf += _pMaskImg->ByteRowStride();
 		}
 
 		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrelationParametersInst.dMaskAreaRatioTh*100)
@@ -445,7 +445,7 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 	searchRect.FirstColumn = iFirstCol2;
 	searchRect.LastColumn = iLastCol2;
 	searchRect.FirstRow = iFirstRow2;
-	searchRect.LastColumn = iLastRow2;
+	searchRect.LastRow = iLastRow2;
 
 	int iFlag = MaskedNgc(tempRect, searchRect);
 	if(iFlag>0)
