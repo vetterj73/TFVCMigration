@@ -2,6 +2,7 @@
 #include "OverlapManager.h"
 #include "MosaicLayer.h"
 #include "MosaicTile.h"
+#include "MorphJob.h"
 #include "Panel.h"
 #include <direct.h> //_mkdir
 
@@ -215,20 +216,15 @@ bool PanelAligner::CreateMasks()
 	// Solve transforms
 	_pMaskSolver->SolveXAlgHB();
 
+	// Create job manager for mask morpho
+	CyberJob::JobManager jm("MaskMorpho", CorrelationParametersInst.NumThreads);
+	vector<MorphJob*> morphJobs;
+
 	// For each mosaic image
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
 		// Get calculated transforms
 		MosaicLayer* pMosaic = _pSet->GetLayer(i);
-		/*for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
-		{
-			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
-			{
-				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);
-
-
-			}
-		}*/
 
 		// Create content of mask images
 		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
@@ -239,10 +235,39 @@ bool PanelAligner::CreateMasks()
 				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
 				maskImg->SetTransform(t);
 				
-				UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
-				maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
+				//UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
+				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
+
+				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
+					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
+				jm.AddAJob((CyberJob::Job*)pJob);
+				morphJobs.push_back(pJob);
+			}
+		}
+	}
+
+	// Wait until it is complete...
+	jm.MarkAsFinished();
+	while(jm.TotalJobs() > 0)
+		Sleep(10);
+
+	for(unsigned int i=0; i<morphJobs.size(); i++)
+		delete morphJobs[i];
+	morphJobs.clear();
+
+	/*/ For Debug
+	for(int i=0; i<_iMaskCreationStage; i++)
+	{
+		// Get calculated transforms
+		MosaicLayer* pMosaic = _pSet->GetLayer(i);
+
+		// Create content of mask images
+		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+			{
+				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);				
 				
-				/* for Debug
 				string s;
 				char cTemp[100];
 				sprintf_s(cTemp, 100, "%sMaskI%dT%dC%d.bmp", 
@@ -251,10 +276,10 @@ bool PanelAligner::CreateMasks()
 				s.append(cTemp);
 				
 				maskImg->Save(s);
-				//*/
+				
 			}
 		}
-	}
+	}//*/
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateMasks():Mask images are created");
 

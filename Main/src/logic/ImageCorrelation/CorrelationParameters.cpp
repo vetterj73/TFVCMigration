@@ -48,7 +48,7 @@ CorrelationParameters::CorrelationParameters(void)
 	bGrayScale = true;					// Grey scale image in default
 
 	// Number of Threads to use for processing
-	NumThreads = 6;
+	NumThreads = 8;
 
 	// debug flags
 	bSaveFiducialOverlaps = false;
