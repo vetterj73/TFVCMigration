@@ -125,6 +125,7 @@ private:
 	OverlapType _type;
 
 	bool _bIsProcessed;
+	bool _bUsedNgc;	// Ngc is used for calcaulation
 	unsigned int _iDecim;	// For regoff
 	unsigned int _iColSearchExpansion; // For NGC
 	unsigned int _iRowSearchExpansion;

@@ -98,6 +98,7 @@ public:
 	// For debug
 	bool DumpOvelapImages();
 	bool DumpResultImages();
+	bool HasMask() {return _bHasMask;};
 
 private:
 	MosaicLayer*	_pMosaic1;

@@ -61,6 +61,8 @@ CorrelationPair::CorrelationPair()
 	_type = NULL_OVERLAP;
 
 	_bIsProcessed=false;
+
+	_bUsedNgc = false;
 }
 
 CorrelationPair::CorrelationPair(
@@ -145,6 +147,7 @@ CorrelationResult CorrelationPair::GetCorrelationResult() const
 bool CorrelationPair::Reset()
 {
 	_bIsProcessed = false;
+	_bUsedNgc = false;
 	_result.Default();
 
 	return(true);
@@ -155,6 +158,7 @@ bool CorrelationPair::Reset()
 bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {
 	bool bSRC = true;
+	_bUsedNgc = false;
 
 	// Check the mask area to decide whehter need to use NGC
 	if(_pMaskImg != NULL && _pMaskImg->GetBuffer() != NULL)
@@ -193,6 +197,8 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize ||
 			_roi1.Rows() < 2*_iRowSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize)
 			return(false);
+
+		_bUsedNgc = true;
 
 		if(!NGCCorrelation(bApplyCorrSizeUpLimit, pbCorrSizeReduced))
 			return(false);
@@ -448,7 +454,7 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 	searchRect.LastRow = iLastRow2;
 
 	int iFlag = MaskedNgc(tempRect, searchRect);
-	if(iFlag>0)
+	if(iFlag>=0)
 		return(true);
 	else
 		return(false);
@@ -567,20 +573,23 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);	
-		return(-5);
+		return(0);
 	}
 	if(tCorrelate.iNumResultPoints == 0) 
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);
-		return(-6);
+		return(0);
 	}
 
 	// Get results
 	_result.ColOffset = tCorrelate.ptCPoint[0].dLoc[0] - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
 	_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - (_roi2.FirstRow+_roi2.LastRow)/2.0;
 	_result.CorrCoeff = tCorrelate.ptCPoint[0].dScore;
-	_result.AmbigScore= tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore;
+	if(tCorrelate.iNumResultPoints >=2)
+		_result.AmbigScore= tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore;
+	else
+		_result.AmbigScore = 0;
 
 	// Clean up
 	vsDispose2DTemplate(&tTemplate);	
@@ -746,6 +755,8 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 // For Debug
 void CorrelationPair::DumpImg(string sFileName) const
 {
+	//if(!_bUsedNgc) return;
+
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
 		+ _roi1.FirstColumn;
@@ -769,6 +780,8 @@ void CorrelationPair::DumpImg(string sFileName) const
 
 bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
+	//if(!_bUsedNgc) return(false);
+
 	if(!_bIsProcessed) return(false);
 
 // For first channel
@@ -836,7 +849,7 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 		_roi1.Columns(),
 		pcTempBuf1, 
 		pcTempBuf2,
-		_pImg1->PixelRowStride(),
+		_pMaskImg== NULL ? _pImg1->PixelRowStride() : iWidth,
 		iWidth );
 
 	rbg->write(sFileName);
