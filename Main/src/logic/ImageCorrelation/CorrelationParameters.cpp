@@ -20,7 +20,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Coarse correlation
 	iCoarseMinDecim = 2;				// Minimum decimatin for coarse correlation
 	iCoarseColSearchExpansion = 50;		// Search expansion in cols for coarse correlation
-	iCoarseRowSearchExpansion = 75;		// Search expansion in rows for coarse correlation
+	iCoarseRowSearchExpansion = 150;		// Search expansion in rows for coarse correlation
 	dCoarseResultReliableTh = 0.03;		// Threshold to decide whether coarse correlaiton result is reliable
 
 	// Fine correlation

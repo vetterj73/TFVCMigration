@@ -314,12 +314,12 @@ void Overlap::Run()
 	
 	_bProcessed = true;
 
-	// For debug
-	//if(_type == Fov_To_Fov)
-	//{
-	//	DumpOvelapImages();
-	//	DumpResultImages();
-	//}
+	/* For debug
+	if(_type == Fov_To_Fov)
+	{
+		DumpOvelapImages();
+		DumpResultImages();
+	}//*/
 
 	if(CorrelationParametersInst.bSaveOverlaps)
 	{

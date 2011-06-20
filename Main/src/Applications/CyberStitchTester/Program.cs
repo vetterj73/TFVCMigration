@@ -79,6 +79,7 @@ namespace CyberStitchTester
             // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
+            //_aligner.LogMaskVectors(true);
 
             // Set up production for aligner
             try
