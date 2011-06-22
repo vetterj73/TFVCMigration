@@ -92,6 +92,10 @@
       <Command>mkdir ..\..\..\pub\include
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Ruddd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -109,8 +113,8 @@ copy *.h ..\..\..\pub\include</Command>
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Ruddd.lib;CyberNgc.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\CyberNgc\lib\X64_Debug</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -132,6 +136,10 @@ copy *.h ..\..\..\pub\include</Command>
       <Command>mkdir ..\..\..\pub\include
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Rudd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -152,6 +160,10 @@ copy *.h ..\..\..\pub\include</Command>
       <Command>mkdir ..\..\..\pub\include
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\CyberNgc\lib\X64_Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Rudd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="EquationWeights.h" />
@@ -177,9 +189,6 @@ copy *.h ..\..\..\pub\include</Command>
     </ProjectReference>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\VsNgcWrapper\VsNgcWrapper.vcxproj">
-      <Project>{3890952f-8d06-46a8-8731-5131f30fe9f8}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

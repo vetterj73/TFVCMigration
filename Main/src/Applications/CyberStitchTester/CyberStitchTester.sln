@@ -20,7 +20,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageCorrelation", "..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj", "{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5}"
 	ProjectSection(ProjectDependencies) = postProject
-		{3890952F-8D06-46A8-8731-5131F30FE9F8} = {3890952F-8D06-46A8-8731-5131F30FE9F8}
 		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
 	EndProjectSection
 EndProject
@@ -39,11 +38,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{E71E9608-6EDD-4A4D-A173-BF6B337549A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91-C1B1-48D2-89B0-B102895144B7}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VsNgcWrapper", "..\..\logic\VsNgcWrapper\VsNgcWrapper.vcxproj", "{3890952F-8D06-46A8-8731-5131F30FE9F8}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\logic\PanelAlignment\PanelAlignment.vcxproj", "{C71CA433-5C57-43DB-BA7E-1F4CBB229951}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -92,11 +86,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIO", "..\..\log
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIOUnitTest", "..\..\logic\ManagedPanelIO\ManagedPanelIOUnitTest\ManagedPanelIOUnitTest.csproj", "{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CyberNgc", "..\..\logic\CyberNgc\CyberNgc.vcxproj", "{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}"
-EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 21
+		SccNumberOfProjects = 19
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://tfs.cyberoptics.com:8080/tfs/tpc1
 		SccLocalPath0 = .
@@ -124,51 +116,45 @@ Global
 		SccProjectTopLevelParentUniqueName7 = CyberStitchTester.sln
 		SccProjectName7 = ../../logic/ManagedMosaicDataModel/ManagedMosaicDataModelUnitTest
 		SccLocalPath7 = ..\\..\\logic\\ManagedMosaicDataModel\\ManagedMosaicDataModelUnitTest
-		SccProjectUniqueName8 = ..\\..\\logic\\VsNgcWrapper\\VsNgcWrapper.vcxproj
-		SccProjectName8 = ../../logic/VsNgcWrapper
-		SccLocalPath8 = ..\\..\\logic\\VsNgcWrapper
-		SccProjectUniqueName9 = ..\\..\\logic\\PanelAlignment\\PanelAlignment.vcxproj
-		SccProjectName9 = ../../logic/PanelAlignment
-		SccLocalPath9 = ..\\..\\logic\\PanelAlignment
-		SccProjectUniqueName10 = ..\\..\\logic\\Panel\\Panel.vcxproj
-		SccProjectTopLevelParentUniqueName10 = CyberStitchTester.sln
-		SccProjectName10 = ../../logic/Panel
-		SccLocalPath10 = ..\\..\\logic\\Panel
-		SccProjectUniqueName11 = ..\\..\\logic\\ManagedPanelAlignment\\ManagedPanelAlignment.vcxproj
-		SccProjectName11 = ../../logic/ManagedPanelAlignment
-		SccLocalPath11 = ..\\..\\logic\\ManagedPanelAlignment
-		SccProjectUniqueName12 = ..\\..\\logic\\VsFinderWrapper\\VsFinderWrapper.vcxproj
-		SccProjectName12 = ../../logic/VsFinderWrapper
-		SccLocalPath12 = ..\\..\\logic\\VsFinderWrapper
-		SccProjectUniqueName13 = ..\\..\\logic\\SIMMosaicUtils\\SIMMosaicUtils.csproj
-		SccProjectTopLevelParentUniqueName13 = CyberStitchTester.sln
-		SccProjectName13 = ../../logic/SIMMosaicUtils
-		SccLocalPath13 = ..\\..\\logic\\SIMMosaicUtils
-		SccProjectUniqueName14 = ..\\..\\logic\\SIMCalibrator\\SIMCalibrator.csproj
-		SccProjectName14 = ../../logic/SIMCalibrator
-		SccLocalPath14 = ..\\..\\logic\\SIMCalibrator
-		SccProjectUniqueName15 = ..\\SIMCalibratorTester\\SIMCalibratorTester.csproj
-		SccProjectName15 = ../SIMCalibratorTester
-		SccLocalPath15 = ..\\SIMCalibratorTester
-		SccProjectUniqueName16 = ..\\..\\logic\\SIMCalibrator\\SIMCalibratorUnitTest\\SIMCalibratorUnitTest.csproj
+		SccProjectUniqueName8 = ..\\..\\logic\\PanelAlignment\\PanelAlignment.vcxproj
+		SccProjectName8 = ../../logic/PanelAlignment
+		SccLocalPath8 = ..\\..\\logic\\PanelAlignment
+		SccProjectUniqueName9 = ..\\..\\logic\\Panel\\Panel.vcxproj
+		SccProjectTopLevelParentUniqueName9 = CyberStitchTester.sln
+		SccProjectName9 = ../../logic/Panel
+		SccLocalPath9 = ..\\..\\logic\\Panel
+		SccProjectUniqueName10 = ..\\..\\logic\\ManagedPanelAlignment\\ManagedPanelAlignment.vcxproj
+		SccProjectName10 = ../../logic/ManagedPanelAlignment
+		SccLocalPath10 = ..\\..\\logic\\ManagedPanelAlignment
+		SccProjectUniqueName11 = ..\\..\\logic\\VsFinderWrapper\\VsFinderWrapper.vcxproj
+		SccProjectName11 = ../../logic/VsFinderWrapper
+		SccLocalPath11 = ..\\..\\logic\\VsFinderWrapper
+		SccProjectUniqueName12 = ..\\..\\logic\\SIMMosaicUtils\\SIMMosaicUtils.csproj
+		SccProjectTopLevelParentUniqueName12 = CyberStitchTester.sln
+		SccProjectName12 = ../../logic/SIMMosaicUtils
+		SccLocalPath12 = ..\\..\\logic\\SIMMosaicUtils
+		SccProjectUniqueName13 = ..\\..\\logic\\SIMCalibrator\\SIMCalibrator.csproj
+		SccProjectName13 = ../../logic/SIMCalibrator
+		SccLocalPath13 = ..\\..\\logic\\SIMCalibrator
+		SccProjectUniqueName14 = ..\\SIMCalibratorTester\\SIMCalibratorTester.csproj
+		SccProjectName14 = ../SIMCalibratorTester
+		SccLocalPath14 = ..\\SIMCalibratorTester
+		SccProjectUniqueName15 = ..\\..\\logic\\SIMCalibrator\\SIMCalibratorUnitTest\\SIMCalibratorUnitTest.csproj
+		SccProjectTopLevelParentUniqueName15 = CyberStitchTester.sln
+		SccProjectName15 = ../../logic/SIMCalibrator/SIMCalibratorUnitTest
+		SccLocalPath15 = ..\\..\\logic\\SIMCalibrator\\SIMCalibratorUnitTest
+		SccProjectUniqueName16 = ..\\..\\logic\\ManagedPanel\\ManagedPanel.vcxproj
 		SccProjectTopLevelParentUniqueName16 = CyberStitchTester.sln
-		SccProjectName16 = ../../logic/SIMCalibrator/SIMCalibratorUnitTest
-		SccLocalPath16 = ..\\..\\logic\\SIMCalibrator\\SIMCalibratorUnitTest
-		SccProjectUniqueName17 = ..\\..\\logic\\ManagedPanel\\ManagedPanel.vcxproj
+		SccProjectName16 = ../../logic/ManagedPanel
+		SccLocalPath16 = ..\\..\\logic\\ManagedPanel
+		SccProjectUniqueName17 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIO.csproj
 		SccProjectTopLevelParentUniqueName17 = CyberStitchTester.sln
-		SccProjectName17 = ../../logic/ManagedPanel
-		SccLocalPath17 = ..\\..\\logic\\ManagedPanel
-		SccProjectUniqueName18 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIO.csproj
+		SccProjectName17 = ../../logic/ManagedPanelIO
+		SccLocalPath17 = ..\\..\\logic\\ManagedPanelIO
+		SccProjectUniqueName18 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest\\ManagedPanelIOUnitTest.csproj
 		SccProjectTopLevelParentUniqueName18 = CyberStitchTester.sln
-		SccProjectName18 = ../../logic/ManagedPanelIO
-		SccLocalPath18 = ..\\..\\logic\\ManagedPanelIO
-		SccProjectUniqueName19 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest\\ManagedPanelIOUnitTest.csproj
-		SccProjectTopLevelParentUniqueName19 = CyberStitchTester.sln
-		SccProjectName19 = ../../logic/ManagedPanelIO/ManagedPanelIOUnitTest
-		SccLocalPath19 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest
-		SccProjectUniqueName20 = ..\\..\\logic\\CyberNgc\\CyberNgc.vcxproj
-		SccProjectName20 = ../../logic/CyberNgc
-		SccLocalPath20 = ..\\..\\logic\\CyberNgc
+		SccProjectName18 = ../../logic/ManagedPanelIO/ManagedPanelIOUnitTest
+		SccLocalPath18 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -304,22 +290,6 @@ Global
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x64.Build.0 = Release|x86
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.ActiveCfg = Release|x86
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}.Release|x86.Build.0 = Release|x86
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Win32.ActiveCfg = Debug|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|Win32.Build.0 = Debug|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x64.ActiveCfg = Debug|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x64.Build.0 = Debug|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Debug|x86.ActiveCfg = Debug|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Any CPU.ActiveCfg = Release|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Mixed Platforms.ActiveCfg = Release|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Mixed Platforms.Build.0 = Release|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Win32.ActiveCfg = Release|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|Win32.Build.0 = Release|Win32
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.ActiveCfg = Release|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x64.Build.0 = Release|x64
-		{3890952F-8D06-46A8-8731-5131F30FE9F8}.Release|x86.ActiveCfg = Release|x64
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
 		{C71CA433-5C57-43DB-BA7E-1F4CBB229951}.Debug|Mixed Platforms.Build.0 = Debug|x64
@@ -508,22 +478,6 @@ Global
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.ActiveCfg = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.Build.0 = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x86.ActiveCfg = Release|Any CPU
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|Win32.ActiveCfg = Debug|Win32
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|Win32.Build.0 = Debug|Win32
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|x64.ActiveCfg = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|x64.Build.0 = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Debug|x86.ActiveCfg = Debug|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|Any CPU.ActiveCfg = Release|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|Mixed Platforms.ActiveCfg = Release|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|Mixed Platforms.Build.0 = Release|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|Win32.ActiveCfg = Release|Win32
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|Win32.Build.0 = Release|Win32
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|x64.ActiveCfg = Release|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|x64.Build.0 = Release|x64
-		{B3929C54-7F1E-406D-B58E-6CFED2DEEBF7}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
