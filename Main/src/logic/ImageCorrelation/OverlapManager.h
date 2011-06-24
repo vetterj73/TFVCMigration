@@ -67,6 +67,9 @@ public:
 	bool FinishOverlaps();
 
 protected:
+	bool IsCadImageNeeded();
+	bool IsMaskImageNeeded();
+
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();
 	void CreateFidFovOverlaps();

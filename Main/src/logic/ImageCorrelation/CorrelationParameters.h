@@ -58,6 +58,9 @@ public:
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
 
+	// Expansion from Cad image to create mask image in pixels
+	int iMaskExpansionFromCad;
+	
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 

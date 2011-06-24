@@ -39,30 +39,28 @@ OverlapManager::OverlapManager(
 	t[2][2] = 1;
 	ImgTransform trans(t);
 	
-	// Create Cad image
-	if(_pPanel->GetCadBuffer() == NULL)
+	// Create Cad image if it is necessary
+	_pCadImg = NULL;
+	if(IsCadImageNeeded())
 	{
-		_pCadImg = NULL;
-	}
-	else
-	{
-		_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-			trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
-		//_pCadImg->Save("C:\\Temp\\cad.bmp");
+		if(_pPanel->GetCadBuffer() != NULL)
+		{
+			_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+				trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
+			//_pCadImg->Save("C:\\Temp\\cad.bmp");
+		}
 	}
 	
 	// Create Panel Mask image
-	int iCadExpansion = 10;
-	unsigned char* pcMaskBuf = _pPanel->GetMaskBuffer(iCadExpansion);
-	if(pcMaskBuf == NULL)
+	if(IsMaskImageNeeded())
 	{
-		_pPanelMaskImg = NULL;
-	}
-	else
-	{
-		_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-			trans, trans, bCreateOwnBuf, pcMaskBuf);
-		//_pPanelMaskImg->Save("C:\\Temp\\mask.bmp");
+		unsigned char* pMaskBuf = _pPanel->GetMaskBuffer(CorrelationParametersInst.iMaskExpansionFromCad);
+		if(pMaskBuf != NULL)
+		{
+			_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+				trans, trans, bCreateOwnBuf, pMaskBuf);
+			//_pPanelMaskImg->Save("C:\\Temp\\mask.bmp");
+		}
 	}
 
 	// Control parameter
@@ -187,6 +185,38 @@ bool OverlapManager::ResetforNewPanel()
 	} // i
 
 	return(true);
+}
+
+
+// Whether cad image is needed
+bool OverlapManager::IsCadImageNeeded()
+{
+	unsigned int i;
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
+	{
+		MosaicLayer* pLayer = _pMosaicSet->GetLayer(i);
+		if(pLayer->IsAlignWithCad())	// If use Cad
+			return(true);
+	}
+
+	return(false); //If not use Cad
+}
+
+// Whether mask image is needed
+bool OverlapManager::IsMaskImageNeeded()
+{
+	unsigned int i, j;
+	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
+	{
+		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
+		{
+			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
+			if(pFlags->GetMaskNeeded())	// If use mask
+				return(true);
+		}
+	}
+
+	return(false);	// If not use mask
 }
 
 #pragma endregion
