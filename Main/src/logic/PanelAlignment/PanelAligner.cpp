@@ -24,6 +24,8 @@ PanelAligner::PanelAligner(void)
 PanelAligner::~PanelAligner(void)
 {
 	CleanUp();
+
+	CloseHandle(_queueMutex);
 }
 
 // CleanUp internal stuff for new production or desctructor
@@ -41,8 +43,6 @@ void PanelAligner::CleanUp()
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
-
-	CloseHandle(_queueMutex);
 }
 
 // Change production
