@@ -48,7 +48,6 @@ OverlapManager::OverlapManager(
 	{
 		_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
 			trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
-
 		//_pCadImg->Save("C:\\Temp\\cad.bmp");
 	}
 	
@@ -107,8 +106,6 @@ OverlapManager::OverlapManager(
 	if(_pCadImg != NULL) CreateCadFovOverlaps();
 	
 	// Create Fiducial Fov overlaps
-		// The vsfinder should not be used, if the vsNGc is used for mask
-	if(_pPanelMaskImg!=NULL) CorrelationParametersInst.bUseVsFinder= false;	
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
 	if(CorrelationParametersInst.bUseVsFinder)	
