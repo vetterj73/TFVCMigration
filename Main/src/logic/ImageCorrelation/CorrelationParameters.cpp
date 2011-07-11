@@ -20,7 +20,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Coarse correlation
 	iCoarseMinDecim = 2;				// Minimum decimatin for coarse correlation
 	iCoarseColSearchExpansion = 50;		// Search expansion in cols for coarse correlation
-	iCoarseRowSearchExpansion = 150;		// Search expansion in rows for coarse correlation
+	iCoarseRowSearchExpansion = 250;		// Search expansion in rows for coarse correlation
 	dCoarseResultReliableTh = 0.03;		// Threshold to decide whether coarse correlaiton result is reliable
 
 	// Fine correlation
@@ -30,8 +30,8 @@ CorrelationParameters::CorrelationParameters(void)
 	iFineMaxBlocksInRow = 3;			// Max Number of blocks in row direction for fine correlation
 
 	iFineDecim = 2;						// Decimatin for fine correlation
-	iFineColSearchExpansion = 20;		// Search expansion in cols for fine correlation if coarse correlation is successed
-	iFineRowSearchExpansion = 20;		// Search expansion in rows for fine correlation if coarse correlation is successed
+	iFineColSearchExpansion = 30;		// Search expansion in cols for fine correlation if coarse correlation is successed
+	iFineRowSearchExpansion = 30;		// Search expansion in rows for fine correlation if coarse correlation is successed
 
 	// Use Vsfinder
 	bUseVsFinder = true;				// Use vsfinder or regoff for fiducial finding

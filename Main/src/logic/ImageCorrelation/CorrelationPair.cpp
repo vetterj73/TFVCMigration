@@ -458,43 +458,6 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 		return(true);
 	else
 		return(false);
-
-	/*/ Ngc input parameter
-	NgcParams params;
-	params.pcTemplateBuf	= _pImg1->GetBuffer();
-	params.iTemplateImWidth = _pImg1->Columns();
-	params.iTemplateImHeight= _pImg1->Rows();
-	params.iTemplateImSpan	= _pImg1->PixelRowStride();
-	params.iTemplateLeft	= iFirstCol1 + _iColSearchExpansion;
-	params.iTemplateRight	= iLastCol1 - _iColSearchExpansion;
-	params.iTemplateTop		= iFirstRow1 + _iRowSearchExpansion;
-	params.iTemplateBottom	= iLastRow1 - _iRowSearchExpansion;
-
-	params.pcSearchBuf		= _pImg2->GetBuffer();
-	params.iSearchImWidth	= _pImg2->Columns();
-	params.iSearchImHeight	= _pImg2->Rows();
-	params.iSearchImSpan	= _pImg2->PixelRowStride();
-	params.iSearchLeft		= iFirstCol2;
-	params.iSearchRight		= iLastCol2;
-	params.iSearchTop		= iFirstRow2;
-	params.iSearchBottom	= iLastRow2;
-
-	params.bUseMask			= true;
-	params.pcMaskBuf		= _pMaskImg->GetBuffer();
-
-	// Ngc alignment
-	NgcResults results;
-	VsNgcWrapper ngc;
-	bool bFlag = ngc.Align(params, &results);
-
-	// Create result
-	_result.ColOffset = results.dMatchPosX - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
-	_result.RowOffset = results.dMatchPosY - (_roi2.FirstRow+_roi2.LastRow)/2.0;
-	_result.CorrCoeff = results.dCoreScore;
-	_result.AmbigScore= results.dAmbigScore;
-	
-	return(bFlag);
-	*/	
 }
 
 // Cyber Ngc correlation with mask
@@ -558,24 +521,30 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
-	tCorrelate.dGainTolerance			= 0.3;
-	tCorrelate.dLoResMinScore			= 0.5;
-    tCorrelate.dHiResMinScore			= 0.5;
+	tCorrelate.dGainTolerance			= 0.5;	// This is ridiciously high, but seems working in this way
+	tCorrelate.dLoResMinScore			= 0.3;	// Intentionally low these two value for ambiguous check
+    tCorrelate.dHiResMinScore			= 0.3;
     tCorrelate.iMaxResultPoints			= 2;
-    tCorrelate.iDepth					= iDepth;
-	tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
-    tCorrelate.iFlatPeakRadiusThresh	= 5;
+	// Flat peak check
+	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
+    //tCorrelate.iFlatPeakRadiusThresh	= 5;
 
 	iFlag =vs2DCorrelate(
 		&tTemplate, &oSearchImage, 
 		searchRect, iDepth, &tCorrelate);
-	if(iFlag < 0)
+	if(iFlag < 0) // Error or no match
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);	
 		return(0);
 	}
-	if(tCorrelate.iNumResultPoints == 0) 
+	if(tCorrelate.iNumResultPoints == 0) // No Match 
+	{
+		vsDispose2DTemplate(&tTemplate);	
+		vsDispose2DCorrelate(&tCorrelate);
+		return(0);
+	}
+	if(tCorrelate.ptCPoint[0].dScore < 0.7) // Match is too low
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);
@@ -755,6 +724,7 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 // For Debug
 void CorrelationPair::DumpImg(string sFileName) const
 {
+	// For debug
 	//if(!_bUsedNgc) return;
 
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
@@ -780,6 +750,7 @@ void CorrelationPair::DumpImg(string sFileName) const
 
 bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
+	// For debug
 	//if(!_bUsedNgc) return(false);
 
 	if(!_bIsProcessed) return(false);

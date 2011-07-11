@@ -204,6 +204,24 @@ void Overlap::Run()
 		}
 	}
 
+	/*/ for debug
+	if(_type == Fov_To_Fov)
+	{
+		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
+		int iIllum1, iIllum2, iCam1, iCam2, iTrig1, iTrig2;
+		iIllum1 = pTemp->GetFirstMosaicImage()->Index();
+		iIllum2 = pTemp->GetSecondMosaicImage()->Index();
+		iCam1 = pTemp->GetFirstCameraIndex();
+		iCam2 = pTemp->GetSecondCameraIndex();
+		iTrig1 = pTemp->GetFirstTriggerIndex();
+		iTrig2 = pTemp->GetSecondTriggerIndex();
+
+		if(iIllum1 == 0 && iTrig1 == 1 && iCam1 == 1 &&
+			iIllum2 == 2 && iTrig2 == 1 && iCam2 == 1)
+			iIllum1 = 0;
+	}//*/
+
+
 	// Do coarse correlation
 	bool bCorrSizeReduced = false;
 	_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
