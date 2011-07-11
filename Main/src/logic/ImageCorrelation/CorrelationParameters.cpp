@@ -15,12 +15,12 @@ CorrelationParameters::CorrelationParameters(void)
 	iCorrMaxColsToUse = 1024;			// Max cols will be used in alignment for a correlation pair if bApplyCorrSizeUpLimit==true
 	iCorrMaxRowsToUse = 1024;			// Max rows will be used in alignment for a correlation pair if bApplyCorrSizeUpLimit==true
 	iCorrPairMinRoiSize = 20;			// The Size of Roi of correlation pair need >= this value to process
-	dMaskAreaRatioTh = 0.05;			// NGC will be used only if Mask area/Roi area > this value
+	dMaskAreaRatioTh = 0.10;			// NGC will be used only if Mask area/Roi area > this value
 
 	// Coarse correlation
 	iCoarseMinDecim = 2;				// Minimum decimatin for coarse correlation
 	iCoarseColSearchExpansion = 50;		// Search expansion in cols for coarse correlation
-	iCoarseRowSearchExpansion = 250;		// Search expansion in rows for coarse correlation
+	iCoarseRowSearchExpansion = 300;		// Search expansion in rows for coarse correlation
 	dCoarseResultReliableTh = 0.03;		// Threshold to decide whether coarse correlaiton result is reliable
 
 	// Fine correlation
