@@ -1,6 +1,5 @@
 #include "OverlapDefines.h"
 #include "Logger.h"
-#include "CorrelationParameters.h"
 #include "MosaicTile.h"
 
 #pragma region Overlap class
@@ -189,7 +188,7 @@ void Overlap::Run()
 	if(_type == Fid_To_Fov)
 	{
 		FidFovOverlap* pTemp =  (FidFovOverlap*)this;
-		if(pTemp->UseVsFinder())
+		if(pTemp->GetFiducialSearchMethod() == FIDVSFINDER)
 		{
 			pTemp->VsfinderAlign();
 			_bProcessed = true;
@@ -542,14 +541,14 @@ FidFovOverlap::FidFovOverlap(
 
 	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 
-	_bUseVsFinder = false;
+	_fidSearchMethod = FIDREGOFF;
 
 	config(pImg1, _pFidImg, validRect, Fid_To_Fov, false);
 }
 
 void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID)
 {
-	_bUseVsFinder = true;
+	_fidSearchMethod = FIDVSFINDER;
 	_pVsfinderCorr = pVsfinderCorr;
 	_iTemplateID = iTemplateID;
 }

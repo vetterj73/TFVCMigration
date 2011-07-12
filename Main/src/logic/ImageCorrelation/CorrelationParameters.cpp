@@ -33,11 +33,9 @@ CorrelationParameters::CorrelationParameters(void)
 	iFineColSearchExpansion = 30;		// Search expansion in cols for fine correlation if coarse correlation is successed
 	iFineRowSearchExpansion = 30;		// Search expansion in rows for fine correlation if coarse correlation is successed
 
-	// Use Vsfinder
-	bUseVsFinder = true;				// Use vsfinder or regoff for fiducial finding
+	// Fiducail search
+	fidSearchMethod = FIDVSFINDER;		// Search method for fiducial
 	dVsFinderMinCorrScore = 0.5;		// The minimum correlation score for vsFinder
-
-	// Fiducial search expansion
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
 

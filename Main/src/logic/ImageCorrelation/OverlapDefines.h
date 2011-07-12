@@ -8,6 +8,7 @@
 #include "CorrelationPair.h"
 #include "VsFinderCorrelation.h"
 #include "JobThread.h"
+#include "CorrelationParameters.h"
 using namespace MosaicDM;
 
 // Base class for overlap between image and image
@@ -165,7 +166,7 @@ public:
 	bool IsReadyToProcess() const;
 
 	// For Vsfinder
-	bool UseVsFinder() const {return _bUseVsFinder;};
+	FiducialSearchMethod GetFiducialSearchMethod() const {return _fidSearchMethod;};
 	bool VsfinderAlign();
 
 	// For debug
@@ -181,7 +182,7 @@ private:
 	double _dFidCenterX;
 	double _dFidCenterY;
 
-	bool _bUseVsFinder;
+	FiducialSearchMethod _fidSearchMethod;
 	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int _iTemplateID;
 };

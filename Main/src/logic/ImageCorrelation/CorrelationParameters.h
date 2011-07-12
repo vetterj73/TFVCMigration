@@ -12,6 +12,12 @@ typedef enum {                           /* Don't change order of enums */
    RGGB
 }BayerPattern;
 
+typedef enum {                           /* Don't change order of enums */
+   FIDREGOFF,
+   FIDVSFINDER,
+   FIDCYBERNGC
+}FiducialSearchMethod;
+
 #pragma once
 
 #define CorrelationParametersInst CorrelationParameters::Instance() 
@@ -50,11 +56,9 @@ public:
 	unsigned int iFineColSearchExpansion;	// Search expansion in cols for fine correlation if coarse correlation is successed
 	unsigned int iFineRowSearchExpansion;	// Search expansion in rows for fine correlation if coarse correlation is successed
 
-	// Use Vsfinder
-	bool bUseVsFinder;						// Use vsfinder or regoff for fiducial finding
+	// Fiducail search
+	FiducialSearchMethod fidSearchMethod;	// Search method for fiducial
 	double dVsFinderMinCorrScore;			// The minimum correlation score for vsFinder
-	
-	// Fiducial search expansion
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
 

@@ -106,7 +106,7 @@ OverlapManager::OverlapManager(
 	// Create Fiducial Fov overlaps
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
-	if(CorrelationParametersInst.bUseVsFinder)	
+	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)	
 		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	CreateFidFovOverlaps();
 
@@ -489,7 +489,7 @@ bool OverlapManager::CreateFiducialImages()
 
 	unsigned int iCount = 0;
 	double dScale = 1.0;						// The expansion scale for regoff
-	if(CorrelationParametersInst.bUseVsFinder) dScale = 1.4;	// The expansion scale for vsfinder 
+	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER) dScale = 1.4;	// The expansion scale for vsfinder 
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
 		
@@ -640,7 +640,7 @@ bool OverlapManager::CreateVsfinderTemplates()
 void OverlapManager::CreateFidFovOverlaps()
 {
 	CreateFiducialImages();
-	if(CorrelationParametersInst.bUseVsFinder)
+	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 		CreateVsfinderTemplates();
 
 	unsigned int i, iCam, iTrig;
@@ -681,7 +681,7 @@ void OverlapManager::CreateFidFovOverlaps()
 						rectFid.LastRow < _pFidImages[iFid].Rows()-1 - (iExpPixelsRow-iSafePixels))
 						continue;
 
-					if(CorrelationParametersInst.bUseVsFinder)
+					if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 					{
 						overlap.SetVsFinder(_pVsfinderCorr, _pVsFinderTempIds[iFid]);
 					}
