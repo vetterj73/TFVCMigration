@@ -9,6 +9,7 @@ public:
 	{
 		_iTemplateID = -1;
 		_ptTemplate = NULL;
+		_ptNegTemplate = NULL;
 		_bValid = false;
 	};
 
@@ -18,6 +19,7 @@ public:
 
 	Feature* _pFeature;
 	VsStCTemplate* _ptTemplate;
+	VsStCTemplate* _ptNegTemplate;
 	unsigned int _iTemplateID;
 	bool _bValid;
 };
@@ -36,8 +38,16 @@ CyberNgcFiducialCorrelation::~CyberNgcFiducialCorrelation(void)
 	{
 		if(i->_bValid)
 		{
-			vsDispose2DTemplate(i->_ptTemplate);
-			if(i->_ptTemplate!=NULL) delete i->_ptTemplate;
+			if(i->_ptTemplate!=NULL) 
+			{
+				vsDispose2DTemplate(i->_ptTemplate);
+				delete i->_ptTemplate;
+			}
+			if(i->_ptNegTemplate!=NULL)
+			{
+				vsDispose2DTemplate(i->_ptNegTemplate);
+				delete i->_ptNegTemplate;
+			}
 		}
 	}
 
@@ -74,12 +84,14 @@ bool CyberNgcFiducialCorrelation::Find(
 {
 	// Get the template from the list
 	VsStCTemplate* ptTemplate = NULL;
+	VsStCTemplate* ptNegTemplate = NULL;
 	list<NgcTemplateSt>::iterator i;
 	for(i=_ngcTemplateStList.begin(); i!=_ngcTemplateStList.end(); i++)
 	{
 		if(i->_iTemplateID == iNodeID)
 		{
 			ptTemplate = i->_ptTemplate;
+			ptNegTemplate = i->_ptNegTemplate;
 			break;
 		}
 	}
@@ -102,7 +114,7 @@ bool CyberNgcFiducialCorrelation::Find(
 	
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
-	//tCorrelate.dGainTolerance			= 0.99;	// This is ridiciously high, but seems working in this way
+	tCorrelate.dGainTolerance			= 8;	
 	tCorrelate.dLoResMinScore			= 0.25;	// Intentionally low these two value for ambiguous check
     tCorrelate.dHiResMinScore			= 0.25;
     tCorrelate.iMaxResultPoints			= 2;
@@ -112,36 +124,98 @@ bool CyberNgcFiducialCorrelation::Find(
 
 	unsigned int iDepth = 3;
 
+	double x1, x2, y1, y2, corr1, corr2, ambig1, ambig2;
+	bool bSuccess1=true, bSuccess2=true;
+
+	// Try regular template
 	int iFlag =vs2DCorrelate(
 		ptTemplate, &oSearchImage, 
 		searchRect, iDepth, &tCorrelate);
-	if(iFlag < 0) // Error or no match
+	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
 	{	
-		vsDispose2DCorrelate(&tCorrelate);	
-		return(false);
-	}
-	if(tCorrelate.iNumResultPoints == 0) // No Match 
-	{	
+		bSuccess1= false;
 		vsDispose2DCorrelate(&tCorrelate);
-		return(false);
 	}
-	if(fabs(tCorrelate.ptCPoint[0].dScore) < 0.4) // Match is too low
-	{	
-		vsDispose2DCorrelate(&tCorrelate);
-		return(false);
-	}
-
-	// Get results
-	x = tCorrelate.ptCPoint[0].dLoc[0]; 
-	y = tCorrelate.ptCPoint[0].dLoc[1];
-	correlation = tCorrelate.ptCPoint[0].dScore;
-	if(tCorrelate.iNumResultPoints >=2)
-		ambig= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
 	else
-		ambig = 0;
+	{
+		// Get results
+		x1 = tCorrelate.ptCPoint[0].dLoc[0]; 
+		y1 = tCorrelate.ptCPoint[0].dLoc[1];
+		corr1 = tCorrelate.ptCPoint[0].dScore;
+		if(tCorrelate.iNumResultPoints >=2)
+			ambig1= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+		else
+			ambig1 = 0;
 
-	// Clean up
-	vsDispose2DCorrelate(&tCorrelate);
+		vsDispose2DCorrelate(&tCorrelate);
+	
+		if(corr1 > 0.7  &&ambig1 < 0.5 )	// if it is good enough
+		{
+			x = x1;
+			y = y1;
+			correlation = corr1;
+			ambig = ambig1;
+			return(true);
+		}	
+	}
+
+	// Try negative template
+	iFlag =vs2DCorrelate(
+		ptNegTemplate, &oSearchImage, 
+		searchRect, iDepth, &tCorrelate);
+	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
+	{	
+		bSuccess2= false;
+		vsDispose2DCorrelate(&tCorrelate);
+	}
+	else
+	{
+		// Get results
+		x2 = tCorrelate.ptCPoint[0].dLoc[0]; 
+		y2 = tCorrelate.ptCPoint[0].dLoc[1];
+		corr2 = tCorrelate.ptCPoint[0].dScore;
+		if(tCorrelate.iNumResultPoints >=2)
+			ambig2= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+		else
+			ambig2 = 0;
+
+		vsDispose2DCorrelate(&tCorrelate);
+	}
+
+	// Decision logic
+	if(!bSuccess1 && !bSuccess2)		// None of them
+		return(false);
+	else if( bSuccess1 && !bSuccess2)	// The first one
+	{
+		x = x1;
+		y = y1;
+		correlation = corr1;
+		ambig = ambig1;
+	}
+	else if( !bSuccess1 && bSuccess2)	// The second one
+	{
+		x = x2;
+		y = y2;
+		correlation = corr2;
+		ambig = ambig2;
+	}
+	else if( bSuccess1 && bSuccess2)	// Pick the better one
+	{
+		if(corr1*(1-ambig1) > corr2*(1-ambig2))
+		{
+			x = x1;
+			y = y1;
+			correlation = corr1;
+			ambig = ambig1;
+		}
+		else
+		{
+			x = x2;
+			y = y2;
+			correlation = corr2;
+			ambig = ambig2;
+		}
+	}
 
 	return(true);
 }
@@ -178,6 +252,22 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 		return(false);
 	}
 
+	// Negative temaplate
+	unsigned char* pbBuf = pTemplateImg->GetBuffer();
+	oTempImage.pdData = new unsigned char[oTempImage.iHeight*oTempImage.iSpan];
+	for(int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
+		oTempImage.pdData[i] = (unsigned char)(255 -pbBuf[i]);
+	
+	templateSt._ptNegTemplate = new VsStCTemplate();
+	iFlag = vsCreate2DTemplate(&oTempImage, templateRect, iDepth, templateSt._ptNegTemplate);
+	if(iFlag<0)
+	{
+		delete templateSt._ptTemplate;
+		delete templateSt._ptNegTemplate;
+		*pTemplateID = -1; 
+		return(false);
+	}
+
 	// Fill the struct
 	templateSt._bValid = true;
 	templateSt._iTemplateID = _iCurrentIndex;
@@ -187,6 +277,9 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	// Add to the list
 	_ngcTemplateStList.push_back(templateSt);
 	*pTemplateID = templateSt._iTemplateID;
+
+	//clean up
+	delete [] oTempImage.pdData;
 
 	return(true);
 }
