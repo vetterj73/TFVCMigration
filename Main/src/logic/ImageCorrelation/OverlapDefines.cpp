@@ -201,6 +201,18 @@ void Overlap::Run()
 
 			return;
 		}
+		else if(pTemp->GetFiducialSearchMethod() == FIDCYBERNGC)
+		{
+			pTemp->NgcFidAlign();
+			_bProcessed = true;
+
+			if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
+			{
+				DumpOvelapImages();
+				DumpResultImages();
+			}
+			return;
+		}
 	}
 
 	/*/ for debug
@@ -553,6 +565,13 @@ void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int
 	_iTemplateID = iTemplateID;
 }
 
+void FidFovOverlap::SetNgcFid(CyberNgcFiducialCorrelation* pNgcFidCorr, unsigned int iTemplateID)
+{
+	_fidSearchMethod = FIDCYBERNGC;
+	_pNgcFidCorr = pNgcFidCorr;
+	_iTemplateID = iTemplateID;
+}
+
 bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
@@ -664,6 +683,58 @@ bool FidFovOverlap::VsfinderAlign()
 		result.ColOffset,
 		result.RowOffset,
 		ngc);
+
+	return(true);
+}
+
+bool FidFovOverlap::NgcFidAlign()
+{
+	double x, y, corscore, ambig;
+	double search_center_x = (_coarsePair.GetFirstRoi().FirstColumn + _coarsePair.GetFirstRoi().LastColumn)/2.0; 
+	double search_center_y = (_coarsePair.GetFirstRoi().FirstRow + _coarsePair.GetFirstRoi().LastRow)/2.0; 
+	
+	bool bFlag = _pNgcFidCorr->Find(
+		_iTemplateID,					// Map ID of template  and finder
+		_coarsePair.GetFirstImg(),		// Search image
+		_coarsePair.GetFirstRoi(),		// Search ROI
+		x,								// returned x location of the center of the template from the origin
+		y,								// returned Y location of the center of the template from the origin
+		corscore,						// match score [-1,1]
+		ambig);							// ratio of (second best/best match) score 0-1
+
+	CorrelationResult result;
+	if(bFlag)	// Valid results
+	{
+		result.CorrCoeff = corscore;
+		result.AmbigScore = ambig;
+		
+		// Unclipped image patch (first image of overlap) center 
+		// matches drawed fiducial center (second image of overlap) in the overlap
+		// alignment offset is the difference of unclipped image patch center 
+		// and idea location of fiducial in first image of overlap
+		// Offset of unclipped center and clipped center
+		double dCenOffsetX = (_coarsePair.GetSecondImg()->Columns()-1)/2.0 - 
+			(_coarsePair.GetSecondRoi().FirstColumn+_coarsePair.GetSecondRoi().LastColumn)/2.0;
+		double dCenOffsetY = (_coarsePair.GetSecondImg()->Rows()-1)/2.0 - 
+			(_coarsePair.GetSecondRoi().FirstRow+_coarsePair.GetSecondRoi().LastRow)/2.0;
+		double dUnclipCenterX = search_center_x + dCenOffsetX;
+		double dUnclipCenterY = search_center_y + dCenOffsetY;
+		result.ColOffset = dUnclipCenterX - x;
+		result.RowOffset = dUnclipCenterY - y;
+	}
+	else	// Invalid results
+	{
+		result.CorrCoeff = 0;
+		result.AmbigScore = 1;
+	}
+
+	_coarsePair.SetCorrlelationResult(result);
+
+	LOG.FireLogEntry(LogTypeDiagnostic, "CyberNGC Score=%f; ambig=%f; xOffset=%f; yOffset=%f", 
+		result.CorrCoeff, 
+		result.AmbigScore,
+		result.ColOffset,
+		result.RowOffset);
 
 	return(true);
 }

@@ -168,6 +168,7 @@ copy *.h ..\..\..\pub\include</Command>
   <ItemGroup>
     <ClInclude Include="CorrelationPair.h" />
     <ClInclude Include="CorrelationParameters.h" />
+    <ClInclude Include="CyberNgcFiducialCorrelation.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
     <ClInclude Include="VsFinderCorrelation.h" />
@@ -175,6 +176,7 @@ copy *.h ..\..\..\pub\include</Command>
   <ItemGroup>
     <ClCompile Include="CorrelationPair.cpp" />
     <ClCompile Include="CorrelationParameters.cpp" />
+    <ClCompile Include="CyberNgcFiducialCorrelation.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
     <ClCompile Include="VsFinderCorrelation.cpp" />

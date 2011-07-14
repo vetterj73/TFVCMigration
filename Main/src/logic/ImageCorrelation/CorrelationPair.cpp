@@ -1,7 +1,6 @@
 #include "CorrelationPair.h"
 
 #include "regoff.h"
-//#include "VsNgcWrapper.h"
 #include "Ngc.h"
 #include "Logger.h"
 #include "CorrelationParameters.h"
@@ -556,7 +555,7 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - (_roi2.FirstRow+_roi2.LastRow)/2.0;
 	_result.CorrCoeff = tCorrelate.ptCPoint[0].dScore;
 	if(tCorrelate.iNumResultPoints >=2)
-		_result.AmbigScore= tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore;
+		_result.AmbigScore= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
 	else
 		_result.AmbigScore = 0;
 
@@ -731,6 +730,17 @@ void CorrelationPair::DumpImg(string sFileName) const
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
 		+ _roi1.FirstColumn;
 
+	/* for debug
+	Bitmap *grey1 = Bitmap::NewBitmapFromBuffer( 
+		_roi1.Rows(), 
+		_roi1.Columns(),
+		_pImg1->PixelRowStride(),
+		pcBuf1,
+		8);
+	grey1->write(sFileName);
+	delete grey1;
+	//*/
+
 	unsigned char* pcBuf2 = _pImg2->GetBuffer() 
 		+ _pImg2->PixelRowStride()*_roi2.FirstRow
 		+ _roi2.FirstColumn;
@@ -742,6 +752,17 @@ void CorrelationPair::DumpImg(string sFileName) const
 		pcBuf2,
 		_pImg1->PixelRowStride(),
 		_pImg2->PixelRowStride() );
+
+	/* for debug
+	Bitmap *grey2 = Bitmap::NewBitmapFromBuffer( 
+		_roi2.Rows(), 
+		_roi2.Columns(),
+		_pImg2->PixelRowStride(),
+		pcBuf2,
+		8);
+	grey2->write(sFileName);
+	delete grey2;
+	//*/
 
 	rbg->write(sFileName);
 

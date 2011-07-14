@@ -106,8 +106,14 @@ OverlapManager::OverlapManager(
 	// Create Fiducial Fov overlaps
 		// Allocate _pVsfinderCorr if it is necessary
 	_pVsfinderCorr = NULL;
+	_pNgcFidCorr = NULL;
+	_pVsFinderTempIds = NULL;
+	_pNgcFidTempIds = NULL;
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)	
 		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
+	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)	
+		_pNgcFidCorr = new CyberNgcFiducialCorrelation();
+
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -145,6 +151,12 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pVsfinderCorr != NULL)
 		delete _pVsfinderCorr;
+
+	if(_pNgcFidTempIds !=NULL)
+		delete [] _pNgcFidTempIds;
+
+	if(_pNgcFidCorr != NULL)
+		delete _pNgcFidCorr;
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
@@ -489,7 +501,10 @@ bool OverlapManager::CreateFiducialImages()
 
 	unsigned int iCount = 0;
 	double dScale = 1.0;						// The expansion scale for regoff
-	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER) dScale = 1.4;	// The expansion scale for vsfinder 
+	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+		dScale = 1.4;
+	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC) 
+		dScale = 1.6;	// The expansion scale for template base NGC and vsfinder
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
 		
@@ -608,7 +623,6 @@ bool OverlapManager::CreateVsfinderTemplates()
 	if(_pVsfinderCorr == NULL)
 		return(false);
 
-	_pVsFinderTempIds = NULL;
 	unsigned int iNum = _pPanel->NumberOfFiducials();
 
 	if(iNum <=0) 
@@ -636,12 +650,62 @@ bool OverlapManager::CreateVsfinderTemplates()
 	return(true);
 }
 
+// Create Cyber Ngc template
+bool OverlapManager::CreateNgcFidTemplates()
+{
+	if(_pNgcFidCorr == NULL)
+		return(false);
+	
+	unsigned int iNum = _pPanel->NumberOfFiducials();
+	if(iNum <=0) 
+	{
+		LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateNgcFidTemplates():No fiducial avaliable for alignment");
+		return(false);
+	}
+	_pNgcFidTempIds = new unsigned int[iNum];
+
+	// Fiducial image serach expansion in Pixels
+	int iPixelExpRow = CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX();
+	int iPixelExpCol = CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeY();
+
+	unsigned int iCount = 0;
+	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
+	{
+		// Template roi
+		UIRect tempRoi;
+		tempRoi.FirstColumn = iPixelExpCol;
+		tempRoi.LastColumn = _pFidImages[iCount].Columns()-1 - iPixelExpCol;
+		tempRoi.FirstRow = iPixelExpRow;
+		tempRoi.LastRow = _pFidImages[iCount].Rows()-1 - iPixelExpRow;
+
+		//_pFidImages[iCount].Save("C:\\Temp\\fiducial.bmp");
+
+		// Create template
+		int iId = _pNgcFidCorr->CreateNgcTemplate(i->second, &_pFidImages[iCount], tempRoi);
+		if(iId < 0) 
+		{
+			LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateNgcFidTemplates():Failed to create CyberNgc template");
+			return(false);
+		}
+
+		// Record template ID
+		_pNgcFidTempIds[iCount] = iId;
+
+		iCount++;
+	}
+
+	return(true);
+}
+
+
 // Create Fiducial and Fov overlaps
 void OverlapManager::CreateFidFovOverlaps()
 {
 	CreateFiducialImages();
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 		CreateVsfinderTemplates();
+	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
+		CreateNgcFidTemplates();
 
 	unsigned int i, iCam, iTrig;
 	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
@@ -684,6 +748,10 @@ void OverlapManager::CreateFidFovOverlaps()
 					if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 					{
 						overlap.SetVsFinder(_pVsfinderCorr, _pVsFinderTempIds[iFid]);
+					}
+					else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
+					{
+						overlap.SetNgcFid(_pNgcFidCorr, _pNgcFidTempIds[iFid]);
 					}
 
 					// Add overlap

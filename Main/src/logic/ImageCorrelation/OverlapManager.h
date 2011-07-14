@@ -7,6 +7,7 @@
 #include "OverlapDefines.h"
 #include "Panel.h"
 #include "VsFinderCorrelation.h"
+#include "CyberNgcFiducialCorrelation.h"
 #include "MosaicSet.h"
 #include "JobManager.h"
 
@@ -90,6 +91,7 @@ protected:
 		double dScale);
 
 	bool CreateVsfinderTemplates();
+	bool CreateNgcFidTemplates();
 
 private:	
 	MosaicSet *_pMosaicSet;
@@ -116,6 +118,11 @@ private:
 	// For vsfinder
 	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int* _pVsFinderTempIds;
+
+	// For CyberNgc
+	CyberNgcFiducialCorrelation* _pNgcFidCorr; 
+	unsigned int* _pNgcFidTempIds;
+
 	CyberJob::JobManager *_pJobManager;
 };
 

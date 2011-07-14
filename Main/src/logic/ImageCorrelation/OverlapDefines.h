@@ -7,6 +7,7 @@
 #include "MosaicLayer.h"
 #include "CorrelationPair.h"
 #include "VsFinderCorrelation.h"
+#include "CyberNgcFiducialCorrelation.h"
 #include "JobThread.h"
 #include "CorrelationParameters.h"
 using namespace MosaicDM;
@@ -153,6 +154,7 @@ public:
 		DRect validRect);
 
 	void SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID);
+	void SetNgcFid(CyberNgcFiducialCorrelation* pNgcFidCorr, unsigned int iTemplateID); 
 
 	MosaicLayer* GetMosaicImage() const {return _pMosaic;};
 	unsigned int GetTriggerIndex() const {return _imgPos.second;};
@@ -168,6 +170,7 @@ public:
 	// For Vsfinder
 	FiducialSearchMethod GetFiducialSearchMethod() const {return _fidSearchMethod;};
 	bool VsfinderAlign();
+	bool NgcFidAlign();
 
 	// For debug
 	bool DumpOvelapImages();
@@ -184,6 +187,7 @@ private:
 
 	FiducialSearchMethod _fidSearchMethod;
 	VsFinderCorrelation* _pVsfinderCorr;
-	unsigned int _iTemplateID;
+	CyberNgcFiducialCorrelation* _pNgcFidCorr;
+	unsigned int _iTemplateID; // for Vsfinder or CyberNgc
 };
 

@@ -141,7 +141,8 @@ bool VsFinderCorrelation::CreateVsTemplate(
 	return(true);
 }
 
-// Get the
+// Return the template ID for a feature if a template for it already exists
+// otherwise, return -1
 int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
 {
 	list<FeatureTemplateID>::const_iterator i;
