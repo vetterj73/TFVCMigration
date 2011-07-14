@@ -114,7 +114,7 @@ bool CyberNgcFiducialCorrelation::Find(
 	
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
-	tCorrelate.dGainTolerance			= 8;	
+	tCorrelate.dGainTolerance			= 5;	
 	tCorrelate.dLoResMinScore			= 0.25;	// Intentionally low these two value for ambiguous check
     tCorrelate.dHiResMinScore			= 0.25;
     tCorrelate.iMaxResultPoints			= 2;
