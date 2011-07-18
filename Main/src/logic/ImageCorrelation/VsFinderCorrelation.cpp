@@ -90,44 +90,46 @@ bool VsFinderCorrelation::CreateVsTemplate(
 	double dMinScale[2]={0.95, 0.95};
 	double dMaxScale[2]={1.05, 1.05};
 
+	// Convert roation angle from count-clockwise degreee to clockwise and unit 1 for 360 degree
+	double dTheta = -pFid->GetRotation()/360.; 
 	switch(pFid->GetShape())
 	{
 	case Feature::SHAPE_CROSS:
 		_pVsw->create_cross_template(pTemplateID, vswrapper::FIDUCIAL,
 			((CrossFeature*)pFid)->GetSizeX(), ((CrossFeature*)pFid)->GetSizeY(),
 			((CrossFeature*)pFid)->GetLegSizeX(), ((CrossFeature*)pFid)->GetLegSizeY(),
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DIAMOND:
 		_pVsw->create_diamond_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(),
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DISC:
 		_pVsw->create_disc_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiscFeature*)pFid)->GetDiameter()/2,
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DONUT:
 		_pVsw->create_donut_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DonutFeature*)pFid)->GetDiameterInside()/2,((DonutFeature*)pFid)->GetDiameterOutside()/2,
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_RECTANGLE:
 		_pVsw->create_rectangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(),
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_TRIANGLE:
 		_pVsw->create_triangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(),
 			((TriangleFeature*)pFid)->GetOffset(),
-			0, 1, dMinScale, dMaxScale);
+			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CYBER:
