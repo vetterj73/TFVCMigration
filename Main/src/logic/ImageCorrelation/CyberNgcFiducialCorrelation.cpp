@@ -1,6 +1,33 @@
 #include "CyberNgcFiducialCorrelation.h"
 #include "Ngc.h"
 
+#include "morpho.h"
+
+// 2D Morphological process (a Warp up of Rudd's morpho2D 
+void Morpho_2D1(
+	unsigned char* pbBuf,
+	unsigned int iSpan,
+	unsigned int iXStart,
+	unsigned int iYStart,
+	unsigned int iBlockWidth,
+	unsigned int iBlockHeight,
+	unsigned int iKernelWidth, 
+	unsigned int iKernelHeight, 
+	int iType)
+{
+	int CACHE_REPS = CACHE_LINE/sizeof(unsigned char);
+	int MORPHOBUF1 = 2+CACHE_REPS;
+
+	// Morphological process
+	unsigned char *pbWork;
+	int iMem  = (2 * iBlockWidth) > ((int)(MORPHOBUF1)*iBlockHeight) ? (2 * iBlockWidth) : ((int)(MORPHOBUF1)*iBlockHeight); 
+	pbWork = new unsigned char[iMem];
+
+	morpho2d(iBlockWidth, iBlockHeight, pbBuf+ iYStart*iSpan + iXStart, iSpan, pbWork, iKernelWidth, iKernelHeight, iType);
+
+	delete [] pbWork;
+}
+
 // Class for internal use only
 class NgcTemplateSt
 {
@@ -227,7 +254,7 @@ bool CyberNgcFiducialCorrelation::Find(
 // pTemplateID: output, ID of vsfinder template
 bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi, int* pTemplateID)
 {
-	// Create template
+	// Prepare image and roi
 	SvImage oTempImage;
 	oTempImage.pdData = pTemplateImg->GetBuffer();
 	oTempImage.iWidth = pTemplateImg->Columns();
@@ -239,7 +266,40 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	templateRect.lXMax = tempRoi.LastColumn;
 	templateRect.lYMin = tempRoi.FirstRow;
 	templateRect.lYMax = tempRoi.LastRow;
-	
+
+	// Prepare mask
+	int iSpan = oTempImage.iSpan;
+	int iWidth = oTempImage.iWidth;
+	int iHeight = oTempImage.iHeight;
+	int iExpansion = 8;
+	unsigned char* dilateBuf = new unsigned char[iSpan*iHeight];
+	unsigned char* erodeBuf = new unsigned char[iSpan*iHeight];
+
+	for(int i = 0; i < iSpan*iHeight; i++)
+	{
+		if(oTempImage.pdData[i]>=128) // remove the effect of anti-alias
+		{
+			dilateBuf[i] = 255;
+			erodeBuf[i] =  255;
+		}
+		else
+		{
+			dilateBuf[i] = 0;
+			erodeBuf[i] =  0;
+		}
+	}
+
+	Morpho_2D1(dilateBuf, iSpan,		// buffer and stride
+		0, 0, iWidth, iHeight, // Roi
+		iExpansion*2+1, iExpansion*2+1,		// Kernael size
+		DILATE);									// Type
+
+	Morpho_2D1(erodeBuf, iSpan,		// buffer and stride
+		0, 0, iWidth, iHeight, // Roi
+		iExpansion*2+1, iExpansion*2+1,		// Kernael size
+		ERODE);		// Type
+
+	// Create positive template
 	int iDepth = 3;
 	
 	NgcTemplateSt templateSt;
@@ -249,10 +309,32 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	{
 		delete templateSt._ptTemplate;
 		*pTemplateID = -1; 
+		delete [] dilateBuf;
+		delete [] erodeBuf;
 		return(false);
 	}
 
-	// Negative temaplate
+	// Mask positive templae
+	unsigned char* pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+	unsigned char* pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+	int iCount = 0;
+	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+	{
+		for(int ix = 0; ix < (int)templateRect.Width(); ix++)
+		{
+			if(pDilateLine[ix] == pErodeLine[ix])
+				templateSt._ptTemplate->pbMask[iCount] = 1; //masked
+			else
+				templateSt._ptTemplate->pbMask[iCount] = 0;
+
+			iCount++;
+		}
+		pDilateLine += iSpan;
+		pErodeLine += iSpan;
+	}	
+	iFlag = vsMask2DNgcTemplate(templateSt._ptTemplate);
+
+	// Create negative temaplate
 	unsigned char* pbBuf = pTemplateImg->GetBuffer();
 	oTempImage.pdData = new unsigned char[oTempImage.iHeight*oTempImage.iSpan];
 	for(int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
@@ -265,8 +347,31 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 		delete templateSt._ptTemplate;
 		delete templateSt._ptNegTemplate;
 		*pTemplateID = -1; 
+		delete [] oTempImage.pdData;
+		delete [] dilateBuf;
+		delete [] erodeBuf;
 		return(false);
 	}
+
+	// Mask negative template
+	pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+	pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+	iCount = 0;
+	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+	{
+		for(int ix = 0; ix < (int)templateRect.Width(); ix++)
+		{
+			if(pDilateLine[ix] == pErodeLine[ix])
+				templateSt._ptNegTemplate->pbMask[iCount] = 1; //masked
+			else
+				templateSt._ptNegTemplate->pbMask[iCount] = 0;
+
+			iCount++;
+		}
+		pDilateLine += iSpan;
+		pErodeLine += iSpan;
+	}		
+	iFlag = vsMask2DNgcTemplate(templateSt._ptNegTemplate);
 
 	// Fill the struct
 	templateSt._bValid = true;
@@ -280,6 +385,8 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 
 	//clean up
 	delete [] oTempImage.pdData;
+	delete [] dilateBuf;
+	delete [] erodeBuf;
 
 	return(true);
 }
