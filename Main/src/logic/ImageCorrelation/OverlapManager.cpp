@@ -504,7 +504,7 @@ bool OverlapManager::CreateFiducialImages()
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 		dScale = 1.4;
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC) 
-		dScale = 1.6;	// The expansion scale for template base NGC and vsfinder
+		dScale = 1.4;	// The expansion scale for template base NGC and vsfinder
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
 		
