@@ -77,6 +77,7 @@ namespace PanelAlignM {
 		void LogMaskVectors(bool bLog);	
 		void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
 		void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
+		void UseCyberNgc4Fiducial();
 		int GetNumberOfFidsProcessed();
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 

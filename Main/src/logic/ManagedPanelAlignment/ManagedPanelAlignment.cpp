@@ -103,6 +103,11 @@ namespace PanelAlignM {
 		_pAligner->FiducialSearchExpansionYInMeters(fidSearchYInMeters);
 	}
 
+	void ManagedPanelAlignment::UseCyberNgc4Fiducial()
+	{
+		_pAligner->UseCyberNgc4Fiducial();
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{

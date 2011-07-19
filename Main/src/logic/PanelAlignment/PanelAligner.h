@@ -43,6 +43,7 @@ public:
 	void NumThreads(unsigned int numThreads);
 	void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
 	void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
+	void UseCyberNgc4Fiducial();
 
 	FidFovOverlapList* GetLastProcessedFids();
 

@@ -137,6 +137,11 @@ void PanelAligner::FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
 	CorrelationParametersInst.dFiducialSearchExpansionY = fidSearchYInMeters;
 }
 
+void PanelAligner::UseCyberNgc4Fiducial()
+{
+	CorrelationParametersInst.fidSearchMethod = FIDCYBERNGC;
+}
+
 // Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(
 	unsigned int iLayerIndex, 

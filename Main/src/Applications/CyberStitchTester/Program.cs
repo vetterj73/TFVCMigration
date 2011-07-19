@@ -87,7 +87,8 @@ namespace CyberStitchTester
                 _aligner.NumThreads(_numThreads);
      //           _aligner.LogOverlaps(true);
      //           _aligner.LogMaskVectors(true);
-     //           _aligner.LogFiducialOverlaps(true);
+                //_aligner.LogFiducialOverlaps(true);
+                _aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
