@@ -4,6 +4,8 @@
 
 #pragma once
 
+
+
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row
@@ -45,3 +47,16 @@ void BayerToLum(
 //	This will give the number of pixels in a common way...
 //
 int GetNumPixels(double size, double pixelSize);
+
+
+// 2D Morphological process (a Warp up of Rudd's morpho2D) 
+void Morpho_2d(
+	unsigned char* pbBuf,
+	unsigned int iSpan,
+	unsigned int iXStart,
+	unsigned int iYStart,
+	unsigned int iBlockWidth,
+	unsigned int iBlockHeight,
+	unsigned int iKernelWidth, 
+	unsigned int iKernelHeight, 
+	int iType);

@@ -1,32 +1,8 @@
 #include "CyberNgcFiducialCorrelation.h"
 #include "Ngc.h"
-
+#include "Utilities.h"
 #include "morpho.h"
 
-// 2D Morphological process (a Warp up of Rudd's morpho2D 
-void Morpho_2D1(
-	unsigned char* pbBuf,
-	unsigned int iSpan,
-	unsigned int iXStart,
-	unsigned int iYStart,
-	unsigned int iBlockWidth,
-	unsigned int iBlockHeight,
-	unsigned int iKernelWidth, 
-	unsigned int iKernelHeight, 
-	int iType)
-{
-	int CACHE_REPS = CACHE_LINE/sizeof(unsigned char);
-	int MORPHOBUF1 = 2+CACHE_REPS;
-
-	// Morphological process
-	unsigned char *pbWork;
-	int iMem  = (2 * iBlockWidth) > ((int)(MORPHOBUF1)*iBlockHeight) ? (2 * iBlockWidth) : ((int)(MORPHOBUF1)*iBlockHeight); 
-	pbWork = new unsigned char[iMem];
-
-	morpho2d(iBlockWidth, iBlockHeight, pbBuf+ iYStart*iSpan + iXStart, iSpan, pbWork, iKernelWidth, iKernelHeight, iType);
-
-	delete [] pbWork;
-}
 
 // Class for internal use only
 class NgcTemplateSt
@@ -55,6 +31,8 @@ public:
 CyberNgcFiducialCorrelation::CyberNgcFiducialCorrelation(void)
 {
 	_iCurrentIndex = 0;
+
+	_iDepth = 3; 
 }
 
 
@@ -149,15 +127,13 @@ bool CyberNgcFiducialCorrelation::Find(
 	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
     //tCorrelate.iFlatPeakRadiusThresh	= 5;
 
-	unsigned int iDepth = 3;
-
 	double x1, x2, y1, y2, corr1, corr2, ambig1, ambig2;
 	bool bSuccess1=true, bSuccess2=true;
 
 	// Try regular template
 	int iFlag =vs2DCorrelate(
 		ptTemplate, &oSearchImage, 
-		searchRect, iDepth, &tCorrelate);
+		searchRect, _iDepth, &tCorrelate);
 	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
 	{	
 		bSuccess1= false;
@@ -189,7 +165,7 @@ bool CyberNgcFiducialCorrelation::Find(
 	// Try negative template
 	iFlag =vs2DCorrelate(
 		ptNegTemplate, &oSearchImage, 
-		searchRect, iDepth, &tCorrelate);
+		searchRect, _iDepth, &tCorrelate);
 	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
 	{	
 		bSuccess2= false;
@@ -271,7 +247,7 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	int iSpan = oTempImage.iSpan;
 	int iWidth = oTempImage.iWidth;
 	int iHeight = oTempImage.iHeight;
-	int iExpansion = 8;
+	int iExpansion = CalculateRingHalfWidth(pFid, pTemplateImg->PixelSizeX());
 	unsigned char* dilateBuf = new unsigned char[iSpan*iHeight];
 	unsigned char* erodeBuf = new unsigned char[iSpan*iHeight];
 
@@ -289,22 +265,20 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 		}
 	}
 
-	Morpho_2D1(dilateBuf, iSpan,		// buffer and stride
+	Morpho_2d(dilateBuf, iSpan,		// buffer and stride
 		0, 0, iWidth, iHeight, // Roi
 		iExpansion*2+1, iExpansion*2+1,		// Kernael size
 		DILATE);									// Type
 
-	Morpho_2D1(erodeBuf, iSpan,		// buffer and stride
+	Morpho_2d(erodeBuf, iSpan,		// buffer and stride
 		0, 0, iWidth, iHeight, // Roi
 		iExpansion*2+1, iExpansion*2+1,		// Kernael size
 		ERODE);		// Type
 
 	// Create positive template
-	int iDepth = 3;
-	
 	NgcTemplateSt templateSt;
 	templateSt._ptTemplate = new VsStCTemplate();
-	int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, iDepth, templateSt._ptTemplate);
+	int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptTemplate);
 	if(iFlag<0)
 	{
 		delete templateSt._ptTemplate;
@@ -341,7 +315,7 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 		oTempImage.pdData[i] = (unsigned char)(255 -pbBuf[i]);
 	
 	templateSt._ptNegTemplate = new VsStCTemplate();
-	iFlag = vsCreate2DTemplate(&oTempImage, templateRect, iDepth, templateSt._ptNegTemplate);
+	iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptNegTemplate);
 	if(iFlag<0)
 	{
 		delete templateSt._ptTemplate;
@@ -477,4 +451,19 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 	}
 
 	return(-1);
+}
+
+// Calculate half width of ring in pixels for template createion for a feature
+unsigned int CyberNgcFiducialCorrelation::CalculateRingHalfWidth(Feature* pFid, double dImageResolution)
+{
+	// Feature bound box size
+	Box box = pFid->GetBoundingBox();
+	double dSize = box.Width()>box.Height() ? box.Width() : box.Height();
+	
+	// Half width of ring in pixels
+	double dScale = 8;
+	unsigned int iValue = (unsigned int) (dSize/dImageResolution/dScale + 0.5);
+	if(iValue > 10) iValue = 10;
+
+	return(iValue);
 }

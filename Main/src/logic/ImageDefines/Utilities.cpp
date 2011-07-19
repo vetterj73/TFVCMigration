@@ -1,6 +1,7 @@
 #include "Utilities.h"
 #include "lsqrpoly.h" 
 #include "math.h"
+#include "morpho.h"
 
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
@@ -309,4 +310,29 @@ void BayerToLum(
 int GetNumPixels(double sizeInMeters, double pixelSize)
 {
 	return(int)floor((sizeInMeters/pixelSize)+0.5);
+}
+
+// 2D Morphological process (a Warp up of Rudd's morpho2D)
+void Morpho_2d(
+	unsigned char* pbBuf,
+	unsigned int iSpan,
+	unsigned int iXStart,
+	unsigned int iYStart,
+	unsigned int iBlockWidth,
+	unsigned int iBlockHeight,
+	unsigned int iKernelWidth, 
+	unsigned int iKernelHeight, 
+	int iType)
+{
+	int CACHE_REPS = CACHE_LINE/sizeof(unsigned char);
+	int MORPHOBUF1 = 2+CACHE_REPS;
+
+	// Morphological process
+	unsigned char *pbWork;
+	int iMem  = (2 * iBlockWidth) > ((int)(MORPHOBUF1)*iBlockHeight) ? (2 * iBlockWidth) : ((int)(MORPHOBUF1)*iBlockHeight); 
+	pbWork = new unsigned char[iMem];
+
+	morpho2d(iBlockWidth, iBlockHeight, pbBuf+ iYStart*iSpan + iXStart, iSpan, pbWork, iKernelWidth, iKernelHeight, iType);
+
+	delete [] pbWork;
 }

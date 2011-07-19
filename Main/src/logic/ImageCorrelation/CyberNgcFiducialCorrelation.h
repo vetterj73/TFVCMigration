@@ -26,9 +26,12 @@ public:
 protected:
 	bool CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi, int* pTemplateID);
 	int GetNgcTemplateID(Feature* pFeature);
+	unsigned int CalculateRingHalfWidth(Feature* pFid, double dImageResolution);
 
 private:
 	list<NgcTemplateSt> _ngcTemplateStList;
 	unsigned int _iCurrentIndex;
+
+	unsigned int _iDepth;	// Depth for template creation and searching
 };
 
