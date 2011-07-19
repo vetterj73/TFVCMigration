@@ -59,6 +59,7 @@ public:
 	// Fiducail search
 	FiducialSearchMethod fidSearchMethod;	// Search method for fiducial
 	double dVsFinderMinCorrScore;			// The minimum correlation score for vsFinder
+	double dCyberNgcMinCorrScore;			// The minimum correlation score for vsFinder
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
 

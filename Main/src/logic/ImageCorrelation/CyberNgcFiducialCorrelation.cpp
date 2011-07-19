@@ -2,6 +2,7 @@
 #include "Ngc.h"
 #include "Utilities.h"
 #include "morpho.h"
+#include "CorrelationParameters.h"
 
 
 // Class for internal use only
@@ -87,6 +88,8 @@ bool CyberNgcFiducialCorrelation::Find(
 		double &correlation,    // match score [-1,1]
 		double &ambig)          // ratio of (second best/best match) score 0-1
 {
+	double dMinScore = CorrelationParametersInst.dCyberNgcMinCorrScore;
+
 	// Get the template from the list
 	VsStCTemplate* ptTemplate = NULL;
 	VsStCTemplate* ptNegTemplate = NULL;
@@ -120,8 +123,8 @@ bool CyberNgcFiducialCorrelation::Find(
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
 	tCorrelate.dGainTolerance			= 5;	
-	tCorrelate.dLoResMinScore			= 0.25;	// Intentionally low these two value for ambiguous check
-    tCorrelate.dHiResMinScore			= 0.25;
+	tCorrelate.dLoResMinScore			= dMinScore/2;	// Intentionally low these two value for ambiguous check
+    tCorrelate.dHiResMinScore			= dMinScore/2;
     tCorrelate.iMaxResultPoints			= 2;
 	// Flat peak check
 	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
@@ -130,11 +133,11 @@ bool CyberNgcFiducialCorrelation::Find(
 	double x1, x2, y1, y2, corr1, corr2, ambig1, ambig2;
 	bool bSuccess1=true, bSuccess2=true;
 
-	// Try regular template
+	// Try postive template
 	int iFlag =vs2DCorrelate(
 		ptTemplate, &oSearchImage, 
 		searchRect, _iDepth, &tCorrelate);
-	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
+	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
 	{	
 		bSuccess1= false;
 		vsDispose2DCorrelate(&tCorrelate);
@@ -166,7 +169,7 @@ bool CyberNgcFiducialCorrelation::Find(
 	iFlag =vs2DCorrelate(
 		ptNegTemplate, &oSearchImage, 
 		searchRect, _iDepth, &tCorrelate);
-	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < 0.5) // Error or no match
+	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
 	{	
 		bSuccess2= false;
 		vsDispose2DCorrelate(&tCorrelate);

@@ -37,6 +37,7 @@ CorrelationParameters::CorrelationParameters(void)
 	fidSearchMethod = FIDVSFINDER;		// Search method for fiducial
 	//fidSearchMethod = FIDCYBERNGC;		// Search method for fiducial
 	dVsFinderMinCorrScore = 0.5;		// The minimum correlation score for vsFinder
+	dCyberNgcMinCorrScore = 0.5;		// The minimum correlation score for CyberNgc
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
 
