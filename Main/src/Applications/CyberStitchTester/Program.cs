@@ -16,6 +16,7 @@ namespace CyberStitchTester
     {
         private const double cPixelSizeInMeters = 1.70e-5;
         private static ManagedMosaicSet _mosaicSet = null;
+        private static ManagedMosaicSet _mosaicSetCopy = null;
         private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
@@ -131,6 +132,7 @@ namespace CyberStitchTester
                     if(_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
                         Output("Could not save mosaic images");
 
+                    // Test save to 
 /*
                     if(_mosaicSet.LoadAllStitchedImagesFromDirectory("c:\\temp\\") == false)
                         Output("Could not load mosaic images");
@@ -165,6 +167,14 @@ namespace CyberStitchTester
                         _panel.GetCADBuffer(),
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
+                    // Testing a copy of mosaic...
+                    _mosaicSetCopy.CopyBuffers(_mosaicSet);
+                    _mosaicSetCopy.CopyTransforms(_mosaicSet);
+                    _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
+                         _mosaicSetCopy.GetLayer(iLayerIndex1).GetStitchedBuffer(),
+                         _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
+                         _panel.GetCADBuffer(),
+                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                 }
 
                 // should we do another cycle?
@@ -302,9 +312,10 @@ namespace CyberStitchTester
                 return;
             }
             _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers);
+            _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
         }
 

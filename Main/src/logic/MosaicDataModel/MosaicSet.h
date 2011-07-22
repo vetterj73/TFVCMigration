@@ -116,6 +116,12 @@ namespace MosaicDM
 			/// Loads all stitched images from a folder...
 			bool LoadAllStitchedImagesFromDirectory(string directoryName);
 
+			/// Copies transforms from an existing mosaic set.
+			bool CopyTransforms(MosaicSet *pMosaicSet);
+
+			/// Copies transforms from an existing mosaic set.
+			bool CopyBuffers(MosaicSet *pMosaicSet);
+
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;

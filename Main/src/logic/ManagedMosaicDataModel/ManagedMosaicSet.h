@@ -151,6 +151,18 @@ namespace MMosaicDM
 			/// Loads all stitched images from a folder...
 			bool LoadAllStitchedImagesFromDirectory(System::String^ dirrectoryName);
 
+			///
+			/// Copy transforms from a different mosaic set...
+			///	This is currently needed for sentry because the panel aligner only works with a single panel.
+			///
+			bool CopyTransforms(ManagedMosaicSet ^pSet);
+
+			///
+			/// Copy buffers from a different mosaic set...
+			///	This is currently needed for sentry because the panel aligner only works with a single panel.
+			///
+			bool CopyBuffers(ManagedMosaicSet ^pSet);
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		

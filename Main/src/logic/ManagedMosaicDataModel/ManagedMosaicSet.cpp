@@ -22,4 +22,16 @@ namespace MMosaicDM
 		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
 		return bGood;
 	}
+
+	bool ManagedMosaicSet::CopyTransforms(ManagedMosaicSet ^pManagedMosaicSet)
+	{
+		MosaicDM::MosaicSet* pSet =(MosaicDM::MosaicSet*)(void*)pManagedMosaicSet->UnmanagedMosaicSet;
+		return _pMosaicSet->CopyTransforms(pSet);
+	}
+
+	bool ManagedMosaicSet::CopyBuffers(ManagedMosaicSet ^pManagedMosaicSet)
+	{
+		MosaicDM::MosaicSet* pSet =(MosaicDM::MosaicSet*)(void*)pManagedMosaicSet->UnmanagedMosaicSet;
+		return _pMosaicSet->CopyBuffers(pSet);
+	}
 }

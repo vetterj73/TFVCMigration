@@ -47,6 +47,48 @@ namespace MosaicDM
 		_correlationFlagsMap.clear();
 	}
 
+	bool MosaicSet::CopyTransforms(MosaicSet *pMosaicSet)
+	{
+		// Sanity Check that we have the same size mosaic
+		if(GetNumMosaicLayers() != pMosaicSet->GetNumMosaicLayers())
+			return false;
+
+		// Copy transform from each image in each layer...
+		for(unsigned int i=0; i<_layerList.size(); i++)
+		{
+			if(GetLayer(i)->GetNumberOfCameras() != pMosaicSet->GetLayer(i)->GetNumberOfCameras() ||
+				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
+				return false;
+
+			for(int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
+				for(int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
+					GetLayer(i)->GetImage(j,k)->SetTransform(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetTransform());
+		}	
+
+		return true;
+	}
+
+	bool MosaicSet::CopyBuffers(MosaicSet *pMosaicSet)
+	{
+		// Sanity Check that we have the same size mosaic
+		if(GetNumMosaicLayers() != pMosaicSet->GetNumMosaicLayers())
+			return false;
+
+		// Copy transform from each image in each layer...
+		for(unsigned int i=0; i<_layerList.size(); i++)
+		{
+			if(GetLayer(i)->GetNumberOfCameras() != pMosaicSet->GetLayer(i)->GetNumberOfCameras() ||
+				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
+				return false;
+
+			for(int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
+				for(int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
+					GetLayer(i)->GetImage(j,k)->SetBuffer(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetBuffer());
+		}	
+
+		return true;
+	}
+
 	MosaicLayer *MosaicSet::GetLayer(unsigned int index)
 	{
 		if(index<0 || index >= _layerList.size())
