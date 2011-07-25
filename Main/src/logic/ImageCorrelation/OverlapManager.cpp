@@ -591,6 +591,10 @@ void OverlapManager::RenderFiducial(
 		RenderDiamond(*pImg, resolution, (DiamondFeature*)pFid, grayValue, antiAlias);
 		break;
 
+	case Feature::SHAPE_DIAMONDFRAME:
+		RenderDiamondFrame(*pImg, resolution, (DiamondFrameFeature*)pFid, grayValue, antiAlias);
+		break;
+
 	case Feature::SHAPE_DISC:
 		RenderDisc(*pImg, resolution, (DiscFeature*)pFid, grayValue, antiAlias);
 		break;
@@ -603,8 +607,20 @@ void OverlapManager::RenderFiducial(
 		RenderRectangle(*pImg, resolution, (RectangularFeature*)pFid, grayValue, antiAlias);
 		break;
 
+	case Feature::SHAPE_RECTANGLEFRAME:
+		RenderRectangleFrame(*pImg, resolution, (RectangularFrameFeature*)pFid, grayValue, antiAlias);
+		break;
+
 	case Feature::SHAPE_TRIANGLE:
 		RenderTriangle(*pImg, resolution, (TriangleFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
+		RenderTriangleFrame(*pImg, resolution, (EquilateralTriangleFrameFeature*)pFid, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_CHECKERPATTERN:
+		RenderCheckerPattern(*pImg, resolution, (CheckerPatternFeature*)pFid, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_CYBER:

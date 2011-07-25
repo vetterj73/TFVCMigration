@@ -1,6 +1,6 @@
 #include "ArcPolygonizer.h"
 #include "RenderShape.h"
-//#include "System.h"
+#include "Utilities.h"
 
 // Rudd includes
 #include "aapoly.h"
@@ -661,6 +661,54 @@ void RenderDiamond(IMAGETYPE& image, double resolution, DiamondFeature* diamond,
 template void RenderDiamond(Image& image, double resolution, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
 template void RenderDiamond(Image16& image, double resolution, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
 
+//
+//
+// Diamond Frame
+//
+//
+template <typename IMAGETYPE>
+void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature* diamondFrame, unsigned int grayValue, int antiAlias)
+{
+	PointList polygonPoints = diamondFrame->GetPointList();
+
+	RenderPolygon(image, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	// Set up image to draw diamond hole
+	ImgTransform trans;
+	trans.Config(resolution, resolution);
+
+	IMAGETYPE diamondHole;
+	diamondHole.Configure(
+		image.Columns(), 
+		image.Rows(), 
+		image.PixelRowStride(),
+		trans,
+		trans,
+		true);	// create own buffer
+
+	polygonPoints.clear();
+	polygonPoints = diamondFrame->GetInnerPointList();
+	RenderPolygon(diamondHole, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	if(image.GetBytesPerPixel() == 1)
+	{
+		ClipSub(
+			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+	else
+	{
+		ClipSub(
+			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+}
+
+// Create Image and Image16 instances
+template void RenderDiamondFrame(Image& image, double resolution, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
+template void RenderDiamondFrame(Image16& image, double resolution, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
 
 
 //
@@ -684,6 +732,55 @@ void RenderRectangle(IMAGETYPE& image, double resolution, RectangularFeature* re
 // Create Image and Image16 instances
 template void RenderRectangle(Image& image, double resolution, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
 template void RenderRectangle(Image16& image, double resolution, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
+
+//
+//
+// Rectangle Frame
+//
+//
+template <typename IMAGETYPE>
+void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameFeature* rectFrame, unsigned int grayValue, int antiAlias)
+{
+	PointList polygonPoints = rectFrame->GetPointList();
+
+	RenderPolygon(image, resolution, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	// Set up image to draw rectanglar hole
+	ImgTransform trans;
+	trans.Config(resolution, resolution);
+
+	IMAGETYPE rectHole;
+	rectHole.Configure(
+		image.Columns(), 
+		image.Rows(), 
+		image.PixelRowStride(),
+		trans,
+		trans,
+		true);	// create own buffer
+
+	polygonPoints.clear();
+	polygonPoints = rectFrame->GetInnerPointList();
+	RenderPolygon(rectHole, resolution, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	if(image.GetBytesPerPixel() == 1)
+	{
+		ClipSub(
+			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)rectHole.GetBuffer(), rectHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+	else
+	{
+		ClipSub(
+			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)rectHole.GetBuffer(), rectHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+}
+
+// Create Image and Image16 instances
+template void RenderRectangleFrame(Image& image, double resolution, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
+template void RenderRectangleFrame(Image16& image, double resolution, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
 
 
 
@@ -709,3 +806,66 @@ void RenderTriangle(IMAGETYPE& image, double resolution, TriangleFeature* triang
 template void RenderTriangle(Image& image, double resolution, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
 template void RenderTriangle(Image16& image, double resolution, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
 
+//
+//
+// Equilateral Triangle Frame
+//
+//
+template <typename IMAGETYPE>
+void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangleFrameFeature* triangleFrame, unsigned int grayValue, int antiAlias)
+{
+	PointList polygonPoints = triangleFrame->GetPointList();
+
+	RenderPolygon(image, resolution, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	// Set up image to draw triangle hole
+	ImgTransform trans;
+	trans.Config(resolution, resolution);
+
+	IMAGETYPE triangleHole;
+	triangleHole.Configure(
+		image.Columns(), 
+		image.Rows(), 
+		image.PixelRowStride(),
+		trans,
+		trans,
+		true);	// create own buffer
+
+	polygonPoints.clear();
+	polygonPoints = triangleFrame->GetInnerPointList();
+	RenderPolygon(triangleHole, resolution, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
+
+	if(image.GetBytesPerPixel() == 1)
+	{
+		ClipSub(
+			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)triangleHole.GetBuffer(), triangleHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+	else
+	{
+		ClipSub(
+			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)triangleHole.GetBuffer(), triangleHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+}
+
+// Create Image and Image16 instances
+template void RenderTriangleFrame(Image& image, double resolution, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
+template void RenderTriangleFrame(Image16& image, double resolution, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
+
+template <typename IMAGETYPE>
+void RenderCheckerPattern(IMAGETYPE& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias)
+{
+	int numPolygons = 2;
+	PointList polygonPoints[2];
+	polygonPoints[0] = checkerPattern->GetFirstPointList();
+	polygonPoints[1] = checkerPattern->GetSecondPointList();
+
+	RenderPolygon(image, resolution, (Feature*) checkerPattern, polygonPoints, numPolygons, grayValue, antiAlias);
+}
+
+// Create Image and Image16 instances
+template void RenderCheckerPattern(Image& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
+template void RenderCheckerPattern(Image16& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);

@@ -336,3 +336,36 @@ void Morpho_2d(
 
 	delete [] pbWork;
 }
+
+// pData1 = clip(pData1-pData2)
+template<typename T>
+void ClipSub(
+	T* pData1, unsigned int iSpan1, 
+	T* pData2, unsigned int iSpan2,
+	unsigned int iWidth, unsigned int iHeight)
+{
+	T* pLine1 = pData1;
+	T* pLine2 = pData2;
+	for(int iy=0; iy<iHeight; iy++)
+	{
+		for(int ix=0; ix<iWidth; ix++)
+		{
+			int iTemp = (int)pLine1[ix] - (int)pLine2[ix];
+			if(iTemp<0) iTemp = 0;
+			pLine1[ix] = (T)iTemp;
+		}
+		pLine1 += iSpan1;
+		pLine2 += iSpan2;
+	}
+}
+
+// Create Image and Image16 instances
+template void ClipSub(
+	unsigned char* pData1, unsigned int iSpan1, 
+	unsigned char* pData2, unsigned int iSpan2,
+	unsigned int iWidth, unsigned int iHeight);
+template void ClipSub(
+	unsigned short* pData1, unsigned int iSpan1, 
+	unsigned short* pData2, unsigned int iSpan2,
+	unsigned int iWidth, unsigned int iHeight);
+

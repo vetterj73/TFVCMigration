@@ -977,7 +977,8 @@ CheckerPatternFeature::CheckerPatternFeature(int id, double positionX, double po
 							Feature(SHAPE_CHECKERPATTERN, id, positionX, positionY, rotation),
 							_size(size)
 {
-	_polygonPoints.clear();
+	_polygonPoints[0].clear();
+	_polygonPoints[1].clear();
 
 	Bound();
 	NominalArea();
@@ -999,11 +1000,11 @@ void CheckerPatternFeature::Bound()
 	//
 	//		  2 *-------* 3			
 	//          |		|      
-	//          |       | 4  
-	//        1 *-------*-------* 5
+	//          |       | 4/1  
+	//        1 *-------*-------* 2
 	//					|       |
 	//					|		|
-	//				  7 *-------* 6
+	//				  4 *-------* 3
 	//			|  size			|
 	
 	// Point 1
@@ -1012,7 +1013,7 @@ void CheckerPatternFeature::Bound()
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[0].push_back(point);
 
 	// Point 2
 	point.x = -_size/2.0;
@@ -1020,7 +1021,7 @@ void CheckerPatternFeature::Bound()
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[0].push_back(point);
 
 	// Point 3
 	point.x = 0;
@@ -1028,56 +1029,60 @@ void CheckerPatternFeature::Bound()
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[0].push_back(point);
 
-	// Point 4
+	// Point 4/1
 	point.x = 0;
 	point.y = 0;
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[0].push_back(point);
+	_polygonPoints[1].push_back(point);
 
-	// Point 5
+	// Point 2
 	point.x = _size/2.0;
 	point.y = 0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[1].push_back(point);
 
-	// Point 6
+	// Point 3
 	point.x = _size/2.0;
 	point.y = -_size/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[1].push_back(point);
 
-	// Point 7
+	// Point 4
 	point.x = 0;
 	point.y = -_size/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
-	_polygonPoints.push_back(point);
+	_polygonPoints[1].push_back(point);
 
 	// 
 	// Find bounding box
 	Box b(Point(+1E+10,+1E+10), Point(-1E+10,-1E+10));
 
-	PointList::iterator p=_polygonPoints.begin();
-	for(p; p!=_polygonPoints.end(); p++)
+	for(int i=0; i<2; i++)
 	{
-		if(p->x<b.p1.x)
-			b.p1.x=p->x;
-		if(p->y<b.p1.y)
-			b.p1.y=p->y;
+		PointList::iterator p=_polygonPoints[i].begin();
+		for(p; p!=_polygonPoints[i].end(); p++)
+		{
+			if(p->x<b.p1.x)
+				b.p1.x=p->x;
+			if(p->y<b.p1.y)
+				b.p1.y=p->y;
 
-		if(p->x>b.p2.x)
-			b.p2.x=p->x;
-		if(p->y>b.p2.y)
-			b.p2.y=p->y;
+			if(p->x>b.p2.x)
+				b.p2.x=p->x;
+			if(p->y>b.p2.y)
+				b.p2.y=p->y;
+		}
 	}
 
 	_boundingBox = b;

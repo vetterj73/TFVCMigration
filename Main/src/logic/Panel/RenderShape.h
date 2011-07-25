@@ -23,11 +23,6 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 template<typename IMAGETYPE>
 void RenderDisc(IMAGETYPE& image, double resolution, DiscFeature* disc, unsigned int grayValue=255, int antiAlias=1);
 
-template<typename IMAGETYPE>
-void RenderRectangle(IMAGETYPE& image, double resolution, RectangularFeature* rect, unsigned int grayValue=255, int antiAlias=1);
-
-
-
 // The following routines use Rudd's aapoly to draw polygons implemented in RenderPolygon
 template<typename IMAGETYPE>
 void RenderAAPolygon(IMAGETYPE& image, Feature* feature, PointList& polygonPoints);
@@ -46,5 +41,20 @@ void RenderCross(IMAGETYPE& image, double resolution, CrossFeature* cross, unsig
 template<typename IMAGETYPE>
 void RenderDiamond(IMAGETYPE& image, double resolution, DiamondFeature* diamond, unsigned int grayValue=255, int antiAlias=1);
 
+template <typename IMAGETYPE>
+void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature* diamondFrame, unsigned int grayValue, int antiAlias);
+
+template<typename IMAGETYPE>
+void RenderRectangle(IMAGETYPE& image, double resolution, RectangularFeature* rect, unsigned int grayValue=255, int antiAlias=1);
+
+template <typename IMAGETYPE>
+void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameFeature* rectFrame, unsigned int grayValue, int antiAlias);
+
 template<typename IMAGETYPE>
 void RenderTriangle(IMAGETYPE& image, double resolution, TriangleFeature* triangle, unsigned int grayValue=255, int antiAlias=1);
+
+template <typename IMAGETYPE>
+void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangleFrameFeature* triangleFrame, unsigned int grayValue, int antiAlias);
+
+template <typename IMAGETYPE>
+void RenderCheckerPattern(IMAGETYPE& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);

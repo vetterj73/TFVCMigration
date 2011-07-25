@@ -339,7 +339,8 @@ public:
 
 	double GetSize()	{ return _size; }
 
-	const PointList& GetPointList( ) const { return _polygonPoints; }
+	const PointList& GetFirstPointList() const { return _polygonPoints[0]; }
+	const PointList& GetSecondPointList() const { return _polygonPoints[1]; }
 
 protected:
 	// Shape Definition Parameters
@@ -352,7 +353,7 @@ private:
 	void InspectionArea();
 
 	// Shape vertices
-	PointList _polygonPoints;
+	PointList _polygonPoints[2];
 };
 
 class CyberSegment
