@@ -26,12 +26,16 @@ public:
 
 	typedef enum {
 		SHAPE_UNDEFINED = -1,
+		SHAPE_CHECKERPATTERN,
 		SHAPE_CROSS,
 		SHAPE_DIAMOND,
+		SHAPE_DIAMONDFRAME,
 		SHAPE_DISC,
 		SHAPE_DONUT,
 		SHAPE_RECTANGLE,
+		SHAPE_RECTANGLEFRAME,
 		SHAPE_TRIANGLE,
+		SHAPE_EQUILATERALTRIANGLEFRAME,
 		SHAPE_CYBER
 	} PadShape;
 
@@ -73,7 +77,6 @@ protected:
 	Feature(PadShape shape, int id, double positionX, double positionY, double rotation);
 
 	void InspectionAreaFromBounds();
-
 
 	//
 	// Feature info to be filled by derived shape classes
@@ -144,18 +147,42 @@ public:
 
 	const PointList& GetPointList( ) const { return _polygonPoints; }
 
-private:
-	// Methods
-	void Bound();
-	void NominalArea();
-	void InspectionArea();
-
+protected:
 	// Shape Definition Parameters
 	double _sizeX;
 	double _sizeY;
 
+private:
+	// Methods
+	void Bound();
+	virtual void NominalArea();
+	void InspectionArea();
+
 	// Shape vertices
 	PointList _polygonPoints;
+};
+
+class DiamondFrameFeature : public DiamondFeature
+{
+public:
+
+	DiamondFrameFeature(int id, double positionX, double positionY, double rotation,
+				     double sizeX, double sizeY, double thick);
+	~DiamondFrameFeature();
+
+	double GetThick()   { return _thick; };
+
+	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
+
+private:
+	// Methods
+	void NominalArea(); // Override function
+	void CalInnerPolygon();
+
+	double _thick;
+
+	// Shape vertices
+	PointList _innerPolygonPoints;
 };
 
 class DiscFeature : public Feature
@@ -211,18 +238,42 @@ public:
 
 	const PointList& GetPointList( ) const { return _polygonPoints; }
 
-private:
-	// Methods
-	void Bound();
-	void NominalArea();
-	void InspectionArea();
-
+protected:
 	// Shape Definition Parameters
 	double _width;
 	double _height;
 
+private:
+	// Methods
+	void Bound();
+	virtual void NominalArea();
+	void InspectionArea();
+
 	// Shape vertices
 	PointList _polygonPoints;
+};
+
+class RectangularFrameFeature : public RectangularFeature
+{
+public:
+
+	RectangularFrameFeature(int id, double positionX, double positionY, double rotation,
+				     double sizeX, double sizeY, double thick );
+	~RectangularFrameFeature();
+
+	double GetThick()   { return _thick; };
+
+	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
+
+private:
+	// Methods
+	void NominalArea(); // Override function
+	void CalInnerPolygon();
+
+	double _thick;
+
+	// Shape vertices
+	PointList _innerPolygonPoints;
 };
 
 class TriangleFeature : public Feature
@@ -239,16 +290,66 @@ public:
 
 	const PointList& GetPointList( ) const { return _polygonPoints; }
 
-private:
-	// Methods
-	void Bound();
-	void NominalArea();
-	void InspectionArea();
-
+protected:
 	// Shape Definition Parameters
 	double _sizeX;
 	double _sizeY;
 	double _offset;
+
+private:
+	// Methods
+	void Bound();
+	virtual void NominalArea();
+	void InspectionArea();
+
+	// Shape vertices
+	PointList _polygonPoints;
+};
+
+class EquilateralTriangleFrameFeature : public TriangleFeature
+{
+public:
+
+	EquilateralTriangleFrameFeature(int id, double positionX, double positionY, double rotation,
+				     double size, double thick );
+	~EquilateralTriangleFrameFeature();
+
+	double GetThick()   { return _thick; };
+
+	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
+
+private:
+	// Methods
+	void NominalArea(); // Override function
+	void CalInnerPolygon();
+
+	double _thick;
+
+	// Shape vertices
+	PointList _innerPolygonPoints;
+};
+
+class CheckerPatternFeature : public Feature
+{
+public:
+
+	CheckerPatternFeature(int id, double positionX, double positionY, double rotation,
+					double size);
+	~CheckerPatternFeature();
+
+	double GetSize()	{ return _size; }
+
+	const PointList& GetPointList( ) const { return _polygonPoints; }
+
+protected:
+	// Shape Definition Parameters
+	double _size;
+
+private:
+	// Methods
+	void Bound();
+	virtual void NominalArea();
+	void InspectionArea();
 
 	// Shape vertices
 	PointList _polygonPoints;

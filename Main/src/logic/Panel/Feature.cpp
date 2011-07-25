@@ -330,7 +330,6 @@ DiamondFeature::DiamondFeature(int id, double positionX, double positionY, doubl
 DiamondFeature::~DiamondFeature()
 {
 	Feature::~Feature();
-	
 }
 
 void DiamondFeature::Bound()
@@ -387,7 +386,6 @@ void DiamondFeature::Bound()
 	point.y += y;
 	_polygonPoints.push_back(point);
 
-
 	//
 	// Calculate bounding box
 	Box b(Point(+1E+10,+1E+10), Point(-1E+10,-1E+10));
@@ -419,7 +417,90 @@ void DiamondFeature::InspectionArea()
 
 void DiamondFeature::NominalArea()
 {
-	_nominalArea = _sizeX * _sizeY;
+	_nominalArea = _sizeX * _sizeY / 2.0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+////////////////                                     //////////////////////
+//////////////// DiamondFrameFeature Derived Class   //////////////////////
+////////////////                                     //////////////////////
+///////////////////////////////////////////////////////////////////////////
+DiamondFrameFeature::DiamondFrameFeature(int id, double positionX, double positionY, double rotation,
+				     double sizeX, double sizeY, double thick):
+						DiamondFeature(id, positionX, positionY, rotation,
+							sizeX, sizeY),
+						_thick(thick)
+{
+	_shape = SHAPE_DIAMONDFRAME;
+	NominalArea();
+	CalInnerPolygon();
+}
+
+DiamondFrameFeature::~DiamondFrameFeature()
+{
+	DiamondFeature::~DiamondFeature();
+}
+
+void DiamondFrameFeature::NominalArea()
+{
+	double dHalfTopAngle = atan(_sizeX/_sizeY);
+	double base = _sizeX - _thick/cos(dHalfTopAngle)*2.0;
+	double height = _sizeY - _thick/sin(dHalfTopAngle)*2.0;
+	_nominalArea = _sizeX*_sizeY/2.0 - base*height/2.0;
+}
+
+void DiamondFrameFeature::CalInnerPolygon()
+{
+	_innerPolygonPoints.clear();
+
+	Point point;
+	double radians = _rotation * PI / 180.0;
+	bool rotated = (fabs(radians)>0.0001);
+
+	double dHalfTopAngle = atan(_sizeX/_sizeY);
+	double base = _sizeX - _thick/cos(dHalfTopAngle)*2.0;
+	double height = _sizeY - _thick/sin(dHalfTopAngle)*2.0;
+
+	// Polygon points in CW
+	//        * 1
+	//       / \
+	//      /   \
+	//   4 *     * 2
+	//      \   /
+	//       \ /
+	//        * 3
+
+	// Point 1
+	point.x = 0.0;
+	point.y = height / 2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 2
+	point.x = base / 2.0;
+	point.y = 0.0;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 3
+	point.x = 0.0;
+	point.y = -height / 2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 4
+	point.x = -base / 2.0;
+	point.y = 0.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -430,8 +511,7 @@ void DiamondFeature::NominalArea()
 
 DiscFeature::DiscFeature(int id, double positionX, double positionY, double diameter) :
 						Feature(SHAPE_DISC, id, positionX, positionY, 0),
-						_diameter(diameter)
-						
+						_diameter(diameter)		
 {
 	Bound();
 	NominalArea();
@@ -623,7 +703,83 @@ void RectangularFeature::NominalArea()
 	_nominalArea = _width * _height;
 }
 
+///////////////////////////////////////////////////////////////////////////
+////////////////									///////////////////////
+/////////////////  RectangularFrameFeature Derived Class	///////////////
+////////////////									///////////////////////
+///////////////////////////////////////////////////////////////////////////
 
+RectangularFrameFeature::RectangularFrameFeature(int id, double positionX, double positionY, double rotation,
+									   double sizeX, double sizeY, double thick):
+									RectangularFeature(id, positionX, positionY, rotation,
+										sizeX, sizeY),
+									_thick(thick)
+{
+	_shape = SHAPE_RECTANGLEFRAME;
+	NominalArea();
+	CalInnerPolygon();
+}
+
+RectangularFrameFeature::~RectangularFrameFeature()
+{
+	RectangularFeature::~RectangularFeature();
+}
+
+void RectangularFrameFeature::NominalArea()
+{
+	_nominalArea = _width * _height - (_width - 2*_thick)*(_height - 2*_thick);
+}
+
+void RectangularFrameFeature::CalInnerPolygon()
+{
+	_innerPolygonPoints.clear();
+
+	double halfHeight = _height/2.0 - _thick;
+	double halfWidth = _width/2.0 - _thick;
+	double radians = _rotation * PI / 180.0;
+	bool rotated = (fabs(radians)>0.0001);
+
+	Point point;
+
+	
+	// 4 *--------* 1
+	//   |        |
+	//   |        |
+	//   |        |
+	// 3 *--------* 2
+	
+	// Point 1
+	point.x = +halfWidth;
+	point.y = +halfHeight;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 2
+	point.x = +halfWidth;
+	point.y = -halfHeight;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 3
+	point.x = -halfWidth;
+	point.y = -halfHeight;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 4
+	point.x = -halfWidth;
+	point.y = +halfHeight;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////                                     //////////////////////
@@ -636,8 +792,7 @@ TriangleFeature::TriangleFeature(int id, double positionX, double positionY, dou
 							Feature(SHAPE_TRIANGLE, id, positionX, positionY, rotation),
 							_sizeX(sizeX),
 							_sizeY(sizeY),
-							_offset(offsetX)
-						
+							_offset(offsetX)			
 {
 	_polygonPoints.clear();
 
@@ -648,23 +803,18 @@ TriangleFeature::TriangleFeature(int id, double positionX, double positionY, dou
 
 TriangleFeature::~TriangleFeature()
 {
-	Feature::~Feature();
-	
+	Feature::~Feature();	
 }
-
 
 void TriangleFeature::Bound()
 {
 	Point point;
-	double x, y, base, height, offset;
 	double radians = _rotation * PI / 180.0;
 	bool rotated = (fabs(radians)>0.0001);
 
-	x = _xCadCenter;
-	y = _yCadCenter;
-	base = _sizeX;
-	height = _sizeY;
-	offset = _offset;
+	double base = _sizeX;
+	double height = _sizeY;
+	double offset = _offset;
 
 	// CAD polygon points in CW order
 	//
@@ -683,24 +833,24 @@ void TriangleFeature::Bound()
 	point.x = x0;
 	point.y = y0;
 	if(rotated) point.rot(radians);
-	point.x += x;
-	point.y += y;
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
 	_polygonPoints.push_back(point);
 
 	// Point 2
 	point.x = x0 + offset;
 	point.y = y0 + height; 
 	if(rotated) point.rot(radians);
-	point.x += x;
-	point.y += y;
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
 	_polygonPoints.push_back(point);
 
 	// Point 3
 	point.x = x0 + base;
 	point.y = y0; 
 	if(rotated) point.rot(radians);
-	point.x += x;
-	point.y += y;
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
 	_polygonPoints.push_back(point);
 
 	// 
@@ -737,6 +887,214 @@ void TriangleFeature::NominalArea()
 	_nominalArea = _sizeX * _sizeY / 2.0;
 }
 
+///////////////////////////////////////////////////////////////////////////
+////////////////												///////////
+//////////////// EquilateralTriangleFrameFeature Derived Class  ///////////
+////////////////                                     //////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+EquilateralTriangleFrameFeature::EquilateralTriangleFrameFeature(int id, double positionX, double positionY, double rotation,
+								 double size, double thick ) :
+							TriangleFeature(id, positionX, positionY, rotation,
+								 size, size*sqrt(3.0)/2.0, size/2.0),
+							_thick(thick)
+{
+	_shape = SHAPE_EQUILATERALTRIANGLEFRAME;
+	NominalArea();
+	CalInnerPolygon();
+}
+
+EquilateralTriangleFrameFeature::~EquilateralTriangleFrameFeature()
+{
+	TriangleFeature::~TriangleFeature();
+}
+
+void EquilateralTriangleFrameFeature::NominalArea()
+{
+	double innerSize = _sizeX - _thick*sqrt(3.0)*2.0;
+	double dHeight = innerSize*sqrt(3.0)/2.0;
+	_nominalArea = _sizeX*_sizeY/2.0 - innerSize*dHeight/2.0;
+}
+
+void EquilateralTriangleFrameFeature::CalInnerPolygon()
+{
+	_innerPolygonPoints.clear();
+
+	double base = _sizeX - _thick*sqrt(3.0)*2.0;
+	double height = base*sqrt(3.0)/2.0;
+	double offset = base/2.0;
+
+	double radians = _rotation * PI / 180.0;
+	bool rotated = (fabs(radians)>0.0001);
+
+	// CAD polygon points in CW order
+	//
+	//           |---| Offset
+	//           |   * 2---------      
+	//           |  / \       |
+	//           | / * \    height
+	//           |/     \     |
+	// (x0,y0) 1 *-------* 3-----
+	//           |-base--|
+
+	Point point;
+	
+	double x0 = -(base + offset) / 3.0;
+	double y0 = -(height / 3.0);
+
+	// Point 1
+	point.x = x0;
+	point.y = y0;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 2
+	point.x = x0 + offset;
+	point.y = y0 + height; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+
+	// Point 3
+	point.x = x0 + base;
+	point.y = y0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_innerPolygonPoints.push_back(point);
+}
+
+///////////////////////////////////////////////////////////////////////////
+////////////////									 //////////////////////
+//////////////// CheckerPatternFeature Derived Class //////////////////////
+////////////////                                     //////////////////////
+///////////////////////////////////////////////////////////////////////////
+CheckerPatternFeature::CheckerPatternFeature(int id, double positionX, double positionY, double rotation,
+					double size):
+							Feature(SHAPE_CHECKERPATTERN, id, positionX, positionY, rotation),
+							_size(size)
+{
+	_polygonPoints.clear();
+
+	Bound();
+	NominalArea();
+	InspectionArea();
+}
+
+CheckerPatternFeature::~CheckerPatternFeature()
+{
+	Feature::~Feature();	
+}
+
+void CheckerPatternFeature::Bound()
+{
+	Point point;
+	double radians = _rotation * PI / 180.0;
+	bool rotated = (fabs(radians)>0.0001);
+
+	// CAD polygon points in CW order (two squares with the same size)
+	//
+	//		  2 *-------* 3			
+	//          |		|      
+	//          |       | 4  
+	//        1 *-------*-------* 5
+	//					|       |
+	//					|		|
+	//				  7 *-------* 6
+	//			|  size			|
+	
+	// Point 1
+	point.x = -_size/2.0;
+	point.y = 0;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 2
+	point.x = -_size/2.0;
+	point.y = _size/2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 3
+	point.x = 0;
+	point.y = _size/2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 4
+	point.x = 0;
+	point.y = 0;
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 5
+	point.x = _size/2.0;
+	point.y = 0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 6
+	point.x = _size/2.0;
+	point.y = -_size/2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// Point 7
+	point.x = 0;
+	point.y = -_size/2.0; 
+	if(rotated) point.rot(radians);
+	point.x += _xCadCenter;
+	point.y += _yCadCenter;
+	_polygonPoints.push_back(point);
+
+	// 
+	// Find bounding box
+	Box b(Point(+1E+10,+1E+10), Point(-1E+10,-1E+10));
+
+	PointList::iterator p=_polygonPoints.begin();
+	for(p; p!=_polygonPoints.end(); p++)
+	{
+		if(p->x<b.p1.x)
+			b.p1.x=p->x;
+		if(p->y<b.p1.y)
+			b.p1.y=p->y;
+
+		if(p->x>b.p2.x)
+			b.p2.x=p->x;
+		if(p->y>b.p2.y)
+			b.p2.y=p->y;
+	}
+
+	_boundingBox = b;
+}
+
+void CheckerPatternFeature::InspectionArea()
+{
+	if(_boundingBox==0)
+		Bound();
+
+	InspectionAreaFromBounds();
+}
+
+void CheckerPatternFeature::NominalArea()
+{
+	_nominalArea = _size * _size / 2.0;
+}
 
 ///////////////////////////////////////////////////////////////////////////
 ////////////////                                     //////////////////////
