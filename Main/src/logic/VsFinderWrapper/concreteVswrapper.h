@@ -235,12 +235,12 @@ public:
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
-	/*const char* create_rectangleframe_template(
+	const char* create_rectangleframe_template(
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
 		double base, double height, double thick, double theta, int dark_to_light,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
-		double mask_region, int depth);*/
+		double mask_region, int depth);
 
 	const char* create_diamond_template(
 		int* piNodeID,			// Output: nodeID of map	
@@ -249,10 +249,24 @@ public:
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
+	const char* create_diamondframe_template(
+		int* piNodeID,			// Output: nodeID of map
+		templatetype tpl,
+		double base, double height, double thick, double theta, int dark_to_light,
+		double *min_scale, double *max_scale, double low_accept, double high_accept, 
+		double mask_region, int depth);
+
 	const char* create_triangle_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double offset, double theta, int dark_to_light, 
+		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
+		double mask_region, int depth);
+
+	const char* create_triangleFrame_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,
+		double base, double height, double offset, double thick, double theta, int dark_to_light, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -267,6 +281,13 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double base_leg, double height_leg, int rounded_edges, double theta, int dark_to_light, 
+		double *min_scale, double *max_scale, double low_accept, double high_accept,
+		double mask_region, int depth);
+
+	const char* create_checkerpattern_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,
+		double base, double height, double theta, int dark_to_light, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth);
 

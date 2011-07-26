@@ -223,6 +223,65 @@ const char *create_keepout(
 	return ret;
 }
 
+// ImageInOut = clip(ImageInOut-Image2+iGreyOffset)
+void ImageSubClip(
+	unsigned char* pbBufInOut,
+	unsigned int iSpanInOut, 
+	unsigned char* pbBuf2,
+	unsigned int iSpan2,
+	unsigned int iWidth,
+	unsigned int iHeight, 
+	int iGreyOffset=0)
+{
+	unsigned char* inOutLine = pbBufInOut;
+	unsigned char* inLine = pbBuf2;
+	for(unsigned int iy=0; iy<iHeight; iy++)
+	{
+		for(unsigned int ix=0; ix<iWidth; ix++)
+		{
+			int iTemp = (int)inOutLine[ix]-(int)inLine[ix] + iGreyOffset;
+			if(iTemp<0) iTemp = 0;
+			if(iTemp>255) iTemp = 255;
+			inOutLine[ix] = (unsigned char)iTemp;
+		}
+		inOutLine += iSpanInOut;
+		inLine  += iSpan2;
+	}
+}
+
+// ImageInOut = clip(ImageInOut-Image2+iGreyOffset)
+bool ImageClipSub(VsCamImage oImgInOut, const VsCamImage oImg2, int iGreyOffset=0)
+{
+	VsStCamImageInfo tCInfo1;
+	vsInqCamImageInfo(oImgInOut, &tCInfo1);
+	unsigned int iSpan1 = tCInfo1.iBufSpan;
+	unsigned int iWidth1 = tCInfo1.iBufWidth;
+	unsigned int iHeight1 = tCInfo1.iBufHeight;
+	unsigned char* pbBuf1 = tCInfo1.pbBuf;
+
+	VsStCamImageInfo tCInfo2;
+	vsInqCamImageInfo(oImg2, &tCInfo2);
+	unsigned int iSpan2 = tCInfo2.iBufSpan;
+	unsigned int iWidth2 = tCInfo2.iBufWidth;
+	unsigned int iHeight2 = tCInfo2.iBufHeight;
+	unsigned char* pbBuf2 = tCInfo2.pbBuf;
+
+	if((iWidth1 != iWidth2) ||
+		(iHeight1 != iHeight2))
+		return(false);
+
+	ImageSubClip(
+		pbBuf1,
+		iSpan1, 
+		pbBuf2,
+		iSpan2,
+		iWidth1,
+		iHeight1,
+		iGreyOffset);
+
+	return(true);
+}
+
 concreteVsWrapper::concreteVsWrapper() :
 	vswrapper( this ),
 	m_pixel_size(-1),
@@ -1342,18 +1401,45 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		fore_ground=fill_colors[!!poly_data->dark_to_light].fore_ground;
 		back_ground=fill_colors[!!poly_data->dark_to_light].back_ground;
 
+		int iCount = poly_data->poly.points().count();
+		if(iCount!=3 || iCount!=6)
+			ret = "Not a triangle or triangle frame"; 
+
 		vector3 p0 = poly_data->poly.points().shift();
 		vector3 p1 = poly_data->poly.points().shift();
 		vector3 p2 = poly_data->poly.points().shift();
 
 		double points[4][2] = {{p0.x,p0.y}, {p2.x,p2.y}, {p1.x,p1.y}, {p0.x,p0.y}};
-
+		// Draw triangle fiducial/outside of triangle frame
 		if(vsDrawConvexPolygon(cam_image, points, 3, fore_ground, back_ground, TRUE, FALSE) == -1)
 		{
 			if(tpl == SKIPMARK)
 				ret = "666 Failed to draw Polygon skipmark template";
 			else
 				ret = "666 Failed to draw Polygon fiducial template";
+		}
+
+		// For triangle frame
+		if(iCount == 6)
+		{	// Draw inside triangle
+			vector3 p3 = poly_data->poly.points().shift();
+			vector3 p4 = poly_data->poly.points().shift();
+			vector3 p5 = poly_data->poly.points().shift();
+			double points2[4][2] = {{p3.x,p3.y}, {p5.x,p5.y}, {p4.x,p4.y}, {p3.x,p3.y}};
+
+			VsCamImage temp_image=vsCreateCamImage( oVisEnv, 0, 0, (int)width, (int)height,
+				VS_SINGLE_BUFFER, VS_BUFFER_HOST_BYTE, 1);
+
+			if(vsDrawConvexPolygon(temp_image, points2, 3, fore_ground, back_ground, TRUE, FALSE) == -1)
+			{
+				if(tpl == SKIPMARK)
+					ret = "666 Failed to draw Polygon skipmark template";
+				else
+					ret = "666 Failed to draw Polygon fiducial template";
+			}
+
+			// Create triangle frame (background need to be be compensated 
+			ImageClipSub(cam_image, temp_image, back_ground);
 		}
 	}
 
@@ -1501,8 +1587,11 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 
 	if(fabs(theta) > 0.0) 
 	{
-		fid_data.twidth = theight;
-		fid_data.theight = twidth;
+		if(fabs(fabs(theta)*4-2)>0.5) // Make sure theta=+-0.5 (180 degree) is excluded 
+		{
+			fid_data.twidth = theight;
+			fid_data.theight = twidth;
+		}
 	}
 
 	if(tpl == FIDUCIAL)
@@ -1604,7 +1693,7 @@ const char * concreteVsWrapper::create_rectangle_template(
 	else
 		return "600 bad pixel size";
 }
-/*
+
 const char * concreteVsWrapper::create_rectangleframe_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
@@ -1642,7 +1731,7 @@ const char * concreteVsWrapper::create_rectangleframe_template(
 	}
 	else
 		return "600 bad pixel size";
-}*/
+}
 
 const char * concreteVsWrapper::create_diamond_template(
 	int* piNodeID,			// Output: nodeID of map
@@ -1683,6 +1772,45 @@ const char * concreteVsWrapper::create_diamond_template(
 				tpl, DIAMOND_FIDUCIAL, base,
 				height, 0, theta, dark_to_light, min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
+	}
+	else
+		return "600 bad pixel size";
+}
+
+const char * concreteVsWrapper::create_diamondframe_template(
+	int* piNodeID,			// Output: nodeID of map
+	templatetype tpl,
+	double base, double height, double thick, double theta, int dark_to_light,
+	double *min_scale, double *max_scale, double low_accept, double high_accept, 
+	double mask_region, int depth)
+{
+	vs_template_finder t;
+	t.ptFTemplate = new VsStFTemplate;
+	t.ptFinder = new VsStFinder;
+
+	if (WaitForSingleObject(m_hMutex,INFINITE)==WAIT_OBJECT_0)
+	{
+		m_templateMap[m_iCurrentNodeID] = t;
+		*piNodeID = m_iCurrentNodeID;
+		m_iCurrentNodeID++;
+
+		ReleaseMutex(m_hMutex);
+	}
+
+	VsStFTemplate* ptFTemplate = t.ptFTemplate;
+	VsStFinder* ptFinder = t.ptFinder;
+
+	assert( m_pixel_size > 0 );
+	if( m_pixel_size > 0 )
+	{
+		base/=m_pixel_size;
+		height/=m_pixel_size;
+		thick/=m_pixel_size;
+
+		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
+			tpl, DIAMOND_H_FIDUCIAL, base,
+			height, thick, theta, dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, depth, mask_region);
 	}
 	else
 		return "600 bad pixel size";
@@ -1747,7 +1875,7 @@ const char * concreteVsWrapper::create_triangle_template(
 		vector3 tri_cent = triangle.centroid();
 		vector3 delta = bound_center - tri_cent;
 
-		// move centroid of triangle to lower left corner
+		// move centroid of triangle to origin
 		triangle-=triangle.centroid();
 
 		// move centroid of triangle to fov center.
@@ -1772,6 +1900,98 @@ const char * concreteVsWrapper::create_triangle_template(
 	}
 	else
 		return "600 bad pixel size";
+}
+
+const char* concreteVsWrapper::create_triangleFrame_template(
+	int* piNodeID,			// Output: nodeID of map	
+	templatetype tpl,
+	double base, double height, double offset, double thick, double theta, int dark_to_light, 
+	double *min_scale,  double *max_scale, double low_accept, double high_accept, 
+	double mask_region, int depth)
+{
+	vs_template_finder t;
+	t.ptFTemplate = new VsStFTemplate;
+	t.ptFinder = new VsStFinder;
+
+	if (WaitForSingleObject(m_hMutex,INFINITE)==WAIT_OBJECT_0)
+	{
+		m_templateMap[m_iCurrentNodeID] = t;
+		*piNodeID = m_iCurrentNodeID;
+		m_iCurrentNodeID++;
+
+		ReleaseMutex(m_hMutex);
+	}
+
+	VsStFTemplate* ptFTemplate = t.ptFTemplate;
+	VsStFinder* ptFinder = t.ptFinder;
+
+	assert( m_pixel_size > 0 );
+	if( m_pixel_size > 0 )
+	{
+		vs_fid_poly_data poly_data;
+
+		// FOV width and height.
+		double wdth=m_width_pixels/2.0;
+		double hgt=m_height_pixels/2.0;
+
+		// Convert from meters to pixels.
+		base/=m_pixel_size;
+		height/=m_pixel_size;
+		offset/=m_pixel_size; // offset to x of top point of triangle
+		thick/=m_pixel_size;
+
+		// Create rotation matrix from theta
+		matrix3 rotation = matrix3().rotate(2, (2 * M_PI * -theta));
+
+		polygon triangleFrame;
+
+		// FOV Center
+		vector3 fov_center=vector3(wdth,hgt);
+
+		//Center of triange bounding box.
+		vector3 bound_center = rotation * vector3(base/2.0,height/2.0);
+
+		// Outside triangle
+		triangleFrame.points().push(vector3(0,0));
+		triangleFrame.points().push(vector3(base, 0));
+		triangleFrame.points().push(vector3(offset, height));
+		// Inside triangle (for equilateral triangle)
+		triangleFrame.points().push(vector3(sqrt(3.0)*thick, thick));
+		triangleFrame.points().push(vector3(base-sqrt(3.0)*thick, thick));
+		triangleFrame.points().push(vector3(offset, height-2*thick));
+
+		triangleFrame *= rotation;
+		rect tri_bound = triangleFrame.bound();
+		base = tri_bound.width();
+		height = tri_bound.height();
+
+		vector3 tri_cent = triangleFrame.centroid();
+		vector3 delta = bound_center - tri_cent;
+
+		// move centroid of triangleFrame to origin
+		triangleFrame-=triangleFrame.centroid();
+
+		// move centroid of triangleFrame to fov center.
+		triangleFrame+=fov_center;
+
+		// get new triangleFrame centroid.
+		vector3 centroid = 	triangleFrame.centroid();
+
+		// Now triangleFrame centroid is centered in fov.
+		// Need to ensure template is big enough.
+		// Delta is difference between triangleFrame bounding box and centrod.
+		// So base would be enough if centered, but we need extra delta
+		// on at least once side and both gives some border.
+		poly_data.width = base + (2 * fabs(delta.x));
+		poly_data.height = height + (2 * fabs(delta.y));
+		poly_data.poly = triangleFrame;
+		poly_data.dark_to_light = dark_to_light;
+
+		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
+			tpl, 0, 0, &poly_data, min_scale, max_scale,
+			low_accept, high_accept, depth, 0, 0, 0);
+	}
+	return "Not implemented yet";
 }
 
 const char * concreteVsWrapper::create_donut_template(
@@ -1887,6 +2107,56 @@ const char * concreteVsWrapper::create_cross_template(
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, fid_data, 2, 0, min_scale, max_scale,
 				low_accept, high_accept, depth, diff_list, diff_size, mask_region);
+		}
+	}
+	else
+		return "600 bad pixel size";
+}
+
+const char* concreteVsWrapper::create_checkerpattern_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,
+		double base, double height, double theta, int dark_to_light, 
+		double *min_scale, double *max_scale, double low_accept, double high_accept,
+		double mask_region, int depth)
+{
+	vs_template_finder t;
+	t.ptFTemplate = new VsStFTemplate;
+	t.ptFinder = new VsStFinder;
+
+	if (WaitForSingleObject(m_hMutex,INFINITE)==WAIT_OBJECT_0)
+	{
+		m_templateMap[m_iCurrentNodeID] = t;
+		*piNodeID = m_iCurrentNodeID;
+		m_iCurrentNodeID++;
+
+		ReleaseMutex(m_hMutex);
+	}
+
+	VsStFTemplate* ptFTemplate = t.ptFTemplate;
+	VsStFinder* ptFinder = t.ptFinder;
+
+	assert( m_pixel_size > 0 );
+	if( m_pixel_size > 0 )
+	{
+		base/=m_pixel_size;
+		height/=m_pixel_size;
+
+		if(theta == 0)
+		{
+			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
+				tpl, CHECKER_UL_FIDUCIAL, base, height, 0,
+				theta, dark_to_light, min_scale, max_scale,
+				low_accept, high_accept, depth, mask_region);
+		}
+		else
+		{
+			// with angle 90, the upper-left will be upper right, 
+			// the switch of base and height will be in the function
+			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
+				tpl, CHECKER_UR_FIDUCIAL, base, height, 0,
+				theta, dark_to_light, min_scale, max_scale,
+				low_accept, high_accept, depth, mask_region); 
 		}
 	}
 	else
