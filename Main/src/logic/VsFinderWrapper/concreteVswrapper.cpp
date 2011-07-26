@@ -241,7 +241,7 @@ concreteVsWrapper::~concreteVsWrapper()
 
 	CloseHandle(m_hMutex);
 }
-
+/*
 // This function will only draw one fiducial per template
 const char *concreteVsWrapper::create_and_save(
 	const char *template_name,		// name of template
@@ -254,9 +254,9 @@ const char *concreteVsWrapper::create_and_save(
 	double low_accept,				// Minimum score to accept in the Low Resolution image
 	double high_accept,				// Minimum score to accept in the High Resolution image
 	int iDepth,
-	vs_fid_data *diff_list/*=0*/,
-	int diff_size/*=0*/,
-	double mask_region/*=0*/			// creates masked region that vsfind ignores. No effect if <=0
+	vs_fid_data *diff_list//=0,
+	int diff_size//=0,
+	double mask_region//=0			// creates masked region that vsfind ignores. No effect if <=0
 	)
 {
 	assert( m_width_pixels > 0 && m_height_pixels > 0);
@@ -384,26 +384,26 @@ const char *concreteVsWrapper::create_and_save(
 	else
 	{
 		start=print_delta(1, "create template", start);
-		/* Set some of the template properties - even though most of them
-		are the default values already set by vsCreateFTemplate() */
+		// Set some of the template properties - even though most of them
+		//are the default values already set by vsCreateFTemplate()
 		tFTemplates.iPyramidType = VS_FINDER_PYRAMID_AVERAGE;
 		tFTemplates.yUniformScaling = TRUE;
-		tFTemplates.iSpeed = 90; //-1; /* auto set */
+		tFTemplates.iSpeed = 90; //-1; // auto set 
 		tFTemplates.iTemplateType = VS_FINDER_GRAY_SCALE_BASED;
 		tFTemplates.yMultiLayerBuildup = FALSE;
 		tFTemplates.iAccuracy = 50;
-		tFTemplates.iIgnoreValuesAbove = 255; /* default */
+		tFTemplates.iIgnoreValuesAbove = 255; // default
 		tFTemplates.iIgnoreValuesBelow = 0;
-		tFTemplates.iCorrelationType = 1; /* gain and offset */
+		tFTemplates.iCorrelationType = 1; // gain and offset
 		tFTemplates.dGainFactor = 20.0;
-		tFTemplates.iOffsetValue = 255; /* ignored if gain only */
-		tFTemplates.yAllowNegatives = FALSE; /* ignored in gain only */
+		tFTemplates.iOffsetValue = 255; // ignored if gain only
+		tFTemplates.yAllowNegatives = FALSE; // ignored in gain only 
 		tFTemplates.yAllowPyramidTypeChange = 0;
 		tFTemplates.yAllowCorrelationTypeChange = FALSE ;
 		tFTemplates.iMinimumPyramidDepth = 1;
 		tFTemplates.dLoResMinScore     = 0.50;
 		tFTemplates.dHiResMinScore     = 0.50;
-		tFTemplates.iMaxResultPoints   = 2; /* # matches to find */
+		tFTemplates.iMaxResultPoints   = 2; // # matches to find 
 		//tFTemplates.yComputeTrueNgcScore = TRUE;
 
 		// Setting the training space containing other fiducials or objects of interest that the finder
@@ -495,7 +495,7 @@ const char *concreteVsWrapper::create_and_save(
 const char *concreteVsWrapper::create_and_save(const char *template_name, templatetype tpl, int fid, double twidth,
 							double theight, double hwidth, double theta, int dark_to_light,
 							double *min_scale, double *max_scale, double low_accept,
-							double high_accept,	int depth, double mask_region/*=0*/)
+							double high_accept,	int depth, double mask_region)
 {
 	vs_fid_data fid_data;
 	const int diff_size=5;
@@ -597,7 +597,7 @@ const char * concreteVsWrapper::create_diamond_template(const char *file_name, t
 const char * concreteVsWrapper::create_triangle_template(const char *file_name, templatetype tpl,
 			  double base, double height, double offset, double theta,
 			  int dark_to_light, double *min_scale,  double *max_scale,
-			  double low_accept, double high_accept, double /*mask_region*/, int depth)
+			  double low_accept, double high_accept, double mask_region, int depth)
 {
 	assert( m_pixel_size > 0 );
 	if( m_pixel_size > 0 )
@@ -773,7 +773,7 @@ const char * concreteVsWrapper::load_and_find(const char *file_name, unsigned ch
 	}
 	else
 	{
-		/* set the search space for vsFind() */
+		// set the search space for vsFind()
 		Finder.tToolRect.dCenter[0]  =  search_center_x;
 		Finder.tToolRect.dCenter[1]  = search_center_y;
 		Finder.tToolRect.dWidth	  = search_width;
@@ -979,7 +979,7 @@ const char * concreteVsWrapper::find_from_template(
 
 	return res;
 }
-
+*/
 
 
 struct vserror
@@ -1445,6 +1445,12 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 			the_one++;
 		}
 
+		/*VsStFileIOControl tFileControl;
+		tFileControl.eFileType = VS_FFORMAT_GIF;
+		char cImageName[255] = "C:\\temp\\fiducialImag.bmp";
+		tFileControl.pcFileName = cImageName;
+		vsSaveImageData(cam_image, &tFileControl);*/
+
 #ifdef __DEBUG_TEMPLATE
 // used for debug to save the image out to a file
 // ajrajr
@@ -1598,6 +1604,45 @@ const char * concreteVsWrapper::create_rectangle_template(
 	else
 		return "600 bad pixel size";
 }
+/*
+const char * concreteVsWrapper::create_rectangleframe_template(
+	int* piNodeID,			// Output: nodeID of map
+	templatetype tpl,
+	double base, double height, double thick, double theta, int dark_to_light,
+	double *min_scale, double *max_scale, double low_accept, double high_accept, 
+	double mask_region, int depth)
+{
+	vs_template_finder t;
+	t.ptFTemplate = new VsStFTemplate;
+	t.ptFinder = new VsStFinder;
+
+	if (WaitForSingleObject(m_hMutex,INFINITE)==WAIT_OBJECT_0)
+	{
+		m_templateMap[m_iCurrentNodeID] = t;
+		*piNodeID = m_iCurrentNodeID;
+		m_iCurrentNodeID++;
+
+		ReleaseMutex(m_hMutex);
+	}
+
+	VsStFTemplate* ptFTemplate = t.ptFTemplate;
+	VsStFinder* ptFinder = t.ptFinder;
+
+	assert( m_pixel_size > 0 );
+	if( m_pixel_size > 0 )
+	{
+		base/=m_pixel_size;
+		height/=m_pixel_size;
+		thick /= m_pixel_size;
+
+		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
+			tpl, SQUARE_H_FIDUCIAL, base,
+			height, thick, theta, dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, depth, mask_region);
+	}
+	else
+		return "600 bad pixel size";
+}*/
 
 const char * concreteVsWrapper::create_diamond_template(
 	int* piNodeID,			// Output: nodeID of map

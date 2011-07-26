@@ -62,7 +62,7 @@ public:
 	void set_pixel_size(double size);
 	void set_fov_cols(int cols);
 	void set_fov_rows(int rows);
-
+/*
 	// create a template for locating a disc
 	virtual const char * create_disc_template(
 		const char *file_name,	// name of the template file to save
@@ -205,7 +205,7 @@ public:
 		double max_accept=-1,   // If >0 minumum score to accept at max pyramid level to look for peak override
 		int num_finds=-1        // If > 0 number of versions of the template to find
 	);
-
+	*/
 	static VsEnviron getEnv(); // Get environment for calling thread.
 	static void releaseEnv();	// Match every call to get() with one to release().
 	static void disposeEnv();

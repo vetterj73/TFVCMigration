@@ -35,7 +35,7 @@ void vswrapper::set_fov_rows(int rows)
 	if( concreteWrapper_ ) 
 		concreteWrapper_->set_fov_rows( rows );
 }
-
+/*
 const char * vswrapper::create_disc_template(
 	const char *file_name, templatetype tpl, double r, double theta,
 	int dark_to_light, double *min_scale, double *max_scale,
@@ -169,7 +169,7 @@ const char * vswrapper::find_from_template(
 			time_out, y_origin_ll, min_accept, max_accept, num_finds );
 	return retVal;
 }
-
+*/
 VsEnviron& vswrapper::getStaticEnv()
 {
 	static VsEnviron retVal = 0;

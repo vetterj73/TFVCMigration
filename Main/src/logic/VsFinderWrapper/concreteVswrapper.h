@@ -30,7 +30,7 @@ public:
 	void set_pixel_size(double size) { m_pixel_size = size; }
 	void set_fov_cols(int cols) { m_width_pixels = cols; }
 	void set_fov_rows(int rows) { m_height_pixels = rows; }
-
+/*
 	// create a template for locating a disc
 	const char * create_disc_template(
 		const char *file_name,	// name of the template file to save
@@ -175,9 +175,9 @@ public:
 		double max_accept=-1,   // If >0 minumum score to accept at max pyramid level to look for peak override
 		int num_finds=-1        // If > 0 number of versions of the template to find
 	);
-
+*/
 private:
-
+/*
 	// This function will only draw one fiducial per template
 	const char *create_and_save(
 		const char *template_name,		// name of template
@@ -210,7 +210,7 @@ private:
 		double high_accept,	
 		int depth, 
 		double mask_region=0
-		);
+		);*/
 
 	double m_pixel_size, m_width_pixels, m_height_pixels;
 	
@@ -234,6 +234,13 @@ public:
 		double base, double height, double theta, int dark_to_light,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
+
+	/*const char* create_rectangleframe_template(
+		int* piNodeID,			// Output: nodeID of map
+		templatetype tpl,
+		double base, double height, double thick, double theta, int dark_to_light,
+		double *min_scale, double *max_scale, double low_accept, double high_accept, 
+		double mask_region, int depth);*/
 
 	const char* create_diamond_template(
 		int* piNodeID,			// Output: nodeID of map	
