@@ -226,7 +226,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,		// Type of template to generate
 		double r,				// radius of the disc in meters
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (Useless and can be any value)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -242,7 +242,7 @@ public:
 		templatetype tpl,		// Type of template to generate
 		double inner_radius,
 		double outer_radius,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (Useless and can be any value)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -260,7 +260,7 @@ public:
 		double height,
 		double base_leg,
 		double height_leg,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -277,7 +277,7 @@ public:
 		templatetype tpl,		// Type of template to generate
 		double base,
 		double height,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -294,7 +294,7 @@ public:
 		double base,
 		double height,
 		double thick,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -311,7 +311,7 @@ public:
 		double base,
 		double height,
 		double offset,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -329,7 +329,7 @@ public:
 		double height,
 		double offset,
 		double thick,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
@@ -345,7 +345,7 @@ public:
 		templatetype tpl,		// Type of template to generate
 		double base,
 		double height,
-		double theta,			// (Not currently supported) rotation about the center of the shape
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
