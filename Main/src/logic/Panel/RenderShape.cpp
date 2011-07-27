@@ -149,15 +149,32 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 	// Set up image to draw donut hole
 	IMAGETYPE donutHole;
 	donutHole.Configure(
-		cols, 
-		rows, 
-		cols,
-		trans,
-		trans,
+		image.Columns(), 
+		image.Rows(), 
+		image.PixelRowStride(),
+		image.GetNominalTransform(),
+		image.GetTransform(),
 		true);	// create own buffer
+	donutHole.ZeroBuffer();
 
 	// Create donut hole
-	RenderShape(donutHole, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), width/2.0, height/2.0);
+	RenderShape(donutHole, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), donut->GetCadX(), donut->GetCadY());
+
+
+	if(image.GetBytesPerPixel() == 1)
+	{
+		ClipSub(
+			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)donutHole.GetBuffer(), donutHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
+	else
+	{
+		ClipSub(
+			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)donutHole.GetBuffer(), donutHole.PixelRowStride(), 
+			image.Columns(), image.Rows());
+	}
 
 	//string filename = Config::instance().getImageDir();
 	//filename += "\\DonutHole.bmp";
@@ -171,8 +188,8 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 
 	// Transform to pixel coordinates, and position them on nearest whole integer pixels
 	Box temp;
-	donutHole.WorldToImage(box.p1.x, box.p1.y, &temp.p1.y, &temp.p1.x);
-	donutHole.WorldToImage(box.p2.x, box.p2.y, &temp.p2.y, &temp.p2.x);
+	image.WorldToImage(box.p1.x, box.p1.y, &temp.p1.y, &temp.p1.x);
+	image.WorldToImage(box.p2.x, box.p2.y, &temp.p2.y, &temp.p2.x);
 	box = temp;
 	box.p1.x = NearestIntD(box.p1.x);
 	box.p1.y = NearestIntD(box.p1.y);
@@ -672,23 +689,23 @@ void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature
 	PointList polygonPoints = diamondFrame->GetPointList();
 
 	RenderPolygon(image, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
-
+	//image.Save("C:\\Temp\\1.bmp");
+	
 	// Set up image to draw diamond hole
-	ImgTransform trans;
-	trans.Config(resolution, resolution);
-
 	IMAGETYPE diamondHole;
 	diamondHole.Configure(
 		image.Columns(), 
 		image.Rows(), 
 		image.PixelRowStride(),
-		trans,
-		trans,
+		image.GetNominalTransform(),
+		image.GetTransform(),
 		true);	// create own buffer
+	diamondHole.ZeroBuffer();
 
 	polygonPoints.clear();
 	polygonPoints = diamondFrame->GetInnerPointList();
 	RenderPolygon(diamondHole, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
+	//diamondHole.Save("C:\\Temp\\2.bmp");
 
 	if(image.GetBytesPerPixel() == 1)
 	{
@@ -754,9 +771,10 @@ void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameF
 		image.Columns(), 
 		image.Rows(), 
 		image.PixelRowStride(),
-		trans,
-		trans,
+		image.GetNominalTransform(),
+		image.GetTransform(),
 		true);	// create own buffer
+	rectHole.ZeroBuffer();
 
 	polygonPoints.clear();
 	polygonPoints = rectFrame->GetInnerPointList();
@@ -827,9 +845,10 @@ void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangl
 		image.Columns(), 
 		image.Rows(), 
 		image.PixelRowStride(),
-		trans,
-		trans,
+		image.GetNominalTransform(),
+		image.GetTransform(),
 		true);	// create own buffer
+	triangleHole.ZeroBuffer();
 
 	polygonPoints.clear();
 	polygonPoints = triangleFrame->GetInnerPointList();
