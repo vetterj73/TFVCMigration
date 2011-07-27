@@ -151,7 +151,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	// The image is suppose to enter one by one
 	WaitForSingleObject(_queueMutex, INFINITE);
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
+	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
 
 	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
 	

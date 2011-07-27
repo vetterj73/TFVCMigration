@@ -113,7 +113,43 @@ OverlapManager::OverlapManager(
 		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)	
 		_pNgcFidCorr = new CyberNgcFiducialCorrelation();
+	/*
+	i=2;
+	double dS = 1e-3;
+	double dAngle = 0;
+	CrossFeature cross(i++, dS*100, dS*100, dAngle, dS*1, dS*1, dS*0.3, dS*0.3);
+	_pPanel->AddFiducial(&cross);
+	
+	DiamondFeature diamond(i++, dS*100, dS*110, dAngle, dS*1, dS*2);
+	_pPanel->AddFiducial(&diamond);
+	
+	DiamondFrameFeature diamondFrame(i++, dS*100, dS*120, dAngle, dS*1, dS*2, dS*0.2);
+	_pPanel->AddFiducial(&diamondFrame);
+	
+	DiscFeature disc(i++, dS*100, dS*130, dS*1);
+	_pPanel->AddFiducial(&disc);
 
+	DonutFeature donut(i++, dS*100, dS*140, dS*0.7, dS*1);
+	_pPanel->AddFiducial(&donut);
+	
+	RectangularFeature rect(i++, dS*110, dS*100, dAngle, dS*1, dS*2);
+	_pPanel->AddFiducial(&rect);
+	
+	RectangularFrameFeature rectFrame(i++, dS*110, dS*110, dAngle, dS*1, dS*2, dS*0.2);
+	_pPanel->AddFiducial(&rectFrame);
+	
+	TriangleFeature triangle(i++, dS*110, dS*120, dAngle, dS*1, dS*1, dS*0.5);
+	_pPanel->AddFiducial(&triangle);
+	
+	EquilateralTriangleFrameFeature eqTriangleFrame(i++, dS*110, dS*130, dAngle, dS*1, dS*0.2);
+	_pPanel->AddFiducial(&eqTriangleFrame);
+	
+	CheckerPatternFeature check1(i++, dS*110, dS*140, dAngle-90, dS*1);
+	_pPanel->AddFiducial(&check1);
+	
+	CheckerPatternFeature check2(i++, dS*110, dS*140, dAngle, dS*1);
+	_pPanel->AddFiducial(&check2);
+	//*/
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -514,13 +550,13 @@ bool OverlapManager::CreateFiducialImages()
 			_pPanel->GetPixelSizeX(), 
 			dScale);	
 
-		// for Debug
-		//string s;
-		//char cTemp[100];
-		//sprintf_s(cTemp, 100, "C:\\Temp\\Fid_%d.bmp", iCount);
-		//s.append(cTemp);
-		//_pFidImages[iCount].Save(s);
-
+		/* for Debug
+		string s;
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "C:\\Temp\\Fid_%d.bmp", iCount);
+		s.append(cTemp);
+		_pFidImages[iCount].Save(s);
+		//*/
 		iCount++;
 	}
 
@@ -719,7 +755,11 @@ void OverlapManager::CreateFidFovOverlaps()
 {
 	CreateFiducialImages();
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+	{
+		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::CreateFidFovOverlaps(): Begin fiducial training");
 		CreateVsfinderTemplates();
+		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::CreateFidFovOverlaps(): End fiducial training");
+	}
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
 		CreateNgcFidTemplates();
 

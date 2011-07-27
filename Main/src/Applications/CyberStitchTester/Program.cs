@@ -89,7 +89,7 @@ namespace CyberStitchTester
      //           _aligner.LogOverlaps(true);
      //           _aligner.LogMaskVectors(true);
                 //_aligner.LogFiducialOverlaps(true);
-                _aligner.UseCyberNgc4Fiducial();
+                //_aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
@@ -342,8 +342,8 @@ namespace CyberStitchTester
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
-            Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
-                pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
+           // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
+           //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
