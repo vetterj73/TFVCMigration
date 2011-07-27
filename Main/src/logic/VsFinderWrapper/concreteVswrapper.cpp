@@ -1716,7 +1716,7 @@ const char * concreteVsWrapper::create_rectangle_template(
 const char * concreteVsWrapper::create_rectangleframe_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
-	double base, double height, double thick, double theta, int dark_to_light,
+	double base, double height, double thickness, double theta, int dark_to_light,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1741,11 +1741,11 @@ const char * concreteVsWrapper::create_rectangleframe_template(
 	{
 		base/=m_pixel_size;
 		height/=m_pixel_size;
-		thick /= m_pixel_size;
+		thickness /= m_pixel_size;
 
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, SQUARE_H_FIDUCIAL, base,
-			height, thick, theta, dark_to_light, min_scale, max_scale,
+			height, thickness, theta, dark_to_light, min_scale, max_scale,
 			low_accept, high_accept, depth, mask_region);
 	}
 	else
@@ -1799,7 +1799,7 @@ const char * concreteVsWrapper::create_diamond_template(
 const char * concreteVsWrapper::create_diamondframe_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
-	double base, double height, double thick, double theta, int dark_to_light,
+	double base, double height, double thickness, double theta, int dark_to_light,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1824,11 +1824,11 @@ const char * concreteVsWrapper::create_diamondframe_template(
 	{
 		base/=m_pixel_size;
 		height/=m_pixel_size;
-		thick/=m_pixel_size;
+		thickness/=m_pixel_size;
 
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, DIAMOND_H_FIDUCIAL, base,
-			height, thick, theta, dark_to_light, min_scale, max_scale,
+			height, thickness, theta, dark_to_light, min_scale, max_scale,
 			low_accept, high_accept, depth, mask_region);
 	}
 	else
@@ -1926,7 +1926,7 @@ const char * concreteVsWrapper::create_triangle_template(
 const char* concreteVsWrapper::create_triangleFrame_template1(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl,
-	double base, double height, double offset, double thick, double theta, int dark_to_light, 
+	double base, double height, double offset, double thickness, double theta, int dark_to_light, 
 	double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1955,7 +1955,7 @@ const char* concreteVsWrapper::create_triangleFrame_template1(
 		base/=m_pixel_size;
 		height/=m_pixel_size;
 		offset/=m_pixel_size; // offset to x of top point of triangle
-		thick/=m_pixel_size;
+		thickness/=m_pixel_size;
 
 		// Create rotation matrix from theta
 		matrix3 rotation = matrix3().rotate(2, (2 * M_PI * -theta));
@@ -1970,9 +1970,9 @@ const char* concreteVsWrapper::create_triangleFrame_template1(
 		triangleFrame.points().push(vector3(base, 0));
 		triangleFrame.points().push(vector3(offset, height));
 		// Inside triangle (for equilateral triangle)
-		triangleFrame.points().push(vector3(sqrt(3.0)*thick, thick));
-		triangleFrame.points().push(vector3(base-sqrt(3.0)*thick, thick));
-		triangleFrame.points().push(vector3(offset, height-2*thick));
+		triangleFrame.points().push(vector3(sqrt(3.0)*thickness, thickness));
+		triangleFrame.points().push(vector3(base-sqrt(3.0)*thickness, thickness));
+		triangleFrame.points().push(vector3(offset, height-2*thickness));
 
 		triangleFrame *= rotation;
 		rect tri_bound = triangleFrame.bound();

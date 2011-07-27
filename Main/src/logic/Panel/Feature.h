@@ -167,10 +167,10 @@ class DiamondFrameFeature : public DiamondFeature
 public:
 
 	DiamondFrameFeature(int id, double positionX, double positionY, double rotation,
-				     double sizeX, double sizeY, double thick);
+				     double sizeX, double sizeY, double thickness);
 	~DiamondFrameFeature();
 
-	double GetThick()   { return _thick; };
+	double GetThickness()   { return _thickness; };
 
 	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
 
@@ -179,7 +179,7 @@ private:
 	void NominalArea(); // Override function
 	void CalInnerPolygon();
 
-	double _thick;
+	double _thickness;
 
 	// Shape vertices
 	PointList _innerPolygonPoints;
@@ -258,10 +258,10 @@ class RectangularFrameFeature : public RectangularFeature
 public:
 
 	RectangularFrameFeature(int id, double positionX, double positionY, double rotation,
-				     double sizeX, double sizeY, double thick );
+				     double sizeX, double sizeY, double thickness );
 	~RectangularFrameFeature();
 
-	double GetThick()   { return _thick; };
+	double GetThickness()   { return _thickness; };
 
 	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
 
@@ -270,7 +270,7 @@ private:
 	void NominalArea(); // Override function
 	void CalInnerPolygon();
 
-	double _thick;
+	double _thickness;
 
 	// Shape vertices
 	PointList _innerPolygonPoints;
@@ -311,10 +311,10 @@ class EquilateralTriangleFrameFeature : public TriangleFeature
 public:
 
 	EquilateralTriangleFrameFeature(int id, double positionX, double positionY, double rotation,
-				     double size, double thick );
+				     double size, double thickness );
 	~EquilateralTriangleFrameFeature();
 
-	double GetThick()   { return _thick; };
+	double GetThickness()   { return _thickness; };
 
 	const PointList& GetInnerPointList( ) const { return _innerPolygonPoints; }
 
@@ -323,7 +323,7 @@ private:
 	void NominalArea(); // Override function
 	void CalInnerPolygon();
 
-	double _thick;
+	double _thickness;
 
 	// Shape vertices
 	PointList _innerPolygonPoints;
@@ -334,17 +334,19 @@ class CheckerPatternFeature : public Feature
 public:
 
 	CheckerPatternFeature(int id, double positionX, double positionY, double rotation,
-					double size);
+					double sizeX, double sizeY);
 	~CheckerPatternFeature();
 
-	double GetSize()	{ return _size; }
+	double GetSizeX()	{ return _sizeX; }
+	double GetSizeY()   { return _sizeY; }
 
 	const PointList& GetFirstPointList() const { return _polygonPoints[0]; }
 	const PointList& GetSecondPointList() const { return _polygonPoints[1]; }
 
 protected:
 	// Shape Definition Parameters
-	double _size;
+	double _sizeX;
+	double _sizeY;
 
 private:
 	// Methods

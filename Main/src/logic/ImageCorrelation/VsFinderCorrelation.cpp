@@ -109,7 +109,7 @@ bool VsFinderCorrelation::CreateVsTemplate(
 
 	case Feature::SHAPE_DIAMONDFRAME:
 		_pVsw->create_diamondframe_template(pTemplateID, vswrapper::FIDUCIAL,
-			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(), ((DiamondFrameFeature*)pFid)->GetThick(),
+			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(), ((DiamondFrameFeature*)pFid)->GetThickness(),
 			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
@@ -133,7 +133,7 @@ bool VsFinderCorrelation::CreateVsTemplate(
 
 	case Feature::SHAPE_RECTANGLEFRAME:
 		_pVsw->create_rectangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
-			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(), ((RectangularFrameFeature*)pFid)->GetThick(),
+			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(), ((RectangularFrameFeature*)pFid)->GetThickness(),
 			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
@@ -147,13 +147,13 @@ bool VsFinderCorrelation::CreateVsTemplate(
 	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
 		_pVsw->create_triangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(), 
-			((TriangleFeature*)pFid)->GetOffset(), ((EquilateralTriangleFrameFeature*)pFid)->GetThick(),
+			((TriangleFeature*)pFid)->GetOffset(), ((EquilateralTriangleFrameFeature*)pFid)->GetThickness(),
 			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CHECKERPATTERN:
 		_pVsw->create_checkerpattern_template(pTemplateID, vswrapper::FIDUCIAL,
-			((CheckerPatternFeature*)pFid)->GetSize(), ((CheckerPatternFeature*)pFid)->GetSize(), 
+			((CheckerPatternFeature*)pFid)->GetSizeX(), ((CheckerPatternFeature*)pFid)->GetSizeY(), 
 			dTheta, 1, dMinScale, dMaxScale);
 		break;
 
@@ -212,7 +212,7 @@ int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -258,7 +258,7 @@ int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -285,7 +285,7 @@ int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
 						pFeature1->GetOffset() == pFeature2->GetOffset() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -296,7 +296,8 @@ int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
 					CheckerPatternFeature* pFeature1 = (CheckerPatternFeature*)pFeature;
 					CheckerPatternFeature* pFeature2 = (CheckerPatternFeature*)i->_pFeature;
 
-					if(pFeature1->GetSize() == pFeature2->GetSize() &&
+					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}

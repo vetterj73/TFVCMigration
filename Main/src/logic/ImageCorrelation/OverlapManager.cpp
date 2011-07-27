@@ -144,10 +144,10 @@ OverlapManager::OverlapManager(
 	EquilateralTriangleFrameFeature eqTriangleFrame(i++, dS*110, dS*130, dAngle, dS*1, dS*0.2);
 	_pPanel->AddFiducial(&eqTriangleFrame);
 	
-	CheckerPatternFeature check1(i++, dS*110, dS*140, dAngle-90, dS*1);
+	CheckerPatternFeature check1(i++, dS*110, dS*140, dAngle-90, dS*1, dS*2);
 	_pPanel->AddFiducial(&check1);
 	
-	CheckerPatternFeature check2(i++, dS*110, dS*140, dAngle, dS*1);
+	CheckerPatternFeature check2(i++, dS*110, dS*140, dAngle, dS*1, dS*2);
 	_pPanel->AddFiducial(&check2);
 	//*/
 	CreateFidFovOverlaps();

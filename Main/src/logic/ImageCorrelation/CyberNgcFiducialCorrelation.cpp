@@ -412,7 +412,7 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -458,7 +458,7 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -485,7 +485,7 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
 						pFeature1->GetOffset() == pFeature2->GetOffset() &&
-						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetThickness() == pFeature2->GetThickness() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
@@ -496,7 +496,8 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 					CheckerPatternFeature* pFeature1 = (CheckerPatternFeature*)pFeature;
 					CheckerPatternFeature* pFeature2 = (CheckerPatternFeature*)i->_pFeature;
 
-					if(pFeature1->GetSize() == pFeature2->GetSize() &&
+					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
 						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}

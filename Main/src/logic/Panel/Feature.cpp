@@ -425,10 +425,10 @@ void DiamondFeature::NominalArea()
 ////////////////                                     //////////////////////
 ///////////////////////////////////////////////////////////////////////////
 DiamondFrameFeature::DiamondFrameFeature(int id, double positionX, double positionY, double rotation,
-				     double sizeX, double sizeY, double thick):
+				     double sizeX, double sizeY, double thickness):
 						DiamondFeature(id, positionX, positionY, rotation,
 							sizeX, sizeY),
-						_thick(thick)
+						_thickness(thickness)
 {
 	_shape = SHAPE_DIAMONDFRAME;
 	NominalArea();
@@ -442,8 +442,8 @@ DiamondFrameFeature::~DiamondFrameFeature()
 void DiamondFrameFeature::NominalArea()
 {
 	double dHalfTopAngle = atan(_sizeX/_sizeY);
-	double base = _sizeX - _thick/cos(dHalfTopAngle)*2.0;
-	double height = _sizeY - _thick/sin(dHalfTopAngle)*2.0;
+	double base = _sizeX - _thickness/cos(dHalfTopAngle)*2.0;
+	double height = _sizeY - _thickness/sin(dHalfTopAngle)*2.0;
 	_nominalArea = _sizeX*_sizeY/2.0 - base*height/2.0;
 }
 
@@ -456,8 +456,8 @@ void DiamondFrameFeature::CalInnerPolygon()
 	bool rotated = (fabs(radians)>0.0001);
 
 	double dHalfTopAngle = atan(_sizeX/_sizeY);
-	double base = _sizeX - _thick/cos(dHalfTopAngle)*2.0;
-	double height = _sizeY - _thick/sin(dHalfTopAngle)*2.0;
+	double base = _sizeX - _thickness/cos(dHalfTopAngle)*2.0;
+	double height = _sizeY - _thickness/sin(dHalfTopAngle)*2.0;
 
 	// Polygon points in CW
 	//        * 1
@@ -706,10 +706,10 @@ void RectangularFeature::NominalArea()
 ///////////////////////////////////////////////////////////////////////////
 
 RectangularFrameFeature::RectangularFrameFeature(int id, double positionX, double positionY, double rotation,
-									   double sizeX, double sizeY, double thick):
+									   double sizeX, double sizeY, double thickness):
 									RectangularFeature(id, positionX, positionY, rotation,
 										sizeX, sizeY),
-									_thick(thick)
+									_thickness(thickness)
 {
 	_shape = SHAPE_RECTANGLEFRAME;
 	NominalArea();
@@ -722,15 +722,15 @@ RectangularFrameFeature::~RectangularFrameFeature()
 
 void RectangularFrameFeature::NominalArea()
 {
-	_nominalArea = _width * _height - (_width - 2*_thick)*(_height - 2*_thick);
+	_nominalArea = _width * _height - (_width - 2*_thickness)*(_height - 2*_thickness);
 }
 
 void RectangularFrameFeature::CalInnerPolygon()
 {
 	_innerPolygonPoints.clear();
 
-	double halfHeight = _height/2.0 - _thick;
-	double halfWidth = _width/2.0 - _thick;
+	double halfHeight = _height/2.0 - _thickness;
+	double halfWidth = _width/2.0 - _thickness;
 	double radians = _rotation * PI / 180.0;
 	bool rotated = (fabs(radians)>0.0001);
 
@@ -889,10 +889,10 @@ void TriangleFeature::NominalArea()
 ///////////////////////////////////////////////////////////////////////////
 
 EquilateralTriangleFrameFeature::EquilateralTriangleFrameFeature(int id, double positionX, double positionY, double rotation,
-								 double size, double thick ) :
+								 double size, double thickness ) :
 							TriangleFeature(id, positionX, positionY, rotation,
 								 size, size*sqrt(3.0)/2.0, size/2.0),
-							_thick(thick)
+							_thickness(thickness)
 {
 	_shape = SHAPE_EQUILATERALTRIANGLEFRAME;
 	NominalArea();
@@ -905,7 +905,7 @@ EquilateralTriangleFrameFeature::~EquilateralTriangleFrameFeature()
 
 void EquilateralTriangleFrameFeature::NominalArea()
 {
-	double innerSize = _sizeX - _thick*sqrt(3.0)*2.0;
+	double innerSize = _sizeX - _thickness*sqrt(3.0)*2.0;
 	double dHeight = innerSize*sqrt(3.0)/2.0;
 	_nominalArea = _sizeX*_sizeY/2.0 - innerSize*dHeight/2.0;
 }
@@ -914,7 +914,7 @@ void EquilateralTriangleFrameFeature::CalInnerPolygon()
 {
 	_innerPolygonPoints.clear();
 
-	double base = _sizeX - _thick*sqrt(3.0)*2.0;
+	double base = _sizeX - _thickness*sqrt(3.0)*2.0;
 	double height = base*sqrt(3.0)/2.0;
 	double offset = base/2.0;
 
@@ -967,9 +967,10 @@ void EquilateralTriangleFrameFeature::CalInnerPolygon()
 ////////////////                                     //////////////////////
 ///////////////////////////////////////////////////////////////////////////
 CheckerPatternFeature::CheckerPatternFeature(int id, double positionX, double positionY, double rotation,
-					double size):
+					double sizeX, double sizeY):
 							Feature(SHAPE_CHECKERPATTERN, id, positionX, positionY, rotation),
-							_size(size)
+							_sizeX(sizeX),
+							_sizeY(sizeY)
 {
 	_polygonPoints[0].clear();
 	_polygonPoints[1].clear();
@@ -1002,7 +1003,7 @@ void CheckerPatternFeature::Bound()
 	//			|  size			|
 	
 	// Point 1
-	point.x = -_size/2.0;
+	point.x = -_sizeX/2.0;
 	point.y = 0;
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
@@ -1010,8 +1011,8 @@ void CheckerPatternFeature::Bound()
 	_polygonPoints[0].push_back(point);
 
 	// Point 2
-	point.x = -_size/2.0;
-	point.y = _size/2.0; 
+	point.x = -_sizeX/2.0;
+	point.y = _sizeY/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
@@ -1019,7 +1020,7 @@ void CheckerPatternFeature::Bound()
 
 	// Point 3
 	point.x = 0;
-	point.y = _size/2.0; 
+	point.y = _sizeY/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
@@ -1035,7 +1036,7 @@ void CheckerPatternFeature::Bound()
 	_polygonPoints[1].push_back(point);
 
 	// Point 2
-	point.x = _size/2.0;
+	point.x = _sizeX/2.0;
 	point.y = 0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
@@ -1043,8 +1044,8 @@ void CheckerPatternFeature::Bound()
 	_polygonPoints[1].push_back(point);
 
 	// Point 3
-	point.x = _size/2.0;
-	point.y = -_size/2.0; 
+	point.x = _sizeX/2.0;
+	point.y = -_sizeY/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
@@ -1052,7 +1053,7 @@ void CheckerPatternFeature::Bound()
 
 	// Point 4
 	point.x = 0;
-	point.y = -_size/2.0; 
+	point.y = -_sizeY/2.0; 
 	if(rotated) point.rot(radians);
 	point.x += _xCadCenter;
 	point.y += _yCadCenter;
@@ -1092,7 +1093,7 @@ void CheckerPatternFeature::InspectionArea()
 
 void CheckerPatternFeature::NominalArea()
 {
-	_nominalArea = _size * _size / 2.0;
+	_nominalArea = _sizeX * _sizeY / 2.0;
 }
 
 ///////////////////////////////////////////////////////////////////////////

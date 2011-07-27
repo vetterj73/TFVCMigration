@@ -238,7 +238,7 @@ public:
 	const char* create_rectangleframe_template(
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
-		double base, double height, double thick, double theta, int dark_to_light,
+		double base, double height, double thickness, double theta, int dark_to_light,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -252,7 +252,7 @@ public:
 	const char* create_diamondframe_template(
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
-		double base, double height, double thick, double theta, int dark_to_light,
+		double base, double height, double thickness, double theta, int dark_to_light,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -266,7 +266,7 @@ public:
 	const char* create_triangleFrame_template1(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double offset, double thick, double theta, int dark_to_light, 
+		double base, double height, double offset, double thickness, double theta, int dark_to_light, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
