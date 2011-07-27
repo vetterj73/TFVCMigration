@@ -1225,7 +1225,12 @@ static void get_differentiators(
 	for(int i=0;i<whole_list_size;i++)
 	{
 		if(whole_list[i].fid==fid && fid!=PLUS_FIDUCIAL)
-				continue;
+			continue;
+
+		// Because of angle, avoid both triangle type 
+		if((whole_list[i].fid==TRIANGLE_UP_FIDUCIAL && fid==TRIANGLE_DOWN_FIDUCIAL)
+			|| (whole_list[i].fid==TRIANGLE_DOWN_FIDUCIAL && fid==TRIANGLE_UP_FIDUCIAL))
+			continue;
 
 		if(!size)
 			break;
@@ -1402,7 +1407,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		back_ground=fill_colors[!!poly_data->dark_to_light].back_ground;
 
 		int iCount = poly_data->poly.points().count();
-		if(iCount!=3 || iCount!=6)
+		if(iCount!=3 && iCount!=6)
 			ret = "Not a triangle or triangle frame"; 
 
 		vector3 p0 = poly_data->poly.points().shift();
@@ -1410,6 +1415,11 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		vector3 p2 = poly_data->poly.points().shift();
 
 		double points[4][2] = {{p0.x,p0.y}, {p2.x,p2.y}, {p1.x,p1.y}, {p0.x,p0.y}};
+		for(int i=0; i<4; i++)
+		{
+			points[i][0] = points[i][0] + width/2.0;
+			points[i][1] = points[i][1] + height/2.0;
+		}
 		// Draw triangle fiducial/outside of triangle frame
 		if(vsDrawConvexPolygon(cam_image, points, 3, fore_ground, back_ground, TRUE, FALSE) == -1)
 		{
@@ -1426,7 +1436,11 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 			vector3 p4 = poly_data->poly.points().shift();
 			vector3 p5 = poly_data->poly.points().shift();
 			double points2[4][2] = {{p3.x,p3.y}, {p5.x,p5.y}, {p4.x,p4.y}, {p3.x,p3.y}};
-
+			for(int i=0; i<4; i++)
+			{
+				points2[i][0] = points2[i][0] + width/2.0;
+				points2[i][1] = points2[i][1] + height/2.0;
+			}
 			VsCamImage temp_image=vsCreateCamImage( oVisEnv, 0, 0, (int)width, (int)height,
 				VS_SINGLE_BUFFER, VS_BUFFER_HOST_BYTE, 1);
 
@@ -1440,6 +1454,8 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 
 			// Create triangle frame (background need to be be compensated 
 			ImageClipSub(cam_image, temp_image, back_ground);
+
+			vsDispose(temp_image);
 		}
 	}
 
@@ -1530,12 +1546,15 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 			diff_center[0]+=diff_list[the_one].twidth/2+30;
 			the_one++;
 		}
-
-		/*VsStFileIOControl tFileControl;
+		/*
+		static int i=5;
+		VsStFileIOControl tFileControl;
 		tFileControl.eFileType = VS_FFORMAT_GIF;
-		char cImageName[255] = "C:\\temp\\fiducialImag.bmp";
+		char cImageName[255] = "C:\\temp\\fiducialImag.gif";
+		sprintf(cImageName,"%s_%d.gif", "C:\\temp\\fiducialImag.gif", i++);
 		tFileControl.pcFileName = cImageName;
-		vsSaveImageData(cam_image, &tFileControl);*/
+		vsSaveImageData(cam_image, &tFileControl);
+		//*/
 
 #ifdef __DEBUG_TEMPLATE
 // used for debug to save the image out to a file
@@ -1844,10 +1863,6 @@ const char * concreteVsWrapper::create_triangle_template(
 	{
 		vs_fid_poly_data poly_data;
 
-		// FOV width and height.
-		double wdth=m_width_pixels/2.0;
-		double hgt=m_height_pixels/2.0;
-
 		// Convert from meters to pixels.
 		base/=m_pixel_size;
 		height/=m_pixel_size;
@@ -1857,9 +1872,6 @@ const char * concreteVsWrapper::create_triangle_template(
 		matrix3 rotation = matrix3().rotate(2, (2 * M_PI * -theta));
 
 		polygon triangle;
-
-		// FOV Center
-		vector3 fov_center=vector3(wdth,hgt);
 
 		//Center of triange bounding box.
 		vector3 bound_center = rotation * vector3(base/2.0,height/2.0);
@@ -1878,12 +1890,6 @@ const char * concreteVsWrapper::create_triangle_template(
 		// move centroid of triangle to origin
 		triangle-=triangle.centroid();
 
-		// move centroid of triangle to fov center.
-		triangle+=fov_center;
-
-		// get new triangle centroid.
-		vector3 centroid = 	triangle.centroid();
-
 		// Now triangle centroid is centered in fov.
 		// Need to ensure template is big enough.
 		// Delta is difference between triangle bounding box and centrod.
@@ -1894,15 +1900,30 @@ const char * concreteVsWrapper::create_triangle_template(
 		poly_data.poly = triangle;
 		poly_data.dark_to_light = dark_to_light;
 
+		vs_fid_data fid_data;
+		const int diff_size=5;
+		vs_fid_data diff_list[diff_size];
+
+		fid_data.fid=TRIANGLE_UP_H_FIDUCIAL;
+		fid_data.twidth=base;
+		fid_data.theight=height;
+		fid_data.hwidth=0;
+		fid_data.theta=theta;
+		fid_data.dark_to_light=dark_to_light;
+
+		if(tpl == FIDUCIAL)
+			get_differentiators(diff_list, diff_size-1, TRIANGLE_UP_FIDUCIAL, base, height,
+				0, theta, dark_to_light);
+
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, 0, 0, &poly_data, min_scale, max_scale,
-			low_accept, high_accept, depth, 0, 0, 0);
+			low_accept, high_accept, depth, diff_list, diff_size-1, mask_region);
 	}
 	else
 		return "600 bad pixel size";
 }
 
-const char* concreteVsWrapper::create_triangleFrame_template(
+const char* concreteVsWrapper::create_triangleFrame_template1(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl,
 	double base, double height, double offset, double thick, double theta, int dark_to_light, 
@@ -1930,10 +1951,6 @@ const char* concreteVsWrapper::create_triangleFrame_template(
 	{
 		vs_fid_poly_data poly_data;
 
-		// FOV width and height.
-		double wdth=m_width_pixels/2.0;
-		double hgt=m_height_pixels/2.0;
-
 		// Convert from meters to pixels.
 		base/=m_pixel_size;
 		height/=m_pixel_size;
@@ -1944,9 +1961,6 @@ const char* concreteVsWrapper::create_triangleFrame_template(
 		matrix3 rotation = matrix3().rotate(2, (2 * M_PI * -theta));
 
 		polygon triangleFrame;
-
-		// FOV Center
-		vector3 fov_center=vector3(wdth,hgt);
 
 		//Center of triange bounding box.
 		vector3 bound_center = rotation * vector3(base/2.0,height/2.0);
@@ -1971,12 +1985,6 @@ const char* concreteVsWrapper::create_triangleFrame_template(
 		// move centroid of triangleFrame to origin
 		triangleFrame-=triangleFrame.centroid();
 
-		// move centroid of triangleFrame to fov center.
-		triangleFrame+=fov_center;
-
-		// get new triangleFrame centroid.
-		vector3 centroid = 	triangleFrame.centroid();
-
 		// Now triangleFrame centroid is centered in fov.
 		// Need to ensure template is big enough.
 		// Delta is difference between triangleFrame bounding box and centrod.
@@ -1987,9 +1995,24 @@ const char* concreteVsWrapper::create_triangleFrame_template(
 		poly_data.poly = triangleFrame;
 		poly_data.dark_to_light = dark_to_light;
 
+		vs_fid_data fid_data;
+		const int diff_size=5;
+		vs_fid_data diff_list[diff_size];
+
+		fid_data.fid=TRIANGLE_UP_H_FIDUCIAL;
+		fid_data.twidth=base;
+		fid_data.theight=height;
+		fid_data.hwidth=0;
+		fid_data.theta=theta;
+		fid_data.dark_to_light=dark_to_light;
+
+		if(tpl == FIDUCIAL)
+			get_differentiators(diff_list, diff_size-1, TRIANGLE_UP_FIDUCIAL, base, height,
+				0, theta, dark_to_light);
+
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, 0, 0, &poly_data, min_scale, max_scale,
-			low_accept, high_accept, depth, 0, 0, 0);
+			low_accept, high_accept, depth, diff_list, diff_size-1, mask_region);
 	}
 	return "Not implemented yet";
 }
@@ -2142,7 +2165,7 @@ const char* concreteVsWrapper::create_checkerpattern_template(
 		base/=m_pixel_size;
 		height/=m_pixel_size;
 
-		if(theta == 0)
+		if(theta == 0 || fabs(fabs(theta)-0.5)<0.125) // 0 or 180 degree
 		{
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, CHECKER_UL_FIDUCIAL, base, height, 0,

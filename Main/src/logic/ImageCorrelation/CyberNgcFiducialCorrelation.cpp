@@ -387,7 +387,8 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
 						pFeature1->GetLegSizeX() == pFeature2->GetLegSizeX() &&
-						pFeature1->GetLegSizeY() == pFeature2->GetLegSizeY())
+						pFeature1->GetLegSizeY() == pFeature2->GetLegSizeY() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
 				break;
@@ -398,11 +399,25 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 					DiamondFeature* pFeature2 = (DiamondFeature*)i->_pFeature;
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
-						pFeature1->GetSizeY() == pFeature2->GetSizeY())
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
 				break;
+			
+			case Feature::SHAPE_DIAMONDFRAME:
+			{					
+					DiamondFrameFeature* pFeature1 = (DiamondFrameFeature*)pFeature;
+					DiamondFrameFeature* pFeature2 = (DiamondFrameFeature*)i->_pFeature;
 
+					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
+						return(i->_iTemplateID);
+				}
+				break;
+			
 			case Feature::SHAPE_DISC:
 				{
 					DiscFeature* pFeature1 = (DiscFeature*)pFeature;
@@ -430,7 +445,21 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 					RectangularFeature* pFeature2 = (RectangularFeature*)i->_pFeature;
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
-						pFeature1->GetSizeY() == pFeature2->GetSizeY())
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
+						return(i->_iTemplateID);
+				}
+				break;
+
+				case Feature::SHAPE_RECTANGLEFRAME:
+				{
+					RectangularFrameFeature* pFeature1 = (RectangularFrameFeature*)pFeature;
+					RectangularFrameFeature* pFeature2 = (RectangularFrameFeature*)i->_pFeature;
+
+					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
 				break;
@@ -442,7 +471,33 @@ int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
 
 					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
 						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
-						pFeature1->GetOffset() == pFeature2->GetOffset())
+						pFeature1->GetOffset() == pFeature2->GetOffset() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
+						return(i->_iTemplateID);
+				}
+				break;
+
+			case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
+				{
+					EquilateralTriangleFrameFeature* pFeature1 = (EquilateralTriangleFrameFeature*)pFeature;
+					EquilateralTriangleFrameFeature* pFeature2 = (EquilateralTriangleFrameFeature*)i->_pFeature;
+
+					if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+						pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+						pFeature1->GetOffset() == pFeature2->GetOffset() &&
+						pFeature1->GetThick() == pFeature2->GetThick() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
+						return(i->_iTemplateID);
+				}
+				break;
+
+			case Feature::SHAPE_CHECKERPATTERN:
+				{
+					CheckerPatternFeature* pFeature1 = (CheckerPatternFeature*)pFeature;
+					CheckerPatternFeature* pFeature2 = (CheckerPatternFeature*)i->_pFeature;
+
+					if(pFeature1->GetSize() == pFeature2->GetSize() &&
+						pFeature1->GetRotation() == pFeature2->GetRotation())
 						return(i->_iTemplateID);
 				}
 				break;

@@ -183,8 +183,7 @@ CrossFeature::CrossFeature(int id, double positionX, double positionY, double ro
 
 CrossFeature::~CrossFeature()
 {
-	Feature::~Feature();
-	
+	Feature::~Feature();	
 }
 
 void CrossFeature::Bound()
@@ -437,8 +436,7 @@ DiamondFrameFeature::DiamondFrameFeature(int id, double positionX, double positi
 }
 
 DiamondFrameFeature::~DiamondFrameFeature()
-{
-	DiamondFeature::~DiamondFeature();
+{ 
 }
 
 void DiamondFrameFeature::NominalArea()
@@ -568,7 +566,6 @@ DonutFeature::DonutFeature(int id, double positionX, double positionY,
 DonutFeature::~DonutFeature()
 {
 	Feature::~Feature();
-	
 }
 
 void DonutFeature::Bound()
@@ -620,7 +617,6 @@ RectangularFeature::RectangularFeature(int id, double positionX, double position
 RectangularFeature::~RectangularFeature()
 {
 	Feature::~Feature();
-	
 }
 
 void RectangularFeature::Bound()
@@ -722,7 +718,6 @@ RectangularFrameFeature::RectangularFrameFeature(int id, double positionX, doubl
 
 RectangularFrameFeature::~RectangularFrameFeature()
 {
-	RectangularFeature::~RectangularFeature();
 }
 
 void RectangularFrameFeature::NominalArea()
@@ -906,7 +901,6 @@ EquilateralTriangleFrameFeature::EquilateralTriangleFrameFeature(int id, double 
 
 EquilateralTriangleFrameFeature::~EquilateralTriangleFrameFeature()
 {
-	TriangleFeature::~TriangleFeature();
 }
 
 void EquilateralTriangleFrameFeature::NominalArea()

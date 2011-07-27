@@ -236,6 +236,22 @@ public:
 		int depth=3				// number of pyramid level to use
 	);
 
+	// creates a template for locating a donut
+	virtual const char * create_donut_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,		// Type of template to generate
+		double inner_radius,
+		double outer_radius,
+		double theta,			// (Not currently supported) rotation about the center of the shape
+		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
+		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
+		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
+		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
+		double high_accept=0.6,	// Minimum score to accept in the High Resolution image
+		double mask_region=0,	// creates a masked region that vsFind will ignore. No effect if <=0
+		int depth=3				// number of pyramid level to use
+	);
+
 	// creates a template for locating a cross
 	virtual const char * create_cross_template(
 		int* piNodeID,			// Output: nodeID of map	
@@ -255,7 +271,7 @@ public:
 		int depth=3				// number of pyramid level to use
 	);
 
-	// creates a template for locating a cross
+	// creates a template for locating a diamond
 	virtual const char * create_diamond_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,		// Type of template to generate
@@ -271,12 +287,13 @@ public:
 		int depth=3				// number of pyramid level to use
 	);
 
-	// creates a template for locating a cross
-	virtual const char * create_donut_template(
+	// creates a template for locating a diamond frame
+	virtual const char * create_diamondframe_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,		// Type of template to generate
-		double inner_radius,
-		double outer_radius,
+		double base,
+		double height,
+		double thick,
 		double theta,			// (Not currently supported) rotation about the center of the shape
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
@@ -287,6 +304,7 @@ public:
 		int depth=3				// number of pyramid level to use
 	);
 
+	// creates a template for locating a triangle
 	virtual const char * create_triangle_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,		// Type of template to generate
@@ -303,12 +321,64 @@ public:
 		int depth=3				// number of pyramid level to use
 	);
 
+	// creates a template for locating a triangle frame (equilateral)
+	virtual const char * create_triangleframe_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,		// Type of template to generate
+		double base,
+		double height,
+		double offset,
+		double thick,
+		double theta,			// (Not currently supported) rotation about the center of the shape
+		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
+		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
+		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
+		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
+		double high_accept=0.6,	// Minimum score to accept in the High Resolution image
+		double mask_region=0,	// creates a masked region that vsFind will ignore. No effect if <=0
+		int depth=3				// number of pyramid level to use
+	);
+
+	// creates a template for locating a rectangle
 	virtual const char * create_rectangle_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,		// Type of template to generate
 		double base,
 		double height,
 		double theta,			// (Not currently supported) rotation about the center of the shape
+		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
+		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
+		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
+		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
+		double high_accept=0.6,	// Minimum score to accept in the High Resolution image
+		double mask_region=0,	// creates a masked region that vsFind will ignore. No effect if <=0
+		int depth=3				// number of pyramid level to use
+	);
+
+	// creates a template for locating a rectangle frame
+	virtual const char * create_rectangleframe_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,		// Type of template to generate
+		double base,
+		double height,
+		double thick,
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
+		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
+		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
+		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
+		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
+		double high_accept=0.6,	// Minimum score to accept in the High Resolution image
+		double mask_region=0,	// creates a masked region that vsFind will ignore. No effect if <=0
+		int depth=3				// number of pyramid level to use
+	);
+
+	// creates a template for locating a checkerpattern
+	virtual const char * create_checkerpattern_template(
+		int* piNodeID,			// Output: nodeID of map	
+		templatetype tpl,		// Type of template to generate
+		double base,
+		double height,
+		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]

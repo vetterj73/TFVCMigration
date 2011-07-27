@@ -279,6 +279,24 @@ const char * vswrapper::create_disc_template(
 	return retVal;
 }
 
+// creates a template for locating a donut
+const char * vswrapper::create_donut_template(
+	int* piNodeID,			// Output: nodeID of map	
+	templatetype tpl, double inner_radius, double outer_radius, double theta, 
+	int dark_to_light, double *min_scale, double *max_scale,
+	double low_accept, double high_accept, double mask_region, int depth )
+{ 
+	const char* retVal="";
+	if( concreteWrapper_ ) 
+		retVal = concreteWrapper_->create_donut_template(
+			piNodeID,
+			tpl, inner_radius, outer_radius, theta,
+			dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, mask_region, depth );
+
+	return retVal;
+}
+
 // creates a template for locating a cross
 const char * vswrapper::create_cross_template(
 	int* piNodeID,			// Output: nodeID of map	
@@ -300,7 +318,6 @@ const char * vswrapper::create_cross_template(
 	return retVal;
 }
 
-
 // creates a template for locating a cross
 const char * vswrapper::create_diamond_template(
 	int* piNodeID,			// Output: nodeID of map	
@@ -320,23 +337,22 @@ const char * vswrapper::create_diamond_template(
 }
 
 // creates a template for locating a cross
-const char * vswrapper::create_donut_template(
+const char * vswrapper::create_diamondframe_template(
 	int* piNodeID,			// Output: nodeID of map	
-	templatetype tpl, double inner_radius, double outer_radius, double theta, 
+	templatetype tpl, double base, double height, double thick, double theta,
 	int dark_to_light, double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
 	const char* retVal="";
 	if( concreteWrapper_ ) 
-		retVal = concreteWrapper_->create_donut_template(
+		retVal = concreteWrapper_->create_diamondframe_template(
 			piNodeID,
-			tpl, inner_radius, outer_radius, theta,
+			tpl, base, height, thick, theta,
 			dark_to_light, min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
 	return retVal;
 }
-
 
 const char * vswrapper::create_triangle_template(
 	int* piNodeID,			// Output: nodeID of map	
@@ -355,6 +371,22 @@ const char * vswrapper::create_triangle_template(
 	return retVal;
 }
 
+const char * vswrapper::create_triangleframe_template(
+	int* piNodeID,			// Output: nodeID of map	
+	templatetype tpl, double base, double height, double offset, double thick, double theta,
+	int dark_to_light, double *min_scale, double *max_scale,
+	double low_accept, double high_accept, double mask_region, int depth )
+{ 
+	const char* retVal="";
+	if( concreteWrapper_ ) 
+		retVal = concreteWrapper_->create_triangleFrame_template1(
+			piNodeID,
+			tpl, base, height, offset, thick, theta,
+			dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, mask_region, depth );
+
+	return retVal;
+}
 
 const char * vswrapper::create_rectangle_template(
 	int* piNodeID,			// Output: nodeID of map	
@@ -365,6 +397,42 @@ const char * vswrapper::create_rectangle_template(
 	const char* retVal="";
 	if( concreteWrapper_ ) 
 		retVal = concreteWrapper_->create_rectangle_template(
+			piNodeID, 
+			tpl, base, height, theta,
+			dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, mask_region, depth );
+
+	return retVal;
+}
+
+const char * vswrapper::create_rectangleframe_template(
+	int* piNodeID,			// Output: nodeID of map	
+	templatetype tpl, double base, double height, double thick, double theta,
+	int dark_to_light, double *min_scale, double *max_scale,
+	double low_accept, double high_accept, double mask_region, int depth )
+{ 
+	const char* retVal="";
+	if( concreteWrapper_ ) 
+		retVal = concreteWrapper_->create_rectangleframe_template(
+			piNodeID, 
+			tpl, base, height, thick, theta,
+			dark_to_light, min_scale, max_scale,
+			low_accept, high_accept, mask_region, depth );
+
+	return retVal;
+}
+
+// creates a template for locating a checkerpattern
+const char * vswrapper::create_checkerpattern_template(
+	int* piNodeID,		// Output: nodeID of map
+	templatetype tpl, double base, double height,double theta,			
+	int dark_to_light, double *min_scale, double *max_scale,
+	double low_accept, double high_accept, double mask_region, int depth
+	)
+{
+	const char* retVal="";
+	if( concreteWrapper_ ) 
+		retVal = concreteWrapper_->create_checkerpattern_template(
 			piNodeID, 
 			tpl, base, height, theta,
 			dark_to_light, min_scale, max_scale,
