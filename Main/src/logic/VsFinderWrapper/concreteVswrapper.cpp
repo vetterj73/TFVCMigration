@@ -1326,11 +1326,22 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	// Decide the size of training image and create it
 	int im_width = 0;
 	int im_height = 0;
-	for(int i = 0; i < diff_size; i++)
-	{
-		im_width += (int)(diff_list[i].twidth * 2);
-		im_height += (int)(diff_list[i].theight * 2);
+
+	if(diff_size>0 && diff_size<=8)
+	{	// reduce the training image size to speed up the training
+		// assume all diffential fiducail has the similar size
+		im_width = (int)(diff_list[0].twidth * 4) + 20;
+		im_height = (int)(diff_list[0].theight * 4) +20;
 	}
+	else
+	{
+		for(int i = 0; i < diff_size; i++)
+		{
+			im_width += (int)(diff_list[i].twidth * 2);
+			im_height += (int)(diff_list[i].theight * 2);
+		}
+	}
+
 	int width = 1;
 	int height = 1;
 	while(im_width >= width) width <<= 1;
@@ -1512,15 +1523,19 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		tool.dAngle	= 0;
 
 		int half_diff=(int)((diff_size/2.0)+.5);
-		double quarter_height=height/4.0;
 
-		double diff_center[2]={5,quarter_height};
+		double diff_center[2]={5, 0};
 		int the_one=0;
 		for(int diff=0;diff<diff_size;diff++)
 		{
+			// Differential fiducial Y location
+			if(diff<half_diff)
+				diff_center[1] = 5 + diff_list[the_one].theight/2;
+			else
+				diff_center[1] = height-1-5-diff_list[the_one].theight/2;
+
 			if(diff==half_diff)
 			{
-				diff_center[1]=quarter_height*3;
 				diff_center[0]=5;
 			}
 
@@ -1550,8 +1565,8 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		static int i=5;
 		VsStFileIOControl tFileControl;
 		tFileControl.eFileType = VS_FFORMAT_GIF;
-		char cImageName[255] = "C:\\temp\\fiducialImag.gif";
-		sprintf(cImageName,"%s_%d.gif", "C:\\temp\\fiducialImag.gif", i++);
+		char cImageName[255];
+		sprintf(cImageName,"%s_%d.gif", "C:\\Temp\\fiducialImag.gif", i++);
 		tFileControl.pcFileName = cImageName;
 		vsSaveImageData(cam_image, &tFileControl);
 		//*/

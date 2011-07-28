@@ -22,7 +22,7 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
-        private static uint _numThreads = 5;
+        private static uint _numThreads = 8;
         private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
@@ -89,7 +89,7 @@ namespace CyberStitchTester
      //           _aligner.LogOverlaps(true);
      //           _aligner.LogMaskVectors(true);
                 //_aligner.LogFiducialOverlaps(true);
-                //_aligner.UseCyberNgc4Fiducial();
+                _aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
@@ -129,17 +129,9 @@ namespace CyberStitchTester
                 else
                 {
                     _cycleCount++;
-                    if(_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
-                        Output("Could not save mosaic images");
+                   // if(_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
+                   //     Output("Could not save mosaic images");
 
-                    // Test save to 
-/*
-                    if(_mosaicSet.LoadAllStitchedImagesFromDirectory("c:\\temp\\") == false)
-                        Output("Could not load mosaic images");
-
-                    if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp2\\") == false)
-                        Output("Could not save mosaic images");
-*/
                    // Save a 3 channel image with CAD data...
                     uint iLayerIndex1 = 0;
                     uint iLayerIndex2 = 0;
@@ -167,7 +159,7 @@ namespace CyberStitchTester
                         _panel.GetCADBuffer(),
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                    // Testing a copy of mosaic...
+                    /*/ Testing a copy of mosaic...
                     _mosaicSetCopy.CopyBuffers(_mosaicSet);
                     _mosaicSetCopy.CopyTransforms(_mosaicSet);
                     _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
@@ -175,6 +167,7 @@ namespace CyberStitchTester
                          _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
                          _panel.GetCADBuffer(),
                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                     */
                 }
 
                 // should we do another cycle?
