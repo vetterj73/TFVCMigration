@@ -15,6 +15,44 @@ OverlapManager::OverlapManager(
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 
+	/*
+	int k=2;
+	double dS = 1e-3;
+	double dAngle = 0;
+	CrossFeature cross(k++, dS*100, dS*100, dAngle, dS*1, dS*1, dS*0.3, dS*0.3);
+	_pPanel->AddFiducial(&cross);
+	
+	DiamondFeature diamond(k++, dS*100, dS*110, dAngle, dS*1, dS*2);
+	_pPanel->AddFiducial(&diamond);
+	
+	DiamondFrameFeature diamondFrame(k++, dS*100, dS*120, dAngle, dS*1, dS*2, dS*0.2);
+	_pPanel->AddFiducial(&diamondFrame);
+	
+	DiscFeature disc(k++, dS*100, dS*130, dS*1);
+	_pPanel->AddFiducial(&disc);
+
+	DonutFeature donut(k++, dS*100, dS*140, dS*0.7, dS*1);
+	_pPanel->AddFiducial(&donut);
+	
+	RectangularFeature rect(k++, dS*110, dS*100, dAngle, dS*1, dS*2);
+	_pPanel->AddFiducial(&rect);
+	
+	RectangularFrameFeature rectFrame(k++, dS*110, dS*110, dAngle, dS*1, dS*2, dS*0.2);
+	_pPanel->AddFiducial(&rectFrame);
+	
+	TriangleFeature triangle(k++, dS*110, dS*120, dAngle, dS*1, dS*1, dS*0.5);
+	_pPanel->AddFiducial(&triangle);
+	
+	EquilateralTriangleFrameFeature eqTriangleFrame(k++, dS*110, dS*130, dAngle, dS*1, dS*0.2);
+	_pPanel->AddFiducial(&eqTriangleFrame);
+	
+	CheckerPatternFeature check1(k++, dS*110, dS*140, dAngle-90, dS*1, dS*2);
+	_pPanel->AddFiducial(&check1);
+	
+	CheckerPatternFeature check2(k++, dS*110, dS*140, dAngle, dS*1, dS*2);
+	_pPanel->AddFiducial(&check2);
+	//*/
+
 	// Valid panel area in world space 
 	_validRect.xMin = 0;
 	_validRect.yMin = 0;
@@ -113,43 +151,7 @@ OverlapManager::OverlapManager(
 		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)	
 		_pNgcFidCorr = new CyberNgcFiducialCorrelation();
-	/*
-	i=2;
-	double dS = 1e-3;
-	double dAngle = 0;
-	CrossFeature cross(i++, dS*100, dS*100, dAngle, dS*1, dS*1, dS*0.3, dS*0.3);
-	_pPanel->AddFiducial(&cross);
-	
-	DiamondFeature diamond(i++, dS*100, dS*110, dAngle, dS*1, dS*2);
-	_pPanel->AddFiducial(&diamond);
-	
-	DiamondFrameFeature diamondFrame(i++, dS*100, dS*120, dAngle, dS*1, dS*2, dS*0.2);
-	_pPanel->AddFiducial(&diamondFrame);
-	
-	DiscFeature disc(i++, dS*100, dS*130, dS*1);
-	_pPanel->AddFiducial(&disc);
 
-	DonutFeature donut(i++, dS*100, dS*140, dS*0.7, dS*1);
-	_pPanel->AddFiducial(&donut);
-	
-	RectangularFeature rect(i++, dS*110, dS*100, dAngle, dS*1, dS*2);
-	_pPanel->AddFiducial(&rect);
-	
-	RectangularFrameFeature rectFrame(i++, dS*110, dS*110, dAngle, dS*1, dS*2, dS*0.2);
-	_pPanel->AddFiducial(&rectFrame);
-	
-	TriangleFeature triangle(i++, dS*110, dS*120, dAngle, dS*1, dS*1, dS*0.5);
-	_pPanel->AddFiducial(&triangle);
-	
-	EquilateralTriangleFrameFeature eqTriangleFrame(i++, dS*110, dS*130, dAngle, dS*1, dS*0.2);
-	_pPanel->AddFiducial(&eqTriangleFrame);
-	
-	CheckerPatternFeature check1(i++, dS*110, dS*140, dAngle-90, dS*1, dS*2);
-	_pPanel->AddFiducial(&check1);
-	
-	CheckerPatternFeature check2(i++, dS*110, dS*140, dAngle, dS*1, dS*2);
-	_pPanel->AddFiducial(&check2);
-	//*/
 	CreateFidFovOverlaps();
 
 	// Decide the stage to calculate mask
@@ -617,55 +619,7 @@ void OverlapManager::RenderFiducial(
 	// Fiducial drawing/render
 	unsigned int grayValue=255;
 	int antiAlias=1;
-	switch(pFid->GetShape())
-	{
-	case Feature::SHAPE_CROSS:
-		RenderCross(*pImg, resolution, (CrossFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_DIAMOND:
-		RenderDiamond(*pImg, resolution, (DiamondFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_DIAMONDFRAME:
-		RenderDiamondFrame(*pImg, resolution, (DiamondFrameFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_DISC:
-		RenderDisc(*pImg, resolution, (DiscFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_DONUT:
-		RenderDonut(*pImg, resolution, (DonutFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_RECTANGLE:
-		RenderRectangle(*pImg, resolution, (RectangularFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_RECTANGLEFRAME:
-		RenderRectangleFrame(*pImg, resolution, (RectangularFrameFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_TRIANGLE:
-		RenderTriangle(*pImg, resolution, (TriangleFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
-		RenderTriangleFrame(*pImg, resolution, (EquilateralTriangleFrameFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_CHECKERPATTERN:
-		RenderCheckerPattern(*pImg, resolution, (CheckerPatternFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	case Feature::SHAPE_CYBER:
-		RenderCyberShape(*pImg, resolution, (CyberFeature*)pFid, grayValue, antiAlias);
-		break;
-
-	default:
-		LOG.FireLogEntry(LogTypeError, "OverlapManager::RenderFiducials() - unsupported fiducial type");	
-	}
+	RenderFeature(pImg, resolution, pFid, grayValue, antiAlias);
 }
 
 // Create vsfinder templates

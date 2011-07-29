@@ -13,33 +13,8 @@ bool Cad2Img::DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI)
 
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
-		switch(feature->second->GetShape())
-		{
-			case Feature::SHAPE_CROSS:
-				RenderCross(cadImage, resolutionX, static_cast<CrossFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DIAMOND:
-				RenderDiamond(cadImage, resolutionX, static_cast<DiamondFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DISC:
-				RenderDisc(cadImage, resolutionX, static_cast<DiscFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DONUT:
-				RenderDonut(cadImage, resolutionX, static_cast<DonutFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_RECTANGLE:
-				RenderRectangle(cadImage, resolutionX, static_cast<RectangularFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_TRIANGLE:
-				RenderTriangle(cadImage, resolutionX, static_cast<TriangleFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_CYBER:
-				RenderCyberShape(cadImage, resolutionX, static_cast<CyberFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_UNDEFINED:
-			default:  // Do nothing - we don't know how to draw whatever this is...
-				break;
-		}
+		RenderFeature(&cadImage, resolutionX, static_cast<CrossFeature*>(feature->second));
+		
 		// @todo - This was commented out by Alan to get things to build for cyberstitch...
 		// Instead of having the image draw to itself, we should implement a way to draw
 		// the rectangular box using a render function.
@@ -54,33 +29,7 @@ bool Cad2Img::DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI)
 
 	for(FeatureListIterator feature = pPanel->beginFiducials(); feature!=pPanel->endFiducials(); ++feature)
 	{
-		switch((feature->second)->GetShape())
-		{
-			case Feature::SHAPE_CROSS:
-				RenderCross(cadImage, resolutionX, static_cast<CrossFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DIAMOND:
-				RenderDiamond(cadImage, resolutionX, static_cast<DiamondFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DISC:
-				RenderDisc(cadImage, resolutionX, static_cast<DiscFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_DONUT:
-				RenderDonut(cadImage, resolutionX, static_cast<DonutFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_RECTANGLE:
-				RenderRectangle(cadImage, resolutionX, static_cast<RectangularFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_TRIANGLE:
-				RenderTriangle(cadImage, resolutionX, static_cast<TriangleFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_CYBER:
-				RenderCyberShape(cadImage, resolutionX, static_cast<CyberFeature*>(feature->second));
-				break;
-			case Feature::SHAPE_UNDEFINED:
-			default:
-				break;  // Do nothing - we don't know how to draw whatever this is...
-		}
+		RenderFeature(&cadImage, resolutionX, feature->second);
 	}
 
 	return true;
@@ -98,30 +47,7 @@ bool Cad2Img::DrawAperatures(Panel* pPanel, unsigned short* aptBuffer, bool Draw
 	{
 		switch(feature->second->GetShape())
 		{
-			case Feature::SHAPE_CROSS:
-				RenderCross(aptImage, resolutionX, static_cast<CrossFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_DIAMOND:
-				RenderDiamond(aptImage, resolutionX, static_cast<DiamondFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_DISC:
-				RenderDisc(aptImage, resolutionX, static_cast<DiscFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_DONUT:
-				RenderDonut(aptImage, resolutionX, static_cast<DonutFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_RECTANGLE:
-				RenderRectangle(aptImage, resolutionX, static_cast<RectangularFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_TRIANGLE:
-				RenderTriangle(aptImage, resolutionX, static_cast<TriangleFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_CYBER:
-				RenderCyberShape(aptImage, resolutionX, static_cast<CyberFeature*>(feature->second), (feature->second)->GetApertureValue(), 0);
-				break;
-			case Feature::SHAPE_UNDEFINED:
-			default:  // Do nothing - we don't know how to draw whatever this is...
-				break;
+			RenderFeature(&aptImage, resolutionX, feature->second);
 		}
 
 		// @todo - This was commented out by Alan to get things to build for cyberstitch...

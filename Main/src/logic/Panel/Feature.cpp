@@ -1715,3 +1715,143 @@ void CyberFeature::CalcAreaAndBound()
 	_boundingBox.p2.x = maxX;
 	_boundingBox.p2.y = maxY;
 }
+
+// Check whether type/shape and size of two features are the same
+// whether fearure IDs are same will not be checked
+bool IsSameTypeSize(const Feature* pF1, const Feature* pF2)
+{
+	if(pF1->GetShape() != pF2->GetShape()) // Type check
+		return(false);
+
+	switch(pF1->GetShape())// Fearure content check
+	{
+	case Feature::SHAPE_CROSS:
+		{
+			CrossFeature* pFeature1 = (CrossFeature*)pF1;
+			CrossFeature* pFeature2 = (CrossFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetLegSizeX() == pFeature2->GetLegSizeX() &&
+				pFeature1->GetLegSizeY() == pFeature2->GetLegSizeY() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_DIAMOND:
+		{					
+			DiamondFeature* pFeature1 = (DiamondFeature*)pF1;
+			DiamondFeature* pFeature2 = (DiamondFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+			
+	case Feature::SHAPE_DIAMONDFRAME:
+		{					
+			DiamondFrameFeature* pFeature1 = (DiamondFrameFeature*)pF1;
+			DiamondFrameFeature* pFeature2 = (DiamondFrameFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetThickness() == pFeature2->GetThickness() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+			
+	case Feature::SHAPE_DISC:
+		{
+			DiscFeature* pFeature1 = (DiscFeature*)pF1;
+			DiscFeature* pFeature2 = (DiscFeature*)pF2;
+
+			if(pFeature1->GetDiameter() == pFeature2->GetDiameter())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_DONUT:
+		{
+			DonutFeature* pFeature1 = (DonutFeature*)pF1;
+			DonutFeature* pFeature2 = (DonutFeature*)pF2;
+
+			if(pFeature1->GetDiameterOutside() == pFeature2->GetDiameterOutside() &&
+				pFeature1->GetDiameterInside() == pFeature2->GetDiameterInside())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_RECTANGLE:
+		{
+			RectangularFeature* pFeature1 = (RectangularFeature*)pF1;
+			RectangularFeature* pFeature2 = (RectangularFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_RECTANGLEFRAME:
+		{
+			RectangularFrameFeature* pFeature1 = (RectangularFrameFeature*)pF1;
+			RectangularFrameFeature* pFeature2 = (RectangularFrameFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetThickness() == pFeature2->GetThickness() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_TRIANGLE:
+		{
+			TriangleFeature* pFeature1 = (TriangleFeature*)pF1;
+			TriangleFeature* pFeature2 = (TriangleFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetOffset() == pFeature2->GetOffset() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
+		{
+			EquilateralTriangleFrameFeature* pFeature1 = (EquilateralTriangleFrameFeature*)pF1;
+			EquilateralTriangleFrameFeature* pFeature2 = (EquilateralTriangleFrameFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetOffset() == pFeature2->GetOffset() &&
+				pFeature1->GetThickness() == pFeature2->GetThickness() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	case Feature::SHAPE_CHECKERPATTERN:
+		{
+			CheckerPatternFeature* pFeature1 = (CheckerPatternFeature*)pF1;
+			CheckerPatternFeature* pFeature2 = (CheckerPatternFeature*)pF2;
+
+			if(pFeature1->GetSizeX() == pFeature2->GetSizeX() &&
+				pFeature1->GetSizeY() == pFeature2->GetSizeY() &&
+				pFeature1->GetRotation() == pFeature2->GetRotation())
+				return(true);
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return(false);
+}

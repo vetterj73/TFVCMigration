@@ -45,7 +45,7 @@ public:
 	FeatureStatus GetStatus()		{ return _status; }
 	void SetStatus(FeatureStatus s) { _status=s; }
 
-	PadShape GetShape()		{ return _shape; }
+	PadShape GetShape()	const { return _shape; }
 
 	// description, in CAD space
 	double GetCadX()		{ return _xCadCenter; }
@@ -422,3 +422,7 @@ private:
 	// Shape vertices
 	PointList _polygonPoints;
 };
+
+// Check whether type/shape and size of two features are the same
+// whether fearure IDs are same will not be checked
+bool IsSameTypeSize(const Feature* pF1, const Feature* pF2);

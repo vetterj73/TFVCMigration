@@ -888,3 +888,65 @@ void RenderCheckerPattern(IMAGETYPE& image, double resolution, CheckerPatternFea
 // Create Image and Image16 instances
 template void RenderCheckerPattern(Image& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
 template void RenderCheckerPattern(Image16& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
+
+
+// Render shape for fiducial
+template <typename IMAGETYPE>
+bool RenderFeature(IMAGETYPE* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias)
+{
+	switch(pFeature->GetShape())
+	{
+	case Feature::SHAPE_CROSS:
+		RenderCross(*pImg, dResolution, (CrossFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DIAMOND:
+		RenderDiamond(*pImg, dResolution, (DiamondFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DIAMONDFRAME:
+		RenderDiamondFrame(*pImg, dResolution, (DiamondFrameFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DISC:
+		RenderDisc(*pImg, dResolution, (DiscFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_DONUT:
+		RenderDonut(*pImg, dResolution, (DonutFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_RECTANGLE:
+		RenderRectangle(*pImg, dResolution, (RectangularFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_RECTANGLEFRAME:
+		RenderRectangleFrame(*pImg, dResolution, (RectangularFrameFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_TRIANGLE:
+		RenderTriangle(*pImg, dResolution, (TriangleFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
+		RenderTriangleFrame(*pImg, dResolution, (EquilateralTriangleFrameFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_CHECKERPATTERN:
+		RenderCheckerPattern(*pImg, dResolution, (CheckerPatternFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	case Feature::SHAPE_CYBER:
+		RenderCyberShape(*pImg, dResolution, (CyberFeature*)pFeature, grayValue, antiAlias);
+		break;
+
+	default:
+		return(false);
+	}
+
+	return(true);
+}
+
+template bool RenderFeature(Image* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias);
+template bool RenderFeature(Image16* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias);
+	
