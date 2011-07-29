@@ -15,7 +15,7 @@ OverlapManager::OverlapManager(
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 
-	/*
+	//*
 	int k=2;
 	double dS = 1e-3;
 	double dAngle = 0;
