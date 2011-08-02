@@ -99,6 +99,7 @@ private:
 	DRect _validRect;
 
 	Image* _pCadImg;
+	Image* _pHeightImg;
 	Image* _pPanelMaskImg;
 
 	unsigned int _iNumCameras;

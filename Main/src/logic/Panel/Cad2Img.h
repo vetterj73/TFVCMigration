@@ -25,6 +25,11 @@ public:
 	///
 	static bool DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI=false); 
 
+	
+	/// Draw 8bit height image to represent the (component) height of panel surface
+	/// dHeightResolution: the height represented by each grey level
+	static bool DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dHeightResolution);
+
 	///
 	///	DrawAperatures - Draws a Panel to a 16 bit image pointer (for PadStats)
 	///

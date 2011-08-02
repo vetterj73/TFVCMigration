@@ -50,6 +50,7 @@ Panel::Panel(double lengthX, double lengthY, double pixelSizeX, double pixelSize
 	_padInspectionAreaLong = .60;
 	_padInspectionAreaShort = 1.20;
 	_cadBuffer = NULL;
+	_heightImageBuffer = NULL;
 	_maskBuffer = NULL;
 	_aperatureBuffer = NULL;
 }
@@ -73,6 +74,12 @@ void Panel::ClearBuffers()
 	{
 		delete[] _maskBuffer;
 		_maskBuffer = NULL;
+	}
+
+	if(_heightImageBuffer != NULL)
+	{
+		delete [] _heightImageBuffer;
+		_heightImageBuffer = NULL;
 	}
 
 	if(_cadBuffer != NULL)
@@ -300,6 +307,33 @@ unsigned char* Panel::GetCadBuffer()
 		Cad2Img::DrawCAD(this, _cadBuffer, false);
 	}
 	return _cadBuffer;
+}
+
+double Panel::GetMaxComponentHeight()
+{
+	double dMaxHeight = 0;
+	for(FeatureListIterator feature = beginFeatures(); feature!=endFeatures(); feature++)
+	{
+		// only consider rectangle feature
+		if(feature->second->GetShape() != Feature::SHAPE_RECTANGLE)
+			continue;
+
+		double 	dHeight = ((RectangularFeature*)(feature->second))->GetSizeZ();
+		if(dMaxHeight < dHeight) dMaxHeight = dHeight;
+	}
+
+	return(dMaxHeight);
+}
+
+unsigned char* Panel::GetHeightImageBuffer(double dHeightResolution)
+{
+	if(_heightImageBuffer == NULL)
+	{
+		_heightImageBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
+		memset(_heightImageBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
+		Cad2Img::DrawHeightImage(this, _heightImageBuffer, dHeightResolution);
+	}
+	return _heightImageBuffer;
 }
 
 unsigned char* Panel::GetMaskBuffer(int iCadExpansion)

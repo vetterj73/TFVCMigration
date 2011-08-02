@@ -50,6 +50,9 @@ CorrelationParameters::CorrelationParameters(void)
 	// Support Bayer(color image)
 	bGrayScale = true;					// Grey scale image in default
 
+	// Adjust morph to create stitched image for component height
+	bool bAdjustMorph4ComponentHeight = true;
+
 	// Number of Threads to use for processing
 	NumThreads = 8;
 

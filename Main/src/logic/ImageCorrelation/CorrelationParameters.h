@@ -72,6 +72,9 @@ public:
 	// Support Bayer(color image)
 	bool bGrayScale;						// Grey scale image or Bayer(color) image
 
+	// Adjust morph to create stitched image for component height
+	bool bAdjustMorph4ComponentHeight;
+
 	// debug flage
 	bool bSaveFiducialOverlaps;
 	bool bSaveOverlaps;

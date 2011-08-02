@@ -411,7 +411,8 @@ namespace MPanelIO
                                                                      ToCPanelUnits(simRect.PositionX),
                                                                      ToCPanelUnits(simRect.PositionY), simRect.Rotation,
                                                                      ToCPanelUnits(simRect.SizeX),
-                                                                     ToCPanelUnits(simRect.SizeY));
+                                                                     ToCPanelUnits(simRect.SizeY),
+                                                                     ToCPanelUnits(simRect.SizeZ));
                                     panel.AddFeature(rect);
                                     break;
                                 }

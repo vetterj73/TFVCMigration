@@ -205,17 +205,20 @@ namespace MPanelIO
 		/// Description: Constructor
 		/// </summary>
 		//////////////////////////////////////////////////////////////////////////////
-		public CSIMRectangle( int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSizeX, float theSizeY )
+		public CSIMRectangle( int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSizeX, float theSizeY, float theSizeZ=0 )
 			: base( theReferenceID, thePositionX, thePositionY, theRotation )
 		{
 			m_Type = t_FeatureType.e_Rectangle;
 			m_SizeX = theSizeX;
 			m_SizeY = theSizeY;
+            m_SizeZ = theSizeZ;
 		}
 		private float m_SizeX;
 		private float m_SizeY;
+        private float m_SizeZ;
 		public float SizeX { get { return m_SizeX; } set { m_SizeX = value; } }
 		public float SizeY { get { return m_SizeY; } set { m_SizeY = value; } }
+        public float SizeZ { get { return m_SizeZ; } set { m_SizeZ = value; } }
 
 		//////////////////////////////////////////////////////////////////////////////
 		/// <summary>
@@ -242,6 +245,7 @@ namespace MPanelIO
 			//Get the values from info and assign them to the appropriate properties
 			SizeX = ( float )theInfo.GetValue( "SizeX", typeof( float ) );
 			SizeY = ( float )theInfo.GetValue( "SizeY", typeof( float ) );
+            SizeZ = ( float )theInfo.GetValue( "SizeZ", typeof( float ) );
 		}
 
 		//Serialization function.
@@ -256,6 +260,7 @@ namespace MPanelIO
 			base.GetObjectData( theInfo, theStreamingContext );
 			theInfo.AddValue( "SizeX", SizeX );
 			theInfo.AddValue( "SizeY", SizeY );
+            theInfo.AddValue( "SizeZ", SizeZ );
 		}
 		#endregion
 	}

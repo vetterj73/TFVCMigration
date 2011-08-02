@@ -88,8 +88,23 @@ OverlapManager::OverlapManager(
 			//_pCadImg->Save("C:\\Temp\\cad.bmp");
 		}
 	}
-	
+
+	_pHeightImg=NULL; 
+	/*if(CorrelationParametersInst.bAdjustMorph4ComponentHeight)
+	{
+		double dMaxHeight = _pPanel->GetMaxComponentHeight();
+		if(dMaxHeight > 0)
+		{
+			double dHeightResolution = dMaxHeight/255;
+			unsigned char* pHeightBuf = _pPanel->GetHeightImageBuffer(dHeightResolution);
+			_pHeightImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+				trans, trans, bCreateOwnBuf, pHeightBuf);
+			_pHeightImg->Save("C:\\Temp\\Height.bmp");
+		}
+	}*/
+
 	// Create Panel Mask image
+	_pPanelMaskImg = NULL;
 	if(IsMaskImageNeeded())
 	{
 		unsigned char* pMaskBuf = _pPanel->GetMaskBuffer(CorrelationParametersInst.iMaskExpansionFromCad);
@@ -617,9 +632,9 @@ void OverlapManager::RenderFiducial(
 	pImg->ZeroBuffer();
 
 	// Fiducial drawing/render
-	unsigned int grayValue=255;
-	int antiAlias=1;
-	RenderFeature(pImg, resolution, pFid, grayValue, antiAlias);
+	unsigned int grayValue = 255;
+	int antiAlias = 1;
+	RenderFeature(pImg, pFid, grayValue, antiAlias);
 }
 
 // Create vsfinder templates

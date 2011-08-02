@@ -20,7 +20,7 @@ using RUDD::SCONV_ARGS;
 //
 // Complex polygon rendering is implemented below.
 template <typename IMAGETYPE>
-void RenderShape(IMAGETYPE& image, double resolution, 
+void RenderShape(IMAGETYPE& image,
 				 unsigned int featGrayValue, int featType, int antiAlias,
 				 double height, double width, double rotation, double diameter, 
 				 double xCenter, double yCenter)
@@ -28,6 +28,8 @@ void RenderShape(IMAGETYPE& image, double resolution,
 	int nrows(-1), ncols(-1), i(-1);
 
 	double radius = diameter / 2.0;
+
+	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
 
 	if(antiAlias)
 		featGrayValue = (1<<(image.GetBitsPerPixel()))-1;  // Set gray to 255 for 8 bit image, 65535 for 16 bit images
@@ -113,16 +115,14 @@ void RenderShape(IMAGETYPE& image, double resolution,
 //
 //
 template <typename IMAGETYPE>
-void RenderDisc(IMAGETYPE& image, double resolution, DiscFeature* disc, unsigned int grayValue, int antiAlias)
+void RenderDisc(IMAGETYPE& image, DiscFeature* disc, unsigned int grayValue, int antiAlias)
 {
-	RenderShape(image, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, disc->GetDiameter(), disc->GetCadX(), disc->GetCadY());
+	RenderShape(image, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, disc->GetDiameter(), disc->GetCadX(), disc->GetCadY());
 }
 
 // Create Image and Image16 instances
-template void RenderDisc(Image& image, double resolution, DiscFeature* disc, unsigned int grayValue, int antiAlias);
-template void RenderDisc(Image16& image, double resolution, DiscFeature* disc, unsigned int grayValue, int antiAlias);
-
-
+template void RenderDisc(Image& image, DiscFeature* disc, unsigned int grayValue, int antiAlias);
+template void RenderDisc(Image16& image, DiscFeature* disc, unsigned int grayValue, int antiAlias);
 
 //
 //
@@ -130,12 +130,14 @@ template void RenderDisc(Image16& image, double resolution, DiscFeature* disc, u
 //
 //
 template <typename IMAGETYPE>
-void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsigned int grayValue, int antiAlias)
+void RenderDonut(IMAGETYPE& image, DonutFeature* donut, unsigned int grayValue, int antiAlias)
 {
+	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
+
 	// Get the coordinates to where the donut is in the image
 	Box box = donut->GetBoundingBox();
 
-	RenderShape(image, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterOutside(), donut->GetCadX(), donut->GetCadY());
+	RenderShape(image, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterOutside(), donut->GetCadX(), donut->GetCadY());
 
 	// Have to draw the donut hole in a separate image and substract it from the disc drawn on the mask
 	double width = box.Width();
@@ -158,7 +160,7 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 	donutHole.ZeroBuffer();
 
 	// Create donut hole
-	RenderShape(donutHole, resolution, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), donut->GetCadX(), donut->GetCadY());
+	RenderShape(donutHole, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), donut->GetCadX(), donut->GetCadY());
 
 
 	if(image.GetBytesPerPixel() == 1)
@@ -214,8 +216,8 @@ void RenderDonut(IMAGETYPE& image, double resolution, DonutFeature* donut, unsig
 }
 
 // Create Image and Image16 instances
-template void RenderDonut(Image& image, double resolution, DonutFeature* donut, unsigned int grayValue, int antiAlias);
-template void RenderDonut(Image16& image, double resolution, DonutFeature* donut, unsigned int grayValue, int antiAlias);
+template void RenderDonut(Image& image, DonutFeature* donut, unsigned int grayValue, int antiAlias);
+template void RenderDonut(Image16& image, DonutFeature* donut, unsigned int grayValue, int antiAlias);
 
 
 
@@ -284,28 +286,14 @@ void RenderAAPolygon(IMAGETYPE& image, Feature* feature, PointList& polygonPoint
 template void RenderAAPolygon(Image& image, Feature* feature, PointList& polygonPoints);
 template void RenderAAPolygon(Image16& image, Feature* feature, PointList& polygonPoints);
 
-
-
-//
-//
-// Polygon rendering.  Redirects to RenderAAPolygon when the antiAlias flag is set.  
-// Otherwise, it will pass a separate image to RenderAAPolygon, then copy image 
-// into destination image while converting it into a two level feature of specified grayValue.
-//
-//
+// Create an image to contain only the feature
+// image: input image 
+// pFeatureImage: output image
+// Position in image corresponding to the origin of feature image
 template<typename IMAGETYPE>
-void RenderPolygon(IMAGETYPE& image, double resolution, 
-				   Feature* feature, PointList polygonPoints[], int numPolygons, 
-				   unsigned int grayValue, int antiAlias)
+void CreateImagePatchForFeature(IMAGETYPE& image, Feature* feature, IMAGETYPE* pFeatureImage, Point* pOrigin)
 {
-	if(antiAlias)
-	{
-		for(int i=0; i<numPolygons; i++)
-			RenderAAPolygon(image, feature, polygonPoints[i]);
-		return;
-	}
-
-	// Get the coordinates to where the polygon is in the image
+		// Get the coordinates to where the polygon is in the image
 	Box roi = feature->GetInspectionArea();
 
 	// Transform to pixel coordinates, and position them on nearest whole integer pixels
@@ -325,7 +313,6 @@ void RenderPolygon(IMAGETYPE& image, double resolution,
 	
 	if(((int) roi.p1.y) < 0)
 		roi.p1.y = 0.0;
-
 	if(((int) roi.p2.x) > ((int)image.Columns()-1))
 		roi.p2.x = image.Columns()-1;
 
@@ -338,54 +325,91 @@ void RenderPolygon(IMAGETYPE& image, double resolution,
 	int rows = (int) roi.Height();
 
 	// Set up image to draw polygon
-	Image16 polygonImage;
-	polygonImage.Configure(cols, rows, cols, true);
+	double dT[3][3]; 
+	image.GetTransform().GetMatrix(dT);
+	dT[0][2] += feature->GetInspectionArea().p1.x;
+	dT[1][2] += feature->GetInspectionArea().p1.y;
+	ImgTransform trans(dT);
+	pFeatureImage->Configure(cols, rows, cols, trans, trans, true);
+	pFeatureImage->ZeroBuffer();
 
+	// Position in image corresponding to the origin of feature image
+	pOrigin->x = roi.p1.x;
+	pOrigin->y = roi.p1.y;
+}
+
+template void CreateImagePatchForFeature(Image& image, Feature* feature, Image* pFeatureImage, Point* pOrigin);
+template void CreateImagePatchForFeature(Image16& image, Feature* feature, Image16* pFeatureImage, Point* pOrigin);
+
+//
+//
+// Polygon rendering.  Redirects to RenderAAPolygon when the antiAlias flag is set.  
+// Otherwise, it will pass a separate image to RenderAAPolygon, then copy image 
+// into destination image while converting it into a two level feature of specified grayValue.
+//
+//
+template<typename IMAGETYPE>
+void RenderPolygon(IMAGETYPE& image, 
+				   Feature* feature, PointList polygonPoints[], int numPolygons, 
+				   unsigned int grayValue, int antiAlias)
+{
+	if(antiAlias)
+	{
+		for(int i=0; i<numPolygons; i++)
+			RenderAAPolygon(image, feature, polygonPoints[i]);
+		return;
+	}
+	
+	// Set the image for drawing
+	IMAGETYPE polygonImage;
+	Point originPoint;
+	CreateImagePatchForFeature(image, feature, &polygonImage, &originPoint);
 
 	for(int i=0; i<numPolygons; i++)
 	{
-		// Convert the points to fit inside the new image
-		PointList shapePoints;
-		for(PointList::iterator p=polygonPoints[i].begin(); p!=polygonPoints[i].end(); p++)
-		{
-			Point point;
-			point.x = (*p).x-feature->GetInspectionArea().p1.x;
-			point.y = (*p).y-feature->GetInspectionArea().p1.y;
-			shapePoints.push_back(point);
-		}
-
-
-		// Create shape
-		RenderAAPolygon(polygonImage, feature, shapePoints);
+		RenderAAPolygon(polygonImage, feature, polygonPoints[i]);
 	}
-
-	//char filename[100];
-	//_snprintf(filename, 100, "%s\\Polygon-%d.tif", Config::instance().getImageDir().c_str(), feature->_index);
-	//saveMonoTifFile(filename, polygonImage._buffer, polygonImage.Columns(), polygonImage.Rows(), polygonImage._bitsPerPixel);
-
+	//polygonImage.Save("C:\\Temp\\test.bmp");
 
 	// Add shape to destination image.  This will leave other features that
 	// might lie within the bounding box along.  However, overlapping features
 	// will have problems.
-	int iPix, pPix;
 	int threshold = (int) ((1<<(polygonImage.GetBitsPerPixel()))/2.0);
-	unsigned int gv;
-	for(int r=0, ri=(int)roi.p1.y; r<rows; r++, ri++)
+	if(polygonImage.GetBytesPerPixel()==1)
 	{
-		for(int c=0, ci=(int)roi.p1.x; c<cols; c++, ci++)
+		unsigned char* pLine1 = image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1);
+		unsigned char* pLine2 = polygonImage.GetBuffer();
+		for(int iy =0; iy<polygonImage.Rows(); iy++)
 		{
-			pPix = r*polygonImage.Columns()+c;
-			iPix = ri*image.Columns()+ci;
-			gv = (polygonImage.GetBuffer16()[pPix]>threshold)*grayValue;
-			unsigned short* buffer = (unsigned short*)image.GetBuffer();
-			buffer[iPix] += gv;
+			for(int ix=0; ix<polygonImage.Columns(); ix++)
+			{
+				pLine1[ix] = (unsigned char)(pLine2[ix]>=threshold)*grayValue;
+			}
+			pLine1 += image.PixelRowStride();
+			pLine2 += polygonImage.PixelRowStride();
 		}
 	}
+	else
+	{
+		unsigned short* pLine1 = (unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1);
+		unsigned short* pLine2 = (unsigned short*)polygonImage.GetBuffer();
+		for(int iy =0; iy<polygonImage.Rows(); iy++)
+		{
+			for(int ix=0; ix<polygonImage.Columns(); ix++)
+			{
+				pLine1[ix] = (unsigned short)(pLine2[ix]>=threshold)*grayValue;
+			}
+			pLine1 += image.PixelRowStride();
+			pLine2 += polygonImage.PixelRowStride();
+		}
+	}
+
+	int iPix, pPix;
 }
 
 // Create Image and Image16 instances
-template void RenderPolygon(Image& image, double resolution, Feature* feature, PointList polygonPoints[], int numPolygons, unsigned int grayValue, int antiAlias);
-template void RenderPolygon(Image16& image, double resolution, Feature* feature, PointList polygonPoints[], int numPolygons, unsigned int grayValue, int antiAlias);
+template void RenderPolygon(Image& image, Feature* feature, PointList polygonPoints[], int numPolygons, unsigned int grayValue, int antiAlias);
+template void RenderPolygon(Image16& image, Feature* feature, PointList polygonPoints[], int numPolygons, unsigned int grayValue, int antiAlias);
 
 
 
@@ -395,7 +419,7 @@ template void RenderPolygon(Image16& image, double resolution, Feature* feature,
 //
 //
 template <typename IMAGETYPE>
-void RenderCyberShape(IMAGETYPE& image, double resolution, CyberFeature* cyberShape, unsigned int grayValue, int antiAlias)
+void RenderCyberShape(IMAGETYPE& image, CyberFeature* cyberShape, unsigned int grayValue, int antiAlias)
 {
 #if 0 
 	bool concavePolygon = false;
@@ -545,18 +569,18 @@ void RenderCyberShape(IMAGETYPE& image, double resolution, CyberFeature* cyberSh
 		polygonPoints.push_back(p);
 
 
-		RenderPolygon(image, resolution, (Feature*) cyberShape, &polygonPoints, 1, grayValue, antiAlias);
+		RenderPolygon(image, (Feature*) cyberShape, &polygonPoints, 1, grayValue, antiAlias);
 	}
 	else
 	{
 		PointList polygonPoints = cyberShape->GetPointList();
-		RenderPolygon(image, resolution, (Feature*) cyberShape, &polygonPoints, 1, grayValue, antiAlias);
+		RenderPolygon(image, (Feature*) cyberShape, &polygonPoints, 1, grayValue, antiAlias);
 	}
 }
 	
 // Create Image and Image16 instances
-template void RenderCyberShape(Image& image, double resolution, CyberFeature* cyber, unsigned int grayValue, int antiAlias);
-template void RenderCyberShape(Image16& image, double resolution, CyberFeature* cyber, unsigned int grayValue, int antiAlias);
+template void RenderCyberShape(Image& image, CyberFeature* cyber, unsigned int grayValue, int antiAlias);
+template void RenderCyberShape(Image16& image, CyberFeature* cyber, unsigned int grayValue, int antiAlias);
 
 
 
@@ -566,7 +590,7 @@ template void RenderCyberShape(Image16& image, double resolution, CyberFeature* 
 //
 //
 template <typename IMAGETYPE>
-void RenderCross(IMAGETYPE& image, double resolution, CrossFeature* cross, unsigned int grayValue, int antiAlias)
+void RenderCross(IMAGETYPE& image, CrossFeature* cross, unsigned int grayValue, int antiAlias)
 {
 	int numPolygons = 2;
 	Point point;
@@ -647,12 +671,12 @@ void RenderCross(IMAGETYPE& image, double resolution, CrossFeature* cross, unsig
 	//	G_LOG_3_SYSTEM("Cross,#%d,Point[1](Meters),%0.06lf,%0.06lf", cross->_index, p->x, p->y);
 	//}
 
-	RenderPolygon(image, resolution, (Feature*) cross, polygonPoints, numPolygons, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) cross, polygonPoints, numPolygons, grayValue, antiAlias);
 }
 
 // Create Image and Image16 instances
-template void RenderCross(Image& image, double resolution, CrossFeature* cross, unsigned int grayValue, int antiAlias);
-template void RenderCross(Image16& image, double resolution, CrossFeature* cross, unsigned int grayValue, int antiAlias);
+template void RenderCross(Image& image, CrossFeature* cross, unsigned int grayValue, int antiAlias);
+template void RenderCross(Image16& image, CrossFeature* cross, unsigned int grayValue, int antiAlias);
 
 
 
@@ -662,7 +686,7 @@ template void RenderCross(Image16& image, double resolution, CrossFeature* cross
 //
 //
 template <typename IMAGETYPE>
-void RenderDiamond(IMAGETYPE& image, double resolution, DiamondFeature* diamond, unsigned int grayValue, int antiAlias)
+void RenderDiamond(IMAGETYPE& image, DiamondFeature* diamond, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = diamond->GetPointList();
 
@@ -671,12 +695,12 @@ void RenderDiamond(IMAGETYPE& image, double resolution, DiamondFeature* diamond,
 	//	G_LOG_3_SYSTEM("Diamond,#%d,RotatedPoint(Pixels),%0.06lf,%0.06lf", diamond->_index, p->x, p->y);
 	//}
 
-	RenderPolygon(image, resolution, (Feature*) diamond, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) diamond, &polygonPoints, 1, grayValue, antiAlias);
 }
 
 // Create Image and Image16 instances
-template void RenderDiamond(Image& image, double resolution, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
-template void RenderDiamond(Image16& image, double resolution, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
+template void RenderDiamond(Image& image, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
+template void RenderDiamond(Image16& image, DiamondFeature* diamond, unsigned int grayValue, int antiAlias);
 
 //
 //
@@ -684,11 +708,11 @@ template void RenderDiamond(Image16& image, double resolution, DiamondFeature* d
 //
 //
 template <typename IMAGETYPE>
-void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature* diamondFrame, unsigned int grayValue, int antiAlias)
+void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = diamondFrame->GetPointList();
 
-	RenderPolygon(image, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
 	//image.Save("C:\\Temp\\1.bmp");
 	
 	// Set up image to draw diamond hole
@@ -704,7 +728,7 @@ void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature
 
 	polygonPoints.clear();
 	polygonPoints = diamondFrame->GetInnerPointList();
-	RenderPolygon(diamondHole, resolution, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(diamondHole, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
 	//diamondHole.Save("C:\\Temp\\2.bmp");
 
 	if(image.GetBytesPerPixel() == 1)
@@ -724,8 +748,8 @@ void RenderDiamondFrame(IMAGETYPE& image, double resolution, DiamondFrameFeature
 }
 
 // Create Image and Image16 instances
-template void RenderDiamondFrame(Image& image, double resolution, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
-template void RenderDiamondFrame(Image16& image, double resolution, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
+template void RenderDiamondFrame(Image& image, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
+template void RenderDiamondFrame(Image16& image, DiamondFrameFeature* diamond, unsigned int grayValue, int antiAlias);
 
 
 //
@@ -734,21 +758,16 @@ template void RenderDiamondFrame(Image16& image, double resolution, DiamondFrame
 //
 //
 template <typename IMAGETYPE>
-void RenderRectangle(IMAGETYPE& image, double resolution, RectangularFeature* rect, unsigned int grayValue, int antiAlias)
+void RenderRectangle(IMAGETYPE& image, RectangularFeature* rect, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = rect->GetPointList();
 
-	//for(PointList::iterator p=polygonPoints.begin(); p!=polygonPoints.end(); p++)
-	//{
-	//	G_LOG_3_SYSTEM("Rectangle,#%d,RotatedPoint(Meters),%0.06lf,%0.06lf", triangle->_index, p->x, p->y);
-	//}
-
-	RenderPolygon(image, resolution, (Feature*) rect, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) rect, &polygonPoints, 1, grayValue, antiAlias);
 }
 
 // Create Image and Image16 instances
-template void RenderRectangle(Image& image, double resolution, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
-template void RenderRectangle(Image16& image, double resolution, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
+template void RenderRectangle(Image& image, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
+template void RenderRectangle(Image16& image, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
 
 //
 //
@@ -756,13 +775,14 @@ template void RenderRectangle(Image16& image, double resolution, RectangularFeat
 //
 //
 template <typename IMAGETYPE>
-void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameFeature* rectFrame, unsigned int grayValue, int antiAlias)
+void RenderRectangleFrame(IMAGETYPE& image, RectangularFrameFeature* rectFrame, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = rectFrame->GetPointList();
 
-	RenderPolygon(image, resolution, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	// Set up image to draw rectanglar hole
+	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
 	ImgTransform trans;
 	trans.Config(resolution, resolution);
 
@@ -778,7 +798,7 @@ void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameF
 
 	polygonPoints.clear();
 	polygonPoints = rectFrame->GetInnerPointList();
-	RenderPolygon(rectHole, resolution, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(rectHole, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	if(image.GetBytesPerPixel() == 1)
 	{
@@ -797,8 +817,8 @@ void RenderRectangleFrame(IMAGETYPE& image, double resolution, RectangularFrameF
 }
 
 // Create Image and Image16 instances
-template void RenderRectangleFrame(Image& image, double resolution, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
-template void RenderRectangleFrame(Image16& image, double resolution, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
+template void RenderRectangleFrame(Image& image, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
+template void RenderRectangleFrame(Image16& image, RectangularFrameFeature* rect, unsigned int grayValue, int antiAlias);
 
 
 
@@ -808,21 +828,16 @@ template void RenderRectangleFrame(Image16& image, double resolution, Rectangula
 //
 //
 template <typename IMAGETYPE>
-void RenderTriangle(IMAGETYPE& image, double resolution, TriangleFeature* triangle, unsigned int grayValue, int antiAlias)
+void RenderTriangle(IMAGETYPE& image, TriangleFeature* triangle, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = triangle->GetPointList();
 
-	//for(PointList::iterator p=polygonPoints.begin(); p!=polygonPoints.end(); p++)
-	//{
-	//	G_LOG_3_SYSTEM("Triangle,#%d,RotatedPoint(Pixels),%0.06lf,%0.06lf", triangle->_index, p->x, p->y);
-	//}
-
-	RenderPolygon(image, resolution, (Feature*) triangle, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) triangle, &polygonPoints, 1, grayValue, antiAlias);
 }
 
 // Create Image and Image16 instances
-template void RenderTriangle(Image& image, double resolution, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
-template void RenderTriangle(Image16& image, double resolution, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
+template void RenderTriangle(Image& image, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
+template void RenderTriangle(Image16& image, TriangleFeature* triangle, unsigned int grayValue, int antiAlias);
 
 //
 //
@@ -830,13 +845,14 @@ template void RenderTriangle(Image16& image, double resolution, TriangleFeature*
 //
 //
 template <typename IMAGETYPE>
-void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangleFrameFeature* triangleFrame, unsigned int grayValue, int antiAlias)
+void RenderTriangleFrame(IMAGETYPE& image, EquilateralTriangleFrameFeature* triangleFrame, unsigned int grayValue, int antiAlias)
 {
 	PointList polygonPoints = triangleFrame->GetPointList();
 
-	RenderPolygon(image, resolution, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	// Set up image to draw triangle hole
+	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
 	ImgTransform trans;
 	trans.Config(resolution, resolution);
 
@@ -852,7 +868,7 @@ void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangl
 
 	polygonPoints.clear();
 	polygonPoints = triangleFrame->GetInnerPointList();
-	RenderPolygon(triangleHole, resolution, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
+	RenderPolygon(triangleHole, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	if(image.GetBytesPerPixel() == 1)
 	{
@@ -871,73 +887,73 @@ void RenderTriangleFrame(IMAGETYPE& image, double resolution, EquilateralTriangl
 }
 
 // Create Image and Image16 instances
-template void RenderTriangleFrame(Image& image, double resolution, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
-template void RenderTriangleFrame(Image16& image, double resolution, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
+template void RenderTriangleFrame(Image& image, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
+template void RenderTriangleFrame(Image16& image, EquilateralTriangleFrameFeature* triangle, unsigned int grayValue, int antiAlias);
 
 template <typename IMAGETYPE>
-void RenderCheckerPattern(IMAGETYPE& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias)
+void RenderCheckerPattern(IMAGETYPE& image, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias)
 {
 	int numPolygons = 2;
 	PointList polygonPoints[2];
 	polygonPoints[0] = checkerPattern->GetFirstPointList();
 	polygonPoints[1] = checkerPattern->GetSecondPointList();
 
-	RenderPolygon(image, resolution, (Feature*) checkerPattern, polygonPoints, numPolygons, grayValue, antiAlias);
+	RenderPolygon(image, (Feature*) checkerPattern, polygonPoints, numPolygons, grayValue, antiAlias);
 }
 
 // Create Image and Image16 instances
-template void RenderCheckerPattern(Image& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
-template void RenderCheckerPattern(Image16& image, double resolution, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
+template void RenderCheckerPattern(Image& image, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
+template void RenderCheckerPattern(Image16& image, CheckerPatternFeature* checkerPattern, unsigned int grayValue, int antiAlias);
 
 
 // Render shape for fiducial
 template <typename IMAGETYPE>
-bool RenderFeature(IMAGETYPE* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias)
+bool RenderFeature(IMAGETYPE* pImg, Feature* pFeature, unsigned int grayValue, int antiAlias)
 {
 	switch(pFeature->GetShape())
 	{
 	case Feature::SHAPE_CROSS:
-		RenderCross(*pImg, dResolution, (CrossFeature*)pFeature, grayValue, antiAlias);
+		RenderCross(*pImg, (CrossFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_DIAMOND:
-		RenderDiamond(*pImg, dResolution, (DiamondFeature*)pFeature, grayValue, antiAlias);
+		RenderDiamond(*pImg, (DiamondFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_DIAMONDFRAME:
-		RenderDiamondFrame(*pImg, dResolution, (DiamondFrameFeature*)pFeature, grayValue, antiAlias);
+		RenderDiamondFrame(*pImg, (DiamondFrameFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_DISC:
-		RenderDisc(*pImg, dResolution, (DiscFeature*)pFeature, grayValue, antiAlias);
+		RenderDisc(*pImg, (DiscFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_DONUT:
-		RenderDonut(*pImg, dResolution, (DonutFeature*)pFeature, grayValue, antiAlias);
+		RenderDonut(*pImg, (DonutFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_RECTANGLE:
-		RenderRectangle(*pImg, dResolution, (RectangularFeature*)pFeature, grayValue, antiAlias);
+		RenderRectangle(*pImg, (RectangularFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_RECTANGLEFRAME:
-		RenderRectangleFrame(*pImg, dResolution, (RectangularFrameFeature*)pFeature, grayValue, antiAlias);
+		RenderRectangleFrame(*pImg, (RectangularFrameFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_TRIANGLE:
-		RenderTriangle(*pImg, dResolution, (TriangleFeature*)pFeature, grayValue, antiAlias);
+		RenderTriangle(*pImg, (TriangleFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
-		RenderTriangleFrame(*pImg, dResolution, (EquilateralTriangleFrameFeature*)pFeature, grayValue, antiAlias);
+		RenderTriangleFrame(*pImg, (EquilateralTriangleFrameFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_CHECKERPATTERN:
-		RenderCheckerPattern(*pImg, dResolution, (CheckerPatternFeature*)pFeature, grayValue, antiAlias);
+		RenderCheckerPattern(*pImg, (CheckerPatternFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	case Feature::SHAPE_CYBER:
-		RenderCyberShape(*pImg, dResolution, (CyberFeature*)pFeature, grayValue, antiAlias);
+		RenderCyberShape(*pImg, (CyberFeature*)pFeature, grayValue, antiAlias);
 		break;
 
 	default:
@@ -947,6 +963,6 @@ bool RenderFeature(IMAGETYPE* pImg, double dResolution, Feature* pFeature, unsig
 	return(true);
 }
 
-template bool RenderFeature(Image* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias);
-template bool RenderFeature(Image16* pImg, double dResolution, Feature* pFeature, unsigned int grayValue, int antiAlias);
+template bool RenderFeature(Image* pImg, Feature* pFeature, unsigned int grayValue, int antiAlias);
+template bool RenderFeature(Image16* pImg, Feature* pFeature, unsigned int grayValue, int antiAlias);
 	

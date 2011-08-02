@@ -602,10 +602,11 @@ void DonutFeature::NominalArea()
 ///////////////////////////////////////////////////////////////////////////
 
 RectangularFeature::RectangularFeature(int id, double positionX, double positionY, double rotation,
-									   double sizeX, double sizeY ):
+									   double sizeX, double sizeY, double sizeZ ):
 									Feature(SHAPE_RECTANGLE, id, positionX, positionY, rotation),
 									_width(sizeX),
-									_height(sizeY)					
+									_height(sizeY),	
+									_sizeZ(sizeZ)
 {
 	_polygonPoints.clear();
 

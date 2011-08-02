@@ -383,9 +383,13 @@ namespace Cyber
 			/// \param positionY The position in Y from the panel origin.
 			/// \param rotation The rotation about the feature origin.
 			/// \param sizeX The width of the base of the rectangle.
-			/// \param sizeY The height of the rectangle.
+			/// \param sizeY The length of the rectangle.
+			/// \param sizeZ The height of the rectangle.
 			CRectangle(int referenceID, double positionX, double positionY, double rotation,
-				double sizeX, double sizeY );
+				double sizeX, double sizeY, double sizeZ);
+
+			CRectangle(int referenceID, double positionX, double positionY, double rotation,
+				double sizeX, double sizeY);
 
 			/// \internal
 			/// Needed for constructing Managed class from Unmanaged pointer

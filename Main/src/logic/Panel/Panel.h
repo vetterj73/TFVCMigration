@@ -84,14 +84,19 @@ public:
 		at the appropriate time (if it is ever needed).
 	*/
 	unsigned char* GetCadBuffer();
+	unsigned char* GetHeightImageBuffer(double dHeightResolution);
 	unsigned char* GetMaskBuffer(int iCadExpansion);
 	unsigned short* GetAperatureBuffer();
 	bool HasCadBuffer(){return _cadBuffer!=NULL;};
+	bool HasHeightImageBuffer(){return _heightImageBuffer!=NULL;}
 	bool HasMaskBuffer(){return _maskBuffer!=NULL;};
 	bool HasAperatureBuffer(){return _aperatureBuffer!=NULL;};
 
+	double GetMaxComponentHeight();
+
 private:
 	unsigned char* _cadBuffer;
+	unsigned char* _heightImageBuffer;
 	unsigned char* _maskBuffer;
 	unsigned short* _aperatureBuffer;
 

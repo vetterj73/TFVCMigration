@@ -59,7 +59,14 @@ namespace Cyber
 		}
 
 		CRectangle::CRectangle(int referenceID, double positionX, double positionY, double rotation,
-			double sizeX, double sizeY ) 
+			double sizeX, double sizeY, double sizeZ ) 
+		{
+			_pFeature = new RectangularFeature(referenceID, positionX, positionY, rotation,
+											sizeX, sizeY, sizeZ);
+		}
+
+		CRectangle::CRectangle(int referenceID, double positionX, double positionY, double rotation,
+			double sizeX, double sizeY) 
 		{
 			_pFeature = new RectangularFeature(referenceID, positionX, positionY, rotation,
 											sizeX, sizeY);

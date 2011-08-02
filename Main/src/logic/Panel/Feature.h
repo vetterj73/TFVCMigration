@@ -230,11 +230,12 @@ class RectangularFeature : public Feature
 public:
 
 	RectangularFeature(int id, double positionX, double positionY, double rotation,
-				     double sizeX, double sizeY );
+				     double sizeX, double sizeY, double sizeZ=0 );
 	~RectangularFeature();
 
 	double GetSizeX()	{ return _width; }
 	double GetSizeY()	{ return _height; }
+	double GetSizeZ()	{ return _sizeZ; }
 
 	const PointList& GetPointList( ) const { return _polygonPoints; }
 
@@ -242,6 +243,7 @@ protected:
 	// Shape Definition Parameters
 	double _width;
 	double _height;
+	double _sizeZ;
 
 private:
 	// Methods
