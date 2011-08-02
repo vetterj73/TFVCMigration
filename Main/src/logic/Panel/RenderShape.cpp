@@ -134,85 +134,34 @@ void RenderDonut(IMAGETYPE& image, DonutFeature* donut, unsigned int grayValue, 
 {
 	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
 
-	// Get the coordinates to where the donut is in the image
-	Box box = donut->GetBoundingBox();
-
+	// Outside disc
 	RenderShape(image, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterOutside(), donut->GetCadX(), donut->GetCadY());
-
-	// Have to draw the donut hole in a separate image and substract it from the disc drawn on the mask
-	double width = box.Width();
-	double height = box.Height();
-	int cols = (int) (width/resolution+0.5);
-	int rows = (int) (height/resolution+0.5);
-
-	ImgTransform trans;
-	trans.Config(resolution, resolution);
 
 	// Set up image to draw donut hole
 	IMAGETYPE donutHole;
-	donutHole.Configure(
-		image.Columns(), 
-		image.Rows(), 
-		image.PixelRowStride(),
-		image.GetNominalTransform(),
-		image.GetTransform(),
-		true);	// create own buffer
-	donutHole.ZeroBuffer();
+	Point originPoint;
+	CreateImagePatchForFeature(image, donut, &donutHole, &originPoint);
 
 	// Create donut hole
 	RenderShape(donutHole, grayValue, FEAT_CIRC, antiAlias, 0, 0, 0, donut->GetDiameterInside(), donut->GetCadX(), donut->GetCadY());
 
-
+	// Create donut
 	if(image.GetBytesPerPixel() == 1)
 	{
 		ClipSub(
-			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned char*)donutHole.GetBuffer(), donutHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			donutHole.Columns(), donutHole.Rows());
 	}
 	else
 	{
 		ClipSub(
-			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned short*)donutHole.GetBuffer(), donutHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			donutHole.Columns(), donutHole.Rows());
 	}
 
-	//string filename = Config::instance().getImageDir();
-	//filename += "\\DonutHole.bmp";
-	//Bitmap* bmp = Bitmap::NewBitmapFromBuffer(	donutHole.Rows(),
-	//											donutHole.Columns(),
-	//											donutHole.RowStride(),
-	//											donutHole._buffer,
-	//											donutHole._bitsPerPixel	);
-	//if(bmp) bmp->write(filename);
-	//delete bmp;
-
-	// Transform to pixel coordinates, and position them on nearest whole integer pixels
-	Box temp;
-	image.WorldToImage(box.p1.x, box.p1.y, &temp.p1.y, &temp.p1.x);
-	image.WorldToImage(box.p2.x, box.p2.y, &temp.p2.y, &temp.p2.x);
-	box = temp;
-	box.p1.x = NearestIntD(box.p1.x);
-	box.p1.y = NearestIntD(box.p1.y);
-	box.p2.x = NearestIntD(box.p2.x);
-	box.p2.y = NearestIntD(box.p2.y);
-
-	// Remove donut hole from donut.
-	int dPix, iPix;
-	for(int r=0, ri=(int)box.p1.y; r<rows; r++, ri++)
-	{
-		for(int c=0, ci=(int)box.p1.x; c<cols; c++, ci++)
-		{
-			dPix = r*donutHole.Columns()+c;
-			iPix = ri*image.Columns()+ci;
-
-			if(image.GetBytesPerPixel() == 1)
-				image.GetBuffer()[iPix]-=donutHole.GetBuffer()[dPix];
-			else
-				((unsigned short*)image.GetBuffer())[iPix]-=((unsigned short*)donutHole.GetBuffer())[dPix];
-		}
-	}
+	//image.Save("C:\\Temp\\test2.bmp");
 }
 
 // Create Image and Image16 instances
@@ -327,8 +276,8 @@ void CreateImagePatchForFeature(IMAGETYPE& image, Feature* feature, IMAGETYPE* p
 	// Set up image to draw polygon
 	double dT[3][3]; 
 	image.GetTransform().GetMatrix(dT);
-	dT[0][2] += feature->GetInspectionArea().p1.x;
-	dT[1][2] += feature->GetInspectionArea().p1.y;
+	dT[0][2] = feature->GetInspectionArea().p1.x;
+	dT[1][2] = feature->GetInspectionArea().p1.y;
 	ImgTransform trans(dT);
 	pFeatureImage->Configure(cols, rows, cols, trans, trans, true);
 	pFeatureImage->ZeroBuffer();
@@ -712,19 +661,14 @@ void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, uns
 {
 	PointList polygonPoints = diamondFrame->GetPointList();
 
+	// Outside frame
 	RenderPolygon(image, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
 	//image.Save("C:\\Temp\\1.bmp");
 	
 	// Set up image to draw diamond hole
 	IMAGETYPE diamondHole;
-	diamondHole.Configure(
-		image.Columns(), 
-		image.Rows(), 
-		image.PixelRowStride(),
-		image.GetNominalTransform(),
-		image.GetTransform(),
-		true);	// create own buffer
-	diamondHole.ZeroBuffer();
+	Point originPoint;
+	CreateImagePatchForFeature(image, diamondFrame, &diamondHole, &originPoint);
 
 	polygonPoints.clear();
 	polygonPoints = diamondFrame->GetInnerPointList();
@@ -736,14 +680,14 @@ void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, uns
 		ClipSub(
 			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
 			(unsigned char*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			diamondHole.Columns(), diamondHole.Rows());
 	}
 	else
 	{
 		ClipSub(
 			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
 			(unsigned short*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			diamondHole.Columns(), diamondHole.Rows());
 	}
 }
 
@@ -782,19 +726,9 @@ void RenderRectangleFrame(IMAGETYPE& image, RectangularFrameFeature* rectFrame, 
 	RenderPolygon(image, (Feature*) rectFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	// Set up image to draw rectanglar hole
-	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
-	ImgTransform trans;
-	trans.Config(resolution, resolution);
-
 	IMAGETYPE rectHole;
-	rectHole.Configure(
-		image.Columns(), 
-		image.Rows(), 
-		image.PixelRowStride(),
-		image.GetNominalTransform(),
-		image.GetTransform(),
-		true);	// create own buffer
-	rectHole.ZeroBuffer();
+	Point originPoint;
+	CreateImagePatchForFeature(image, rectFrame, &rectHole, &originPoint);
 
 	polygonPoints.clear();
 	polygonPoints = rectFrame->GetInnerPointList();
@@ -803,16 +737,16 @@ void RenderRectangleFrame(IMAGETYPE& image, RectangularFrameFeature* rectFrame, 
 	if(image.GetBytesPerPixel() == 1)
 	{
 		ClipSub(
-			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned char*)rectHole.GetBuffer(), rectHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			rectHole.Columns(), rectHole.Rows());
 	}
 	else
 	{
 		ClipSub(
-			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned short*)rectHole.GetBuffer(), rectHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			rectHole.Columns(), rectHole.Rows());
 	}
 }
 
@@ -852,19 +786,9 @@ void RenderTriangleFrame(IMAGETYPE& image, EquilateralTriangleFrameFeature* tria
 	RenderPolygon(image, (Feature*) triangleFrame, &polygonPoints, 1, grayValue, antiAlias);
 
 	// Set up image to draw triangle hole
-	double resolution = (image.PixelSizeX()+image.PixelSizeY())/2.0;
-	ImgTransform trans;
-	trans.Config(resolution, resolution);
-
 	IMAGETYPE triangleHole;
-	triangleHole.Configure(
-		image.Columns(), 
-		image.Rows(), 
-		image.PixelRowStride(),
-		image.GetNominalTransform(),
-		image.GetTransform(),
-		true);	// create own buffer
-	triangleHole.ZeroBuffer();
+	Point originPoint;
+	CreateImagePatchForFeature(image, triangleFrame, &triangleHole, &originPoint);
 
 	polygonPoints.clear();
 	polygonPoints = triangleFrame->GetInnerPointList();
@@ -873,16 +797,16 @@ void RenderTriangleFrame(IMAGETYPE& image, EquilateralTriangleFrameFeature* tria
 	if(image.GetBytesPerPixel() == 1)
 	{
 		ClipSub(
-			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned char*)triangleHole.GetBuffer(), triangleHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			triangleHole.Columns(), triangleHole.Rows());
 	}
 	else
 	{
 		ClipSub(
-			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned short*)triangleHole.GetBuffer(), triangleHole.PixelRowStride(), 
-			image.Columns(), image.Rows());
+			triangleHole.Columns(), triangleHole.Rows());
 	}
 }
 
