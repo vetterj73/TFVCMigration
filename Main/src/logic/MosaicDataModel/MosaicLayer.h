@@ -77,9 +77,10 @@ namespace MosaicDM
 			///
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
 			///
-			Image *GetStitchedImage();
+			Image *GetStitchedImage(bool bRecreate = false);
 			Image *GetStitchedImageWithHeight(
-				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance);
+				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance,
+				bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
 			

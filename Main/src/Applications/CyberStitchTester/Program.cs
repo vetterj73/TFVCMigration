@@ -165,6 +165,12 @@ namespace CyberStitchTester
                             _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
                             heightBuf,
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                        _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(true),
+                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(true),
+                            _panel.GetCADBuffer(),
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                     }
                     else
                     {

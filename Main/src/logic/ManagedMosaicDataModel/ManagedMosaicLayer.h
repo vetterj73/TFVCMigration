@@ -43,16 +43,28 @@ namespace MMosaicDM
 			bool IsAlignWithFiducial() {return _pMosaicLayer->IsAlignWithFiducial();};
 			void SetAlignWithFiducial(bool bAlignWithFiducial) { _pMosaicLayer->SetAlignWithFiducial(bAlignWithFiducial);}; 
 
+
 			System::IntPtr GetStitchedBuffer()
 			{
-				Image* stitchedImage = _pMosaicLayer->GetStitchedImage();
+				return GetStitchedBuffer(false);
+			}
+
+			System::IntPtr GetStitchedBuffer(bool bRecreate)
+			{
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(bRecreate);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
 			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance)
 			{
+				return GetStitchedBufferWithHeight(pHeighBuf, dHeightResolution, dPupilDistance, false);
+			}
+
+			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance, bool bRecreate)
+			{
 				Image* stitchedImage = _pMosaicLayer->GetStitchedImageWithHeight(
-					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance);
+					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance,
+					bRecreate);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 

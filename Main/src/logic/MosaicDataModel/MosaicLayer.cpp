@@ -74,8 +74,11 @@ namespace MosaicDM
 		_stitchedImageValid = true;
 	}
 
-	Image *MosaicLayer::GetStitchedImage()
+	Image *MosaicLayer::GetStitchedImage(bool bRecreate)
 	{
+		if(bRecreate) 
+			_stitchedImageValid = false;
+
 		CreateStitchedImageIfNecessary();
 
 		return _pStitchedImage;
@@ -178,8 +181,12 @@ namespace MosaicDM
 
 	
 	Image *MosaicLayer::GetStitchedImageWithHeight(
-		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
+		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance,
+		bool bRecreate)
 	{
+		if(bRecreate) 
+			_stitchedImageValid = false;
+
 		CreateStitchedImageWithHeightIfNecessary(pHeighBuf, dHeightResolution, dPupilDistance);
 
 		return _pStitchedImage;
