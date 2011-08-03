@@ -60,8 +60,8 @@ namespace MosaicDM
 				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
 				return false;
 
-			for(int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
-				for(int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
+			for(unsigned int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
+				for(unsigned int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
 					GetLayer(i)->GetImage(j,k)->SetTransform(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetTransform());
 		}	
 
@@ -81,8 +81,8 @@ namespace MosaicDM
 				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
 				return false;
 
-			for(int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
-				for(int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
+			for(unsigned int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
+				for(unsigned int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
 					GetLayer(i)->GetImage(j,k)->SetBuffer(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetBuffer());
 		}	
 

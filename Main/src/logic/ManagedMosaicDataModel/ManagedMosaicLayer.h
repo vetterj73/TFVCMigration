@@ -68,6 +68,27 @@ namespace MMosaicDM
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
+			// Valid only after stitched image is created
+			bool GetStitchGrid(array<int>^ pCols, array<int>^ pRows)
+			{
+				int iNumCols = GetNumberOfCameras();
+				int iNumRows = GetNumberOfTriggers();
+
+				if((iNumCols+1 != pCols->Length) ||(iNumRows+1 != pRows->Length))
+					return(false);
+
+				int* piCols = _pMosaicLayer->GetStitchGridColumns();
+				int* piRows = _pMosaicLayer->GetStitchGridRows();
+
+				for(int i=0; i<=iNumCols; i++)
+					pCols[i] = piCols[i];
+				
+				for(int i=0; i<iNumRows; i++)
+					pRows[i] = piRows[i];
+
+				return(true);
+			}
+
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};

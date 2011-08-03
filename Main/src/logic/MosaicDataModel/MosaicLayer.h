@@ -63,6 +63,10 @@ namespace MosaicDM
 			void SetAlignWithCad(bool bAlignWithCad) { _bAlignWithCAD = bAlignWithCad;};
 			void SetAlignWithFiducial(bool bAlignWithFiducial) { _bAlignWithFiducial = bAlignWithFiducial;};
 
+			// After stitching image is created, following two functions are valid
+			int* GetStitchGridColumns() {return _piStitchGridCols;};
+			int* GetStitchGridRows() {return _piStitchGridRows;};
+
 			///
 			///	Clears all images from this layer
 			///
@@ -83,6 +87,8 @@ namespace MosaicDM
 				bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
+
+
 			
 		protected:
 			/// Called from MosaicSet when a layer is added.
@@ -93,11 +99,11 @@ namespace MosaicDM
 				bool bAlignWithFiducial,
 				unsigned int layerIndex);
 
-
 			void CreateStitchedImageIfNecessary();
 			void CreateStitchedImageWithHeightIfNecessary(
 				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance);
 			void AllocateStitchedImageIfNecessary();
+			bool CalculateStitchGrids();
 
 			///
 			///	Adds an image...
@@ -115,6 +121,9 @@ namespace MosaicDM
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 			unsigned int _layerIndex;       // Not sure why this is needed but it is used in alignment..
+
+			int* _piStitchGridRows;
+			int* _piStitchGridCols; 
 	
 			Image *_pStitchedImage;
 	};

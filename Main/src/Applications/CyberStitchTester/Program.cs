@@ -153,6 +153,7 @@ namespace CyberStitchTester
                             break;
                     }
 
+                    // Create the stitched image
                     bool bAdjustForHeight = true;
                     double dMaxHeight = _panel.GetMaxComponentHeight();
                     if (dMaxHeight > 0 && bAdjustForHeight)
@@ -180,6 +181,12 @@ namespace CyberStitchTester
                             _panel.GetCADBuffer(),
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                     }
+
+                    // Must after get stitched image of the same layer
+                    // Get the stitch grid
+                    int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];
+                    int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
+                    _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
 
                     /*/ Testing a copy of mosaic...
                     _mosaicSetCopy.CopyBuffers(_mosaicSet);
