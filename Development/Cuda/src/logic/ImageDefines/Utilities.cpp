@@ -2,6 +2,7 @@
 #include "lsqrpoly.h" 
 #include "math.h"
 #include "morpho.h"
+#include <string>
 
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
@@ -87,6 +88,8 @@ void inverse(
 	delete [] b;
 }
 
+static int ImageMorph_loop = 0;
+
 // Fill a ROI of the output image by transforming the input image
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
 // pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
@@ -120,6 +123,19 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	unsigned char* pbOutBuf = pOutBuf + iOutROIStartY*iOutSpan;
 	int iInSpanP1 = iInSpan+1;
+
+	char str[64];
+	printf_s("ImageMorph %d.", ImageMorph_loop);
+
+	//LOG.FireLogEntry(LogTypeSystem, str);
+
+	if (ImageMorph_loop < 200)
+	{
+		GPUImageMorph(pInBuf,iInSpan, iInWidth, iInHeight, 
+			pOutBuf, iOutSpan, iOutROIStartX, iOutROIStartY, iOutROIWidth, iOutROIHeight, dInvTrans) ;
+	}
+	else
+	{
 
 	// some local variable
 	unsigned char* pbPixPtr;
@@ -229,6 +245,12 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 			pbOutBuf += iOutSpan;
 		} // iy
     } // else
+
+	}
+
+	printf_s("ImageMorph %d.\n", ImageMorph_loop);
+
+	ImageMorph_loop += 1;
 
 	return(true);
 }
