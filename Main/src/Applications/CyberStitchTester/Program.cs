@@ -89,7 +89,7 @@ namespace CyberStitchTester
      //           _aligner.LogOverlaps(true);
      //           _aligner.LogMaskVectors(true);
                 //_aligner.LogFiducialOverlaps(true);
-                _aligner.UseCyberNgc4Fiducial();
+                //_aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
@@ -153,11 +153,27 @@ namespace CyberStitchTester
                             break;
                     }
 
-                    _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                        _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                        _panel.GetCADBuffer(),
-                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    bool bAdjustForHeight = true;
+                    double dMaxHeight = _panel.GetMaxComponentHeight();
+                    if (dMaxHeight > 0 && bAdjustForHeight)
+                    {
+                        IntPtr heightBuf = _panel.GetHeightImageBuffer();
+                        double dHeightRes = _panel.GetHeightResolution();
+                        double dPupilDistance = 0.3702;
+                        _aligner.Save3ChannelImage("c:\\temp\\3channelHeightcycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                            heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    }
+                    else
+                    {
+                        _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
+                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
+                            _panel.GetCADBuffer(),
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    }
 
                     /*/ Testing a copy of mosaic...
                     _mosaicSetCopy.CopyBuffers(_mosaicSet);

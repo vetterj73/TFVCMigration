@@ -62,6 +62,8 @@ bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dH
 		RenderFeature(&heightImage, feature->second, iGreyLevel, iAntiAlias);
 	}
 
+	//heightImage.Save("C:\\Temp\\Height.bmp");
+
 	return(true);
 }
 

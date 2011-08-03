@@ -53,6 +53,8 @@ Panel::Panel(double lengthX, double lengthY, double pixelSizeX, double pixelSize
 	_heightImageBuffer = NULL;
 	_maskBuffer = NULL;
 	_aperatureBuffer = NULL;
+
+	_dHeightResolution = -1;
 }
 
 Panel::~Panel()
@@ -327,11 +329,25 @@ double Panel::GetMaxComponentHeight()
 
 unsigned char* Panel::GetHeightImageBuffer(double dHeightResolution)
 {
+	_dHeightResolution = dHeightResolution;
 	if(_heightImageBuffer == NULL)
 	{
 		_heightImageBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_heightImageBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
-		Cad2Img::DrawHeightImage(this, _heightImageBuffer, dHeightResolution);
+		Cad2Img::DrawHeightImage(this, _heightImageBuffer, _dHeightResolution);
+	}
+	return _heightImageBuffer;
+}
+
+unsigned char* Panel::GetHeightImageBuffer()
+{
+	double dMaxHeight = GetMaxComponentHeight();
+	_dHeightResolution = dMaxHeight/255.0;
+	if(_heightImageBuffer == NULL)
+	{
+		_heightImageBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
+		memset(_heightImageBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
+		Cad2Img::DrawHeightImage(this, _heightImageBuffer, _dHeightResolution);
 	}
 	return _heightImageBuffer;
 }

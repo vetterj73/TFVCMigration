@@ -30,6 +30,26 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3]);
 
+// Fill a ROI of the output image with a height map by transforming the input image
+// Assume the center of image corresponding a vertical line from camera to object surface
+// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
+// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
+// pOutBuf and iOutspan : output buffer and its span
+// iROIWidth, iHeight: the size of buffer need to be transformed
+// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
+// dInvTrans: the 3*3 transform from output image to input image
+// pHeightImage and iHeightSpan, height image buffer and its span
+// dHeightResolution: the height represented by each grey level
+// dPupilDistance: camera pupil distance (has the same unit as dHeightResolution)
+bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3],
+	unsigned char* pHeightImage, unsigned int iHeightSpan,
+	double dHeightResolution, double dPupilDistance); 
+
 // Modified from Eric Rudd's BayerLum() function
 // Convert Bayer image into Luminance
 // Output data only valid int the range of columns [2, nCols-3] and rows [2 nRows-3]

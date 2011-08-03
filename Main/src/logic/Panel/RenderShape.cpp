@@ -332,7 +332,8 @@ void RenderPolygon(IMAGETYPE& image,
 		{
 			for(int ix=0; ix<polygonImage.Columns(); ix++)
 			{
-				pLine1[ix] = (unsigned char)(pLine2[ix]>=threshold)*grayValue;
+				if(pLine2[ix]>=threshold)
+					pLine1[ix] += (unsigned char)grayValue;
 			}
 			pLine1 += image.PixelRowStride();
 			pLine2 += polygonImage.PixelRowStride();
@@ -346,7 +347,8 @@ void RenderPolygon(IMAGETYPE& image,
 		{
 			for(int ix=0; ix<polygonImage.Columns(); ix++)
 			{
-				pLine1[ix] = (unsigned short)(pLine2[ix]>=threshold)*grayValue;
+				if(pLine2[ix]>=threshold)
+					pLine1[ix] += (unsigned short)grayValue;
 			}
 			pLine1 += image.PixelRowStride();
 			pLine2 += polygonImage.PixelRowStride();

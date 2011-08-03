@@ -85,6 +85,7 @@ public:
 	*/
 	unsigned char* GetCadBuffer();
 	unsigned char* GetHeightImageBuffer(double dHeightResolution);
+	unsigned char* GetHeightImageBuffer();
 	unsigned char* GetMaskBuffer(int iCadExpansion);
 	unsigned short* GetAperatureBuffer();
 	bool HasCadBuffer(){return _cadBuffer!=NULL;};
@@ -93,12 +94,15 @@ public:
 	bool HasAperatureBuffer(){return _aperatureBuffer!=NULL;};
 
 	double GetMaxComponentHeight();
+	double GetHeightResolution() {return _dHeightResolution;};;
 
 private:
 	unsigned char* _cadBuffer;
 	unsigned char* _heightImageBuffer;
 	unsigned char* _maskBuffer;
 	unsigned short* _aperatureBuffer;
+
+	double _dHeightResolution;
 
 	Panel(){};
 	Panel(const Panel& p){};

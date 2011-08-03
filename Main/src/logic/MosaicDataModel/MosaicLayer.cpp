@@ -176,6 +176,105 @@ namespace MosaicDM
 		delete [] piRectCols;
 	}
 
+	
+	Image *MosaicLayer::GetStitchedImageWithHeight(
+		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
+	{
+		CreateStitchedImageWithHeightIfNecessary(pHeighBuf, dHeightResolution, dPupilDistance);
+
+		return _pStitchedImage;
+	}
+
+	void MosaicLayer::CreateStitchedImageWithHeightIfNecessary(
+		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
+	{
+		if(_stitchedImageValid)
+			return;
+
+		_stitchedImageValid = true;
+		AllocateStitchedImageIfNecessary();
+
+		// Trigger and camera centers in world space
+		unsigned int iNumTrigs = GetNumberOfTriggers();
+		unsigned int iNumCams = GetNumberOfCameras();
+		double* pdCenX = new double[iNumTrigs];
+		double* pdCenY = new double[iNumCams];
+		TriggerCentersInX(pdCenX);
+		CameraCentersInY(pdCenY);
+
+		// Create height image
+		Image heightImage;
+		heightImage.Configure(
+			_pStitchedImage->Columns(),
+			_pStitchedImage->Rows(),
+			_pStitchedImage->PixelRowStride(),
+			_pStitchedImage->GetTransform(),
+			_pStitchedImage->GetTransform(),
+			false,
+			pHeighBuf);
+
+		// Panel image Row bounds for Roi (decreasing order)
+		int* piRectRows = new int[iNumTrigs+1];
+		piRectRows[0] = _pStitchedImage->Rows();
+		for(unsigned int i=1; i<iNumTrigs; i++)
+		{
+			double dX = (pdCenX[i-1] +pdCenX[i])/2;
+			double dTempRow, dTempCol;
+			_pStitchedImage->WorldToImage(dX, 0, &dTempRow, &dTempCol);
+			piRectRows[i] = (int)dTempRow;
+			if(piRectRows[i]>=(int)_pStitchedImage->Rows()) piRectRows[i] = _pStitchedImage->Rows();
+			if(piRectRows[i]<0) piRectRows[i] = 0;
+		}
+		piRectRows[iNumTrigs] = 0; 
+
+		// Panel image Column bounds for Roi (increasing order)
+		int* piRectCols = new int[iNumCams+1];
+		piRectCols[0] = 0;
+		for(unsigned int i=1; i<iNumCams; i++)
+		{
+			double dY = (pdCenY[i-1] +pdCenY[i])/2;
+			double dTempRow, dTempCol;
+			_pStitchedImage->WorldToImage(0, dY, &dTempRow, &dTempCol);
+			piRectCols[i] = (int)dTempCol;
+			if(piRectCols[i]<0) piRectCols[i] = 0;
+			if(piRectCols[i]>(int)_pStitchedImage->Columns()) piRectCols[i] = _pStitchedImage->Columns();;
+		}
+		piRectCols[iNumCams] = _pStitchedImage->Columns();
+
+		char buf[20];
+		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
+		CyberJob::JobManager jm(buf, 8);
+		vector<MorphWithHeightJob*> morphJobs;
+		// Morph each Fov to create stitched panel image
+		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
+		{
+			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
+			{
+				Image* pFOV = GetImage(iCam, iTrig);
+
+				MorphWithHeightJob *pJob = new MorphWithHeightJob(_pStitchedImage, pFOV,
+					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
+					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1),
+					&heightImage, dHeightResolution, dPupilDistance);
+				jm.AddAJob((Job*)pJob);
+				morphJobs.push_back(pJob);
+			}
+		}
+
+		// Wait until it is complete...
+		jm.MarkAsFinished();
+		while(jm.TotalJobs() > 0)
+			Sleep(10);
+
+		for(unsigned int i=0; i<morphJobs.size(); i++)
+			delete morphJobs[i];
+		morphJobs.clear();
+		delete [] pdCenX;
+		delete [] pdCenY;
+		delete [] piRectRows;
+		delete [] piRectCols;
+	}
+
 	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())

@@ -49,6 +49,13 @@ namespace MMosaicDM
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
+			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance)
+			{
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImageWithHeight(
+					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance);
+				return (System::IntPtr)stitchedImage->GetBuffer();
+			}
+
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};

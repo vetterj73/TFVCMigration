@@ -93,6 +93,12 @@ public:
 
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);
+	bool				MorphFromWithHeight(
+							const Image* pImgIn, 
+							UIRect roi,
+							const Image* pHeightImg, 
+							double dHeightResolution, 
+							double dPupilDistance);
 
 	bool				Save(string sFileName);
 

@@ -177,6 +177,22 @@ namespace Cyber
 			}
 
 			/// \internal
+			System::IntPtr GetHeightImageBuffer()
+			{
+				return safe_cast<System::IntPtr>(_pPanel->GetHeightImageBuffer());
+			}
+
+			double GetHeightResolution()
+			{
+				return _pPanel->GetHeightResolution();
+			}
+
+			double GetMaxComponentHeight()
+			{
+				return _pPanel->GetMaxComponentHeight();
+			}
+
+			/// \internal
 			System::IntPtr GetAperatureBuffer()
 			{
 				return safe_cast<System::IntPtr>(_pPanel->GetAperatureBuffer());

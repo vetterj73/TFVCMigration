@@ -89,20 +89,6 @@ OverlapManager::OverlapManager(
 		}
 	}
 
-	_pHeightImg=NULL; 
-	/*if(CorrelationParametersInst.bAdjustMorph4ComponentHeight)
-	{
-		double dMaxHeight = _pPanel->GetMaxComponentHeight();
-		if(dMaxHeight > 0)
-		{
-			double dHeightResolution = dMaxHeight/255;
-			unsigned char* pHeightBuf = _pPanel->GetHeightImageBuffer(dHeightResolution);
-			_pHeightImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-				trans, trans, bCreateOwnBuf, pHeightBuf);
-			_pHeightImg->Save("C:\\Temp\\Height.bmp");
-		}
-	}*/
-
 	// Create Panel Mask image
 	_pPanelMaskImg = NULL;
 	if(IsMaskImageNeeded())
