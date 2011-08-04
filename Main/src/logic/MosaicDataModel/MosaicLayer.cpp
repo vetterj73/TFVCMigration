@@ -172,6 +172,8 @@ namespace MosaicDM
 		if(!CalculateStitchGrids())
 			return;
 		
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin creating stitched image", _layerIndex); 
+		
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
 		char buf[20];
@@ -201,6 +203,8 @@ namespace MosaicDM
 		for(unsigned int i=0; i<morphJobs.size(); i++)
 			delete morphJobs[i];
 		morphJobs.clear();
+
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End creating stitched image", _layerIndex); 
 	}
 
 	
@@ -243,6 +247,8 @@ namespace MosaicDM
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image with Height", _layerIndex); 
+		
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
 		CyberJob::JobManager jm(buf, 8);
@@ -271,6 +277,8 @@ namespace MosaicDM
 		for(unsigned int i=0; i<morphJobs.size(); i++)
 			delete morphJobs[i];
 		morphJobs.clear();
+
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image with Height", _layerIndex); 
 	}
 
 	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)

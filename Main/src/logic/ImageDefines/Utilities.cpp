@@ -284,6 +284,9 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
  
 	if(bAffine)
 	{
+		double dDividedPupilDistrance = 1.0/dPupilDistance;
+		double dCenterX = iInWidth/2.0;
+		double dCenterY = iInHeight/2.0;
 		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
 		{
 			dIY = (double) iY;
@@ -297,12 +300,14 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
 
 				// Adjust for height
-				if(pHeightImage[iY*iHeightSpan+iX]>0)
+				int iHeightInPixel = pHeightImage[iY*iHeightSpan+iX];
+				if(iHeightInPixel >0)
 				{
-					double dHeight = pHeightImage[iY*iHeightSpan+iX]*dHeightResolution;
-					double dRatio = dHeight/(dPupilDistance-dHeight);
-					double dOffsetX = (dX-iInWidth/2.0)*dRatio;
-					double dOffsetY = (dY-iInHeight/2.0)*dRatio;
+					double dHeight = iHeightInPixel *dHeightResolution;		// Height in physical unit
+					//double dRatio = dHeight/(dPupilDistance-dHeight);		// Sacrifice some speed for performance
+					double dRatio = dHeight*dDividedPupilDistrance;			// Sacrifice some performance for speed
+					double dOffsetX = (dX-dCenterX)*dRatio;
+					double dOffsetY = (dY-dCenterY)*dRatio;
 					dX += dOffsetX;
 					dY += dOffsetY;
 				}
