@@ -58,23 +58,30 @@ extern "C"
 void computeGold(float*, const float*, const float*, unsigned int, unsigned int);
 
 ByteMatrix AllocateDeviceMatrix(int width, int height);
-//Matrix AllocateDeviceMatrix(const Matrix M);
 ByteMatrix AllocateZeroDeviceMatrix(int width, int height);
-//Matrix AllocatePadDeviceMatrix(const Matrix M);
-ByteMatrix AllocateMatrix(int height, int width, int init);
+ByteMatrix AllocateByteMatrix(int width, int height);
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer);
 void CopyDeviceMatrixToBuffer(ByteMatrix Mdevice, unsigned char* buffer, int hostSpan);
-//void CopyToDeviceMatrix(Matrix Mdevice, const Matrix Mhost);
-void CopyPadToDeviceMatrix(ByteMatrix Mdevice, const ByteMatrix Mhost);
-void CopyFromDeviceMatrix(ByteMatrix Mhost, const ByteMatrix Mdevice);
-int ReadFile(ByteMatrix* M, char* file_name);
-void WriteFile(ByteMatrix M, char* file_name);
+void CopyDeviceMatrixToHost(ByteMatrix MHost, ByteMatrix Mdevice);
+void CopyHostMatrixToBuffer(unsigned char* buffer, ByteMatrix Hdevice, int hostSpan);
 void FreeDeviceMatrix(ByteMatrix* M);
 void FreeMatrix(ByteMatrix* M);
+void FreeByteMatrix(ByteMatrix* M);
 
 void ConvolutionOnDevice(const ByteMatrix A, const ByteMatrix B, ByteMatrix C);
 
  
+static clock_t startXferToTick = 0;//the tick for when we first create an instance
+static clock_t startXferFromTick = 0;//the tick for when we first create an instance
+static clock_t startKrnlTick = 0;//the tick for when we first create an instance
+static clock_t totalXferToTick = 0;//the tick for when we first create an instance
+static clock_t totalXferFromTick = 0;//the tick for when we first create an instance
+static clock_t totalKrnlTick = 0;//the tick for when we first create an instance
+
+void PrintTicks()
+{
+	printf_s("\tXfer To ticks - %ld; Kernel ticks - %ld; Xfer From ticks - %ld;\n",totalXferToTick, totalKrnlTick, totalXferFromTick);
+}
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +94,8 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 {
 //int main(int argc, char** argv) {
 
+	startXferToTick = clock();//Obtain current tick
+
 	// Allocate and initialize input device matrices
     ByteMatrix Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
     CopyBufferToDeviceMatrix(Ad, pInBuf);
@@ -95,11 +104,16 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
     ByteMatrix Bd = AllocateDeviceMatrix(iOutROIWidth, iOutROIHeight);
     //int size = Bd.width * Bd.height * sizeof(unsigned char);
     //cudaMemset(Bd.elements, 0, size);
+    ByteMatrix B = AllocateByteMatrix(iOutROIWidth, iOutROIHeight);
 
 	// Copy coefficients to device constant memory
 	cudaMemcpyToSymbol(coeffs, dInvTrans, sizeof(dInvTrans[0])*3, 0);
 
-    // Setup the execution configuration
+	totalXferToTick += clock() - startXferToTick;//calculate the difference in ticks
+
+	startKrnlTick = clock();//Obtain current tick
+
+	// Setup the execution configuration
     dim3 threads(TILE_WIDTH, TILE_WIDTH);
     dim3 grid(((Bd.width - 1) / threads.x) + 1, ((Bd.height - 1) / threads.y) + 1);
 
@@ -107,11 +121,20 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	ConvolutionKernel<<< grid, threads >>>(Ad.elements, Bd.elements, Ad.width, Ad.height, iInWidth,
 		Bd.width, Bd.height, iOutSpan, iOutROIStartX, iOutROIStartY);
 
-	CopyDeviceMatrixToBuffer(Bd, pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, iOutSpan);
+	totalKrnlTick += clock() - startKrnlTick;//calculate the difference in ticks
+
+	startXferFromTick = clock();//Obtain current tick
+
+	//CopyDeviceMatrixToBuffer(Bd, pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, iOutSpan);
+	CopyDeviceMatrixToHost(B, Bd);
+	CopyHostMatrixToBuffer(pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, B, iOutSpan);
 
 	// Free matrices
     cudaFree(Ad.elements);
     cudaFree(Bd.elements);
+	FreeByteMatrix(&B);
+
+	totalXferFromTick += clock() - startXferFromTick;//calculate the difference in ticks
 
 	return 0;
 }
@@ -129,42 +152,20 @@ ByteMatrix AllocateDeviceMatrix(int width, int height)
     return Mdevice;
 }
 
-//// Allocate and clear a device matrix of same size as M.
-//void ZeroDeviceMatrix(ByteMatrix Mdevice)
-//{
-//    int size = Mdevice.width * Mdevice.height * sizeof(unsigned char);
-//    cudaMemset(Mdevice.elements, 0, size);
-//}
+// Allocate a host matrix of dimensions height*width
+ByteMatrix AllocateByteMatrix(int width, int height)
+{
+    ByteMatrix M;
+    M.width = M.pitch = width;
+    M.height = height;
+    int size = M.width * M.height;
 
-//// Allocate a device matrix of dimensions height*width
-////	If init == 0, initialize to all zeroes.  
-////	If init == 1, perform random initialization.
-////  If init == 2, initialize matrix parameters, but do not allocate memory 
-//ByteMatrix AllocateMatrix(int height, int width, int init)
-//{
-//    ByteMatrix M;
-//    M.width = M.pitch = width;
-//    M.height = height;
-//    int size = M.width * M.height;
-//    M.elements = NULL;
-//    
-//    // don't allocate memory on option 2
-//    if(init == 2)
-//		return M;
-//		
-//	M.elements = (unsigned char*) malloc(size*sizeof(char));
-//
-//	for(unsigned int i = 0; i < M.height * M.width; i++)
-//	{
-//		M.elements[i] = 0xff;
-//		//(init == 0) ? (0.0f) : (rand() / (float)RAND_MAX);
-//		//M.elements[i] = (init == 0) ? (0.0f) : (rand() / (float)RAND_MAX);
-//		//if(rand() % 2)
-//		//	M.elements[i] = - M.elements[i];
-//	}
-//    return M;
-//}	
-//
+	M.elements = NULL;
+	M.elements = (unsigned char*) malloc(size*sizeof(unsigned char));
+
+    return M;
+}
+
 
 // Copy a host matrix to a device matrix.
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer)
@@ -173,48 +174,23 @@ void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer)
     cudaMemcpy(Mdevice.elements, buffer, size, cudaMemcpyHostToDevice);
 }
 
-void CopyDeviceMatrixToBuffer(ByteMatrix Mdevice, unsigned char* buffer, int hostSpan)
+void CopyDeviceMatrixToHost(ByteMatrix Mhost, ByteMatrix Mdevice)
 {
-	for (int i=0; i<Mdevice.height; ++i)
+    int Hsize = Mhost.width * Mhost.height * sizeof(unsigned char);
+    int Dsize = Mdevice.width * Mdevice.height * sizeof(unsigned char);
+	int size = (Dsize > Hsize) ? Hsize : Dsize ;
+
+	cudaMemcpy(Mhost.elements, Mdevice.elements, size, cudaMemcpyDeviceToHost);
+}
+
+void CopyHostMatrixToBuffer(unsigned char* buffer, ByteMatrix Hdevice, int hostSpan)
+{
+	for (int i=0; i<Hdevice.height; ++i)
 	{
-		cudaMemcpy(buffer+i*hostSpan, Mdevice.elements+i*Mdevice.width, Mdevice.width, cudaMemcpyDeviceToHost);
+		memcpy(buffer+i*hostSpan, Hdevice.elements+i*Hdevice.width, Hdevice.width);
 	}
 }
 
-//// Copy a host matrix to a device matrix.
-//void CopyPadToDeviceMatrix(ByteMatrix Mdevice, const ByteMatrix Mhost)
-//{
-//	if (Mdevice.height == Mhost.height && Mdevice.width == Mhost.width)
-//	{
-//		int size = Mhost.width * Mhost.height * sizeof(float);
-//		Mdevice.height = Mhost.height;
-//		Mdevice.width = Mhost.width;
-//		Mdevice.pitch = Mhost.pitch;
-//		cudaMemcpy(Mdevice.elements, Mhost.elements, size, 
-//						cudaMemcpyHostToDevice);
-//	}
-//	else
-//	{
-//		int pad = KERNEL_SIZE / 2;
-//		//printf("pad-%d\n", pad);
-//
-//		for (int i=pad; i<Mdevice.height; ++i)
-//		{
-//			if ( i < Mdevice.height - pad)
-//				cudaMemcpy(Mdevice.elements + i*Mdevice.width + pad, Mhost.elements + (i-pad)*Mhost.width, Mhost.width*sizeof(float), 
-//					cudaMemcpyHostToDevice);
-//		}
-//	}
-//}
-
-//// Copy a device matrix to a host matrix.
-//void CopyFromDeviceMatrix(ByteMatrix Mhost, const ByteMatrix Mdevice)
-//{
-//    int size = Mdevice.width * Mdevice.height * sizeof(float);
-//    cudaMemcpy(Mhost.elements, Mdevice.elements, size, 
-//					cudaMemcpyDeviceToHost);
-//}
-//
 // Free a device matrix.
 void FreeDeviceMatrix(ByteMatrix* M)
 {
@@ -223,7 +199,7 @@ void FreeDeviceMatrix(ByteMatrix* M)
 }
 
 // Free a host ByteMatrix
-void FreeMatrix(ByteMatrix* M)
+void FreeByteMatrix(ByteMatrix* M)
 {
     free(M->elements);
     M->elements = NULL;

@@ -2,7 +2,12 @@
 #include "lsqrpoly.h" 
 #include "math.h"
 #include "morpho.h"
+#include "Logger.h"
 #include <string>
+#include <stdio.h>
+#include <sys/timeb.h>
+#include <time.h>
+
 
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
@@ -90,6 +95,11 @@ void inverse(
 
 static int ImageMorph_loop = 0;
 
+static clock_t startTick = 0;	//the tick for when we first create an instance
+static clock_t deltaTicks = 0;	//currTick - startTick
+
+void PrintTicks();
+
 // Fill a ROI of the output image by transforming the input image
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
 // pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
@@ -124,12 +134,12 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned char* pbOutBuf = pOutBuf + iOutROIStartY*iOutSpan;
 	int iInSpanP1 = iInSpan+1;
 
-	char str[64];
-	printf_s("ImageMorph %d.", ImageMorph_loop);
+	startTick = clock();//Obtain current tick
 
-	//LOG.FireLogEntry(LogTypeSystem, str);
+	//char str[64];
+	//sprintf_s(str, 24, "ImageMorph %d", ImageMorph_loop);
 
-	if (ImageMorph_loop < 200)
+	if (ImageMorph_loop < /*0*/200)
 	{
 		GPUImageMorph(pInBuf,iInSpan, iInWidth, iInHeight, 
 			pOutBuf, iOutSpan, iOutROIStartX, iOutROIStartY, iOutROIWidth, iOutROIHeight, dInvTrans) ;
@@ -248,7 +258,13 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	}
 
-	printf_s("ImageMorph %d.\n", ImageMorph_loop);
+	deltaTicks += clock() - startTick;//calculate the difference in ticks
+
+	if (ImageMorph_loop == 189)
+	{
+		printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
+		PrintTicks();
+	}
 
 	ImageMorph_loop += 1;
 
