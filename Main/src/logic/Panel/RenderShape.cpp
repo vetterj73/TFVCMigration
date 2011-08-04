@@ -328,9 +328,9 @@ void RenderPolygon(IMAGETYPE& image,
 	{
 		unsigned char* pLine1 = image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1);
 		unsigned char* pLine2 = polygonImage.GetBuffer();
-		for(int iy =0; iy<polygonImage.Rows(); iy++)
+		for(unsigned int iy =0; iy<polygonImage.Rows(); iy++)
 		{
-			for(int ix=0; ix<polygonImage.Columns(); ix++)
+			for(unsigned int ix=0; ix<polygonImage.Columns(); ix++)
 			{
 				if(pLine2[ix]>=threshold)
 					pLine1[ix] += (unsigned char)grayValue;
@@ -343,9 +343,9 @@ void RenderPolygon(IMAGETYPE& image,
 	{
 		unsigned short* pLine1 = (unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1);
 		unsigned short* pLine2 = (unsigned short*)polygonImage.GetBuffer();
-		for(int iy =0; iy<polygonImage.Rows(); iy++)
+		for(unsigned int iy =0; iy<polygonImage.Rows(); iy++)
 		{
-			for(int ix=0; ix<polygonImage.Columns(); ix++)
+			for(unsigned int ix=0; ix<polygonImage.Columns(); ix++)
 			{
 				if(pLine2[ix]>=threshold)
 					pLine1[ix] += (unsigned short)grayValue;
@@ -354,8 +354,6 @@ void RenderPolygon(IMAGETYPE& image,
 			pLine2 += polygonImage.PixelRowStride();
 		}
 	}
-
-	int iPix, pPix;
 }
 
 // Create Image and Image16 instances

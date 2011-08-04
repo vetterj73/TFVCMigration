@@ -509,9 +509,9 @@ void ClipSub(
 {
 	T* pLine1 = pData1;
 	T* pLine2 = pData2;
-	for(int iy=0; iy<iHeight; iy++)
+	for(unsigned int iy=0; iy<iHeight; iy++)
 	{
-		for(int ix=0; ix<iWidth; ix++)
+		for(unsigned int ix=0; ix<iWidth; ix++)
 		{
 			int iTemp = (int)pLine1[ix] - (int)pLine2[ix];
 			if(iTemp<0) iTemp = 0;

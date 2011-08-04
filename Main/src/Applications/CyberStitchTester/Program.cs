@@ -27,6 +27,7 @@ namespace CyberStitchTester
         // For debug
         private static int _iBufCount = 0;
         private static bool _bSimulating = false;
+      
  
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
@@ -43,7 +44,8 @@ namespace CyberStitchTester
             bool bContinuous = false;
             bool bOwnBuffers = false;
             bool bMaskForDiffDevices = false;
-
+            bool bAdjustForHeight = true;
+            
             for(int i=0; i<args.Length; i++)
             {
                 if (args[i] == "-b")
@@ -52,6 +54,8 @@ namespace CyberStitchTester
                     bContinuous = true;
                 if (args[i] == "-m")
                     bMaskForDiffDevices = true;
+                if (args[i] == "-nh")
+                    bAdjustForHeight = false;
                 if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
                 if (args[i] == "-t" && i < args.Length - 1)
@@ -154,7 +158,6 @@ namespace CyberStitchTester
                     }
 
                     // Create the stitched image
-                    bool bAdjustForHeight = true;
                     double dMaxHeight = _panel.GetMaxComponentHeight();
                     if (dMaxHeight > 0 && bAdjustForHeight)
                     {
