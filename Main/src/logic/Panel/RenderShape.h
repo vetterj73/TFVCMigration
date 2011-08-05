@@ -50,6 +50,8 @@ void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, uns
 template<typename IMAGETYPE>
 void RenderRectangle(IMAGETYPE& image, RectangularFeature* rect, unsigned int grayValue=255, int antiAlias=1);
 
+void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned int grayValue, double dSlope);
+
 template <typename IMAGETYPE>
 void RenderRectangleFrame(IMAGETYPE& image, RectangularFrameFeature* rectFrame, unsigned int grayValue=255, int antiAlias=1);
 

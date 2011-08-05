@@ -177,9 +177,9 @@ namespace Cyber
 			}
 
 			/// \internal
-			System::IntPtr GetHeightImageBuffer()
+			System::IntPtr GetHeightImageBuffer(bool bSmooth)
 			{
-				return safe_cast<System::IntPtr>(_pPanel->GetHeightImageBuffer());
+				return safe_cast<System::IntPtr>(_pPanel->GetHeightImageBuffer(bSmooth));
 			}
 
 			double GetHeightResolution()

@@ -327,28 +327,30 @@ double Panel::GetMaxComponentHeight()
 	return(dMaxHeight);
 }
 
-unsigned char* Panel::GetHeightImageBuffer(double dHeightResolution)
+unsigned char* Panel::GetHeightImageBuffer(double dHeightResolution, bool bSmooth)
 {
 	_dHeightResolution = dHeightResolution;
+	double dSlopeInGreyLevel = 0;
+	if(bSmooth)	// Calculate the grey level slope for smooth 
+	{
+		dSlopeInGreyLevel = 2e-4/dHeightResolution;
+		if(dSlopeInGreyLevel>50) dSlopeInGreyLevel=50;
+		if(dSlopeInGreyLevel<8) dSlopeInGreyLevel=8;
+	}
 	if(_heightImageBuffer == NULL)
 	{
 		_heightImageBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
 		memset(_heightImageBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
-		Cad2Img::DrawHeightImage(this, _heightImageBuffer, _dHeightResolution);
+		Cad2Img::DrawHeightImage(this, _heightImageBuffer, _dHeightResolution, dSlopeInGreyLevel);
 	}
 	return _heightImageBuffer;
 }
 
-unsigned char* Panel::GetHeightImageBuffer()
+unsigned char* Panel::GetHeightImageBuffer(bool bSmooth)
 {
 	double dMaxHeight = GetMaxComponentHeight();
 	_dHeightResolution = dMaxHeight/255.0;
-	if(_heightImageBuffer == NULL)
-	{
-		_heightImageBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
-		memset(_heightImageBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
-		Cad2Img::DrawHeightImage(this, _heightImageBuffer, _dHeightResolution);
-	}
+	GetHeightImageBuffer(_dHeightResolution, bSmooth);
 	return _heightImageBuffer;
 }
 

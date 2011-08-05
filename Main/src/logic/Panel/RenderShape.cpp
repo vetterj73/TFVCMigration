@@ -713,6 +713,113 @@ void RenderRectangle(IMAGETYPE& image, RectangularFeature* rect, unsigned int gr
 template void RenderRectangle(Image& image, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
 template void RenderRectangle(Image16& image, RectangularFeature* rect, unsigned int grayValue, int antiAlias);
 
+// Render rectangle for height map
+// dGreyLevelSlope: grey level slope for smooth
+void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned int grayValue, double dGreyLevelSlope)
+{
+	// Validation check
+	if(dGreyLevelSlope<=0) return;
+
+	// Rectangle boundbox in world space
+	PointList polygonPoints = rect->GetPointList();
+
+	// Calculate rectangle boundary
+	double dPixelX, dPixelY;
+	int iPixelX, iPixelY;
+	int iMinX, iMaxX, iMinY, iMaxY;
+	int iNum = (int)polygonPoints.size();
+	for(int i=0; i<iNum; i++)
+	{
+		Point pt = polygonPoints.front();
+
+		// Transform point to pixels
+		image.WorldToImage(pt.x, pt.y, &dPixelY, &dPixelX);	
+		
+		int iPixelX = (int)(dPixelX+0.5);
+		int iPixelY = (int)(dPixelY+0.5);
+		if(i==0)
+		{
+			iMinX = iPixelX;
+			iMaxX = iPixelX;
+			iMinY = iPixelY;
+			iMaxY = iPixelY;
+		}
+		else
+		{
+			if(iMinX>iPixelX) iMinX = iPixelX;
+			if(iMaxX<iPixelX) iMaxX = iPixelX;
+			if(iMinY>iPixelY) iMinY = iPixelY;
+			if(iMaxY<iPixelY) iMaxY = iPixelY;
+		}
+
+		// remove the point from the list
+		polygonPoints.pop_front();
+	}
+
+	if(iMinX<0) iMinX=0;
+	if(iMaxX>image.Columns()-1) iMaxX=image.Columns()-1;
+	if(iMinY<0) iMinY=0;
+	if(iMaxY>image.Rows()-1) iMaxY=image.Rows()-1;
+	
+	// Draw rectangle
+	unsigned int iSpan = image.PixelRowStride();
+	unsigned char* pLine = image.GetBuffer()+iMinY*iSpan;
+	for(int iy=iMinY; iy<=iMaxY; iy++)
+	{
+		::memset(pLine+iMinX,  (unsigned char)grayValue, iMaxX-iMinX+1);
+		pLine += iSpan;
+	}
+
+	// Draw transition area
+	int iExpansion = (int)(grayValue/dGreyLevelSlope+0.5);
+	double dAdjustSlope = (double)grayValue/(double)iExpansion; // Grey level slope
+	for(int i=1; i<iExpansion;i++)
+	{
+		int iValue = (int)(grayValue-i*dAdjustSlope+0.5);
+		if(iValue<0) iValue = 0;
+
+		// up/down line
+		int iStartX = iMinX-i;
+		if(iStartX<0) iStartX=0;
+		int iEndX = iMaxX+i;
+		if(iEndX>image.Columns()-1) iEndX=image.Columns()-1;
+		int iy = iMinY-i; //up line
+		if(iy>=0)
+		{
+			pLine = image.GetBuffer()+iy*iSpan;
+			for(int ix=iStartX; ix<=iEndX; ix++)
+				pLine[ix] = iValue;
+		}
+		iy = iMaxY+i; // down line
+		if(iy<image.Rows())
+		{
+			pLine = image.GetBuffer()+iy*iSpan;
+			for(int ix=iStartX; ix<=iEndX; ix++)
+				pLine[ix] = iValue;
+		}
+
+		// left/right line
+		int iStartY = iMinY-i;
+		if(iStartY<0) iStartY=0;
+		int iEndY = iMaxY+i;
+		if(iEndY>image.Rows()-1) iEndY=image.Rows()-1;
+		int iX = iMinX-i; // Left line
+		if(iX>=0)
+		{
+			pLine = image.GetBuffer()+iX;
+			for(int iy=iStartY; iy<=iEndY; iy++)
+				pLine[iy*iSpan] = iValue;
+		}
+		iX = iMaxX+i; // Right line
+		if(iX<image.Columns())
+		{
+			pLine = image.GetBuffer()+iX;
+			for(int iy=iStartY; iy<=iEndY; iy++)
+				pLine[iy*iSpan] = iValue;
+		}
+	}
+
+}
 //
 //
 // Rectangle Frame

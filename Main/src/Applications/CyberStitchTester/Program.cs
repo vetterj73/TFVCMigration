@@ -161,7 +161,8 @@ namespace CyberStitchTester
                     double dMaxHeight = _panel.GetMaxComponentHeight();
                     if (dMaxHeight > 0 && bAdjustForHeight)
                     {
-                        IntPtr heightBuf = _panel.GetHeightImageBuffer();
+                        bool bSmooth = true;
+                        IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
                         double dHeightRes = _panel.GetHeightResolution();
                         double dPupilDistance = 0.3702;
                         _aligner.Save3ChannelImage("c:\\temp\\3channelHeightcycle" + _cycleCount + ".bmp",

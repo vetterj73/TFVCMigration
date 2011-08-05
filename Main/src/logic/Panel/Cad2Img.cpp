@@ -35,7 +35,7 @@ bool Cad2Img::DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI)
 	return true;
 }
 
-bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dHeightResolution)
+bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dHeightResolution, double dSlopeInGreyLevel)
 {
 	Image heightImage;
 	double resolutionX = pPanel->GetPixelSizeX();
@@ -58,8 +58,10 @@ bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dH
 			iGreyLevel = 255;
 		
 		int iAntiAlias = 0;
-
-		RenderFeature(&heightImage, feature->second, iGreyLevel, iAntiAlias);
+		if(dSlopeInGreyLevel==0)
+			RenderRectangle(heightImage, (RectangularFeature*)feature->second, iGreyLevel, iAntiAlias);
+		else
+			RenderRectangleForHeight(heightImage, (RectangularFeature*)feature->second, iGreyLevel, dSlopeInGreyLevel);
 	}
 
 	//heightImage.Save("C:\\Temp\\Height.bmp");
