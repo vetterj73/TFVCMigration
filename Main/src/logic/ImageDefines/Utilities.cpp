@@ -244,6 +244,8 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 // pHeightImage and iHeightSpan, height image buffer and its span
 // dHeightResolution: the height represented by each grey level
 // dPupilDistance: camera pupil distance
+// dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
+// that its connection with camera center is vertical to panel surface
 bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
@@ -251,7 +253,8 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3],
 	unsigned char* pHeightImage, unsigned int iHeightSpan,
-	double dHeightResolution, double dPupilDistance) 
+	double dHeightResolution, double dPupilDistance,
+	double dPerpendicalPixelX, double dPerpendicalPixelY) 
 {
 	// Sanity check
 	if((iOutROIStartX+iOutROIWidth>iOutSpan) || (iInWidth>iInSpan)
@@ -282,11 +285,9 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 	double dIX, dIY, dX, dY, dDiffX, dDiffY;
 	double dVal;
  
+	double dDividedPupilDistrance = 1.0/dPupilDistance;
 	if(bAffine)
 	{
-		double dDividedPupilDistrance = 1.0/dPupilDistance;
-		double dCenterX = iInWidth/2.0;
-		double dCenterY = iInHeight/2.0;
 		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
 		{
 			dIY = (double) iY;
@@ -306,8 +307,8 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 					double dHeight = iHeightInPixel *dHeightResolution;		// Height in physical unit
 					//double dRatio = dHeight/(dPupilDistance-dHeight);		// Sacrifice some speed for performance
 					double dRatio = dHeight*dDividedPupilDistrance;			// Sacrifice some performance for speed
-					double dOffsetX = (dX-dCenterX)*dRatio;
-					double dOffsetY = (dY-dCenterY)*dRatio;
+					double dOffsetX = (dX-dPerpendicalPixelX)*dRatio;
+					double dOffsetY = (dY-dPerpendicalPixelY)*dRatio;
 					dX += dOffsetX;
 					dY += dOffsetY;
 				}
@@ -364,6 +365,20 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
 				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
 				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
+
+				// Adjust for height
+				int iHeightInPixel = pHeightImage[iY*iHeightSpan+iX];
+				if(iHeightInPixel >0)
+				{
+					double dHeight = iHeightInPixel *dHeightResolution;		// Height in physical unit
+					//double dRatio = dHeight/(dPupilDistance-dHeight);		// Sacrifice some speed for performance
+					double dRatio = dHeight*dDividedPupilDistrance;			// Sacrifice some performance for speed
+					double dOffsetX = (dX-dPerpendicalPixelX)*dRatio;
+					double dOffsetY = (dY-dPerpendicalPixelY)*dRatio;
+					dX += dOffsetX;
+					dY += dOffsetY;
+				}
+
 				if ((dX < 0) | (dY < 0) |
 					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
 				{

@@ -725,7 +725,6 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 
 	// Calculate rectangle boundary
 	double dPixelX, dPixelY;
-	int iPixelX, iPixelY;
 	int iMinX, iMaxX, iMinY, iMaxY;
 	int iNum = (int)polygonPoints.size();
 	for(int i=0; i<iNum; i++)
@@ -757,9 +756,9 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 	}
 
 	if(iMinX<0) iMinX=0;
-	if(iMaxX>image.Columns()-1) iMaxX=image.Columns()-1;
+	if(iMaxX>(int)image.Columns()-1) iMaxX=image.Columns()-1;
 	if(iMinY<0) iMinY=0;
-	if(iMaxY>image.Rows()-1) iMaxY=image.Rows()-1;
+	if(iMaxY>(int)image.Rows()-1) iMaxY=image.Rows()-1;
 	
 	// Draw rectangle
 	unsigned int iSpan = image.PixelRowStride();
@@ -782,7 +781,7 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 		int iStartX = iMinX-i;
 		if(iStartX<0) iStartX=0;
 		int iEndX = iMaxX+i;
-		if(iEndX>image.Columns()-1) iEndX=image.Columns()-1;
+		if(iEndX>(int)image.Columns()-1) iEndX=image.Columns()-1;
 		int iy = iMinY-i; //up line
 		if(iy>=0)
 		{
@@ -791,7 +790,7 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 				pLine[ix] = iValue;
 		}
 		iy = iMaxY+i; // down line
-		if(iy<image.Rows())
+		if(iy<(int)image.Rows())
 		{
 			pLine = image.GetBuffer()+iy*iSpan;
 			for(int ix=iStartX; ix<=iEndX; ix++)
@@ -802,7 +801,7 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 		int iStartY = iMinY-i;
 		if(iStartY<0) iStartY=0;
 		int iEndY = iMaxY+i;
-		if(iEndY>image.Rows()-1) iEndY=image.Rows()-1;
+		if(iEndY>(int)image.Rows()-1) iEndY=image.Rows()-1;
 		int iX = iMinX-i; // Left line
 		if(iX>=0)
 		{
@@ -811,7 +810,7 @@ void RenderRectangleForHeight(Image& image, RectangularFeature* rect, unsigned i
 				pLine[iy*iSpan] = iValue;
 		}
 		iX = iMaxX+i; // Right line
-		if(iX<image.Columns())
+		if(iX<(int)image.Columns())
 		{
 			pLine = image.GetBuffer()+iX;
 			for(int iy=iStartY; iy<=iEndY; iy++)

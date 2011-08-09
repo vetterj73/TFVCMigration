@@ -94,7 +94,7 @@ public:
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);
 	bool				MorphFromWithHeight(
-							const Image* pImgIn, 
+							Image* pImgIn, 
 							UIRect roi,
 							const Image* pHeightImg, 
 							double dHeightResolution, 
@@ -103,6 +103,8 @@ public:
 	bool				Save(string sFileName);
 
 protected:
+
+	pair<double,double> CalPerpendicalPoint(double dPuilDistance);  // return in (cloumn Row)
 
 	// Image size, stride and depth
 	unsigned int		_rows;

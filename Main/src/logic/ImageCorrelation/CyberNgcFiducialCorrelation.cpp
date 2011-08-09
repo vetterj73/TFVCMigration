@@ -314,7 +314,7 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	// Create negative temaplate
 	unsigned char* pbBuf = pTemplateImg->GetBuffer();
 	oTempImage.pdData = new unsigned char[oTempImage.iHeight*oTempImage.iSpan];
-	for(int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
+	for(unsigned int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
 		oTempImage.pdData[i] = (unsigned char)(255 -pbBuf[i]);
 	
 	templateSt._ptNegTemplate = new VsStCTemplate();

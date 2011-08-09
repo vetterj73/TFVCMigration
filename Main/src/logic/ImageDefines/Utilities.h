@@ -41,6 +41,8 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 // pHeightImage and iHeightSpan, height image buffer and its span
 // dHeightResolution: the height represented by each grey level
 // dPupilDistance: camera pupil distance (has the same unit as dHeightResolution)
+// dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
+// that its connection with camera center is vertical to panel surface
 bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
@@ -48,7 +50,8 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3],
 	unsigned char* pHeightImage, unsigned int iHeightSpan,
-	double dHeightResolution, double dPupilDistance); 
+	double dHeightResolution, double dPupilDistance,
+	double dPerpendicalPixelX, double dPerpendicalPixelY); 
 
 // Modified from Eric Rudd's BayerLum() function
 // Convert Bayer image into Luminance
