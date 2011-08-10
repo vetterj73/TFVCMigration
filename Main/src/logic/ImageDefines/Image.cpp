@@ -409,57 +409,28 @@ pair<double,double> Image::CalPerpendicalPoint(double dPupilDistance)
 	double xo, yo;
 	ImageToWorld((Rows()-1)/2.0, (Columns()-1)/2.0, &xo, &yo);
 
-	double u1, v1, u2, v2;
-	double x1, y1, x2, y2;
-//** angle for x(row)	
-	// (u, v) and (x, y)
-	u1 = 0;
-	v1 = (Columns()-1)/2.0;
-	ImageToWorld(u1, v1, &x1, &y1);	
-	u2 = Rows()-1;
-	v2 = v1;
-	ImageToWorld(u2, v2, &x2, &y2);
+	// transform from world to image
+	double dT[3][3];
+	_thisToWorld.GetInvertMatrix(dT);	
+	double dMinValue = 1e-10;
+	
+	// X dimension calculation
+	double temp = dT[2][0];
+	if(temp<dMinValue) temp = dMinValue; 
+	
+	double xm = -(dT[2][1]*yo+1)/temp;
+	double dSinThetaX = dPupilDistance/(xm-xo);
 
-	// dxdu
-	double temp;
-	temp = a[2][0]*u1+a[2][1]*v1+1;
-	double dxdu1 = (a[0][0]*a[2][1]-a[2][0]*a[0][1])*v1+a[0][0]-a[2][0]*a[0][2];
-	dxdu1 = dxdu1/temp/temp;
+	// Y dimension calculation
+	temp = dT[2][1];
+	if(temp<dMinValue) temp = dMinValue;
 
-	temp = a[2][0]*u2+a[2][1]*v2+1;
-	double dxdu2 = (a[0][0]*a[2][1]-a[2][0]*a[0][1])*v2+a[0][0]-a[2][0]*a[0][2];
-	dxdu2 = dxdu2/temp/temp;
-
-	// sinTheta
-	double gx = dxdu1/dxdu2;
-	double sinThetaX = (1-gx)*dPupilDistance/((x1-xo)*gx-(x2-xo));
-	sinThetaX /= 2;	// need double check
-
-//** angle for y(column)
-	// (u, v) and  (x, y)
-	u1 = (Rows()-1)/2.0;
-	v1 = 0;
-	ImageToWorld(u1, v1, &x1, &y1);	
-	u2 = u1;
-	v2 = Columns()-1;
-	ImageToWorld(u2, v2, &x2, &y2);
-
-	// dydv
-	temp = a[2][0]*u1+a[2][1]*v1+1;
-	double dydv1 = (a[1][1]*a[2][0] - a[2][1]*a[1][0])*u1 + a[1][1]-a[2][1]*a[1][2];
-	dydv1 = dydv1/temp/temp;
-
-	temp = a[2][0]*u2+a[2][1]*v2+1;
-	double dydv2 = (a[1][1]*a[2][0] - a[2][1]*a[1][0])*u2 + a[1][1]-a[2][1]*a[1][2];
-	dydv2 = dydv2/temp/temp;
-
-	double gy = dydv1/dydv2;
-	double sinThetaY = (1-gy)*dPupilDistance/((y1-yo)*gy-(y2-yo));
-	sinThetaY /= 2; // need double check
+	double ym = -(dT[2][0]*xo+1)/temp;
+	double dSinThetaY = dPupilDistance/(ym-yo);
 
 	// calculate vertic point
-	double dPx = xo + sinThetaX*dPupilDistance;
-	double dPy = yo + sinThetaY*dPupilDistance;
+	double dPx = xo + dSinThetaX*dPupilDistance;
+	double dPy = yo + dSinThetaY*dPupilDistance;
 
 	pair<double, double> perpendicalPixel;
 	WorldToImage(dPx, dPy, &perpendicalPixel.second, &perpendicalPixel.first); 

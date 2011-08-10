@@ -29,7 +29,7 @@ public:
 	/// Draw 8bit height image to represent the (component) height of panel surface
 	/// dHeightResolution: the height represented by each grey level
 	/// dSlopeInGreyLevel: the slope im grey level for smooth
-	static bool DrawHeightImage(Panel* pPanel, unsigned char* cadBuffer, double dHeightResolution, double dSlopeInGreyLevel=0);
+	static bool DrawHeightImage(Panel* pPanel, unsigned char* heightBuffer, double dHeightResolution, double dSlopeInGreyLevel=0);
 
 	///
 	///	DrawAperatures - Draws a Panel to a 16 bit image pointer (for PadStats)
