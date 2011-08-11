@@ -116,7 +116,6 @@ private:
 	int _iMaskCreationStage;
 
 	// For vsfinder
-	VsFinderCorrelation* _pVsfinderCorr;
 	unsigned int* _pVsFinderTempIds;
 
 	// For CyberNgc

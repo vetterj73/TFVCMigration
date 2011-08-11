@@ -89,10 +89,7 @@ bool Cad2Img::DrawAperatures(Panel* pPanel, unsigned short* aptBuffer, bool Draw
 	
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
-		switch(feature->second->GetShape())
-		{
-			RenderFeature(&aptImage, feature->second);
-		}
+		RenderFeature(&aptImage, feature->second);
 
 		// @todo - This was commented out by Alan to get things to build for cyberstitch...
 		// Instead of having the image draw to itself, we should implement a way to draw

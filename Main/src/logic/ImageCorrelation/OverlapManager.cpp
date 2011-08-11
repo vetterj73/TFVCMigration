@@ -144,12 +144,11 @@ OverlapManager::OverlapManager(
 	
 	// Create Fiducial Fov overlaps
 		// Allocate _pVsfinderCorr if it is necessary
-	_pVsfinderCorr = NULL;
 	_pNgcFidCorr = NULL;
 	_pVsFinderTempIds = NULL;
 	_pNgcFidTempIds = NULL;
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)	
-		_pVsfinderCorr = new VsFinderCorrelation(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
+		VsFinderCorrelation::Instance().Config(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)	
 		_pNgcFidCorr = new CyberNgcFiducialCorrelation();
 
@@ -187,9 +186,6 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pVsFinderTempIds !=NULL)
 		delete [] _pVsFinderTempIds;
-
-	if(_pVsfinderCorr != NULL)
-		delete _pVsfinderCorr;
 
 	if(_pNgcFidTempIds !=NULL)
 		delete [] _pNgcFidTempIds;
@@ -626,10 +622,6 @@ void OverlapManager::RenderFiducial(
 // Create vsfinder templates
 bool OverlapManager::CreateVsfinderTemplates()
 {
-	// Validation check
-	if(_pVsfinderCorr == NULL)
-		return(false);
-
 	unsigned int iNum = _pPanel->NumberOfFiducials();
 
 	if(iNum <=0) 
@@ -642,7 +634,7 @@ bool OverlapManager::CreateVsfinderTemplates()
 	unsigned int iCount = 0;
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
-		int iId = _pVsfinderCorr->CreateVsTemplate(i->second);
+		int iId = VsFinderCorrelation::Instance().CreateVsTemplate(i->second);
 		if(iId < 0) 
 		{
 			LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateVsfinderTemplates():Failed to create vsfinder template");
@@ -672,8 +664,8 @@ bool OverlapManager::CreateNgcFidTemplates()
 	_pNgcFidTempIds = new unsigned int[iNum];
 
 	// Fiducial image serach expansion in Pixels
-	int iPixelExpRow = CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX();
-	int iPixelExpCol = CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeY();
+	int iPixelExpRow = (int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
+	int iPixelExpCol = (int)(CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeY());
 
 	unsigned int iCount = 0;
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
@@ -758,7 +750,7 @@ void OverlapManager::CreateFidFovOverlaps()
 
 					if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
 					{
-						overlap.SetVsFinder(_pVsfinderCorr, _pVsFinderTempIds[iFid]);
+						overlap.SetVsFinder(_pVsFinderTempIds[iFid]);
 					}
 					else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
 					{

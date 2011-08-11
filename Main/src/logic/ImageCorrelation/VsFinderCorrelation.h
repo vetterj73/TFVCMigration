@@ -1,13 +1,21 @@
 #pragma once
 
 #include "Panel.h"
+#include "windows.h"
 
 class vswrapper;
 class VsFinderCorrelation
 {
-public:
-	VsFinderCorrelation(double dResolution, unsigned int iColumn, unsigned int iRows);
+protected:
+	VsFinderCorrelation();
 	~VsFinderCorrelation();
+
+	static VsFinderCorrelation* pInstance;
+
+public: 
+	static VsFinderCorrelation& Instance();
+
+	void Config(double dResolution, unsigned int iColumn, unsigned int iRows);
 
 	int CreateVsTemplate(Feature* pFid);
 
@@ -52,4 +60,7 @@ private:
 
 	list<FeatureTemplateID> _vsTemplateIDList;
 	vswrapper* _pVsw;
+
+	// To make sure vstoolkit won't work on multi-thread
+	HANDLE _entryMutex; 
 };

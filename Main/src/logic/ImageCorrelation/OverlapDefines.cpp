@@ -558,10 +558,9 @@ FidFovOverlap::FidFovOverlap(
 	config(pImg1, _pFidImg, validRect, Fid_To_Fov, false);
 }
 
-void FidFovOverlap::SetVsFinder(VsFinderCorrelation* pVsfinderCorr, unsigned int iTemplateID)
+void FidFovOverlap::SetVsFinder(unsigned int iTemplateID)
 {
 	_fidSearchMethod = FIDVSFINDER;
-	_pVsfinderCorr = pVsfinderCorr;
 	_iTemplateID = iTemplateID;
 }
 
@@ -632,7 +631,7 @@ bool FidFovOverlap::VsfinderAlign()
 	double time_out = 1e5;			// MicroSeconds
 	double dMinScore = CorrelationParametersInst.dVsFinderMinCorrScore;
 	
-	_pVsfinderCorr->Find(
+	VsFinderCorrelation::Instance().Find(
 		_iTemplateID,							// map ID of template  and finder
 		_coarsePair.GetFirstImg()->GetBuffer(),	// buffer containing the image
 		_coarsePair.GetFirstImg()->Columns(),   // width of the image in pixels

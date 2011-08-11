@@ -2,10 +2,25 @@
 #include "vswrapper.h"
 #include "Logger.h"
 
-VsFinderCorrelation::VsFinderCorrelation(double dResolution, unsigned int iColumn, unsigned int iRows)
+// For singleton pattern
+VsFinderCorrelation* VsFinderCorrelation::pInstance = 0;
+VsFinderCorrelation& VsFinderCorrelation::Instance()
+{
+	if( pInstance == NULL )
+		pInstance = new VsFinderCorrelation();
+
+	return *pInstance;
+}
+
+VsFinderCorrelation::VsFinderCorrelation()
 {
 	_pVsw = new vswrapper();
 
+	_entryMutex = CreateMutex(0, FALSE, "Entry Mutex"); // No initial owner
+}
+
+void VsFinderCorrelation::Config(double dResolution, unsigned int iColumn, unsigned int iRows)
+{
 	_pVsw->set_pixel_size(dResolution);
 	_pVsw->set_fov_cols(iColumn);
 	_pVsw->set_fov_rows(iRows);
@@ -13,6 +28,7 @@ VsFinderCorrelation::VsFinderCorrelation(double dResolution, unsigned int iColum
 
 VsFinderCorrelation::~VsFinderCorrelation()
 {
+	CloseHandle(_entryMutex);
 	delete _pVsw;
 }
 
@@ -22,6 +38,9 @@ VsFinderCorrelation::~VsFinderCorrelation()
 // Return -1 if failed
 int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
 {
+	// Mutex protection
+	WaitForSingleObject(_entryMutex, INFINITE);
+
 	// If the template exists
 	int iTemplateID = GetVsTemplateID(pFid);
 	if(iTemplateID >= 0) return(iTemplateID);
@@ -33,6 +52,9 @@ int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
 	// Add new template into list
 	FeatureTemplateID templateID(pFid, iTemplateID);
 	_vsTemplateIDList.push_back(templateID);
+		
+	// Mutex protection
+	ReleaseMutex(_entryMutex);
 	
 	return(iTemplateID);
 }
@@ -59,6 +81,9 @@ void VsFinderCorrelation::Find(
 		int num_finds        // If > 0 number of versions of the template to find
 	)
 {
+	// Mutex protection
+	//WaitForSingleObject(_entryMutex, INFINITE);
+
 	_pVsw->Find(
 		iNodeID,			// map ID of template  and finder		
 		image,				// buffer containing the image
@@ -77,7 +102,10 @@ void VsFinderCorrelation::Find(
 		y_origin_ll,		// If !0 origin in start of the image is 0,0 increasing in Y and X as you move forward
 		min_accept,			// If >0 minimum score to persue at min pyramid level to look for peak override
 		max_accept,			// If >0 minumum score to accept at max pyramid level to look for peak override
-		num_finds);        // If > 0 number of versions of the template to find
+		num_finds);			// If > 0 number of versions of the template to find
+
+	// Mutex protection
+	//ReleaseMutex(_entryMutex);
 }
 
 // Create vsfinder template for a fiducial
