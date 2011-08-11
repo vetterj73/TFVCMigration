@@ -119,7 +119,6 @@ private:
 	unsigned int* _pVsFinderTempIds;
 
 	// For CyberNgc
-	CyberNgcFiducialCorrelation* _pNgcFidCorr; 
 	unsigned int* _pNgcFidTempIds;
 
 	CyberJob::JobManager *_pJobManager;

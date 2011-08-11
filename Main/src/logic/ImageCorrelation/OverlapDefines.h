@@ -154,7 +154,7 @@ public:
 		DRect validRect);
 
 	void SetVsFinder(unsigned int iTemplateID);
-	void SetNgcFid(CyberNgcFiducialCorrelation* pNgcFidCorr, unsigned int iTemplateID); 
+	void SetNgcFid(unsigned int iTemplateID); 
 
 	MosaicLayer* GetMosaicImage() const {return _pMosaic;};
 	unsigned int GetTriggerIndex() const {return _imgPos.second;};
@@ -186,7 +186,6 @@ private:
 	double _dFidCenterY;
 
 	FiducialSearchMethod _fidSearchMethod;
-	CyberNgcFiducialCorrelation* _pNgcFidCorr;
 	unsigned int _iTemplateID; // for Vsfinder or CyberNgc
 };
 

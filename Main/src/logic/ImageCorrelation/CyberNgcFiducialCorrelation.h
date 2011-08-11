@@ -3,13 +3,19 @@
 #include "Panel.h"
 #include "Image.h"
 #include "UIRect.h"
+#include "windows.h"
 
 class NgcTemplateSt;
 class CyberNgcFiducialCorrelation
 {
-public:
+protected:
 	CyberNgcFiducialCorrelation(void);
 	~CyberNgcFiducialCorrelation(void);
+
+	static CyberNgcFiducialCorrelation* pInstance;
+
+public:
+	static CyberNgcFiducialCorrelation& Instance();
 
 	int CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi);
 
@@ -33,5 +39,8 @@ private:
 	unsigned int _iCurrentIndex;
 
 	unsigned int _iDepth;	// Depth for template creation and searching
+
+	// Protect template creation stage
+	HANDLE _entryMutex; 
 };
 

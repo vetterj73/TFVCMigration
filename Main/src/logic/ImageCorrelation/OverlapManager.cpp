@@ -143,14 +143,10 @@ OverlapManager::OverlapManager(
 	if(_pCadImg != NULL) CreateCadFovOverlaps();
 	
 	// Create Fiducial Fov overlaps
-		// Allocate _pVsfinderCorr if it is necessary
-	_pNgcFidCorr = NULL;
 	_pVsFinderTempIds = NULL;
 	_pNgcFidTempIds = NULL;
 	if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)	
 		VsFinderCorrelation::Instance().Config(_pPanel->GetPixelSizeX(), iNumCols, iNumRows);
-	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)	
-		_pNgcFidCorr = new CyberNgcFiducialCorrelation();
 
 	CreateFidFovOverlaps();
 
@@ -189,9 +185,6 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pNgcFidTempIds !=NULL)
 		delete [] _pNgcFidTempIds;
-
-	if(_pNgcFidCorr != NULL)
-		delete _pNgcFidCorr;
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
@@ -652,9 +645,6 @@ bool OverlapManager::CreateVsfinderTemplates()
 // Create Cyber Ngc template
 bool OverlapManager::CreateNgcFidTemplates()
 {
-	if(_pNgcFidCorr == NULL)
-		return(false);
-	
 	unsigned int iNum = _pPanel->NumberOfFiducials();
 	if(iNum <=0) 
 	{
@@ -680,7 +670,7 @@ bool OverlapManager::CreateNgcFidTemplates()
 		//_pFidImages[iCount].Save("C:\\Temp\\fiducial.bmp");
 
 		// Create template
-		int iId = _pNgcFidCorr->CreateNgcTemplate(i->second, &_pFidImages[iCount], tempRoi);
+		int iId = CyberNgcFiducialCorrelation::Instance().CreateNgcTemplate(i->second, &_pFidImages[iCount], tempRoi);
 		if(iId < 0) 
 		{
 			LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateNgcFidTemplates():Failed to create CyberNgc template");
@@ -754,7 +744,7 @@ void OverlapManager::CreateFidFovOverlaps()
 					}
 					else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
 					{
-						overlap.SetNgcFid(_pNgcFidCorr, _pNgcFidTempIds[iFid]);
+						overlap.SetNgcFid(_pNgcFidTempIds[iFid]);
 					}
 
 					// Add overlap

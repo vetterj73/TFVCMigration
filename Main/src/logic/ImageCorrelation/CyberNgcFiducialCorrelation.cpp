@@ -4,7 +4,6 @@
 #include "morpho.h"
 #include "CorrelationParameters.h"
 
-
 // Class for internal use only
 class NgcTemplateSt
 {
@@ -29,11 +28,23 @@ public:
 };
 
 
+// For singleton pattern
+CyberNgcFiducialCorrelation* CyberNgcFiducialCorrelation::pInstance = 0;
+CyberNgcFiducialCorrelation& CyberNgcFiducialCorrelation::Instance()
+{
+	if( pInstance == NULL )
+		pInstance = new CyberNgcFiducialCorrelation();
+
+	return *pInstance;
+}
+
 CyberNgcFiducialCorrelation::CyberNgcFiducialCorrelation(void)
 {
 	_iCurrentIndex = 0;
 
 	_iDepth = 3; 
+
+	_entryMutex = CreateMutex(0, FALSE, "Entry Mutex"); // No initial owner
 }
 
 
@@ -58,6 +69,8 @@ CyberNgcFiducialCorrelation::~CyberNgcFiducialCorrelation(void)
 	}
 
 	_ngcTemplateStList.clear();
+
+	CloseHandle(_entryMutex);
 }
 
 // Create Ngc template for a fiducial if it doesn't exist
@@ -67,14 +80,24 @@ CyberNgcFiducialCorrelation::~CyberNgcFiducialCorrelation(void)
 // Return -1 if failed
 int CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi)
 {
+	// Mutex protection
+	WaitForSingleObject(_entryMutex, INFINITE);
+
 	// If the template exists
 	int iTemplateID = GetNgcTemplateID(pFid);
 	if(iTemplateID >= 0) return(iTemplateID);
 	
 	// Create a new template
 	bool bFlag = CreateNgcTemplate(pFid,  pTemplateImg, tempRoi, &iTemplateID);
-	if(!bFlag) return(-1);
+	if(!bFlag)
+	{
+		ReleaseMutex(_entryMutex);
+		return(-1);
+	}
 
+	// Mutex protection
+	ReleaseMutex(_entryMutex);
+	
 	return(iTemplateID);
 }
 

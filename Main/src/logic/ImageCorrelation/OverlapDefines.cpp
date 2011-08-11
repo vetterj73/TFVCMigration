@@ -564,10 +564,9 @@ void FidFovOverlap::SetVsFinder(unsigned int iTemplateID)
 	_iTemplateID = iTemplateID;
 }
 
-void FidFovOverlap::SetNgcFid(CyberNgcFiducialCorrelation* pNgcFidCorr, unsigned int iTemplateID)
+void FidFovOverlap::SetNgcFid(unsigned int iTemplateID)
 {
 	_fidSearchMethod = FIDCYBERNGC;
-	_pNgcFidCorr = pNgcFidCorr;
 	_iTemplateID = iTemplateID;
 }
 
@@ -695,7 +694,7 @@ bool FidFovOverlap::NgcFidAlign()
 	double search_center_x = (_coarsePair.GetFirstRoi().FirstColumn + _coarsePair.GetFirstRoi().LastColumn)/2.0; 
 	double search_center_y = (_coarsePair.GetFirstRoi().FirstRow + _coarsePair.GetFirstRoi().LastRow)/2.0; 
 	
-	bool bFlag = _pNgcFidCorr->Find(
+	bool bFlag = CyberNgcFiducialCorrelation::Instance().Find(
 		_iTemplateID,					// Map ID of template  and finder
 		_coarsePair.GetFirstImg(),		// Search image
 		_coarsePair.GetFirstRoi(),		// Search ROI
