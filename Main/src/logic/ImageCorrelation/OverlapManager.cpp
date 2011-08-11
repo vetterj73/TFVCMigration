@@ -815,9 +815,9 @@ bool OverlapManager::DoAlignmentForFov(
 			// PanelAligner::ImageAddedToMosaicCallback() works on single thread as Alan Claimed
 			// so all the vsfinder will work on single thread as well
 			// The solver will be filled after all the overlap (include fiducials) are calculated
-			i->Run(); 
+			//i->Run(); 
 
-			//_pJobManager->AddAJob((CyberJob::Job*)&*i);
+			_pJobManager->AddAJob((CyberJob::Job*)&*i);
 		}
 	}
 

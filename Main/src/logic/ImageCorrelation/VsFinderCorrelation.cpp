@@ -43,11 +43,19 @@ int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
 
 	// If the template exists
 	int iTemplateID = GetVsTemplateID(pFid);
-	if(iTemplateID >= 0) return(iTemplateID);
+	if(iTemplateID >= 0) 
+	{
+		ReleaseMutex(_entryMutex);
+		return(iTemplateID);
+	}
 	
 	// Create a new template
 	bool bFlag = CreateVsTemplate(pFid, &iTemplateID);
-	if(!bFlag) return(-1);
+	if(!bFlag) 
+	{
+		ReleaseMutex(_entryMutex);
+		return(-1);
+	}
 
 	// Add new template into list
 	FeatureTemplateID templateID(pFid, iTemplateID);
@@ -82,7 +90,7 @@ void VsFinderCorrelation::Find(
 	)
 {
 	// Mutex protection
-	//WaitForSingleObject(_entryMutex, INFINITE);
+	WaitForSingleObject(_entryMutex, INFINITE);
 
 	_pVsw->Find(
 		iNodeID,			// map ID of template  and finder		
@@ -105,7 +113,7 @@ void VsFinderCorrelation::Find(
 		num_finds);			// If > 0 number of versions of the template to find
 
 	// Mutex protection
-	//ReleaseMutex(_entryMutex);
+	ReleaseMutex(_entryMutex);
 }
 
 // Create vsfinder template for a fiducial
