@@ -346,8 +346,21 @@ void Overlap::Run()
 	/* For debug
 	if(_type == Fov_To_Fov)
 	{
-		DumpOvelapImages();
-		DumpResultImages();
+		if(	((FovFovOverlap*)this)->GetSecondMosaicImage()->Index() ==2 && 
+			((FovFovOverlap*)this)->GetSecondImagePosition().second ==6 &&
+			((FovFovOverlap*)this)->GetSecondImagePosition().first ==0)
+		{
+			DumpOvelapImages();
+			DumpResultImages();
+		}
+
+		if(	((FovFovOverlap*)this)->GetFirstMosaicImage()->Index() ==2 && 
+			((FovFovOverlap*)this)->GetFirstImagePosition().second ==6 &&
+			((FovFovOverlap*)this)->GetFirstImagePosition().first ==0)
+		{
+			DumpOvelapImages();
+			DumpResultImages();
+		}
 	}//*/
 
 	if(CorrelationParametersInst.bSaveOverlaps)
