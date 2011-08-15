@@ -10,6 +10,7 @@
 #include "CyberNgcFiducialCorrelation.h"
 #include "MosaicSet.h"
 #include "JobManager.h"
+#include "FiducialResult.h"
 
 using namespace MosaicDM;
 class Panel;
@@ -67,6 +68,8 @@ public:
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 	bool FinishOverlaps();
 
+	FiducialResultSet* GetFidResultSetPoint() { return _pFidResultSet;};
+
 protected:
 	bool IsCadImageNeeded();
 	bool IsMaskImageNeeded();
@@ -122,5 +125,7 @@ private:
 	unsigned int* _pNgcFidTempIds;
 
 	CyberJob::JobManager *_pJobManager;
+
+	FiducialResultSet* _pFidResultSet;
 };
 

@@ -78,7 +78,7 @@ public:
 	// debug flage
 	bool bSaveFiducialOverlaps;
 	bool bSaveOverlaps;
-	bool bSaveMaskVectors;
+	bool bSaveTransformVectors;
 	unsigned int NumThreads;
 	string sDiagnosticPath;
 	string GetOverlapPath();

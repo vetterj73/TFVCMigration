@@ -136,6 +136,10 @@ OverlapManager::OverlapManager(
 		}
 	}
 
+	// Initial fiducial result set
+	_pFidResultSet = NULL;
+	_pFidResultSet = new FiducialResultSet(_pPanel->NumberOfFiducials());
+
 	// Create FovFov overlaps
 	CreateFovFovOverlaps();
 
@@ -176,6 +180,9 @@ OverlapManager::~OverlapManager(void)
 	delete [] _fovFovOverlapLists;
 	delete [] _cadFovOverlapLists;
 	delete [] _fidFovOverlapLists;
+
+	if(_pFidResultSet != NULL)
+		delete _pFidResultSet;
 
 	if(_pFidImages != NULL)
 		delete [] _pFidImages;
@@ -700,6 +707,14 @@ void OverlapManager::CreateFidFovOverlaps()
 	else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
 		CreateNgcFidTemplates();
 
+	// Set feature to result set 
+	int iIndex = 0;
+	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
+	{
+		_pFidResultSet->GetFiducialResultPoint(iIndex)->SetFeaure(i->second);
+		iIndex++;
+	}
+
 	unsigned int i, iCam, iTrig;
 	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
@@ -749,6 +764,10 @@ void OverlapManager::CreateFidFovOverlaps()
 
 					// Add overlap
 					_fidFovOverlapLists[i][iTrig][iCam].push_back(overlap);
+					
+					// Add to fiducial result set
+					FidFovOverlap* pOvelap1 = &(*_fidFovOverlapLists[i][iTrig][iCam].rbegin());
+					_pFidResultSet->GetFiducialResultPoint(iFid)->AddFidFovOvelapPoint(pOvelap1);
 				}
 			}
 		}

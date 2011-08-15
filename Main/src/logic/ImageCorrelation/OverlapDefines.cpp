@@ -690,14 +690,14 @@ bool FidFovOverlap::VsfinderAlign()
 	}
 
 	_coarsePair.SetCorrlelationResult(result);
-
+	/*
 	LOG.FireLogEntry(LogTypeDiagnostic, "VsFinder VSScore=%f; ambig=%f; xOffset=%f; yOffset=%f; NgcScore=%f", 
 		result.CorrCoeff, 
 		result.AmbigScore,
 		result.ColOffset,
 		result.RowOffset,
 		ngc);
-
+	*/
 	return(true);
 }
 
@@ -743,13 +743,13 @@ bool FidFovOverlap::NgcFidAlign()
 	}
 
 	_coarsePair.SetCorrlelationResult(result);
-
+	/*
 	LOG.FireLogEntry(LogTypeDiagnostic, "CyberNGC Score=%f; ambig=%f; xOffset=%f; yOffset=%f", 
 		result.CorrCoeff, 
 		result.AmbigScore,
 		result.ColOffset,
 		result.RowOffset);
-
+*/
 	return(true);
 }
 

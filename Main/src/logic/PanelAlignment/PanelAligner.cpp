@@ -119,7 +119,7 @@ void PanelAligner::LogOverlaps(bool bLog)
 
 void PanelAligner::LogMaskVectors(bool bLog)
 {
-	CorrelationParametersInst.bSaveMaskVectors = bLog;
+	CorrelationParametersInst.bSaveTransformVectors= bLog;
 }
 
 void PanelAligner::NumThreads(unsigned int numThreads)
@@ -326,8 +326,10 @@ bool PanelAligner::CreateTransforms()
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 
 	_bResultsReady = true;
+
+	_pOverlapManager->GetFidResultSetPoint()->LogResults();
 	
-	if(CorrelationParametersInst.bSaveMaskVectors)
+	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
