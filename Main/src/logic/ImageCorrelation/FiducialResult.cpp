@@ -90,7 +90,7 @@ void FiducialResultSet::LogResults()
 		_pResultSet[i].LogResults();
 
 	double dConfidence = CalConfidence();
-	LOG.FireLogEntry(LogTypeDiagnostic, "Confidence = %d oout of 100", (int)(dConfidence*100));
+	LOG.FireLogEntry(LogTypeDiagnostic, "Confidence = %d/100", (int)(dConfidence*100));
 }
 
 // Calculate confidence based on the fid
@@ -115,7 +115,7 @@ double FiducialResultSet::CalConfidence()
 	
 	case 2:
 	case 3:
-		return(*dConfidenceList.rbegin()); // The smallest one
+		return(*dConfidenceList.begin()); // The smallest one
 	break;
 
 	default:	// 4 or more
