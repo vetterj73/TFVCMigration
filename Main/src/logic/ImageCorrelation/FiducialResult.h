@@ -6,18 +6,24 @@
 using std::list;
 
 // Fiducial alignment result for one physical fiducial
-class FiducialResult
+class FiducialResults
 {
 public:
-	FiducialResult(void);
-	~FiducialResult(void);
+	FiducialResults(void);
+	~FiducialResults(void);
 
 	void SetFeaure(Feature* pFeature) {_pFeature = pFeature;};
 	void AddFidFovOvelapPoint(FidFovOverlap* pOverlap)
 		{_fidFovOverlapPointList.push_back(pOverlap);};
 	void LogResults();
+	
+	list<FidFovOverlap*>* GetResultListPtr() {return(&_fidFovOverlapPointList);};
 
 	double CalConfidence();
+
+	int GetId() {return _pFeature->GetId();};
+	double GetCadX() {return _pFeature->GetCadX();};
+	double GetCadY() {return _pFeature->GetCadY();};
 
 private:
 	Feature* _pFeature;
@@ -25,21 +31,23 @@ private:
 };
 
 // Collection of fiducial alignment results
-class FiducialResultSet
+class FiducialResultsSet
 {
 public:
-	FiducialResultSet(unsigned int iSize);
-	~FiducialResultSet();
+	FiducialResultsSet(unsigned int iSize);
+	~FiducialResultsSet();
 
 	void LogResults();
 
 	double  CalConfidence();
 
-	FiducialResult* GetFiducialResultPoint(unsigned int i) {return &(_pResultSet[i]);};
+	int Size() {return(_iSize); };
+
+	FiducialResults* GetFiducialResultsPtr(unsigned int i) {return &(_pResultSet[i]);};
 
 private:
 	int _iSize;
-	FiducialResult* _pResultSet;
+	FiducialResults* _pResultSet;
 };
 
 

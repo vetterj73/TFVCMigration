@@ -10,6 +10,7 @@ using namespace System;
 using namespace MMosaicDM; 
 using namespace Cyber::MPanel;
 using namespace MLOGGER;
+using namespace System::Collections::Generic;
 
 namespace PanelAlignM {
 
@@ -41,6 +42,36 @@ namespace PanelAlignM {
 			double _yOffset;
 			double _correlationScore;
 			double _ambiguityScore;
+	};
+
+	public ref class ManagedFidResult
+	{
+		public:
+			int iLayerIndex;
+			int iTrigIndex;
+			int iCamIndex;
+			double rowOffset;
+			double colOffset;
+			double correlationScore;
+			double ambiguityScore;
+			double weight;
+	};
+
+	public ref class ManagedFidResults
+	{
+	public:
+		List<ManagedFidResult^> ^results;
+		double dConfidence;
+		double dCadX;
+		double dCadY;
+		int iID;
+	};
+
+	public ref class managedFidResultsSet
+	{
+	public:
+		List<ManagedFidResults^> ^resultsSet;
+		double dConfidence;
 	};
 
 	///
@@ -80,6 +111,8 @@ namespace PanelAlignM {
 		void UseCyberNgc4Fiducial();
 		int GetNumberOfFidsProcessed();
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
+
+		managedFidResultsSet^ GetFiducialResultsSet();
 
 	private:
 		PanelAligner* _pAligner;

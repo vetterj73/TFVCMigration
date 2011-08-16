@@ -68,7 +68,7 @@ public:
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 	bool FinishOverlaps();
 
-	FiducialResultSet* GetFidResultSetPoint() { return _pFidResultSet;};
+	FiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
 
 protected:
 	bool IsCadImageNeeded();
@@ -126,6 +126,6 @@ private:
 
 	CyberJob::JobManager *_pJobManager;
 
-	FiducialResultSet* _pFidResultSet;
+	FiducialResultsSet* _pFidResultsSet;
 };
 

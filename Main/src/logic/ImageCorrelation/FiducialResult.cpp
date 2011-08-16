@@ -3,19 +3,19 @@
 #include "EquationWeights.h"
 
 ///////////////////////////////////////////////////////////////
-//////		FiducialResult Class
+//////		FiducialResults Class
 ///////////////////////////////////////////////////////////////
-FiducialResult::FiducialResult(void)
+FiducialResults::FiducialResults(void)
 {
 	_pFeature = NULL;
 	_fidFovOverlapPointList.clear();
 }
 
-FiducialResult::~FiducialResult(void)
+FiducialResults::~FiducialResults(void)
 {
 }
 
-void FiducialResult::LogResults()
+void FiducialResults::LogResults()
 {
 	// Validation check
 	if(_pFeature != NULL)
@@ -39,7 +39,7 @@ void FiducialResult::LogResults()
 
 }
 
-double FiducialResult::CalConfidence()
+double FiducialResults::CalConfidence()
 {
 	double dConfidenceScore = 0;
 
@@ -62,29 +62,29 @@ double FiducialResult::CalConfidence()
 }
 
 ///////////////////////////////////////////////////////////////
-//////		FiducialResultSet Class
+//////		FiducialResultsSet Class
 ///////////////////////////////////////////////////////////////
-FiducialResultSet::FiducialResultSet(unsigned int iSize)
+FiducialResultsSet::FiducialResultsSet(unsigned int iSize)
 {
 	_pResultSet = NULL;
 
 	_iSize = iSize;
 	if(iSize=0) 
 	{
-		LOG.FireLogEntry(LogTypeError, "FiducialResultSet: The input size should not be 0");
+		LOG.FireLogEntry(LogTypeError, "FiducialResultsSet: The input size should not be 0");
 		return;
 	}
 
-	_pResultSet = new FiducialResult[_iSize];
+	_pResultSet = new FiducialResults[_iSize];
 }
 
-FiducialResultSet::~FiducialResultSet()
+FiducialResultsSet::~FiducialResultsSet()
 {
 	if(_pResultSet != NULL)
 		delete [] _pResultSet;
 }
 
-void FiducialResultSet::LogResults()
+void FiducialResultsSet::LogResults()
 {
 	for(int i=0; i<_iSize; i++)
 		_pResultSet[i].LogResults();
@@ -94,7 +94,7 @@ void FiducialResultSet::LogResults()
 }
 
 // Calculate confidence based on the fid
-double FiducialResultSet::CalConfidence()
+double FiducialResultsSet::CalConfidence()
 {
 	// Calculate confidence for each physical fiducial
 	list<double> dConfidenceList;

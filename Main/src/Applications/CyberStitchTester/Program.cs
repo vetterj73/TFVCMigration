@@ -136,6 +136,8 @@ namespace CyberStitchTester
                    // if(_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
                    //     Output("Could not save mosaic images");
 
+                    managedFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet(); 
+
                    // Save a 3 channel image with CAD data...
                     uint iLayerIndex1 = 0;
                     uint iLayerIndex2 = 0;

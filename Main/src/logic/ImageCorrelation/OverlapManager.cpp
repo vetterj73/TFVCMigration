@@ -137,8 +137,8 @@ OverlapManager::OverlapManager(
 	}
 
 	// Initial fiducial result set
-	_pFidResultSet = NULL;
-	_pFidResultSet = new FiducialResultSet(_pPanel->NumberOfFiducials());
+	_pFidResultsSet = NULL;
+	_pFidResultsSet = new FiducialResultsSet(_pPanel->NumberOfFiducials());
 
 	// Create FovFov overlaps
 	CreateFovFovOverlaps();
@@ -181,8 +181,8 @@ OverlapManager::~OverlapManager(void)
 	delete [] _cadFovOverlapLists;
 	delete [] _fidFovOverlapLists;
 
-	if(_pFidResultSet != NULL)
-		delete _pFidResultSet;
+	if(_pFidResultsSet != NULL)
+		delete _pFidResultsSet;
 
 	if(_pFidImages != NULL)
 		delete [] _pFidImages;
@@ -711,7 +711,7 @@ void OverlapManager::CreateFidFovOverlaps()
 	int iIndex = 0;
 	for(FeatureListIterator i = _pPanel->beginFiducials(); i != _pPanel->endFiducials(); i++)
 	{
-		_pFidResultSet->GetFiducialResultPoint(iIndex)->SetFeaure(i->second);
+		_pFidResultsSet->GetFiducialResultsPtr(iIndex)->SetFeaure(i->second);
 		iIndex++;
 	}
 
@@ -767,7 +767,7 @@ void OverlapManager::CreateFidFovOverlaps()
 					
 					// Add to fiducial result set
 					FidFovOverlap* pOvelap1 = &(*_fidFovOverlapLists[i][iTrig][iCam].rbegin());
-					_pFidResultSet->GetFiducialResultPoint(iFid)->AddFidFovOvelapPoint(pOvelap1);
+					_pFidResultsSet->GetFiducialResultsPtr(iFid)->AddFidFovOvelapPoint(pOvelap1);
 				}
 			}
 		}

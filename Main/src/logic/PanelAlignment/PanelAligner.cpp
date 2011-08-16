@@ -327,7 +327,7 @@ bool PanelAligner::CreateTransforms()
 
 	_bResultsReady = true;
 
-	_pOverlapManager->GetFidResultSetPoint()->LogResults();
+	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
 	{

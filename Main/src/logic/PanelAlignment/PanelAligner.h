@@ -46,6 +46,8 @@ public:
 	void UseCyberNgc4Fiducial();
 
 	FidFovOverlapList* GetLastProcessedFids();
+	
+	FiducialResultsSet* GetFidResultsSetPoint() {return _pOverlapManager->GetFidResultsSetPoint();};
 
 protected:
 	// CleanUp internal stuff for new production or desctructor

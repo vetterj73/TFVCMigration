@@ -3,6 +3,8 @@
 #include "stdafx.h"
 
 #include "ManagedPanelAlignment.h"
+#include "FiducialResult.h"
+#include "EquationWeights.h"
 using namespace System;
 using namespace System::Runtime::InteropServices;
 
@@ -59,6 +61,55 @@ namespace PanelAlignM {
 			count++;
 		}
 		return fidM;
+	}
+
+	// Report fiducial results for a panel back
+	// Should be called afer a panel is stitched and before application is reset for next panel 
+	managedFidResultsSet^ ManagedPanelAlignment::GetFiducialResultsSet()
+	{
+		FiducialResultsSet* resultsSet= _pAligner->GetFidResultsSetPoint();
+		managedFidResultsSet ^mSet = gcnew managedFidResultsSet;
+		mSet->resultsSet = gcnew List<ManagedFidResults^>;
+
+		for(int i=0; i<resultsSet->Size(); i++)
+		{
+			// for each physical fiducial
+			FiducialResults* pResults = resultsSet->GetFiducialResultsPtr(i);
+			ManagedFidResults ^mResults = gcnew ManagedFidResults;
+			mResults->results = gcnew List<ManagedFidResult^>;
+
+			mResults->iID = pResults->GetId();
+			mResults->dCadX = pResults->GetCadX();
+			mResults->dCadY = pResults->GetCadY();
+			mResults->dConfidence = pResults->CalConfidence();
+
+			// for each fiducial overlap
+			list<FidFovOverlap*>* pResultsList = pResults->GetResultListPtr();
+			for(list<FidFovOverlap*>::iterator j = pResultsList->begin(); j != pResultsList->end(); j++)
+			{
+				// FOV information
+				ManagedFidResult ^mResult = gcnew ManagedFidResult();
+				mResult->iLayerIndex = (*j)->GetMosaicImage()->Index();
+				mResult->iTrigIndex = (*j)->GetTriggerIndex();
+				mResult->iCamIndex = (*j)->GetCameraIndex();
+
+				// Correlation results
+				mResult->rowOffset = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
+				mResult->colOffset = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
+				mResult->correlationScore = (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff;
+				mResult->ambiguityScore = (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore;
+				
+				// weight for solver
+				mResult->weight = Weights.CalWeight((*j)->GetCoarsePair());
+				
+				mResults->results->Add(mResult);
+			}
+			
+			mSet->resultsSet->Add(mResults);
+			mSet->dConfidence = resultsSet->CalConfidence();
+		}
+
+		return mSet;
 	}
 
 	// Change production
