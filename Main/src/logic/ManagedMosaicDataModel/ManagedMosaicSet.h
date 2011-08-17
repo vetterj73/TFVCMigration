@@ -83,13 +83,17 @@ namespace MMosaicDM
         		unsigned int numCameras,
 				unsigned int numTriggers,
 				bool bAlignWithCAD,
-				bool bAlignWithFiducial)
+				bool bAlignWithFiducial,
+				bool bFiducialBrighterThanBackground,
+				bool bFiducialAllowNegativesMatch)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(
         			numCameras,
 					numTriggers,
 					bAlignWithCAD,
-					bAlignWithFiducial);
+					bAlignWithFiducial,
+					bFiducialBrighterThanBackground,
+					bFiducialAllowNegativesMatch);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 

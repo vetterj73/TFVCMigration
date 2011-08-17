@@ -36,71 +36,81 @@ public:
 public:
 	const char* create_disc_template(
 		int* piNodeID,			// Output: nodeID of map	
-		templatetype tpl, double r,
-		double theta, int dark_to_light, 
+		templatetype tpl, 
+		double r, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);	// Output: trained template and initialized Finder structure)
 
 	const char* create_rectangle_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double theta, int dark_to_light,
+		double base, double height, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_rectangleframe_template(
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
-		double base, double height, double thickness, double theta, int dark_to_light,
+		double base, double height, double thickness, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_diamond_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double theta, int dark_to_light,
+		double base, double height, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_diamondframe_template(
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
-		double base, double height, double thickness, double theta, int dark_to_light,
+		double base, double height, double thickness, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_triangle_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double offset, double theta, int dark_to_light, 
+		double base, double height, double offset, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_triangleFrame_template1(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double offset, double thickness, double theta, int dark_to_light, 
+		double base, double height, double offset, double thickness, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_donut_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double inner_radius, double outer_radius, double theta, int dark_to_light, 
+		double inner_radius, double outer_radius, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
 	const char* create_cross_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double base_leg, double height_leg, int rounded_edges, double theta, int dark_to_light, 
+		double base, double height, double base_leg, double height_leg, int rounded_edges, 
+		double theta, int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth);
 
 	const char* create_checkerpattern_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
-		double base, double height, double theta, int dark_to_light, 
+		double base, double height, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth);
 
@@ -134,7 +144,8 @@ private:
 		VsStFTemplate* ptFTemplate,		// Output: trained template
 		VsStFinder* ptFinder,			// Output: initialized Finder structure)
 		templatetype tpl, int fid, double twidth,
-		double theight, double hwidth, double theta, int dark_to_light,
+		double theight, double hwidth, double theta, 
+		int dark_to_light, bool bAllowNegativesMatch,
 		double *min_scale, double *max_scale, double low_accept,
 		double high_accept,	int depth, double mask_region);
 

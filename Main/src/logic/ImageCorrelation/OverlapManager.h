@@ -85,7 +85,7 @@ protected:
 	unsigned int MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 	bool IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 
-	bool CreateFiducialImages();
+	void CreateFiducialImage(Image* pImage, Feature* pFeature);
 
 	static void RenderFiducial(
 		Image* pImg, 
@@ -93,8 +93,7 @@ protected:
 		double resolution, 
 		double dScale);
 
-	bool CreateVsfinderTemplates();
-	bool CreateNgcFidTemplates();
+	int CreateNgcFidTemplate(Image* pImage, Feature* pFeature);
 
 private:	
 	MosaicSet *_pMosaicSet;
@@ -117,12 +116,6 @@ private:
 	unsigned int _iMinOverlapSize;
 
 	int _iMaskCreationStage;
-
-	// For vsfinder
-	unsigned int* _pVsFinderTempIds;
-
-	// For CyberNgc
-	unsigned int* _pNgcFidTempIds;
 
 	CyberJob::JobManager *_pJobManager;
 

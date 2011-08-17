@@ -120,7 +120,7 @@ void VsFinderCorrelation::Find(
 // pFid: input, fiducial feature
 // pTemplateID: output, ID of vsfinder template
 bool VsFinderCorrelation::CreateVsTemplate(
-	Feature* pFid, 		
+	Feature* pFid,
 	int* pTemplateID)
 {
 	double dMinScale[2]={0.95, 0.95};
@@ -134,63 +134,63 @@ bool VsFinderCorrelation::CreateVsTemplate(
 		_pVsw->create_cross_template(pTemplateID, vswrapper::FIDUCIAL,
 			((CrossFeature*)pFid)->GetSizeX(), ((CrossFeature*)pFid)->GetSizeY(),
 			((CrossFeature*)pFid)->GetLegSizeX(), ((CrossFeature*)pFid)->GetLegSizeY(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DIAMOND:
 		_pVsw->create_diamond_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DIAMONDFRAME:
 		_pVsw->create_diamondframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(), ((DiamondFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DISC:
 		_pVsw->create_disc_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiscFeature*)pFid)->GetDiameter()/2,
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DONUT:
 		_pVsw->create_donut_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DonutFeature*)pFid)->GetDiameterInside()/2,((DonutFeature*)pFid)->GetDiameterOutside()/2,
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_RECTANGLE:
 		_pVsw->create_rectangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_RECTANGLEFRAME:
 		_pVsw->create_rectangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(), ((RectangularFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_TRIANGLE:
 		_pVsw->create_triangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(),
 			((TriangleFeature*)pFid)->GetOffset(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
 		_pVsw->create_triangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(), 
 			((TriangleFeature*)pFid)->GetOffset(), ((EquilateralTriangleFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CHECKERPATTERN:
 		_pVsw->create_checkerpattern_template(pTemplateID, vswrapper::FIDUCIAL,
 			((CheckerPatternFeature*)pFid)->GetSizeX(), ((CheckerPatternFeature*)pFid)->GetSizeY(), 
-			dTheta, 1, dMinScale, dMaxScale);
+			dTheta, 1, true, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CYBER:

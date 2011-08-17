@@ -60,6 +60,8 @@ namespace MosaicDM
 
 			bool IsAlignWithCad() {return _bAlignWithCAD;};
 			bool IsAlignWithFiducial() {return _bAlignWithFiducial;};
+			bool IsFiducialBrighterThanBackground() {return _bFiducialBrighterThanBackground;};
+			bool IsFiducialAllowNegativesMatch() {return _bFiducialAllowNegativesMatch;};
 			void SetAlignWithCad(bool bAlignWithCad) { _bAlignWithCAD = bAlignWithCad;};
 			void SetAlignWithFiducial(bool bAlignWithFiducial) { _bAlignWithFiducial = bAlignWithFiducial;};
 
@@ -87,9 +89,7 @@ namespace MosaicDM
 				bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
-
-
-			
+	
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
@@ -97,6 +97,8 @@ namespace MosaicDM
 				unsigned int numTriggers,
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial,
+				bool bFiducialBrighterThanBackground,
+				bool bFiducialAllowNegativesMatch,
 				unsigned int layerIndex);
 
 			void CreateStitchedImageIfNecessary();
@@ -120,7 +122,9 @@ namespace MosaicDM
 			bool _bIsMaskImgValid;			// Flag of whether mask images are valid to use
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
-			unsigned int _layerIndex;       // Not sure why this is needed but it is used in alignment..
+			bool _bFiducialBrighterThanBackground;
+			bool _bFiducialAllowNegativesMatch;
+			unsigned int _layerIndex;       // This is used in alignment..
 
 			int* _piStitchGridRows;
 			int* _piStitchGridCols; 

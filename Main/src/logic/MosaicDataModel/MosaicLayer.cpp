@@ -46,12 +46,15 @@ namespace MosaicDM
 		return _layerIndex;
 	}
 
-	void MosaicLayer::Initialize(MosaicSet *pMosaicSet, 
-        							unsigned int numCameras,
-									unsigned int numTriggers,
-									bool bAlignWithCAD,
-									bool bAlignWithFiducial,
-									unsigned int layerIndex)
+	void MosaicLayer::Initialize(
+		MosaicSet *pMosaicSet, 
+        unsigned int numCameras,
+		unsigned int numTriggers,
+		bool bAlignWithCAD,
+		bool bAlignWithFiducial,
+		bool bFiducialBrighterThanBackground,
+		bool bFiducialAllowNegativesMatch,
+		unsigned int layerIndex)
 	{
 		_pMosaicSet = pMosaicSet;
 		_numCameras = numCameras;
@@ -59,6 +62,8 @@ namespace MosaicDM
 		_bAlignWithCAD = bAlignWithCAD;
 		_bAlignWithFiducial = bAlignWithFiducial;
 		_layerIndex = layerIndex;
+		_bFiducialBrighterThanBackground = bFiducialBrighterThanBackground;
+		_bFiducialAllowNegativesMatch = bFiducialAllowNegativesMatch;
 
 		unsigned int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];

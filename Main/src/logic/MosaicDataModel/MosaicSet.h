@@ -65,7 +65,9 @@ namespace MosaicDM
 				unsigned int numCameras,
 				unsigned int numTriggers,
 				bool bAlignWithCAD,
-				bool bAlignWithFiducial);
+				bool bAlignWithFiducial,
+				bool bFiducialBrighterThanBackground,
+				bool bFiducialAllowNegativesMatch);
 			
 			///
 			/// Gets a layer from the MosaicSet
