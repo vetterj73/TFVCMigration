@@ -93,7 +93,11 @@ protected:
 		double resolution, 
 		double dScale);
 
-	int CreateNgcFidTemplate(Image* pImage, Feature* pFeature);
+	int CreateNgcFidTemplate(
+		Image* pImage, 
+		Feature* pFeature,
+		bool bFidBrighterThanBackground,
+		bool bFiducialAllowNegativeMatch);
 
 private:	
 	MosaicSet *_pMosaicSet;

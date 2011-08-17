@@ -36,13 +36,16 @@ VsFinderCorrelation::~VsFinderCorrelation()
 // pFid: input, fiducial feature
 // Return template ID for existing or new create vsfinder template
 // Return -1 if failed
-int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
+int VsFinderCorrelation::CreateVsTemplate(
+	Feature* pFid, 
+	bool bFiducialBrighterThanBackground, 
+	bool bFiducialAllowNegativeMatch)
 {
 	// Mutex protection
 	WaitForSingleObject(_entryMutex, INFINITE);
 
 	// If the template exists
-	int iTemplateID = GetVsTemplateID(pFid);
+	int iTemplateID = GetVsTemplateID(pFid, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch);
 	if(iTemplateID >= 0) 
 	{
 		ReleaseMutex(_entryMutex);
@@ -50,7 +53,7 @@ int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
 	}
 	
 	// Create a new template
-	bool bFlag = CreateVsTemplate(pFid, &iTemplateID);
+	bool bFlag = CreateVsTemplate(pFid, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, &iTemplateID);
 	if(!bFlag) 
 	{
 		ReleaseMutex(_entryMutex);
@@ -58,7 +61,7 @@ int VsFinderCorrelation::CreateVsTemplate(Feature* pFid)
 	}
 
 	// Add new template into list
-	FeatureTemplateID templateID(pFid, iTemplateID);
+	FeatureTemplateID templateID(pFid, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, iTemplateID);
 	_vsTemplateIDList.push_back(templateID);
 		
 	// Mutex protection
@@ -121,10 +124,14 @@ void VsFinderCorrelation::Find(
 // pTemplateID: output, ID of vsfinder template
 bool VsFinderCorrelation::CreateVsTemplate(
 	Feature* pFid,
+	bool bFiducialBrighterThanBackground, 
+	bool bFiducialAllowNegativeMatch,
 	int* pTemplateID)
 {
 	double dMinScale[2]={0.95, 0.95};
 	double dMaxScale[2]={1.05, 1.05};
+
+	int iFidBrighterThanBackground = bFiducialBrighterThanBackground? 1 : 0;
 
 	// Convert roation angle from count-clockwise degreee to clockwise and unit 1 for 360 degree
 	double dTheta = -(pFid->GetRotation()-90.)/360.; 
@@ -134,63 +141,63 @@ bool VsFinderCorrelation::CreateVsTemplate(
 		_pVsw->create_cross_template(pTemplateID, vswrapper::FIDUCIAL,
 			((CrossFeature*)pFid)->GetSizeX(), ((CrossFeature*)pFid)->GetSizeY(),
 			((CrossFeature*)pFid)->GetLegSizeX(), ((CrossFeature*)pFid)->GetLegSizeY(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DIAMOND:
 		_pVsw->create_diamond_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DIAMONDFRAME:
 		_pVsw->create_diamondframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiamondFeature*)pFid)->GetSizeX(), ((DiamondFeature*)pFid)->GetSizeY(), ((DiamondFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DISC:
 		_pVsw->create_disc_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DiscFeature*)pFid)->GetDiameter()/2,
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_DONUT:
 		_pVsw->create_donut_template(pTemplateID, vswrapper::FIDUCIAL,
 			((DonutFeature*)pFid)->GetDiameterInside()/2,((DonutFeature*)pFid)->GetDiameterOutside()/2,
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, 1, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_RECTANGLE:
 		_pVsw->create_rectangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_RECTANGLEFRAME:
 		_pVsw->create_rectangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((RectangularFeature*)pFid)->GetSizeX(), ((RectangularFeature*)pFid)->GetSizeY(), ((RectangularFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_TRIANGLE:
 		_pVsw->create_triangle_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(),
 			((TriangleFeature*)pFid)->GetOffset(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_EQUILATERALTRIANGLEFRAME:
 		_pVsw->create_triangleframe_template(pTemplateID, vswrapper::FIDUCIAL,
 			((TriangleFeature*)pFid)->GetSizeX(), ((TriangleFeature*)pFid)->GetSizeY(), 
 			((TriangleFeature*)pFid)->GetOffset(), ((EquilateralTriangleFrameFeature*)pFid)->GetThickness(),
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CHECKERPATTERN:
 		_pVsw->create_checkerpattern_template(pTemplateID, vswrapper::FIDUCIAL,
 			((CheckerPatternFeature*)pFid)->GetSizeX(), ((CheckerPatternFeature*)pFid)->GetSizeY(), 
-			dTheta, 1, true, dMinScale, dMaxScale);
+			dTheta, iFidBrighterThanBackground, bFiducialAllowNegativeMatch, dMinScale, dMaxScale);
 		break;
 
 	case Feature::SHAPE_CYBER:
@@ -206,13 +213,18 @@ bool VsFinderCorrelation::CreateVsTemplate(
 
 // Return the template ID for a feature if a template for it already exists
 // otherwise, return -1
-int VsFinderCorrelation::GetVsTemplateID(Feature* pFeature)
+int VsFinderCorrelation::GetVsTemplateID(
+	Feature* pFeature,
+	bool bFidBrighterThanBackground,
+	bool bFiducialAllowNegativeMatch)
 {
 	list<FeatureTemplateID>::const_iterator i;
 	for(i=_vsTemplateIDList.begin(); i!=_vsTemplateIDList.end(); i++)
 	{
-		if(IsSameTypeSize(pFeature, i->_pFeature))
-			return(i->_iTemplateID);
+		if(i->_bFidBrighterThanBackground == bFidBrighterThanBackground &&
+			i->_bFiducialAllowNegativeMatch == bFiducialAllowNegativeMatch &&
+			IsSameTypeSize(pFeature, i->_pFeature))
+				return(i->_iTemplateID);
 	}
 
 	return(-1);

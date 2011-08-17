@@ -17,7 +17,10 @@ public:
 
 	void Config(double dResolution, unsigned int iColumn, unsigned int iRows);
 
-	int CreateVsTemplate(Feature* pFid);
+	int CreateVsTemplate(
+		Feature* pFid,
+		bool bFiducialBrighterThanBackground, 
+		bool bFiducialAllowNegativeMatch);
 
 	// load the template by a given name and find the match in the given image.
 	void Find(
@@ -42,19 +45,33 @@ public:
 	);
 
 protected:
-	bool CreateVsTemplate(Feature* pFid, int* pTemplateID);
-	int GetVsTemplateID(Feature* pFeature);
+	bool CreateVsTemplate(Feature* pFid, 	
+		bool bFiducialBrighterThanBackground, 
+		bool bFiducialAllowNegativeMatch,
+		int* pTemplateID);
+	int GetVsTemplateID(
+		Feature* pFeature,
+		bool bFidBrighterThanBackground,
+		bool bFiducialAllowNegativeMatch);
 
 private:
 	class FeatureTemplateID
 	{
 	public:
-		FeatureTemplateID(Feature* pFeature ,unsigned int iTemplateID)
+		FeatureTemplateID(
+			Feature* pFeature,
+			bool bFidBrighterThanBackground,
+			bool bFiducialAllowNegativeMatch,
+			unsigned int iTemplateID)
 		{
 			_pFeature = pFeature;
+			_bFidBrighterThanBackground = bFidBrighterThanBackground;
+			_bFiducialAllowNegativeMatch = bFiducialAllowNegativeMatch;
 			_iTemplateID = iTemplateID;
 		}
 		Feature* _pFeature;
+		bool _bFidBrighterThanBackground;
+		bool _bFiducialAllowNegativeMatch;
 		unsigned int _iTemplateID;
 	};
 

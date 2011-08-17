@@ -588,7 +588,11 @@ void OverlapManager::RenderFiducial(
 }
 
 // Create Cyber Ngc template
-int OverlapManager::CreateNgcFidTemplate(Image* pImage, Feature* pFeature)
+int OverlapManager::CreateNgcFidTemplate(
+	Image* pImage, 
+	Feature* pFeature,
+	bool bFidBrighterThanBackground,
+	bool bFiducialAllowNegativeMatch)
 {
 	// Fiducial image serach expansion in Pixels
 	int iPixelExpRow = (int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
@@ -603,7 +607,7 @@ int OverlapManager::CreateNgcFidTemplate(Image* pImage, Feature* pFeature)
 
 
 	// Create template
-	int iId = CyberNgcFiducialCorrelation::Instance().CreateNgcTemplate(pFeature, pImage, tempRoi);
+	int iId = CyberNgcFiducialCorrelation::Instance().CreateNgcTemplate(pFeature, bFidBrighterThanBackground, bFiducialAllowNegativeMatch, pImage, tempRoi);
 	if(iId < 0) 
 	{
 		LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateNgcFidTemplates():Failed to create CyberNgc template");
@@ -649,31 +653,34 @@ void OverlapManager::CreateFidFovOverlaps()
 		_pFidImages[iCount].Save(s);
 		//*/
 
-		int iVsFinderTemplateId, iCyberNgcTemplateId;
-		if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
-		{
-			iVsFinderTemplateId = VsFinderCorrelation::Instance().CreateVsTemplate(iFid->second);
-			if(iVsFinderTemplateId < 0) 
-			{
-				LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create vsfinder template");
-				return;
-			}
-		}
-		else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
-		{
-			iCyberNgcTemplateId = CreateNgcFidTemplate(&_pFidImages[iCount], iFid->second);
-			if(iCyberNgcTemplateId < 0) 
-			{
-				LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create cyberNgc template");
-				return;
-			}
-		}
-
 		for(iLayer=0; iLayer<_pMosaicSet->GetNumMosaicLayers(); iLayer++)
 		{
 			MosaicLayer *pLayer = _pMosaicSet->GetLayer(iLayer);
 			if(!pLayer->IsAlignWithFiducial()) // If not use Fiducial
 				continue;
+
+			bool bFidBrighter = pLayer->IsFiducialBrighterThanBackground();
+			bool bAllowNegMatch = pLayer->IsFiducialAllowNegativeMatch();
+
+			int iVsFinderTemplateId, iCyberNgcTemplateId;
+			if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+			{
+				iVsFinderTemplateId = VsFinderCorrelation::Instance().CreateVsTemplate(iFid->second, bFidBrighter, bAllowNegMatch);
+				if(iVsFinderTemplateId < 0) 
+				{
+					LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create vsfinder template");
+					return;
+				}
+			}
+			else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
+			{
+				iCyberNgcTemplateId = CreateNgcFidTemplate(&_pFidImages[iCount], iFid->second, bFidBrighter, bAllowNegMatch);
+				if(iCyberNgcTemplateId < 0) 
+				{
+					LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create cyberNgc template");
+					return;
+				}
+			}
 
 			unsigned int iNumCameras = pLayer->GetNumberOfCameras();
 			unsigned int iNumTriggers = pLayer->GetNumberOfTriggers();
