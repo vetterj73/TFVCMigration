@@ -17,7 +17,12 @@ protected:
 public:
 	static CyberNgcFiducialCorrelation& Instance();
 
-	int CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi);
+	int CreateNgcTemplate(
+		Feature* pFid,
+		bool bFidBrighterThanBackground,
+		bool bFiducialAllowNegativeMatch,
+		const Image* pTemplateImg, // Always Fiducial is brighter than background in image
+		UIRect tempRoi);
 
 	// load the template by a given name and find the match in the given image.
 	bool Find(
@@ -30,8 +35,17 @@ public:
 		double &ambig);			// ratio of (second best/best match) score 0-1
 
 protected:
-	bool CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi, int* pTemplateID);
-	int GetNgcTemplateID(Feature* pFeature);
+	bool CreateNgcTemplate(
+		Feature* pFid, 
+		bool bCreatePositiveTemplate,
+		bool bCreateNegativeTemplate,
+		const Image* pTemplateImg, 
+		UIRect tempRoi, 
+		int* pTemplateID);
+	int GetNgcTemplateID(
+		Feature* pFeature,
+		bool bHasPositiveTemplate,
+		bool bHasNegativeTemplate);
 	unsigned int CalculateRingHalfWidth(Feature* pFid, double dImageResolution);
 
 private:

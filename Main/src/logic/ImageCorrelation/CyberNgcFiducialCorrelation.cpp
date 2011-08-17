@@ -11,7 +11,7 @@ public:
 	NgcTemplateSt()
 	{
 		_iTemplateID = -1;
-		_ptTemplate = NULL;
+		_ptPosTemplate = NULL;
 		_ptNegTemplate = NULL;
 		_bValid = false;
 	};
@@ -21,7 +21,7 @@ public:
 	};
 
 	Feature* _pFeature;
-	VsStCTemplate* _ptTemplate;
+	VsStCTemplate* _ptPosTemplate;
 	VsStCTemplate* _ptNegTemplate;
 	unsigned int _iTemplateID;
 	bool _bValid;
@@ -55,10 +55,10 @@ CyberNgcFiducialCorrelation::~CyberNgcFiducialCorrelation(void)
 	{
 		if(i->_bValid)
 		{
-			if(i->_ptTemplate!=NULL) 
+			if(i->_ptPosTemplate!=NULL) 
 			{
-				vsDispose2DTemplate(i->_ptTemplate);
-				delete i->_ptTemplate;
+				vsDispose2DTemplate(i->_ptPosTemplate);
+				delete i->_ptPosTemplate;
 			}
 			if(i->_ptNegTemplate!=NULL)
 			{
@@ -78,17 +78,30 @@ CyberNgcFiducialCorrelation::~CyberNgcFiducialCorrelation(void)
 // pTemplateImg and tempRect: input, tempate image and rectangle
 // Return template ID for existing or new create ngc template
 // Return -1 if failed
-int CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi)
+int CyberNgcFiducialCorrelation::CreateNgcTemplate(
+	Feature* pFid, 
+	bool bFidBrighterThanBackground,
+	bool bFiducialAllowNegativeMatch,
+	const Image* pTemplateImg,  // Always Fiducial is brighter than background in image
+	UIRect tempRoi)
 {
 	// Mutex protection
 	WaitForSingleObject(_entryMutex, INFINITE);
 
+	bool bCreatePostiveTemplate = true;
+	if(!bFidBrighterThanBackground && !bFiducialAllowNegativeMatch)
+		bCreatePostiveTemplate = false;
+	bool bCreateNegtiveTemplate = true;
+	if(bFidBrighterThanBackground && !bFiducialAllowNegativeMatch)
+		bCreateNegtiveTemplate = false;
+
 	// If the template exists
-	int iTemplateID = GetNgcTemplateID(pFid);
+	int iTemplateID = GetNgcTemplateID(pFid, bCreatePostiveTemplate, bCreateNegtiveTemplate);
 	if(iTemplateID >= 0) return(iTemplateID);
 	
 	// Create a new template
-	bool bFlag = CreateNgcTemplate(pFid,  pTemplateImg, tempRoi, &iTemplateID);
+	bool bFlag = CreateNgcTemplate(pFid, bCreatePostiveTemplate, bCreateNegtiveTemplate, 
+		pTemplateImg, tempRoi, &iTemplateID);
 	if(!bFlag)
 	{
 		ReleaseMutex(_entryMutex);
@@ -114,20 +127,21 @@ bool CyberNgcFiducialCorrelation::Find(
 	double dMinScore = CorrelationParametersInst.dCyberNgcMinCorrScore;
 
 	// Get the template from the list
-	VsStCTemplate* ptTemplate = NULL;
+	VsStCTemplate* ptPosTemplate = NULL;
 	VsStCTemplate* ptNegTemplate = NULL;
 	list<NgcTemplateSt>::iterator i;
 	for(i=_ngcTemplateStList.begin(); i!=_ngcTemplateStList.end(); i++)
 	{
 		if(i->_iTemplateID == iNodeID)
 		{
-			ptTemplate = i->_ptTemplate;
+			ptPosTemplate = i->_ptPosTemplate;
 			ptNegTemplate = i->_ptNegTemplate;
 			break;
 		}
 	}
 
-	if(ptTemplate == NULL)
+	// Validation check
+	if(ptPosTemplate == NULL && ptNegTemplate == NULL)
 		return(false);
 
 	// Search
@@ -153,62 +167,75 @@ bool CyberNgcFiducialCorrelation::Find(
 	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
     //tCorrelate.iFlatPeakRadiusThresh	= 5;
 
-	double x1, x2, y1, y2, corr1, corr2, ambig1, ambig2;
-	bool bSuccess1=true, bSuccess2=true;
+	double x1, x2, y1, y2;
+	double corr1=0, corr2=0, ambig1=1, ambig2=1;
+	bool bSuccess1=false, bSuccess2=false;
 
 	// Try postive template
-	int iFlag =vs2DCorrelate(
-		ptTemplate, &oSearchImage, 
-		searchRect, _iDepth, &tCorrelate);
-	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
-	{	
-		bSuccess1= false;
-		vsDispose2DCorrelate(&tCorrelate);
-	}
-	else
+	int iFlag;
+	if(ptPosTemplate != NULL)
 	{
-		// Get results
-		x1 = tCorrelate.ptCPoint[0].dLoc[0]; 
-		y1 = tCorrelate.ptCPoint[0].dLoc[1];
-		corr1 = tCorrelate.ptCPoint[0].dScore;
-		if(tCorrelate.iNumResultPoints >=2)
-			ambig1= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+		iFlag =vs2DCorrelate(
+			ptPosTemplate, &oSearchImage, 
+			searchRect, _iDepth, &tCorrelate);
+		if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
+		{	
+			vsDispose2DCorrelate(&tCorrelate);
+		}
 		else
-			ambig1 = 0;
-
-		vsDispose2DCorrelate(&tCorrelate);
-	
-		if(corr1 > 0.7  &&ambig1 < 0.5 )	// if it is good enough
 		{
-			x = x1;
-			y = y1;
-			correlation = corr1;
-			ambig = ambig1;
-			return(true);
-		}	
+			bSuccess1= true;
+
+			// Get results
+			x1 = tCorrelate.ptCPoint[0].dLoc[0]; 
+			y1 = tCorrelate.ptCPoint[0].dLoc[1];
+			corr1 = tCorrelate.ptCPoint[0].dScore;
+			if(tCorrelate.iNumResultPoints >=2)
+				ambig1= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+			else
+				ambig1 = 0;
+
+			vsDispose2DCorrelate(&tCorrelate);
+	
+			if(ptNegTemplate != NULL) // Negative template is available
+			{
+				if(corr1 > 0.7  &&ambig1 < 0.5 )	// if it is good enough
+				{
+					x = x1;
+					y = y1;
+					correlation = corr1;
+					ambig = ambig1;
+					return(true);
+				}	
+			}
+		}
 	}
 
-	// Try negative template
-	iFlag =vs2DCorrelate(
-		ptNegTemplate, &oSearchImage, 
-		searchRect, _iDepth, &tCorrelate);
-	if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
-	{	
-		bSuccess2= false;
-		vsDispose2DCorrelate(&tCorrelate);
-	}
-	else
+	if(ptNegTemplate != NULL)
 	{
-		// Get results
-		x2 = tCorrelate.ptCPoint[0].dLoc[0]; 
-		y2 = tCorrelate.ptCPoint[0].dLoc[1];
-		corr2 = tCorrelate.ptCPoint[0].dScore;
-		if(tCorrelate.iNumResultPoints >=2)
-			ambig2= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+		// Try negative template
+		iFlag =vs2DCorrelate(
+			ptNegTemplate, &oSearchImage, 
+			searchRect, _iDepth, &tCorrelate);
+		if(iFlag < 0 || tCorrelate.iNumResultPoints == 0 || fabs(tCorrelate.ptCPoint[0].dScore) < dMinScore) // Error or no match
+		{	
+			vsDispose2DCorrelate(&tCorrelate);
+		}
 		else
-			ambig2 = 0;
+		{
+			bSuccess2= true;
 
-		vsDispose2DCorrelate(&tCorrelate);
+			// Get results
+			x2 = tCorrelate.ptCPoint[0].dLoc[0]; 
+			y2 = tCorrelate.ptCPoint[0].dLoc[1];
+			corr2 = tCorrelate.ptCPoint[0].dScore;
+			if(tCorrelate.iNumResultPoints >=2)
+				ambig2= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
+			else
+				ambig2 = 0;
+
+			vsDispose2DCorrelate(&tCorrelate);
+		}
 	}
 
 	// Decision logic
@@ -254,7 +281,12 @@ bool CyberNgcFiducialCorrelation::Find(
 // pFid: input, fiducial feature
 // pTemplateImg and tempRect: input, tempate image and rectangle
 // pTemplateID: output, ID of vsfinder template
-bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* pTemplateImg, UIRect tempRoi, int* pTemplateID)
+bool CyberNgcFiducialCorrelation::CreateNgcTemplate(
+	Feature* pFid,
+	bool bCreatePositiveTemplate,
+	bool bCreateNegativeTemplate,
+	const Image* pTemplateImg, 
+	UIRect tempRoi, int* pTemplateID)
 {
 	// Prepare image and roi
 	SvImage oTempImage;
@@ -291,87 +323,98 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 		}
 	}
 
-	Morpho_2d(dilateBuf, iSpan,		// buffer and stride
-		0, 0, iWidth, iHeight, // Roi
-		iExpansion*2+1, iExpansion*2+1,		// Kernael size
-		DILATE);									// Type
+	Morpho_2d(dilateBuf, iSpan,			// buffer and stride
+		0, 0, iWidth, iHeight,			// Roi
+		iExpansion*2+1, iExpansion*2+1,	// Kernael size
+		DILATE);						// Type
 
-	Morpho_2d(erodeBuf, iSpan,		// buffer and stride
-		0, 0, iWidth, iHeight, // Roi
-		iExpansion*2+1, iExpansion*2+1,		// Kernael size
-		ERODE);		// Type
+	Morpho_2d(erodeBuf, iSpan,			// buffer and stride
+		0, 0, iWidth, iHeight,			// Roi
+		iExpansion*2+1, iExpansion*2+1,	// Kernael size
+		ERODE);							// Type
 
-	// Create positive template
 	NgcTemplateSt templateSt;
-	templateSt._ptTemplate = new VsStCTemplate();
-	int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptTemplate);
-	if(iFlag<0)
-	{
-		delete templateSt._ptTemplate;
-		*pTemplateID = -1; 
-		delete [] dilateBuf;
-		delete [] erodeBuf;
-		return(false);
-	}
-
-	// Mask positive templae
-	unsigned char* pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
-	unsigned char* pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
-	int iCount = 0;
-	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
-	{
-		for(int ix = 0; ix < (int)templateRect.Width(); ix++)
-		{
-			if(pDilateLine[ix] == pErodeLine[ix])
-				templateSt._ptTemplate->pbMask[iCount] = 1; //masked
-			else
-				templateSt._ptTemplate->pbMask[iCount] = 0;
-
-			iCount++;
-		}
-		pDilateLine += iSpan;
-		pErodeLine += iSpan;
-	}	
-	iFlag = vsMask2DNgcTemplate(templateSt._ptTemplate);
-
-	// Create negative temaplate
-	unsigned char* pbBuf = pTemplateImg->GetBuffer();
-	oTempImage.pdData = new unsigned char[oTempImage.iHeight*oTempImage.iSpan];
-	for(unsigned int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
-		oTempImage.pdData[i] = (unsigned char)(255 -pbBuf[i]);
+	templateSt._ptPosTemplate = NULL;
+	templateSt._ptNegTemplate = NULL;
 	
-	templateSt._ptNegTemplate = new VsStCTemplate();
-	iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptNegTemplate);
-	if(iFlag<0)
+	// Create positive template
+	if(bCreatePositiveTemplate)
 	{
-		delete templateSt._ptTemplate;
-		delete templateSt._ptNegTemplate;
-		*pTemplateID = -1; 
-		delete [] oTempImage.pdData;
-		delete [] dilateBuf;
-		delete [] erodeBuf;
-		return(false);
+		templateSt._ptPosTemplate = new VsStCTemplate();
+		int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptPosTemplate);
+		if(iFlag<0)
+		{
+			delete templateSt._ptPosTemplate;
+			*pTemplateID = -1; 
+			delete [] dilateBuf;
+			delete [] erodeBuf;
+			return(false);
+		}
+
+		// Mask positive templae
+		unsigned char* pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+		unsigned char* pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+		int iCount = 0;
+		for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+		{
+			for(int ix = 0; ix < (int)templateRect.Width(); ix++)
+			{
+				if(pDilateLine[ix] == pErodeLine[ix])
+					templateSt._ptPosTemplate->pbMask[iCount] = 1; //masked
+				else
+					templateSt._ptPosTemplate->pbMask[iCount] = 0;
+
+				iCount++;
+			}
+			pDilateLine += iSpan;
+			pErodeLine += iSpan;
+		}	
+		iFlag = vsMask2DNgcTemplate(templateSt._ptPosTemplate);
 	}
 
-	// Mask negative template
-	pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
-	pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
-	iCount = 0;
-	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+	// Create negative temaplate	
+	if(bCreateNegativeTemplate)
 	{
-		for(int ix = 0; ix < (int)templateRect.Width(); ix++)
-		{
-			if(pDilateLine[ix] == pErodeLine[ix])
-				templateSt._ptNegTemplate->pbMask[iCount] = 1; //masked
-			else
-				templateSt._ptNegTemplate->pbMask[iCount] = 0;
+		unsigned char* pbBuf = pTemplateImg->GetBuffer();
+		oTempImage.pdData = new unsigned char[oTempImage.iHeight*oTempImage.iSpan];
+		for(unsigned int i=0; i<oTempImage.iHeight*oTempImage.iSpan; i++)
+			oTempImage.pdData[i] = (unsigned char)(255 -pbBuf[i]);
 
-			iCount++;
+		templateSt._ptNegTemplate = new VsStCTemplate();
+		int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, _iDepth, templateSt._ptNegTemplate);
+		if(iFlag<0)
+		{
+			delete templateSt._ptPosTemplate;
+			delete templateSt._ptNegTemplate;
+			*pTemplateID = -1; 
+			delete [] oTempImage.pdData;
+			delete [] dilateBuf;
+			delete [] erodeBuf;
+			return(false);
 		}
-		pDilateLine += iSpan;
-		pErodeLine += iSpan;
-	}		
-	iFlag = vsMask2DNgcTemplate(templateSt._ptNegTemplate);
+
+		// Mask negative template
+		unsigned char* pDilateLine = dilateBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+		unsigned char* pErodeLine = erodeBuf + iSpan*templateRect.lYMin + templateRect.lXMin;
+		int iCount = 0;
+		for(int iy = 0; iy < (int)templateRect.Height(); iy++)
+		{
+			for(int ix = 0; ix < (int)templateRect.Width(); ix++)
+			{
+				if(pDilateLine[ix] == pErodeLine[ix])
+					templateSt._ptNegTemplate->pbMask[iCount] = 1; //masked
+				else
+					templateSt._ptNegTemplate->pbMask[iCount] = 0;
+
+				iCount++;
+			}
+			pDilateLine += iSpan;
+			pErodeLine += iSpan;
+		}		
+		iFlag = vsMask2DNgcTemplate(templateSt._ptNegTemplate);	
+		
+		delete [] oTempImage.pdData;
+	}
 
 	// Fill the struct
 	templateSt._bValid = true;
@@ -384,7 +427,6 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 	*pTemplateID = templateSt._iTemplateID;
 
 	//clean up
-	delete [] oTempImage.pdData;
 	delete [] dilateBuf;
 	delete [] erodeBuf;
 
@@ -393,12 +435,25 @@ bool CyberNgcFiducialCorrelation::CreateNgcTemplate(Feature* pFid, const Image* 
 
 // Return the template ID for a feature if a template for it already exists
 // otherwise, return -1
-int CyberNgcFiducialCorrelation::GetNgcTemplateID(Feature* pFeature)
+int CyberNgcFiducialCorrelation::GetNgcTemplateID(
+	Feature* pFeature,
+	bool bHasPositiveTemplate,
+	bool bHasNegativeTemplate)
 {
 	list<NgcTemplateSt>::const_iterator i;
 	for(i=_ngcTemplateStList.begin(); i!=_ngcTemplateStList.end(); i++)
 	{
-		if(IsSameTypeSize(pFeature, i->_pFeature))
+		bool bCreatedPosTemp = true;
+		if(i->_ptPosTemplate == NULL)
+			bCreatedPosTemp = false;
+
+		bool bCreatedNegTemp = true;
+		if(i->_ptNegTemplate == NULL)
+			bCreatedNegTemp = false;
+
+		if(bHasPositiveTemplate == bCreatedPosTemp &&
+			bHasNegativeTemplate == bCreatedNegTemp &&
+			IsSameTypeSize(pFeature, i->_pFeature))
 			return(i->_iTemplateID);
 	}
 
