@@ -38,7 +38,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl, 
 		double r, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);	// Output: trained template and initialized Finder structure)
 
@@ -46,7 +46,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch,
+		int dark_to_light, bool bAllowNegativeMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -54,7 +54,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
 		double base, double height, double thickness, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch,
+		int dark_to_light, bool bAllowNegativeMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -62,7 +62,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch,
+		int dark_to_light, bool bAllowNegativeMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -70,7 +70,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map
 		templatetype tpl,
 		double base, double height, double thickness, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch,
+		int dark_to_light, bool bAllowNegativeMatch,
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -78,7 +78,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double offset, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -86,7 +86,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double offset, double thickness, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -94,7 +94,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double inner_radius, double outer_radius, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept, 
 		double mask_region, int depth);
 
@@ -102,7 +102,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double base_leg, double height_leg, int rounded_edges, 
-		double theta, int dark_to_light, bool bAllowNegativesMatch, 
+		double theta, int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth);
 
@@ -110,7 +110,7 @@ public:
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth);
 
@@ -145,7 +145,7 @@ private:
 		VsStFinder* ptFinder,			// Output: initialized Finder structure)
 		templatetype tpl, int fid, double twidth,
 		double theight, double hwidth, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch,
+		int dark_to_light, bool bAllowNegativeMatch,
 		double *min_scale, double *max_scale, double low_accept,
 		double high_accept,	int depth, double mask_region);
 

@@ -61,7 +61,7 @@ namespace MosaicDM
 			bool IsAlignWithCad() {return _bAlignWithCAD;};
 			bool IsAlignWithFiducial() {return _bAlignWithFiducial;};
 			bool IsFiducialBrighterThanBackground() {return _bFiducialBrighterThanBackground;};
-			bool IsFiducialAllowNegativesMatch() {return _bFiducialAllowNegativesMatch;};
+			bool IsFiducialAllowNegativeMatch() {return _bFiducialAllowNegativeMatch;};
 			void SetAlignWithCad(bool bAlignWithCad) { _bAlignWithCAD = bAlignWithCad;};
 			void SetAlignWithFiducial(bool bAlignWithFiducial) { _bAlignWithFiducial = bAlignWithFiducial;};
 
@@ -98,7 +98,7 @@ namespace MosaicDM
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial,
 				bool bFiducialBrighterThanBackground,
-				bool bFiducialAllowNegativesMatch,
+				bool bFiducialAllowNegativeMatch,
 				unsigned int layerIndex);
 
 			void CreateStitchedImageIfNecessary();
@@ -123,7 +123,7 @@ namespace MosaicDM
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 			bool _bFiducialBrighterThanBackground;
-			bool _bFiducialAllowNegativesMatch;
+			bool _bFiducialAllowNegativeMatch;
 			unsigned int _layerIndex;       // This is used in alignment..
 
 			int* _piStitchGridRows;

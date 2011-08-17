@@ -35,7 +35,7 @@ struct vs_fid_data
 	double hwidth;  // width of the "ring" if the type is hollow.
 	double theta;   // rotation, not currently used
 	int dark_to_light;
-	bool bAllowNegativesMatch;
+	bool bAllowNegativeMatch;
 };
 
 struct vs_fid_poly_data
@@ -44,7 +44,7 @@ struct vs_fid_poly_data
 	double width;		// Width of the fiducial in pixels
 	double height;		// Height of the fiducial in pixels
 	int dark_to_light;
-	bool bAllowNegativesMatch;
+	bool bAllowNegativeMatch;
 };
 
 class vswrapper
@@ -87,7 +87,7 @@ public:
 		double r,				// radius of the disc in meters
 		double theta,			// rotation about the center of the shape (Useless and can be any value)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -104,7 +104,7 @@ public:
 		double outer_radius,
 		double theta,			// rotation about the center of the shape (Useless and can be any value)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -123,7 +123,7 @@ public:
 		double height_leg,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		int rounded_edges=0,	// If !0, the edges of the cross will be rounded
@@ -141,7 +141,7 @@ public:
 		double height,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -159,7 +159,7 @@ public:
 		double thick,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -177,7 +177,7 @@ public:
 		double offset,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -196,7 +196,7 @@ public:
 		double thick,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -213,7 +213,7 @@ public:
 		double height,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -231,7 +231,7 @@ public:
 		double thick,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image
@@ -248,7 +248,7 @@ public:
 		double height,
 		double theta,			// rotation about the center of the shape (only for 90*n degee, 360degree = 1 unit, clockwise)
 		int dark_to_light,		// If not !0 assumes dark back ground and light fiducial
-		bool bAllowNegativesMatch,	// Enable inverse match
+		bool bAllowNegativeMatch,	// Enable inverse match
 		double *min_scale,		// An array with two elements (x,y) for min scale 0-1
 		double *max_scale,		// An array with two elements (x,y) for max scale 0-1 max_scale[]>=min_scale[]
 		double low_accept=0.5,	// Minimum score to accept in the Low Resolution image

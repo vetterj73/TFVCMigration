@@ -53,7 +53,7 @@ namespace MosaicDM
 		bool bAlignWithCAD,
 		bool bAlignWithFiducial,
 		bool bFiducialBrighterThanBackground,
-		bool bFiducialAllowNegativesMatch,
+		bool bFiducialAllowNegativeMatch,
 		unsigned int layerIndex)
 	{
 		_pMosaicSet = pMosaicSet;
@@ -63,7 +63,7 @@ namespace MosaicDM
 		_bAlignWithFiducial = bAlignWithFiducial;
 		_layerIndex = layerIndex;
 		_bFiducialBrighterThanBackground = bFiducialBrighterThanBackground;
-		_bFiducialAllowNegativesMatch = bFiducialAllowNegativesMatch;
+		_bFiducialAllowNegativeMatch = bFiducialAllowNegativeMatch;
 
 		unsigned int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];

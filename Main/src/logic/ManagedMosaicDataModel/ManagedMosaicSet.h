@@ -85,7 +85,7 @@ namespace MMosaicDM
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial,
 				bool bFiducialBrighterThanBackground,
-				bool bFiducialAllowNegativesMatch)
+				bool bFiducialAllowNegativeMatch)
 			{
 				MosaicDM::MosaicLayer* pLayer = _pMosaicSet->AddLayer(
         			numCameras,
@@ -93,7 +93,7 @@ namespace MMosaicDM
 					bAlignWithCAD,
 					bAlignWithFiducial,
 					bFiducialBrighterThanBackground,
-					bFiducialAllowNegativesMatch);
+					bFiducialAllowNegativeMatch);
 				return pLayer == NULL?nullptr:gcnew ManagedMosaicLayer(pLayer);
 			}
 

@@ -131,7 +131,7 @@ void vswrapper::disposeEnv()
 const char * vswrapper::create_disc_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double r, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -140,7 +140,7 @@ const char * vswrapper::create_disc_template(
 		retVal = concreteWrapper_->create_disc_template(
 			piNodeID,
 			tpl, r, theta, 
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale, 
 			low_accept, high_accept, mask_region, depth );
 
@@ -151,7 +151,7 @@ const char * vswrapper::create_disc_template(
 const char * vswrapper::create_donut_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double inner_radius, double outer_radius, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -160,7 +160,7 @@ const char * vswrapper::create_donut_template(
 		retVal = concreteWrapper_->create_donut_template(
 			piNodeID,
 			tpl, inner_radius, outer_radius, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -172,7 +172,7 @@ const char * vswrapper::create_cross_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, 
 	double base_leg, double height_leg, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, int rounded_edges, 
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -182,7 +182,7 @@ const char * vswrapper::create_cross_template(
 			piNodeID, 
 			tpl, base, height,
 			base_leg, height_leg, rounded_edges, theta, 
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale, 
 			low_accept, high_accept, mask_region, depth );
 
@@ -193,7 +193,7 @@ const char * vswrapper::create_cross_template(
 const char * vswrapper::create_diamond_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -202,7 +202,7 @@ const char * vswrapper::create_diamond_template(
 		retVal = concreteWrapper_->create_diamond_template(
 			piNodeID,
 			tpl, base, height, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -213,7 +213,7 @@ const char * vswrapper::create_diamond_template(
 const char * vswrapper::create_diamondframe_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double thick, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -222,7 +222,7 @@ const char * vswrapper::create_diamondframe_template(
 		retVal = concreteWrapper_->create_diamondframe_template(
 			piNodeID,
 			tpl, base, height, thick, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -232,7 +232,7 @@ const char * vswrapper::create_diamondframe_template(
 const char * vswrapper::create_triangle_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double offset, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -241,7 +241,7 @@ const char * vswrapper::create_triangle_template(
 		retVal = concreteWrapper_->create_triangle_template(
 			piNodeID,
 			tpl, base, height, offset, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -251,7 +251,7 @@ const char * vswrapper::create_triangle_template(
 const char * vswrapper::create_triangleframe_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double offset, double thick, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -260,7 +260,7 @@ const char * vswrapper::create_triangleframe_template(
 		retVal = concreteWrapper_->create_triangleFrame_template1(
 			piNodeID,
 			tpl, base, height, offset, thick, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -270,7 +270,7 @@ const char * vswrapper::create_triangleframe_template(
 const char * vswrapper::create_rectangle_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -279,7 +279,7 @@ const char * vswrapper::create_rectangle_template(
 		retVal = concreteWrapper_->create_rectangle_template(
 			piNodeID, 
 			tpl, base, height, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -289,7 +289,7 @@ const char * vswrapper::create_rectangle_template(
 const char * vswrapper::create_rectangleframe_template(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl, double base, double height, double thick, double theta,
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth )
 { 
@@ -298,7 +298,7 @@ const char * vswrapper::create_rectangleframe_template(
 		retVal = concreteWrapper_->create_rectangleframe_template(
 			piNodeID, 
 			tpl, base, height, thick, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 
@@ -309,7 +309,7 @@ const char * vswrapper::create_rectangleframe_template(
 const char * vswrapper::create_checkerpattern_template(
 	int* piNodeID,		// Output: nodeID of map
 	templatetype tpl, double base, double height,double theta,			
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale,
 	double low_accept, double high_accept, double mask_region, int depth
 	)
@@ -319,7 +319,7 @@ const char * vswrapper::create_checkerpattern_template(
 		retVal = concreteWrapper_->create_checkerpattern_template(
 			piNodeID, 
 			tpl, base, height, theta,
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, mask_region, depth );
 

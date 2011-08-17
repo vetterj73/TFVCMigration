@@ -726,11 +726,11 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		}
 	}
 
-	bool bAllowNegativesMatch;
+	bool bAllowNegativeMatch;
 	if(num_fid_data>0)
-		bAllowNegativesMatch = fid_data[0].bAllowNegativesMatch;
+		bAllowNegativeMatch = fid_data[0].bAllowNegativeMatch;
 	else
-		bAllowNegativesMatch = poly_data->bAllowNegativesMatch;
+		bAllowNegativeMatch = poly_data->bAllowNegativeMatch;
 
 	if(tpl == SKIPMARK)
 	{
@@ -770,7 +770,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		ptFTemplate->iCorrelationType = 1; /* gain and offset */
 		ptFTemplate->dGainFactor = 40.0;
 		ptFTemplate->iOffsetValue = 255; /* ignored if gain only */
-		ptFTemplate->yAllowNegatives = bAllowNegativesMatch? TRUE:FALSE; /* enable inverse match*/
+		ptFTemplate->yAllowNegatives = bAllowNegativeMatch? TRUE:FALSE; /* enable inverse match*/
 		ptFTemplate->yAllowPyramidTypeChange = 0;
 		ptFTemplate->yAllowCorrelationTypeChange = FALSE ;
 		ptFTemplate->iMinimumPyramidDepth = 1;
@@ -867,7 +867,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	VsStFinder* ptFinder,			// Output: initialized Finder structure
 	templatetype tpl, int fid, double twidth,
 	double theight, double hwidth, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, double low_accept,
 	double high_accept,	int depth, double mask_region)
 {
@@ -881,7 +881,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	fid_data.hwidth=hwidth;
 	fid_data.theta=theta;
 	fid_data.dark_to_light=dark_to_light;
-	fid_data.bAllowNegativesMatch = bAllowNegativesMatch;
+	fid_data.bAllowNegativeMatch = bAllowNegativeMatch;
 
 	if(fabs(theta) > 0.0) 
 	{
@@ -906,7 +906,7 @@ const char * concreteVsWrapper::create_disc_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl, 
 	double r, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch, 
+	int dark_to_light, bool bAllowNegativeMatch, 
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {	
@@ -936,13 +936,13 @@ const char * concreteVsWrapper::create_disc_template(
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, CIRCLE_H_FIDUCIAL, twidth+2*SKIPMARK_EDGE,
 				theight+2*SKIPMARK_EDGE, SKIPMARK_EDGE, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 		else
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, CIRCLE_FIDUCIAL, twidth, theight, 0, theta,
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale, low_accept, high_accept, depth, mask_region);
 	}
 	else
@@ -956,7 +956,7 @@ const char * concreteVsWrapper::create_rectangle_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -986,14 +986,14 @@ const char * concreteVsWrapper::create_rectangle_template(
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, SQUARE_H_FIDUCIAL, base+2*SKIPMARK_EDGE,
 				height+2*SKIPMARK_EDGE, SKIPMARK_EDGE, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 		else
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, SQUARE_FIDUCIAL, base,
 				height, 0, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 	}
@@ -1005,7 +1005,7 @@ const char * concreteVsWrapper::create_rectangleframe_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double thickness, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1035,7 +1035,7 @@ const char * concreteVsWrapper::create_rectangleframe_template(
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, SQUARE_H_FIDUCIAL, base,
 			height, thickness, theta, 
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, depth, mask_region);
 	}
@@ -1047,7 +1047,7 @@ const char * concreteVsWrapper::create_diamond_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1077,14 +1077,14 @@ const char * concreteVsWrapper::create_diamond_template(
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, DIAMOND_H_FIDUCIAL, base+2*SKIPMARK_EDGE,
 				height+2*SKIPMARK_EDGE, SKIPMARK_EDGE, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 		else
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, DIAMOND_FIDUCIAL, base,
 				height, 0, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 	}
@@ -1096,7 +1096,7 @@ const char * concreteVsWrapper::create_diamondframe_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double thickness, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch,
+	int dark_to_light, bool bAllowNegativeMatch,
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1126,7 +1126,7 @@ const char * concreteVsWrapper::create_diamondframe_template(
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, DIAMOND_H_FIDUCIAL, base,
 			height, thickness, theta, 
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, depth, mask_region);
 	}
@@ -1138,7 +1138,7 @@ const char * concreteVsWrapper::create_triangle_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double offset, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch, 
+	int dark_to_light, bool bAllowNegativeMatch, 
 	double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1199,7 +1199,7 @@ const char * concreteVsWrapper::create_triangle_template(
 		poly_data.height = height + (2 * fabs(delta.y));
 		poly_data.poly = triangle;
 		poly_data.dark_to_light = dark_to_light;
-		poly_data.bAllowNegativesMatch = bAllowNegativesMatch;
+		poly_data.bAllowNegativeMatch = bAllowNegativeMatch;
 
 		vs_fid_data fid_data;
 		const int diff_size=5;
@@ -1211,7 +1211,7 @@ const char * concreteVsWrapper::create_triangle_template(
 		fid_data.hwidth=0;
 		fid_data.theta=theta;
 		fid_data.dark_to_light=dark_to_light;
-		fid_data.bAllowNegativesMatch = bAllowNegativesMatch;
+		fid_data.bAllowNegativeMatch = bAllowNegativeMatch;
 
 		if(tpl == FIDUCIAL)
 			get_differentiators(diff_list, diff_size-1, TRIANGLE_UP_FIDUCIAL, base, height,
@@ -1229,7 +1229,7 @@ const char* concreteVsWrapper::create_triangleFrame_template1(
 	int* piNodeID,			// Output: nodeID of map	
 	templatetype tpl,
 	double base, double height, double offset, double thickness, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch, 
+	int dark_to_light, bool bAllowNegativeMatch, 
 	double *min_scale,  double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1297,7 +1297,7 @@ const char* concreteVsWrapper::create_triangleFrame_template1(
 		poly_data.height = height + (2 * fabs(delta.y));
 		poly_data.poly = triangleFrame;
 		poly_data.dark_to_light = dark_to_light;
-		poly_data.bAllowNegativesMatch = bAllowNegativesMatch;
+		poly_data.bAllowNegativeMatch = bAllowNegativeMatch;
 
 		vs_fid_data fid_data;
 		const int diff_size=5;
@@ -1309,7 +1309,7 @@ const char* concreteVsWrapper::create_triangleFrame_template1(
 		fid_data.hwidth=0;
 		fid_data.theta=theta;
 		fid_data.dark_to_light=dark_to_light;
-		fid_data.bAllowNegativesMatch = bAllowNegativesMatch;
+		fid_data.bAllowNegativeMatch = bAllowNegativeMatch;
 
 		if(tpl == FIDUCIAL)
 			get_differentiators(diff_list, diff_size-1, TRIANGLE_UP_FIDUCIAL, base, height,
@@ -1326,7 +1326,7 @@ const char * concreteVsWrapper::create_donut_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double inner_radius, double outer_radius, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch, 
+	int dark_to_light, bool bAllowNegativeMatch, 
 	double *min_scale, double *max_scale, double low_accept, double high_accept, 
 	double mask_region, int depth)
 {
@@ -1357,7 +1357,7 @@ const char * concreteVsWrapper::create_donut_template(
 		return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 			tpl, CIRCLE_H_FIDUCIAL, twidth, theight,
 			outer_radius-inner_radius, theta, 
-			dark_to_light, bAllowNegativesMatch,
+			dark_to_light, bAllowNegativeMatch,
 			min_scale, max_scale,
 			low_accept, high_accept, depth, mask_region);
 	}
@@ -1369,7 +1369,7 @@ const char * concreteVsWrapper::create_cross_template(
 	int* piNodeID,			// Output: nodeID of map
 	templatetype tpl,
 	double base, double height, double base_leg, double height_leg, int rounded_edges, double theta, 
-	int dark_to_light, bool bAllowNegativesMatch, 
+	int dark_to_light, bool bAllowNegativeMatch, 
 	double *min_scale, double *max_scale, double low_accept, double high_accept,
 	double mask_region, int depth)
 {
@@ -1404,7 +1404,7 @@ const char * concreteVsWrapper::create_cross_template(
 
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, PLUS_FIDUCIAL_ROUNDED, base, height, base_leg, theta, 
-				dark_to_light, bAllowNegativesMatch, 
+				dark_to_light, bAllowNegativeMatch, 
 				min_scale, max_scale, low_accept, high_accept, depth,
 				mask_region);
 		}
@@ -1423,7 +1423,7 @@ const char * concreteVsWrapper::create_cross_template(
 			fid_data[0].hwidth=0;
 			fid_data[0].theta=theta;
 			fid_data[0].dark_to_light=dark_to_light;
-			fid_data[0].bAllowNegativesMatch = bAllowNegativesMatch;
+			fid_data[0].bAllowNegativeMatch = bAllowNegativeMatch;
 
 			fid_data[1].fid=SQUARE_FIDUCIAL;
 			fid_data[1].twidth=height_leg;
@@ -1431,7 +1431,7 @@ const char * concreteVsWrapper::create_cross_template(
 			fid_data[1].hwidth=0;
 			fid_data[1].theta=theta;
 			fid_data[1].dark_to_light=dark_to_light;
-			fid_data[0].bAllowNegativesMatch = bAllowNegativesMatch;
+			fid_data[0].bAllowNegativeMatch = bAllowNegativeMatch;
 
 			const int diff_size=5;
 			vs_fid_data diff_list[diff_size];
@@ -1452,7 +1452,7 @@ const char* concreteVsWrapper::create_checkerpattern_template(
 		int* piNodeID,			// Output: nodeID of map	
 		templatetype tpl,
 		double base, double height, double theta, 
-		int dark_to_light, bool bAllowNegativesMatch, 
+		int dark_to_light, bool bAllowNegativeMatch, 
 		double *min_scale, double *max_scale, double low_accept, double high_accept,
 		double mask_region, int depth)
 {
@@ -1482,7 +1482,7 @@ const char* concreteVsWrapper::create_checkerpattern_template(
 		{
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, CHECKER_UL_FIDUCIAL, base, height, 0, theta, 
-				dark_to_light, bAllowNegativesMatch, 
+				dark_to_light, bAllowNegativeMatch, 
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region);
 		}
@@ -1492,7 +1492,7 @@ const char* concreteVsWrapper::create_checkerpattern_template(
 			// the switch of base and height will be in the function
 			return CreateVsFinderTemplate(ptFTemplate, ptFinder,
 				tpl, CHECKER_UR_FIDUCIAL, base, height, 0, theta, 
-				dark_to_light, bAllowNegativesMatch,
+				dark_to_light, bAllowNegativeMatch,
 				min_scale, max_scale,
 				low_accept, high_accept, depth, mask_region); 
 		}
