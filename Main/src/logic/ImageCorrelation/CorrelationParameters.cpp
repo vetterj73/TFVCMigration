@@ -20,8 +20,9 @@ CorrelationParameters::CorrelationParameters(void)
 	// Coarse correlation
 	iCoarseMinDecim = 2;				// Minimum decimatin for coarse correlation
 	iCoarseColSearchExpansion = 50;		// Search expansion in cols for coarse correlation
-	iCoarseRowSearchExpansion = 300;		// Search expansion in rows for coarse correlation
+	iCoarseRowSearchExpansion = 300;	// Search expansion in rows for coarse correlation
 	dCoarseResultReliableTh = 0.03;		// Threshold to decide whether coarse correlaiton result is reliable
+	dCoarseResultAmbigTh = 0.8;			// Threshold to decide whehter coarse correlation ambiugous is too high
 
 	// Fine correlation
 	iFineBlockWidth = 256;				// Default width of fine correlation block

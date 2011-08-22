@@ -238,10 +238,13 @@ void Overlap::Run()
 	_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
 
 	// If the Roi size is reduced in correlation
+	double dCoarseReliableScore = 0;
 	if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
 	{	//If the correlation result is not good enough
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		if(result.CorrCoeff * (1-result.AmbigScore)<CorrelationParametersInst.dCoarseResultReliableTh)
+		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+		if(dCoarseReliableScore < CorrelationParametersInst.dCoarseResultReliableTh ||
+			result.AmbigScore > CorrelationParametersInst.dCoarseResultAmbigTh )
 		{
 			// try again without ROI reduce
 			_coarsePair.Reset();
@@ -270,12 +273,12 @@ void Overlap::Run()
 	// Adjust ROI base on the coarse results
 	bool bAdjusted = false;
 	CorrelationPair tempPair = _coarsePair;
-	double dCoarseReliableScore = 0;
+	dCoarseReliableScore = 0;
 	if(_coarsePair.IsProcessed())
 	{
 		CorrelationResult result= _coarsePair.GetCorrelationResult();
 		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-		if(dCoarseReliableScore >CorrelationParametersInst.dCoarseResultReliableTh)
+		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
 			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
 

@@ -45,6 +45,7 @@ public:
 	unsigned int iCoarseColSearchExpansion; // Search expansion in cols for coarse correlation
 	unsigned int iCoarseRowSearchExpansion; // Search expansion in rows for coarse correlation
 	double dCoarseResultReliableTh;			// Threshold to decide whether coarse correlaiton result is reliable
+	double dCoarseResultAmbigTh;			// Threshold to decide whehter coarse correlation ambiugous is too high
 
 	// Fine correaltion
 	unsigned int iFineBlockWidth;			// Default width of fine correlation block
