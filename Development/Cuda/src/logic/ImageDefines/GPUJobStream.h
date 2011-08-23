@@ -10,6 +10,8 @@ using std::string;
 namespace CyberJob
 {
 
+	class GPUJob;
+
 	///
 	///	Encapsulates a GPU stream for running jobs.
 	///
@@ -24,7 +26,7 @@ namespace CyberJob
 		//GPUJobStream(string uniqueName);
 		~GPUJobStream(void);
  
-		void Initialize(GPUJob *pJob);
+		//void Initialize(GPUJob *pJob);
 		///
 		///	
 		/// 
@@ -47,15 +49,13 @@ namespace CyberJob
 		///
 		//unsigned int QueueCount();
 
-		//unsigned int Phase() { return _phase; }
-		//void Phase(unsigned int phase) { _phase = phase; }
-
-		//GPUJob *CurrentJob() { return _currentJob; }
-		//void CurrentJob(GPUJob *pJob) { _currentJob = pJob; }
-
 		cudaStream_t *Stream() { return &_stream; }
 
-		cudaEvent_t *PhaseEvent() { return &_phaseEvent; }
+		unsigned int Phase() { return _phase; }
+		void Phase(unsigned int phase) { _phase = phase; }
+
+		GPUJob *GPUJob() { return _pGPUJob; }
+		void GPUJob(CyberJob::GPUJob *pGPUJob);
 
 		void *Context() { return _context; }
 		void Context(void *context) { _context = context; }
@@ -74,13 +74,14 @@ namespace CyberJob
 
 		unsigned int _phase;
 		cudaStream_t _stream;
-		cudaEvent_t _phaseEvent;
+		//cudaEvent_t _phaseEvent;
 
 		HANDLE _statusMutex;
 
 		HANDLE _startSignal;
 		HANDLE _killSignal;
 
+		CyberJob::GPUJob *_pGPUJob;
 		///
 		///	Job type specific context
 		///

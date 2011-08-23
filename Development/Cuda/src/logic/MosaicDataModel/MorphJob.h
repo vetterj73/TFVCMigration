@@ -26,7 +26,6 @@ protected:
 	Image *_pStitched;
 	Image *_pFOV;
 	UIRect _rect;
-	unsigned int _phase;
 	unsigned int _ordinal;
 };
 

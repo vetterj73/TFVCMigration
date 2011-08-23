@@ -3,8 +3,7 @@
 #include "GPUJobStream.h"
 #include "JobThread.h"
 #include "JobManager.h"
-//#include "GPUJobThread.h"
-//#include "JobThread.h"
+
 namespace CyberJob
 {
 	DWORD WINAPI GPUDeviceThread(LPVOID p)
@@ -66,9 +65,6 @@ namespace CyberJob
 		name = "GPUJobManager_QueueMutex";
 		_queueMutex = CreateMutex(0, FALSE, name.c_str());
 
-		name = "GPUJobManager_StreamMutex";
-		_streamMutex = CreateMutex(0, FALSE, name.c_str());
-
 		name = "GPUJobManager_StartSignal";
 		_startSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
 
@@ -105,7 +101,6 @@ namespace CyberJob
 
 		// Close all handles for cleanup
 		CloseHandle(_queueMutex);
-		CloseHandle(_streamMutex);
 		CloseHandle(_startSignal);
 		CloseHandle(_killSignal);
 		CloseHandle(_GPUThread);
@@ -128,19 +123,10 @@ namespace CyberJob
 		return pJob;
 	}
 
-	//void GPUJobManager::MarkAsFinished()
-	//{
-	//	for(unsigned int i=0; i<_jobThreads.size(); i++)
-	//		_jobThreads[i]->MarkAsFinished();
-	//}
-
 	unsigned int GPUJobManager::TotalJobs()
 	{
 
 		unsigned int count = 0;
-		WaitForSingleObject(_streamMutex, INFINITE);
-		count += _GPUStreamQueue.size();
-		ReleaseMutex(_streamMutex);
 
 		WaitForSingleObject(_queueMutex, INFINITE);
 		count += _jobQueue.size();
@@ -149,71 +135,40 @@ namespace CyberJob
 		for(unsigned int i=0; i<_jobThreads.size(); i++)
 			if (_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::ACTIVE) ++count;
 
+		for(unsigned int i=0; i<_jobStreams.size(); i++)
+			if (_jobStreams[i]->GPUJob() != NULL) ++count;
+
 		return count;
 	}
 
-	//void GPUJobManager::SetupGPUStreams(unsigned int count)
-	//{
-	//	for(unsigned int i=0; i<count; i++)
-	//	{
-	//		char buf[cMaxNameSize];
-	//		sprintf_s(buf, cMaxNameSize-1, "%s%d", _name.c_str(), i);
-	//		string name = buf;
-	//		GPUJobStream* pJT = new GPUJobStream(this, name);
-	//		_GPUStreams.push_back(pJT);
-	//	}
-	//}
-
 	void GPUJobManager::ManageStreams()
 	{
-		JobManager* test = new JobManager("TEST", 1);
+		bool activeJobs;
 
-		while (true)
+		do
 		{
-			for (int i=0; i<_maxStreams; ++i)
+			activeJobs = false;
+			for (int i=0; i<_maxStreams && i < _jobStreams.size(); ++i)
 			{
-				if (i >= _GPUStreamQueue.size())
+				if (_jobStreams[i]->GPUJob() == NULL)
 				{
-					GPUJob *pJob = GetNextJob();
-					if (pJob != NULL)
-					{
-						WaitForSingleObject(_streamMutex, INFINITE);
-						_GPUStreamQueue.push_back(pJob);
-						ReleaseMutex(_streamMutex);
-
-						if (pJob->GPURun(_jobStreams[i])) // if job completed
-						{
-							WaitForSingleObject(_streamMutex, INFINITE);
-							_GPUStreamQueue.pop_back();
-							ReleaseMutex(_streamMutex);
-						}
-					}
-					else if (i == 0) return;
+					_jobStreams[i]->GPUJob(GetNextJob());
 				}
-				else
-				{
-					GPUJob *pJob = _GPUStreamQueue[i];
-					if (pJob != NULL)
-					{
-						if (pJob->GPURun(_jobStreams[i])) // if job completed
-						{
-							WaitForSingleObject(_streamMutex, INFINITE);
-							_GPUStreamQueue.erase (_GPUStreamQueue.begin()+i);
-							ReleaseMutex(_streamMutex);
-							--i;
 
-							GPUJob *pJob = GetNextJob();
-							if (pJob != NULL)
-							{
-								WaitForSingleObject(_streamMutex, INFINITE);
-								_GPUStreamQueue.push_back(pJob);
-								ReleaseMutex(_streamMutex);
-							}
-						}
+				GPUJob *pGPUJob = _jobStreams[i]->GPUJob();
+				if (pGPUJob != NULL)
+				{
+					activeJobs = true;
+
+					if (pGPUJob->GPURun(_jobStreams[i])) // if job completed
+					{
+						_jobStreams[i]->GPUJob(NULL);
+						--i;
 					}
 				}
 			}
 		}
+		while (activeJobs);
 	}
 
 	bool GPUJobManager::AddAJob(GPUJob* pJob)
@@ -223,11 +178,12 @@ namespace CyberJob
 		unsigned int unhandledJobCount = _jobQueue.size();
 		ReleaseMutex(_queueMutex);
 
-		WaitForSingleObject(_streamMutex, INFINITE);
-		unsigned int streamJobCount = _GPUStreamQueue.size();
-		ReleaseMutex(_streamMutex);
-
-		if (streamJobCount < _maxStreams) // !!! only one jobstream thread and status
+		unsigned int streamJobCount = 0;
+		for(unsigned int i=0; i<_jobStreams.size() && unhandledJobCount > 0; i++)
+		{
+			if (_jobStreams[i]->GPUJob() != NULL) ++streamJobCount;
+		}
+		if (streamJobCount < _maxStreams)
 		{
 			SetEvent(_startSignal);
 			if (_maxStreams - streamJobCount >= unhandledJobCount) return true;

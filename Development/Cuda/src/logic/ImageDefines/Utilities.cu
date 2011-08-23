@@ -65,6 +65,7 @@ ByteMatrix AllocateByteMatrix(int width, int height);
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer, cudaStream_t *stream);
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer);
 void CopyDeviceMatrixToBuffer(ByteMatrix Mdevice, unsigned char* buffer, int hostSpan);
+void CopyDeviceMatrixToHost(ByteMatrix MHost, ByteMatrix Mdevice, cudaStream_t *stream);
 void CopyDeviceMatrixToHost(ByteMatrix MHost, ByteMatrix Mdevice);
 void CopyHostMatrixToBuffer(unsigned char* buffer, ByteMatrix Hdevice, int hostSpan);
 void FreeDeviceMatrix(ByteMatrix* M);
@@ -74,17 +75,17 @@ void FreeByteMatrix(ByteMatrix* M);
 void ConvolutionOnDevice(const ByteMatrix A, const ByteMatrix B, ByteMatrix C);
 
  
-static clock_t startXferToTick = 0;//the tick for when we first create an instance
-static clock_t startXferFromTick = 0;//the tick for when we first create an instance
-static clock_t startKrnlTick = 0;//the tick for when we first create an instance
-static clock_t totalXferToTick = 0;//the tick for when we first create an instance
-static clock_t totalXferFromTick = 0;//the tick for when we first create an instance
-static clock_t totalKrnlTick = 0;//the tick for when we first create an instance
-
-void PrintTicks()
-{
-	printf_s("\tXfer To ticks - %ld; Kernel ticks - %ld; Xfer From ticks - %ld;\n",totalXferToTick, totalKrnlTick, totalXferFromTick);
-}
+//static clock_t startXferToTick = 0;//the tick for when we first create an instance
+//static clock_t startXferFromTick = 0;//the tick for when we first create an instance
+//static clock_t startKrnlTick = 0;//the tick for when we first create an instance
+//static clock_t totalXferToTick = 0;//the tick for when we first create an instance
+//static clock_t totalXferFromTick = 0;//the tick for when we first create an instance
+//static clock_t totalKrnlTick = 0;//the tick for when we first create an instance
+//
+//void PrintTicks()
+//{
+//	printf_s("\tXfer To ticks - %ld; Kernel ticks - %ld; Xfer From ticks - %ld;\n",totalXferToTick, totalKrnlTick, totalXferFromTick);
+//}
 
 class ImageMorphContext
 {
@@ -92,13 +93,14 @@ class ImageMorphContext
 		ByteMatrix Ad;
 		ByteMatrix Bd;
 		ByteMatrix B;
+
+		cudaEvent_t phaseEvent;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-bool GPUImageMorph(
-	int phase, CyberJob::GPUJobStream *jobStream,
+bool GPUImageMorph( CyberJob::GPUJobStream *jobStream,
 	unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
@@ -108,76 +110,99 @@ bool GPUImageMorph(
 {
 //int main(int argc, char** argv) {
 
-	//ImageMorphContext *context = (ImageMorphContext*)jobStream->Context();
+	ImageMorphContext *context = (ImageMorphContext*)jobStream->Context();
+	unsigned int thePhase = jobStream->Phase();
+	jobStream->Phase(thePhase+1);
 
-	//switch (phase)
-	//{
-	//case 0:
-	//	 // setup job context
-	//	context = new ImageMorphContext();
-	//	jobStream->Context((void *)context);
-
-	//	context->Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
-	//	CopyBufferToDeviceMatrix(context->Ad, pInBuf, jobStream->Stream());
-
-	//	break;
-
-	//case 1:
-	//	if (context == NULL) return true; // error, complete job
-
-	//	break;
-	//}
-
-	startXferToTick = clock();//Obtain current tick
-
-	// Allocate and initialize input device matrices
-    ByteMatrix Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
-	CopyBufferToDeviceMatrix(Ad, pInBuf);
-	
-	// Allocate and clear output device matrices
-    ByteMatrix Bd = AllocateDeviceMatrix(iOutROIWidth, iOutROIHeight);
-    //int size = Bd.width * Bd.height * sizeof(unsigned char);
-    //cudaMemset(Bd.elements, 0, size);
-    ByteMatrix B = AllocateByteMatrix(iOutROIWidth, iOutROIHeight);
-
-	// Copy coefficients to device constant memory
-	cudaMemcpyToSymbol(coeffs, dInvTrans, sizeof(dInvTrans[0])*3, 0);
-
-	totalXferToTick += clock() - startXferToTick;//calculate the difference in ticks
-
-	startKrnlTick = clock();//Obtain current tick
-
-	for (int j=0; j<1/*8*/; ++j)
+	switch (thePhase)
 	{
+	case 0:
+		 // setup job context
+		context = new ImageMorphContext();
+		jobStream->Context((void *)context);
 
-	// Setup the execution configuration
-    dim3 threads(TILE_WIDTH, 12/*TILE_WIDTH*/);
-    dim3 grid(((Bd.width - 1) / threads.x) + 1, ((Bd.height - 1) / threads.y) + 1);
+		cudaEventCreate(&context->phaseEvent, 0);
 
-  	// Launch the device computation threads!
-	ConvolutionKernel<<< grid, threads >>>(Ad.elements, Bd.elements, Ad.width, Ad.height, iInWidth,
-		Bd.width, Bd.height, iOutSpan, iOutROIStartX, iOutROIStartY);
+		context->Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
+		CopyBufferToDeviceMatrix(context->Ad, pInBuf, jobStream->Stream());
 
-	int size = Ad.width * Ad.height * sizeof(unsigned char);
-	cudaMemcpy(pOutBuf, Bd.elements, 16, cudaMemcpyDeviceToHost);
+		context->Bd = AllocateDeviceMatrix(iOutROIWidth, iOutROIHeight);
+		context->B = AllocateByteMatrix(iOutROIWidth, iOutROIHeight);
+
+		// Copy coefficients to device constant memory
+		cudaMemcpyToSymbolAsync(coeffs, dInvTrans, sizeof(dInvTrans[0])*3, 0, cudaMemcpyHostToDevice, *jobStream->Stream());
+
+		//totalXferToTick += clock() - startXferToTick;//calculate the difference in ticks
+
+		//startKrnlTick = clock();//Obtain current tick
+
+		for (int j=0; j<1/*8*/; ++j)
+		{
+
+		// Setup the execution configuration
+		dim3 threads(TILE_WIDTH, 12/*TILE_WIDTH*/);
+		dim3 grid(((context->Bd.width - 1) / threads.x) + 1, ((context->Bd.height - 1) / threads.y) + 1);
+
+  		// Launch the device computation threads!
+		ConvolutionKernel<<< grid, threads, 0, *jobStream->Stream()>>>
+			(context->Ad.elements, context->Bd.elements, context->Ad.width, context->Ad.height, iInWidth,
+			context->Bd.width, context->Bd.height, iOutSpan, iOutROIStartX, iOutROIStartY);
+
+		//int size = Ad.width * Ad.height * sizeof(unsigned char);
+		//cudaMemcpy(pOutBuf, Bd.elements, 16, cudaMemcpyDeviceToHost);
+		}
+
+		//totalKrnlTick += clock() - startKrnlTick;//calculate the difference in ticks
+
+		return false;
+
+	case 1:
+		if (context == NULL) return true; // error, complete job
+
+		//startXferFromTick = clock();//Obtain current tick
+
+		CopyDeviceMatrixToHost(context->B, context->Bd, jobStream->Stream());
+
+		cudaEventRecord(context->phaseEvent);
+
+		return false;
+
+	case 2:
+		if (context == NULL) return true; // error, complete job
+
+		cudaError_t result = cudaEventQuery(context->phaseEvent);
+
+		if (result != cudaSuccess)
+		{
+			if (result != cudaErrorNotReady)
+			{
+				printf_s("\Event Error - %ld;\n",result);
+			}
+			jobStream->Phase(thePhase);
+			printf_s("\Phase - %ld;\n",jobStream->Phase());
+			return false;
+		}
+
+		//cudaEventSynchronize(context->phaseEvent);
+
+		CopyHostMatrixToBuffer(pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, context->B, iOutSpan);
+
+		// Free matrices
+		cudaFree(context->Ad.elements);
+		cudaFree(context->Bd.elements);
+		FreeByteMatrix(&context->B);
+
+		cudaEventDestroy(context->phaseEvent);
+
+		delete context;
+
+		jobStream->Context((void *)NULL);
+
+		//totalXferFromTick += clock() - startXferFromTick;//calculate the difference in ticks
+
+		return true;
 	}
 
-	totalKrnlTick += clock() - startKrnlTick;//calculate the difference in ticks
-
-	startXferFromTick = clock();//Obtain current tick
-
-	//CopyDeviceMatrixToBuffer(Bd, pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, iOutSpan);
-	CopyDeviceMatrixToHost(B, Bd);
-	CopyHostMatrixToBuffer(pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, B, iOutSpan);
-
-	// Free matrices
-    cudaFree(Ad.elements);
-    cudaFree(Bd.elements);
-	FreeByteMatrix(&B);
-
-	totalXferFromTick += clock() - startXferFromTick;//calculate the difference in ticks
-
-	return true;
 }
 
 // Allocate a device matrix of same size as M.
@@ -221,6 +246,14 @@ void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer)
     cudaMemcpy(Mdevice.elements, buffer, size, cudaMemcpyHostToDevice);
 }
 
+void CopyDeviceMatrixToHost(ByteMatrix Mhost, ByteMatrix Mdevice, cudaStream_t *stream)
+{
+    int Hsize = Mhost.width * Mhost.height * sizeof(unsigned char);
+    int Dsize = Mdevice.width * Mdevice.height * sizeof(unsigned char);
+	int size = (Dsize > Hsize) ? Hsize : Dsize ;
+
+	cudaMemcpyAsync(Mhost.elements, Mdevice.elements, size, cudaMemcpyDeviceToHost, *stream);
+}
 void CopyDeviceMatrixToHost(ByteMatrix Mhost, ByteMatrix Mdevice)
 {
     int Hsize = Mhost.width * Mhost.height * sizeof(unsigned char);

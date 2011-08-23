@@ -93,12 +93,12 @@ void inverse(
 	delete [] b;
 }
 
-static int ImageMorph_loop = 0;
-
-static clock_t startTick = 0;	//the tick for when we first create an instance
-static clock_t deltaTicks = 0;	//currTick - startTick
-
-void PrintTicks();
+//static int ImageMorph_loop = 0;
+//
+//static clock_t startTick = 0;	//the tick for when we first create an instance
+//static clock_t deltaTicks = 0;	//currTick - startTick
+//
+//void PrintTicks();
 
 // Fill a ROI of the output image by transforming the input image
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
@@ -134,7 +134,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned char* pbOutBuf = pOutBuf + iOutROIStartY*iOutSpan;
 	int iInSpanP1 = iInSpan+1;
 
-	startTick = clock();//Obtain current tick
+	//startTick = clock();//Obtain current tick
 
 	// some local variable
 	unsigned char* pbPixPtr;
@@ -245,15 +245,15 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 		} // iy
     } // else
 
-	deltaTicks += clock() - startTick;//calculate the difference in ticks
+	//deltaTicks += clock() - startTick;//calculate the difference in ticks
 
-	if (ImageMorph_loop == 189)
-	{
-		printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
-		PrintTicks();
-	}
+	//if (ImageMorph_loop == 189)
+	//{
+	//	printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
+	//	PrintTicks();
+	//}
 
-	ImageMorph_loop += 1;
+	//ImageMorph_loop += 1;
 
 	return(true);
 }

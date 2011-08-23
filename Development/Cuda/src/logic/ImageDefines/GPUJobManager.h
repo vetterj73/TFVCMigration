@@ -22,7 +22,6 @@ namespace CyberJob
 		virtual void Run()=0;
 		virtual bool GPURun(GPUJobStream *jobStream)=0; // true = job done, false = more to do
 
-		//virtual unsigned int NumberOfPhases()=0;
 		virtual unsigned int NumberOfStreams()=0;
 	};
 
@@ -77,24 +76,16 @@ namespace CyberJob
 		void ManageStreams();
 		void SetupGPUStreams(unsigned int count);
 
-		//std::string _name;
-
 		HANDLE _GPUThread;
 		HANDLE _queueMutex;
-		HANDLE _streamMutex;
 		HANDLE _startSignal;
 		HANDLE _killSignal;
+
+		unsigned int _maxStreams;
 
 		vector<GPUJobThread*> _jobThreads;
 		vector<GPUJobStream*> _jobStreams;
 
-		unsigned int _maxStreams;
-		vector<GPUJob*> _GPUStreamQueue;
-
 		queue<GPUJob*>	_jobQueue;
-		//unsigned int _currentJob;
 	};
 };
-
-//#include "GPUJobThread.h"
-//#include "GPUJobStream.h"

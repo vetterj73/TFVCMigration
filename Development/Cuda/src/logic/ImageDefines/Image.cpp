@@ -326,15 +326,15 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 	return(true);
 }
 
-int ImageMorph_loop;
-clock_t startTick;	//the tick for when we first create an instance
-clock_t deltaTicks;	//currTick - startTick
-
-void PrintTicks();
-
+//int ImageMorph_loop;
+//clock_t startTick;	//the tick for when we first create an instance
+//clock_t deltaTicks;	//currTick - startTick
+//
+//void PrintTicks();
+//
 
 // This image's ROI content is mapped from pImgIn
-bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::GPUJobStream *jobStream)
+bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream *jobStream)
 {
 	bool results = true; // true = conversion complete
 	/*
@@ -383,10 +383,10 @@ bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::G
 	// !!! GPU can currently only do affine transform
 	if(dT[2][0] != 0 || dT[2][1] != 0 || dT[2][2] != 1) return true; // true means done
 
-	startTick = clock();//Obtain current tick
+	//startTick = clock();//Obtain current tick
 
 	// GPU based image morph
-	results = GPUImageMorph( phase, jobStream,
+	results = GPUImageMorph(jobStream,
 		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
 		pImgIn->Columns(), pImgIn->Rows(), 
 		_buffer, _pixelRowStride,
@@ -394,15 +394,15 @@ bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::G
 		roi.Columns(), roi.Rows(),
 		dT);
 
-	deltaTicks += clock() - startTick;//calculate the difference in ticks
+	//deltaTicks += clock() - startTick;//calculate the difference in ticks
 
-	if (ImageMorph_loop == 189)
-	{
-		printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
-		PrintTicks();
-	}
+	//if (ImageMorph_loop == 189)
+	//{
+	//	printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
+	//	PrintTicks();
+	//}
 
-	ImageMorph_loop += 1;
+	//ImageMorph_loop += 1;
 
 	return(results);
 }

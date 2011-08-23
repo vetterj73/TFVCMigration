@@ -94,7 +94,7 @@ public:
 
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);
-	bool				GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::GPUJobStream *jobStream);
+	bool				GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream *jobStream);
 
 	bool				Save(string sFileName);
 

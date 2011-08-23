@@ -17,7 +17,6 @@ MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV,
 
 	_pStitched = pStitchedImage;
 	_pFOV = pFOV;
-	_phase = 0;
 	_ordinal = ordinal;
 }
 
@@ -34,12 +33,10 @@ bool MorphJob::GPURun(CyberJob::GPUJobStream *jobStream)
 {
 	bool results = true; // true = conversion complete
 	
-	printf_s("GPUJob execution: oridinal - %ld; phase - %ld;\n", _ordinal, _phase);
+	//printf_s("GPUJob execution: oridinal - %ld;\n", _ordinal );
 
 	if(_pStitched !=NULL && _rect.IsValid())
-		results = _pStitched->GPUMorphFrom(_pFOV, _rect, _phase, jobStream);
-
-	_phase++;
+		results = _pStitched->GPUMorphFrom(_pFOV, _rect, jobStream);
 
 	return results;
 }

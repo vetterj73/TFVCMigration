@@ -151,7 +151,7 @@ namespace MosaicDM
 
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::GPUJobManager jm(buf, 8, 3);
+		CyberJob::GPUJobManager jm(buf, 8, 5);
 		vector<MorphJob*> morphJobs;
 
 		deltaBatch = 0;

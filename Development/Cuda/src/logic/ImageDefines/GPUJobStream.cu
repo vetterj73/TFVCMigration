@@ -15,7 +15,10 @@ namespace CyberJob
 
 		cudaStreamCreate(&_stream);
 
-		cudaEventCreate(&_phaseEvent);
+		_pGPUJob = NULL;
+		_phase = 0;
+
+		//cudaEventCreate(&_phaseEvent);
 	}
 
 	GPUJobStream::~GPUJobStream(void)
@@ -25,14 +28,19 @@ namespace CyberJob
 		//// Make sure thread stops...
 		//Sleep(10);
 
-		cudaEventDestroy(_phaseEvent);
+		//cudaEventDestroy(_phaseEvent);
 
 		cudaStreamDestroy(_stream);
 	}
 
-	void GPUJobStream::Initialize(GPUJob *pJob)
+	void GPUJobStream::GPUJob(CyberJob::GPUJob *pGPUJob)
 	{
+		_pGPUJob = pGPUJob;
+		_phase = 0;
 	}
+	//void GPUJobStream::Initialize(GPUJob *pJob)
+	//{
+	//}
 
 	void GPUJobStream::Kill()
 	{
