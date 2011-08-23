@@ -136,17 +136,6 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	startTick = clock();//Obtain current tick
 
-	//char str[64];
-	//sprintf_s(str, 24, "ImageMorph %d", ImageMorph_loop);
-
-	if (ImageMorph_loop < /*0*/200)
-	{
-		GPUImageMorph(pInBuf,iInSpan, iInWidth, iInHeight, 
-			pOutBuf, iOutSpan, iOutROIStartX, iOutROIStartY, iOutROIWidth, iOutROIHeight, dInvTrans) ;
-	}
-	else
-	{
-
 	// some local variable
 	unsigned char* pbPixPtr;
 	int iflrdX, iflrdY;
@@ -255,8 +244,6 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 			pbOutBuf += iOutSpan;
 		} // iy
     } // else
-
-	}
 
 	deltaTicks += clock() - startTick;//calculate the difference in ticks
 

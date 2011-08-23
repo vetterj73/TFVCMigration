@@ -103,13 +103,13 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\PanelAlignment</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\PanelAlignment;$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;cudart.lib;cutil64D.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;cudart.lib;cutil64D.lib;npp.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
@@ -120,6 +120,7 @@ copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -152,7 +153,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\PanelAlignment</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\PanelAlignment;$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -160,17 +161,24 @@ copy *.h ..\..\..\pub\include</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;Bitmap.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib;cudart.lib;cutil64D.lib;npp.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
 copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Include>$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="GPUJobManager.h" />
+    <ClInclude Include="GPUJobStream.h" />
+    <ClInclude Include="GPUJobThread.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
@@ -190,11 +198,16 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="GPUJobManager.cu" />
+    <CudaCompile Include="GPUJobStream.cu" />
+    <CudaCompile Include="GPUJobThread.cu" />
     <CudaCompile Include="Utilities.cu">
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>
+      <Include Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>
     </CudaCompile>
     <None Include="Utilities_kernel.cu">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

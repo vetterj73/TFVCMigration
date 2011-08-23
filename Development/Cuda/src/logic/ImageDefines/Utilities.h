@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "GPUJobManager.h"
 
 
 // Inverse a matrix,
@@ -17,7 +18,7 @@ void inverse(
 	unsigned int cols);
 
 
-bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+bool GPUImageMorph(int phase, CyberJob::GPUJobStream *jobStream, unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,

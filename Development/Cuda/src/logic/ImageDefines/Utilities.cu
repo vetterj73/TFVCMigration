@@ -42,6 +42,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "GPUJobManager.h"
+#include "GPUJobStream.h"
 
 // includes, project
 #include <cutil.h>
@@ -60,6 +62,7 @@ void computeGold(float*, const float*, const float*, unsigned int, unsigned int)
 ByteMatrix AllocateDeviceMatrix(int width, int height);
 ByteMatrix AllocateZeroDeviceMatrix(int width, int height);
 ByteMatrix AllocateByteMatrix(int width, int height);
+void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer, cudaStream_t *stream);
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer);
 void CopyDeviceMatrixToBuffer(ByteMatrix Mdevice, unsigned char* buffer, int hostSpan);
 void CopyDeviceMatrixToHost(ByteMatrix MHost, ByteMatrix Mdevice);
@@ -82,10 +85,21 @@ void PrintTicks()
 {
 	printf_s("\tXfer To ticks - %ld; Kernel ticks - %ld; Xfer From ticks - %ld;\n",totalXferToTick, totalKrnlTick, totalXferFromTick);
 }
+
+class ImageMorphContext
+{
+	public:
+		ByteMatrix Ad;
+		ByteMatrix Bd;
+		ByteMatrix B;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+bool GPUImageMorph(
+	int phase, CyberJob::GPUJobStream *jobStream,
+	unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
@@ -94,11 +108,31 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 {
 //int main(int argc, char** argv) {
 
+	//ImageMorphContext *context = (ImageMorphContext*)jobStream->Context();
+
+	//switch (phase)
+	//{
+	//case 0:
+	//	 // setup job context
+	//	context = new ImageMorphContext();
+	//	jobStream->Context((void *)context);
+
+	//	context->Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
+	//	CopyBufferToDeviceMatrix(context->Ad, pInBuf, jobStream->Stream());
+
+	//	break;
+
+	//case 1:
+	//	if (context == NULL) return true; // error, complete job
+
+	//	break;
+	//}
+
 	startXferToTick = clock();//Obtain current tick
 
 	// Allocate and initialize input device matrices
     ByteMatrix Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
-    CopyBufferToDeviceMatrix(Ad, pInBuf);
+	CopyBufferToDeviceMatrix(Ad, pInBuf);
 	
 	// Allocate and clear output device matrices
     ByteMatrix Bd = AllocateDeviceMatrix(iOutROIWidth, iOutROIHeight);
@@ -113,13 +147,20 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	startKrnlTick = clock();//Obtain current tick
 
+	for (int j=0; j<1/*8*/; ++j)
+	{
+
 	// Setup the execution configuration
-    dim3 threads(TILE_WIDTH, TILE_WIDTH);
+    dim3 threads(TILE_WIDTH, 12/*TILE_WIDTH*/);
     dim3 grid(((Bd.width - 1) / threads.x) + 1, ((Bd.height - 1) / threads.y) + 1);
 
   	// Launch the device computation threads!
 	ConvolutionKernel<<< grid, threads >>>(Ad.elements, Bd.elements, Ad.width, Ad.height, iInWidth,
 		Bd.width, Bd.height, iOutSpan, iOutROIStartX, iOutROIStartY);
+
+	int size = Ad.width * Ad.height * sizeof(unsigned char);
+	cudaMemcpy(pOutBuf, Bd.elements, 16, cudaMemcpyDeviceToHost);
+	}
 
 	totalKrnlTick += clock() - startKrnlTick;//calculate the difference in ticks
 
@@ -136,7 +177,7 @@ bool GPUImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	totalXferFromTick += clock() - startXferFromTick;//calculate the difference in ticks
 
-	return 0;
+	return true;
 }
 
 // Allocate a device matrix of same size as M.
@@ -167,6 +208,12 @@ ByteMatrix AllocateByteMatrix(int width, int height)
 }
 
 
+// Copy a host matrix to a device matrix.
+void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer, cudaStream_t *stream)
+{
+    int size = Mdevice.width * Mdevice.height * sizeof(unsigned char);
+    cudaMemcpyAsync(Mdevice.elements, buffer, size, cudaMemcpyHostToDevice, *stream);
+}
 // Copy a host matrix to a device matrix.
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer)
 {

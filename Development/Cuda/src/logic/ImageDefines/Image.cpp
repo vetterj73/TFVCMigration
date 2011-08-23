@@ -1,6 +1,8 @@
 #include "Image.h"
 #include "Utilities.h"
 #include "Bitmap.h"
+#include <sys/timeb.h>
+#include <time.h>
 
 #pragma region constructor and configuration
 Image::Image(unsigned int iBytePerPixel) 
@@ -322,6 +324,87 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 		dT);
 
 	return(true);
+}
+
+int ImageMorph_loop;
+clock_t startTick;	//the tick for when we first create an instance
+clock_t deltaTicks;	//currTick - startTick
+
+void PrintTicks();
+
+
+// This image's ROI content is mapped from pImgIn
+bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::GPUJobStream *jobStream)
+{
+	bool results = true; // true = conversion complete
+	/*
+
+	[x]			[Row_in]		[Row_out]
+	[y] ~= TIn*	[Col_in] ~=Tout*[Col_out]
+	[1]			[1     ]		[	   1]
+
+	[Row_in]					[Row_out]	[A00 A01 A02]	[Row_out]
+	[Col_in] ~= Inv(TIn)*TOut*	[Col_out] =	[A10 A11 A12] *	[Col_out]
+	[1	   ]					[1		]	[A20 A21 1	]	[1		]
+
+	[Col_in]	[A11 A10 A12]	[Col_out]
+	[Row_in] ~=	[A01 A00 A02] *	[Row_out]
+	[1	   ]	[A21 A20 1	]	[1		]
+	*/
+
+	// Validation check (only for 8-bit image)
+	if(_bytesPerPixel != 1) return(true);
+	
+	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
+	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
+	ImgTransform t = tIn_inv * _thisToWorld;
+	double dTemp[3][3];
+	t.GetMatrix(dTemp);
+	double dT[3][3];
+
+	dT[0][0] = dTemp[1][1];
+	dT[0][1] = dTemp[1][0];
+	dT[0][2] = dTemp[1][2];
+	
+	dT[1][0] = dTemp[0][1];
+	dT[1][1] = dTemp[0][0];
+	dT[1][2] = dTemp[0][2];
+
+	dT[2][0] = dTemp[2][1];
+	dT[2][1] = dTemp[2][0];
+	dT[2][2] = dTemp[2][2];
+
+	// Sanity check
+	if((roi.FirstColumn+roi.Columns()>_pixelRowStride) || (pImgIn->Columns()>pImgIn->PixelRowStride())
+		|| (pImgIn->Columns() < 2) || (pImgIn->Rows() < 2)
+		|| (roi.Columns() <= 0) || (roi.Rows() <= 0))
+		return(true);
+
+	// !!! GPU can currently only do affine transform
+	if(dT[2][0] != 0 || dT[2][1] != 0 || dT[2][2] != 1) return true; // true means done
+
+	startTick = clock();//Obtain current tick
+
+	// GPU based image morph
+	results = GPUImageMorph( phase, jobStream,
+		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
+		pImgIn->Columns(), pImgIn->Rows(), 
+		_buffer, _pixelRowStride,
+		roi.FirstColumn, roi.FirstRow,
+		roi.Columns(), roi.Rows(),
+		dT);
+
+	deltaTicks += clock() - startTick;//calculate the difference in ticks
+
+	if (ImageMorph_loop == 189)
+	{
+		printf_s("ImageMorph %d; ticks - %ld\n", ImageMorph_loop, deltaTicks);
+		PrintTicks();
+	}
+
+	ImageMorph_loop += 1;
+
+	return(results);
 }
 
 #pragma endregion

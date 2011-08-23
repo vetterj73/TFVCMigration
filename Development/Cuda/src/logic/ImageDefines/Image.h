@@ -1,5 +1,6 @@
 #pragma once
 #include "STL.h"
+#include "GPUJobManager.h"
 #include "ImgTransform.h"
 #include "UIRect.h"
 typedef unsigned char Byte;
@@ -93,6 +94,7 @@ public:
 
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(const Image* pImgIn, UIRect roi);
+	bool				GPUMorphFrom(const Image* pImgIn, UIRect roi, int phase, CyberJob::GPUJobStream *jobStream);
 
 	bool				Save(string sFileName);
 

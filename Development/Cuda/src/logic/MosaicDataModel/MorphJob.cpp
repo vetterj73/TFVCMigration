@@ -7,7 +7,8 @@ MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV,
 		unsigned int firstCol,
 		unsigned int firstRow,
 		unsigned int lastCol,
-		unsigned int lastRow)
+		unsigned int lastRow,
+		unsigned int ordinal)
 {
 	_rect.FirstColumn = firstCol;
 	_rect.FirstRow = firstRow;
@@ -16,11 +17,29 @@ MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV,
 
 	_pStitched = pStitchedImage;
 	_pFOV = pFOV;
+	_phase = 0;
+	_ordinal = ordinal;
 }
 
 
 void MorphJob::Run()
 {
+	//printf_s("Thread execution: oridinal - %ld;\n", _ordinal);
+
 	if(_pStitched !=NULL && _rect.IsValid())
 		_pStitched->MorphFrom(_pFOV, _rect);
+}
+
+bool MorphJob::GPURun(CyberJob::GPUJobStream *jobStream)
+{
+	bool results = true; // true = conversion complete
+	
+	printf_s("GPUJob execution: oridinal - %ld; phase - %ld;\n", _ordinal, _phase);
+
+	if(_pStitched !=NULL && _rect.IsValid())
+		results = _pStitched->GPUMorphFrom(_pFOV, _rect, _phase, jobStream);
+
+	_phase++;
+
+	return results;
 }

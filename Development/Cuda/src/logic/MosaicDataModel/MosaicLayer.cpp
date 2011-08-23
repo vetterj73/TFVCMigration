@@ -4,6 +4,9 @@
 #include "MosaicTile.h"
 #include "MorphJob.h"
 #include "JobManager.h"
+#include "GPUJobManager.h"
+#include <sys/timeb.h>
+#include <time.h>
 
 using namespace CyberJob;
 namespace MosaicDM 
@@ -98,6 +101,9 @@ namespace MosaicDM
 		_pStitchedImage->Configure(iNumCols, iNumRows, iNumCols, inputTransform, inputTransform, true);
 	}
 
+	static clock_t startBatch = 0;	//the tick for when we first create an instance
+	static clock_t deltaBatch = 0;	//currTick - startTick
+
 	// @todo - Need to redo this for each new panel!!!!
 	void MosaicLayer::CreateStitchedImageIfNecessary()
 	{
@@ -145,9 +151,14 @@ namespace MosaicDM
 
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::JobManager jm(buf, 1);
+		CyberJob::GPUJobManager jm(buf, 8, 3);
 		vector<MorphJob*> morphJobs;
+
+		deltaBatch = 0;
+		startBatch = clock();//Obtain current tick
+
 		// Morph each Fov to create stitched panel image
+		unsigned int index = 100;
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
 			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
@@ -156,9 +167,10 @@ namespace MosaicDM
 
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
-					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1));
-				jm.AddAJob((Job*)pJob);
+					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1), index);
+				jm.AddAJob((GPUJob*)pJob);
 				morphJobs.push_back(pJob);
+				++index;
 			}
 		}
 
@@ -166,6 +178,10 @@ namespace MosaicDM
 		jm.MarkAsFinished();
 		while(jm.TotalJobs() > 0)
 			Sleep(10);
+
+		deltaBatch += clock() - startBatch;//calculate the difference in ticks
+
+		printf_s("BatchMorph: ticks - %ld\n", deltaBatch);
 
 		for(unsigned int i=0; i<morphJobs.size(); i++)
 			delete morphJobs[i];

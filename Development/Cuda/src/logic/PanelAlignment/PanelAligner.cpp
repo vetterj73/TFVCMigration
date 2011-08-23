@@ -232,6 +232,7 @@ bool PanelAligner::CreateMasks()
 		MosaicLayer* pMosaic = _pSet->GetLayer(i);
 
 		// Create content of mask images
+		unsigned int index = 0;
 		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 		{
 			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
@@ -244,9 +245,10 @@ bool PanelAligner::CreateMasks()
 				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 
 				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
-					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
+					0, 0, maskImg->Columns()-1, maskImg->Rows()-1,index);
 				jm.AddAJob((CyberJob::Job*)pJob);
 				morphJobs.push_back(pJob);
+				++index;
 			}
 		}
 	}

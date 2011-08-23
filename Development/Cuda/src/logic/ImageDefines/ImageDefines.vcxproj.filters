@@ -39,6 +39,15 @@
     <ClInclude Include="JobManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GPUJobManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUJobThread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPUJobStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -69,6 +78,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="Utilities.cu" />
+    <CudaCompile Include="Utilities.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="GPUJobStream.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="GPUJobThread.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="GPUJobManager.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
   </ItemGroup>
 </Project>
