@@ -23,32 +23,8 @@ namespace CyberJob
 		///	@todo - logging...
 		///
 		GPUJobStream(GPUJobManager* pGPUJobManager, string uniqueName);
-		//GPUJobStream(string uniqueName);
 		~GPUJobStream(void);
  
-		//void Initialize(GPUJob *pJob);
-		///
-		///	
-		/// 
-		///
-
-		///
-		///	Stops the thread.  This is called in the destructor
-		/// if the client doesn't call it.
-		///
-		void Kill();
-
-		///
-		///	Adds an overlap to the thread queue...
-		///
-		//void AddJob(GPUJobThread *pOverlap);
-		//void Start(/*GPUJob *pJob*/);
-
-		///
-		///	Informs client of number of items queued up...
-		///
-		//unsigned int QueueCount();
-
 		cudaStream_t *Stream() { return &_stream; }
 
 		unsigned int Phase() { return _phase; }
@@ -67,21 +43,14 @@ namespace CyberJob
 		///
 		GPUJobStream(){};
 	
-		///
-		///	
-		///
 		GPUJobManager* _pGPUJobManager;
 
 		unsigned int _phase;
 		cudaStream_t _stream;
-		//cudaEvent_t _phaseEvent;
 
-		HANDLE _statusMutex;
-
-		HANDLE _startSignal;
-		HANDLE _killSignal;
 
 		CyberJob::GPUJob *_pGPUJob;
+
 		///
 		///	Job type specific context
 		///

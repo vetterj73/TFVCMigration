@@ -59,10 +59,10 @@ namespace CyberJob
 		ReleaseMutex(_statusMutex);
 	}
 
-	void GPUJobThread::MarkAsFinished()
-	{
-		//AddJob(&_lastJob);
-	}
+	//void GPUJobThread::MarkAsFinished()
+	//{
+	//	//AddJob(&_lastJob);
+	//}
 
 	void GPUJobThread::Kill()
 	{

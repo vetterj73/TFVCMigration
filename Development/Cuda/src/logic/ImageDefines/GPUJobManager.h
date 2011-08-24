@@ -74,7 +74,6 @@ namespace CyberJob
 	private:
 
 		void ManageStreams();
-		void SetupGPUStreams(unsigned int count);
 
 		HANDLE _GPUThread;
 		HANDLE _queueMutex;

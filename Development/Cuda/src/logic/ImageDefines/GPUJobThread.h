@@ -14,46 +14,6 @@ namespace CyberJob
 	// after the next phase wait on the event created in the first phase for the next stream
 	// after the last phase clear the job and add a new job
 
-//	class JobStream
-//	{
-//	public:
-//	};
-//
-//	class CGPUThreadData
-//	{
-//	//#pragma region Friends
-//
-//	//	friend CSIMHdwDevice;
-//
-//	//#pragma endregion
-//
-//	//#pragma region Enumerations
-//
-//	//	enum FrameXferStatus
-//	//	{
-//	//		Disabled,
-//	//		Inactive,
-//	//		Xfering,
-//	//		Processing,
-//	//		Finished
-//	//	};
-//
-//	//#pragma endregion
-//
-//	protected:
-//
-////		int _row;
-////		int _camera;
-////		int _triggerlist;
-////		TriggerListType _TLtype;
-////
-////		FrameXferStatus _status;
-////		DWORD _pTargetBuffer;
-//////	public:
-////		ProcessFrameThreadData _frameThreadData;
-//		HANDLE _threadID;
-//	};
-
 	///
 	///	Encapsulates a Thread for running jobs.
 	///
@@ -78,7 +38,6 @@ namespace CyberJob
 		///
 		///	
 		/// 
-		///
 		GPUThreadStatus Status();
 		void Status(GPUThreadStatus status);
 
@@ -94,9 +53,10 @@ namespace CyberJob
 		void Kill();
 
 		///
+		///	MarkAsFinished
+		/// Does nothing in the GPUJob implementation 
 		///
-		///
-		void MarkAsFinished();
+		//void MarkAsFinished() {}
 
 		///
 		///	This should not be called by client.
@@ -125,6 +85,5 @@ namespace CyberJob
 
 		HANDLE _startSignal;
 		HANDLE _killSignal;
-		//GPUJob* _startJob;
 	};
 }

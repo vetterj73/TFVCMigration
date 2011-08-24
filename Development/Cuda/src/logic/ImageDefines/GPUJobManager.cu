@@ -13,25 +13,6 @@ namespace CyberJob
 		return pGPUJobManager->RunGPUThread();
 	}
 
-	DWORD GPUJobManager::RunGPUThread()
-	{
-		HANDLE handles[2];
-		handles[0] = _startSignal;
-		handles[1] = _killSignal;
-
-		while(1)
-		{
-			DWORD result = WaitForMultipleObjects(2, handles, false, INFINITE);
-
-			if(result == WAIT_OBJECT_0 + 0)
-				ManageStreams();
-			else
-				break;  /// Either there was an issue, or we are done...
-		}
-
-		return 0;
-	}
-
 	const unsigned int cMaxNameSize = 36;
 	GPUJobManager::GPUJobManager(string baseName, unsigned int numThreads, unsigned int numStreams)
 	{
@@ -108,6 +89,37 @@ namespace CyberJob
 		_GPUThread = NULL;
 }
 
+	bool GPUJobManager::AddAJob(GPUJob* pJob)
+	{
+		WaitForSingleObject(_queueMutex, INFINITE);
+		_jobQueue.push(pJob);
+		unsigned int unhandledJobCount = _jobQueue.size();
+		ReleaseMutex(_queueMutex);
+
+		unsigned int streamJobCount = 0;
+		for(unsigned int i=0; i<_jobStreams.size() && unhandledJobCount > 0; i++)
+		{
+			if (_jobStreams[i]->GPUJob() != NULL) ++streamJobCount;
+		}
+		if (streamJobCount < _maxStreams)
+		{
+			SetEvent(_startSignal);
+			if (_maxStreams - streamJobCount >= unhandledJobCount) return true;
+		}
+
+		unhandledJobCount -= _maxStreams - streamJobCount;
+
+		for(unsigned int i=0; i<_jobThreads.size() && unhandledJobCount > 0; i++)
+		{
+			if (_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::IDLE)
+			{
+				_jobThreads[i]->Start();
+				--unhandledJobCount;
+			}
+		}
+		return true;
+	}
+
 	GPUJob* GPUJobManager::GetNextJob()
 	{
 		WaitForSingleObject(_queueMutex, INFINITE);
@@ -141,6 +153,25 @@ namespace CyberJob
 		return count;
 	}
 
+	DWORD GPUJobManager::RunGPUThread()
+	{
+		HANDLE handles[2];
+		handles[0] = _startSignal;
+		handles[1] = _killSignal;
+
+		while(1)
+		{
+			DWORD result = WaitForMultipleObjects(2, handles, false, INFINITE);
+
+			if(result == WAIT_OBJECT_0 + 0)
+				ManageStreams();
+			else
+				break;  /// Either there was an issue, or we are done...
+		}
+
+		return 0;
+	}
+
 	void GPUJobManager::ManageStreams()
 	{
 		bool activeJobs;
@@ -169,36 +200,5 @@ namespace CyberJob
 			}
 		}
 		while (activeJobs);
-	}
-
-	bool GPUJobManager::AddAJob(GPUJob* pJob)
-	{
-		WaitForSingleObject(_queueMutex, INFINITE);
-		_jobQueue.push(pJob);
-		unsigned int unhandledJobCount = _jobQueue.size();
-		ReleaseMutex(_queueMutex);
-
-		unsigned int streamJobCount = 0;
-		for(unsigned int i=0; i<_jobStreams.size() && unhandledJobCount > 0; i++)
-		{
-			if (_jobStreams[i]->GPUJob() != NULL) ++streamJobCount;
-		}
-		if (streamJobCount < _maxStreams)
-		{
-			SetEvent(_startSignal);
-			if (_maxStreams - streamJobCount >= unhandledJobCount) return true;
-		}
-
-		unhandledJobCount -= _maxStreams - streamJobCount;
-
-		for(unsigned int i=0; i<_jobThreads.size() && unhandledJobCount > 0; i++)
-		{
-			if (_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::IDLE)
-			{
-				_jobThreads[i]->Start();
-				--unhandledJobCount;
-			}
-		}
-		return true;
 	}
 }

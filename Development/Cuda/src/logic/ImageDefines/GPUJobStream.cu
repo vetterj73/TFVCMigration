@@ -10,26 +10,14 @@ namespace CyberJob
 	{
 		_pGPUJobManager = pGPUJobManager;
 
-		string name = uniqueName + "_StatusMutex";
-		_statusMutex = CreateMutex(0, FALSE, name.c_str());
-
 		cudaStreamCreate(&_stream);
 
 		_pGPUJob = NULL;
 		_phase = 0;
-
-		//cudaEventCreate(&_phaseEvent);
 	}
 
 	GPUJobStream::~GPUJobStream(void)
 	{
-		//Kill();
-
-		//// Make sure thread stops...
-		//Sleep(10);
-
-		//cudaEventDestroy(_phaseEvent);
-
 		cudaStreamDestroy(_stream);
 	}
 
@@ -37,28 +25,5 @@ namespace CyberJob
 	{
 		_pGPUJob = pGPUJob;
 		_phase = 0;
-	}
-	//void GPUJobStream::Initialize(GPUJob *pJob)
-	//{
-	//}
-
-	void GPUJobStream::Kill()
-	{
-		//if(_thread == NULL)
-		//	return;
-
-		//// Stop the thread.
-		//SetEvent(_killSignal);
-
-		//// Make sure thread stops...
-		//Sleep(10);
-
-		//// Close all handles for cleanup
-		//CloseHandle(_queueMutex);
-		//CloseHandle(_addSignal);
-		//CloseHandle(_killSignal);
-		//CloseHandle(_thread);
-
-		//_thread = NULL;
 	}
 }
