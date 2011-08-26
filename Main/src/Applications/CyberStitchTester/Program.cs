@@ -90,8 +90,8 @@ namespace CyberStitchTester
             try
             {
                 _aligner.NumThreads(_numThreads);
-     //           _aligner.LogOverlaps(true);
-     //           _aligner.LogMaskVectors(true);
+                //_aligner.LogOverlaps(true);
+                //_aligner.LogMaskVectors(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
@@ -168,17 +168,36 @@ namespace CyberStitchTester
                         IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
                         double dHeightRes = _panel.GetHeightResolution();
                         double dPupilDistance = 0.3702;
-                        _aligner.Save3ChannelImage("c:\\temp\\3channelHeightcycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                             _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
                             _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
-                            heightBuf,
+                            _panel.GetCADBuffer(), //heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+/*
+                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(0).GetStitchedBuffer(true),
+                            _mosaicSet.GetLayer(1).GetStitchedBuffer(true),
+                            _panel.GetCADBuffer(), //heightBuf,
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(0).GetStitchedBuffer(true),
+                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                            _panel.GetCADBuffer(), //heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(1).GetStitchedBuffer(true),
+                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                            _panel.GetCADBuffer(), //heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                        /*_aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
                             _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(true),
                             _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(true),
                             _panel.GetCADBuffer(),
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                         */
                     }
                     else
                     {
