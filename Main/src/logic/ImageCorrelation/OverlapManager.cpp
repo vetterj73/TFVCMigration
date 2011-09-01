@@ -945,3 +945,272 @@ bool OverlapManager::FinishOverlaps()
 }
 
 #pragma endregion
+
+
+#pragma region Alignment result check/verification
+
+// Calculate parameters for a line
+// y ~= m*x+b
+// m=(xy_sum*num-x_sum*y_sum)/(xx_sum*num-x_sum*x_sum)
+// b = (y_sum - m*x_sum)/num
+// pdx, pdy and iNum: input x and y arrays and their size
+// pm and pb: output m and b
+bool CalLineParameter(
+	const double* pdx, const double* pdy, unsigned int iNum,
+	double* pm, double* pb)
+{
+	double x_sum=0, y_sum =0, xy_sum=0, xx_sum=0;
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		x_sum += pdx[i];
+		y_sum += pdy[i];
+		xy_sum += (pdx[i]*pdy[i]);
+		xx_sum += (pdx[i]*pdx[i]);
+	}
+
+	*pm = (xy_sum*iNum - x_sum*y_sum)/(xx_sum*iNum - x_sum*x_sum);
+	*pb = (y_sum - (*pm)*x_sum)/iNum;
+
+	return(true);
+}
+
+// Calculate max inconsist offset based on estimation of line
+// pdx, pdy and iNum: input x and y arrays and their size
+// pMaxInconsist and piIndex: output, max inconsist offset and its index
+bool CalMaxInconsistFromLine(
+	const double* pdx, const double* pdy, unsigned int iNum,
+	double* pMaxInconsist, int* piIndex)
+{
+	// Not enough data for process
+	if(iNum <= 2)
+		return(false);
+
+	// Figure out pixel index with biggest inconsist 
+	double m, b;
+	CalLineParameter(pdx, pdy, iNum, &m, &b);
+
+	double dDis;
+	double dMaxDis = -1;
+	*piIndex = -1;
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		dDis = fabs(pdy[i] - (m*pdx[i]+b));
+		if(dMaxDis < dDis)
+		{
+			dMaxDis = dDis;
+			*piIndex = i;
+		}
+	}
+
+	// Ignore the pixel with biggest inconsist
+	double* pdTempx = new double[iNum-1];
+	double* pdTempy = new double[iNum-1];
+	int iCount=0;
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		if(i != *piIndex)
+		{
+			pdTempx[iCount] = pdx[i];
+			pdTempy[iCount] = pdy[i];
+			iCount++;
+		}
+	}
+
+	// Calculate max inconsist
+	CalLineParameter(pdTempx, pdTempy, iNum-1, &m, &b);
+
+	*pMaxInconsist =  pdy[*piIndex] - (m*pdx[*piIndex] +b);
+
+	delete [] pdTempx;
+	delete [] pdTempy;
+
+	return(true);
+}
+
+// Check inconsist of Fov to Fov overlap reults for a panel
+// Return number of detected inconsist results
+int OverlapManager::FovFovAlignConsistCheckForPanel()
+{
+	int iInconsistCount = 0;
+	int iNumLayer = (int)_pMosaicSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumLayer; i++)
+	{
+		for(int j =i; j<iNumLayer; j++)
+		{
+			int iFlag = FovFovAlignConsistCheckForTwoIllum(i, j);
+			iInconsistCount += iFlag;
+		}
+	}
+
+	return(iInconsistCount);
+}
+
+// Check inconsist of Fov to Fov overlap reults for layers/illuminations
+// Return number of detected inconsist results
+int OverlapManager::FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, unsigned int iLayer2)
+{
+	int iInconsistCount = 0;
+	int iNumTrig1 = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfTriggers();
+	int iNumTrig2 = _pMosaicSet->GetLayer(iLayer2)->GetNumberOfTriggers();
+	for(int iTrig1=0; iTrig1<iNumTrig1; iTrig1++)	// trig1
+	{
+		int iTrig2Start = iTrig1-1;
+		if(iTrig2Start < 0) iTrig2Start = 0;
+		int iTrig2End = iTrig1+1;
+		if(iTrig2End > iNumTrig2-1) iTrig2End = iNumTrig2-1;
+
+		for(int iTrig2=iTrig2Start; iTrig2<=iTrig2End; iTrig2++) // trig2
+		{
+			int iFlag = FovFovAlignConsistChekcForTwoTrig(
+				iLayer1, 	
+				iTrig1,
+				iLayer2,	
+				iTrig2);
+			if(iFlag<0) iInconsistCount++;
+		}
+	}
+
+	return(iInconsistCount);
+}
+
+// Check FovFov overlap alignment results for two triggers
+// Retruen	1: alignment results are consist
+//			0: not checked
+//		   -1: alignment results are not consist for column offsets
+//		   -2: alignment results are not consist for row offsets
+int OverlapManager::FovFovAlignConsistChekcForTwoTrig(
+	unsigned int iLayer1, 	
+	unsigned int iTrig1,
+	unsigned int iLayer2,	
+	unsigned int iTrig2)
+{
+	// Whether overlaps are for the same trigger
+	// cam to cam overlap for the same trigger
+	bool bSameTrig = false;
+	if(iLayer1 == iLayer2 && iTrig1 == iTrig2)
+		bSameTrig = true;
+
+	int iNumCam = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfCameras();
+	
+	// No enough informaiton for consistent check 
+	if(iNumCam<=2 || (bSameTrig && iNumCam<=3))
+		return(0);
+
+	// Collect all overlaps for consistent check
+	list<FovFovOverlap*> trigOverlapPtrList;
+	for(int iCam=0; iCam<iNumCam; iCam++)
+	{
+		// Get FovFov overlap list for a Fov in first trig
+		FovFovOverlapList* pList = &_fovFovOverlapLists[iLayer1][iTrig1][iCam];
+		for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
+		{
+			// If right overlap and processed
+			bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
+			if(bFlag)
+			{
+				bool bInList = false;
+				if(bSameTrig)	// If cam to cam overlap for the same trigger
+				{
+					// Whether the overlap is in the list
+					for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+					{
+						if(&(*i) == *j)
+						{
+							bInList = true;
+							break;
+						}
+					}
+				}
+				
+				// Add to consist check list
+				if(!bInList) 
+					trigOverlapPtrList.push_back(&(*i)); 
+			}
+		}
+
+		if(!bSameTrig)
+		{
+			// Get FovFov overlap list for a Fov in second trig
+			pList = &_fovFovOverlapLists[iLayer2][iTrig2][iCam];
+			for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
+			{
+				// If right overlap and processed
+				bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
+				if(bFlag)
+				{
+					trigOverlapPtrList.push_back(&(*i)); 
+				}
+			}
+		}
+	}
+
+	// Collect data for consistent check
+	int iNum = (int)trigOverlapPtrList.size();
+	if(iNum <= 2)
+		return(0);
+
+	double* pdRowOffsets = new double[iNum];
+	double* pdColOffsets = new double[iNum];
+	double* pdNorminalX = new double[iNum];
+	double* pdNorminalY = new double[iNum];
+	int iCount = 0;
+	double dx, dy;
+	for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+	{
+		(*j)->GetCoarsePair()->NorminalCenterInWorld(&dx, &dy);
+		pdNorminalX[iCount] = dx;
+		pdNorminalY[iCount] = dy;
+		pdRowOffsets[iCount] = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
+		pdColOffsets[iCount] = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
+		iCount++;
+	}
+
+	// Consistent check
+	int iReturnFlag = 1;
+	double dMaxRowInconsist, dMaxColInconsist;
+	int iRowIndex, iColIndex;
+	// Column check
+	CalMaxInconsistFromLine(pdNorminalX, pdColOffsets, iNum, &dMaxColInconsist, &iColIndex);
+	if(dMaxColInconsist > CorrelationParametersInst.dMaxColInconsistInPixel)
+	{
+		int iCount = 0;
+		for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+		{
+			if(iCount == iColIndex)
+			{
+				(*j)->Reset();
+				iReturnFlag = -1;
+				break;
+			}
+			iCount++;
+		}
+	}
+
+	// Row check 
+	CalMaxInconsistFromLine(pdNorminalY, pdRowOffsets, iNum, &dMaxRowInconsist, &iRowIndex);
+	if(dMaxRowInconsist > CorrelationParametersInst.dMaxRowInconsistInPixel)
+	{
+		int iCount = 0;
+		for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+		{
+			if(iCount == iRowIndex)
+			{
+				(*j)->Reset();
+				iReturnFlag = -2;
+				break;
+			}
+			iCount++;
+		}
+	}
+
+	// Clean up
+	delete [] pdRowOffsets;
+	delete [] pdColOffsets;
+	delete [] pdNorminalX;
+	delete [] pdNorminalY;
+
+	return(iReturnFlag);
+}
+
+
+#pragma endregion

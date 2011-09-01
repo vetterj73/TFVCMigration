@@ -70,6 +70,8 @@ public:
 
 	FiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
 
+	int FovFovAlignConsistCheckForPanel();
+
 protected:
 	bool IsCadImageNeeded();
 	bool IsMaskImageNeeded();
@@ -98,6 +100,14 @@ protected:
 		Feature* pFeature,
 		bool bFidBrighterThanBackground,
 		bool bFiducialAllowNegativeMatch);
+
+	int FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, unsigned int iLayer2);
+
+	int FovFovAlignConsistChekcForTwoTrig(
+		unsigned int iLayer1, 	
+		unsigned int iTrig1,
+		unsigned int iLayer2,	
+		unsigned int iTrig2);
 
 private:	
 	MosaicSet *_pMosaicSet;

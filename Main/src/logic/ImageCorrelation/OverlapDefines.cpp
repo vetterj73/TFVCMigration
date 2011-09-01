@@ -411,6 +411,29 @@ bool FovFovOverlap::IsReadyToProcess() const
 	return(bFlag);
 }
 
+// Return ture if overlap is from (illum1, iTrig1) and (illum2, iTrig2)
+// reusults for (illum1, iTrig1) and (illum2, iTrig2) in different order are same
+bool FovFovOverlap::IsFromIllumTrigs(
+	unsigned int iLlum1,
+	unsigned int iTrig1,
+	unsigned int iLlum2,
+	unsigned int iTrig2) const
+{
+	if((_pMosaic1->Index() == iLlum1 && GetFirstTriggerIndex() == iTrig1 &&
+		_pMosaic2->Index() == iLlum2 && GetSecondTriggerIndex() == iTrig2) 
+		||
+		(_pMosaic1->Index() == iLlum2 && GetFirstTriggerIndex() == iTrig2 &&
+		_pMosaic2->Index() == iLlum1 && GetSecondTriggerIndex() == iTrig1))
+	{
+		return(true);
+	}
+	else
+	{
+		return(false);
+	}
+}
+
+
 // For Debug 
 bool FovFovOverlap::DumpOvelapImages()
 {

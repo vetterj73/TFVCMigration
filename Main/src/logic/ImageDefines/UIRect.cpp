@@ -55,3 +55,19 @@ unsigned int UIRect::Columns() const
 
 	return LastColumn-FirstColumn+1; 
 }
+
+double UIRect::ColumnCenter() const
+{
+	if( !IsValid() )
+		return 0;
+
+	return (LastColumn+FirstColumn)/2.0;
+}
+
+double UIRect::RowCenter() const
+{
+	if( !IsValid() )
+		return 0;
+
+	return (LastRow+FirstRow)/2.0; 
+}

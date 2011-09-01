@@ -26,8 +26,11 @@ public:
 	bool IsValid() const;
 
 	unsigned int Rows() const;
-
 	unsigned int Columns() const;
+
+	double RowCenter() const;
+	double ColumnCenter() const;
+	
 };
 
 /*

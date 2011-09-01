@@ -42,6 +42,10 @@ CorrelationParameters::CorrelationParameters(void)
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
 
+	// Alignment result check
+	dMaxColInconsistInPixel = 10;
+	dMaxRowInconsistInPixel = 20;
+
 	// Expansion from Cad image to create mask image in pixels
 	iMaskExpansionFromCad = 10;			
 

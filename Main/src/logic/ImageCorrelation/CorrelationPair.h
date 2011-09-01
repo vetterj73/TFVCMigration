@@ -105,6 +105,8 @@ public:
 		unsigned int iBlockRowSearchExpansion,
 		list<CorrelationPair>* pOutPairList) const;
 
+	void NorminalCenterInWorld(double* fdx, double* fdy);
+
 	// For Debug
 	void DumpImg(string sFileName) const;
 	bool DumpImgWithResult(string sFileName) const;

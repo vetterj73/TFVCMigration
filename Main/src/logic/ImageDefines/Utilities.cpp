@@ -552,3 +552,5 @@ template void ClipSub(
 	unsigned short* pData2, unsigned int iSpan2,
 	unsigned int iWidth, unsigned int iHeight);
 
+
+

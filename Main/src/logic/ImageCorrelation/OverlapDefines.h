@@ -97,6 +97,12 @@ public:
 
 	bool IsReadyToProcess() const;
 
+	bool IsFromIllumTrigs(
+		unsigned int iLlum1,
+		unsigned int iTrig1,
+		unsigned int iLlum2,
+		unsigned int iTrig2) const;
+
 	// For debug
 	bool DumpOvelapImages();
 	bool DumpResultImages();

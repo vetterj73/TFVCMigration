@@ -64,6 +64,10 @@ public:
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
 
+	// Alignment result check
+	double dMaxColInconsistInPixel;
+	double dMaxRowInconsistInPixel;
+
 	// Expansion from Cad image to create mask image in pixels
 	int iMaskExpansionFromCad;
 	
