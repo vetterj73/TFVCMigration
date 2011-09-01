@@ -12,6 +12,8 @@ namespace CyberJob
 
 		cudaStreamCreate(&_stream);
 
+		_context = NULL;
+
 		_pGPUJob = NULL;
 		_phase = 0;
 	}

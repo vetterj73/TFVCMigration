@@ -334,9 +334,9 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 //
 
 // This image's ROI content is mapped from pImgIn
-bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream *jobStream)
+CyberJob::GPUJob::GPUJobStatus Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream *jobStream)
 {
-	bool results = true; // true = conversion complete
+	CyberJob::GPUJob::GPUJobStatus results = CyberJob::GPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
 	/*
 
 	[x]			[Row_in]		[Row_out]
@@ -353,7 +353,7 @@ bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream
 	*/
 
 	// Validation check (only for 8-bit image)
-	if(_bytesPerPixel != 1) return(true);
+	if(_bytesPerPixel != 1) return(CyberJob::GPUJob::GPUJobStatus::COMPLETED);
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
@@ -378,10 +378,10 @@ bool Image::GPUMorphFrom(const Image* pImgIn, UIRect roi, CyberJob::GPUJobStream
 	if((roi.FirstColumn+roi.Columns()>_pixelRowStride) || (pImgIn->Columns()>pImgIn->PixelRowStride())
 		|| (pImgIn->Columns() < 2) || (pImgIn->Rows() < 2)
 		|| (roi.Columns() <= 0) || (roi.Rows() <= 0))
-		return(true);
+		return(CyberJob::GPUJob::GPUJobStatus::COMPLETED);
 
 	// !!! GPU can currently only do affine transform
-	if(dT[2][0] != 0 || dT[2][1] != 0 || dT[2][2] != 1) return true; // true means done
+	if(dT[2][0] != 0 || dT[2][1] != 0 || dT[2][2] != 1) return CyberJob::GPUJob::GPUJobStatus::COMPLETED; // true means done
 
 	//startTick = clock();//Obtain current tick
 

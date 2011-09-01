@@ -3,6 +3,8 @@
 #include "GPUJobStream.h"
 #include "JobThread.h"
 #include "JobManager.h"
+#include "../MosaicDataModel/MorphJob.h"
+#include <assert.h>
 
 namespace CyberJob
 {
@@ -14,9 +16,14 @@ namespace CyberJob
 	}
 
 	const unsigned int cMaxNameSize = 36;
-	GPUJobManager::GPUJobManager(string baseName, unsigned int numThreads, unsigned int numStreams)
+	GPUJobManager::GPUJobManager(string baseName, unsigned int numThreads, unsigned int numStreams, CLEAR_JOBSTREAM fp)
 	{
-		// Validation of lengths...
+		_killThread = false;
+		_clearStreamFunctionPointer = fp;
+
+		_maxStreams = numStreams;
+
+		// Validation of string lengths...
 		string name = baseName;
 		if(name.length() > cMaxNameSize-4)
 			name = baseName.substr(0, cMaxNameSize-4);
@@ -31,8 +38,6 @@ namespace CyberJob
 			GPUJobThread* pJT = new GPUJobThread(this, name);
 			_jobThreads.push_back(pJT);
 		}
-
-		_maxStreams = numStreams;
 
 		for(unsigned int i=0; i<_maxStreams; i++)
 		{
@@ -52,22 +57,41 @@ namespace CyberJob
 		name = "GPUJobManager_KillSignal";
 		_killSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
 
+		name = "GPUJobManager_LogMutex";
+		_logMutex = CreateMutex(0, FALSE, name.c_str());
+		assert(::QueryPerformanceCounter(&_startTime));
+		assert(::QueryPerformanceFrequency(&_frequency));
+
+
 		// Start the GPU thread....
 		DWORD d(0);
 		_GPUThread = CreateThread(0, 0, GPUDeviceThread, static_cast<LPVOID>(this), 0, &d);
-
+		BOOL verify = SetThreadPriority( _GPUThread, THREAD_PRIORITY_ABOVE_NORMAL);
 	}
 
 	GPUJobManager::~GPUJobManager()
 	{
+		char str[128];
+		sprintf_s(str, "MorphJob Done!!");
+		
+		LogTimeStamp(str);
+		PrintTimeStamps();
+
+		SetEvent(_killSignal);
+
+		_killThread = true;
+		while (_killThread) ; // wait for GPU thread to terminate
+
 		for(unsigned int i=0; i<_jobThreads.size(); i++)
 		{
-			_jobThreads[i]->Kill();
+			//_jobThreads[i]->Kill();
 			delete _jobThreads[i];
 		}
 
 		for(unsigned int i=0; i<_jobStreams.size(); i++)
 		{
+			if (_clearStreamFunctionPointer != NULL)
+				_clearStreamFunctionPointer(_jobStreams[i]);
 			delete _jobStreams[i];
 		}
 
@@ -75,8 +99,6 @@ namespace CyberJob
 		_jobStreams.clear();
 
 		// Stop the GPUthread.
-		SetEvent(_killSignal);
-
 		// Make sure thread stops...
 		Sleep(10);
 
@@ -85,6 +107,8 @@ namespace CyberJob
 		CloseHandle(_startSignal);
 		CloseHandle(_killSignal);
 		CloseHandle(_GPUThread);
+
+		CloseHandle(_logMutex);
 
 		_GPUThread = NULL;
 }
@@ -96,27 +120,8 @@ namespace CyberJob
 		unsigned int unhandledJobCount = _jobQueue.size();
 		ReleaseMutex(_queueMutex);
 
-		unsigned int streamJobCount = 0;
-		for(unsigned int i=0; i<_jobStreams.size() && unhandledJobCount > 0; i++)
-		{
-			if (_jobStreams[i]->GPUJob() != NULL) ++streamJobCount;
-		}
-		if (streamJobCount < _maxStreams)
-		{
-			SetEvent(_startSignal);
-			if (_maxStreams - streamJobCount >= unhandledJobCount) return true;
-		}
+		SetEvent(_startSignal);
 
-		unhandledJobCount -= _maxStreams - streamJobCount;
-
-		for(unsigned int i=0; i<_jobThreads.size() && unhandledJobCount > 0; i++)
-		{
-			if (_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::IDLE)
-			{
-				_jobThreads[i]->Start();
-				--unhandledJobCount;
-			}
-		}
 		return true;
 	}
 
@@ -150,6 +155,9 @@ namespace CyberJob
 		for(unsigned int i=0; i<_jobStreams.size(); i++)
 			if (_jobStreams[i]->GPUJob() != NULL) ++count;
 
+		if (count <= 0)
+			count = _jobQueue.size();
+
 		return count;
 	}
 
@@ -164,7 +172,19 @@ namespace CyberJob
 			DWORD result = WaitForMultipleObjects(2, handles, false, INFINITE);
 
 			if(result == WAIT_OBJECT_0 + 0)
+			{
 				ManageStreams();
+
+				if (_killThread)
+				{
+					_killThread = false;
+					break; // we are done...
+				}
+				else
+				{
+					_killThread = true;
+				}
+			}
 			else
 				break;  /// Either there was an issue, or we are done...
 		}
@@ -174,31 +194,120 @@ namespace CyberJob
 
 	void GPUJobManager::ManageStreams()
 	{
-		bool activeJobs;
+		int currentStream = 0;
+		bool activeJobs = false;
+		bool currentJobs = false;
 
 		do
 		{
-			activeJobs = false;
-			for (int i=0; i<_maxStreams && i < _jobStreams.size(); ++i)
+			do
 			{
-				if (_jobStreams[i]->GPUJob() == NULL)
+				for (int i=0; i<_maxStreams && i<_jobStreams.size(); ++i)
 				{
-					_jobStreams[i]->GPUJob(GetNextJob());
-				}
+					if (_killThread) return;
 
-				GPUJob *pGPUJob = _jobStreams[i]->GPUJob();
-				if (pGPUJob != NULL)
-				{
-					activeJobs = true;
-
-					if (pGPUJob->GPURun(_jobStreams[i])) // if job completed
+					if ( _jobStreams[currentStream]->GPUJob() == NULL)
 					{
-						_jobStreams[i]->GPUJob(NULL);
-						--i;
+						_jobStreams[currentStream]->GPUJob(GetNextJob());
 					}
+
+					GPUJob *pGPUJob = _jobStreams[currentStream]->GPUJob();
+					if (pGPUJob != NULL)
+					{
+						activeJobs = currentJobs = true;
+
+						char str[128];
+						MorphJob* temp = (MorphJob*)(_jobStreams[currentStream]->GPUJob());
+
+						//if (_jobStreams[currentStream]->Phase() != 2)
+						//{
+						//	sprintf_s(str, "Job %d; Phase %d;", temp->OrdinalNumber(), _jobStreams[currentStream]->Phase());
+						//	_jobStreams[currentStream]->_pGPUJobManager->LogTimeStamp(str);
+						//}
+
+						GPUJob::GPUJobStatus status = pGPUJob->GPURun(_jobStreams[currentStream]);
+
+						if (status == GPUJob::GPUJobStatus::WAITING)
+						{
+							activeJobs = false;
+							break;
+						}
+
+						switch (status)
+						{
+						case GPUJob::GPUJobStatus::COMPLETED:
+							sprintf_s(str, "Job %d; Phase %d; COMPLETE", temp->OrdinalNumber(), _jobStreams[currentStream]->Phase());
+							_jobStreams[currentStream]->_pGPUJobManager->LogTimeStamp(str);
+							_jobStreams[currentStream]->GPUJob(NULL);
+							break;
+						case GPUJob::GPUJobStatus::ACTIVE:
+						default:
+							break;
+						}
+					}
+
+					++currentStream;
+					if (currentStream >= _maxStreams || currentStream >= _jobStreams.size()) currentStream = 0;
+				}
+			}
+			while (activeJobs);
+
+			for (int i=0; i<_maxStreams && i<_jobThreads.size(); ++i)
+			{
+				if (_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::COMPLETED ||
+					_jobThreads[i]->Status() == GPUJobThread::GPUThreadStatus::IDLE)
+				{
+					if (_jobQueue.size() > 20)
+						if (_jobThreads[i]->LaunchThread()) currentJobs = true;
 				}
 			}
 		}
-		while (activeJobs);
+
+		while (currentJobs);
+	}
+
+	void GPUJobManager::PrintTimeStamps()
+	{
+		WaitForSingleObject(_logMutex, INFINITE);
+		while (_jobLogs.size() > 0)
+		{
+			std::string str = _jobLogs.front();
+			printf_s(str.c_str());
+			_jobLogs.pop();
+		}
+		ReleaseMutex(_logMutex);
+	}
+
+	void GPUJobManager::DeltaTimeStamp(std::string msg, LARGE_INTEGER starttime)
+	{
+		char str[128];
+
+		LARGE_INTEGER timestamp;
+		assert(::QueryPerformanceCounter(&timestamp));
+		LARGE_INTEGER deltaTime;
+		deltaTime.QuadPart = timestamp.QuadPart - starttime.QuadPart;
+
+		sprintf_s(str, 127, "<%.6f>%s\n",
+			(static_cast<double>(deltaTime.QuadPart) / static_cast<double>(_frequency.QuadPart)), msg.c_str());
+
+		WaitForSingleObject(_logMutex, INFINITE);
+		_jobLogs.push(str);
+		ReleaseMutex(_logMutex);
+	}
+	void GPUJobManager::LogTimeStamp(std::string msg)
+	{
+		char str[128];
+
+		LARGE_INTEGER timestamp;
+		assert(::QueryPerformanceCounter(&timestamp));
+		LARGE_INTEGER deltaTime;
+		deltaTime.QuadPart = timestamp.QuadPart - _startTime.QuadPart;
+
+		sprintf_s(str, 127, "<%.6f>%s\n",
+			(static_cast<double>(deltaTime.QuadPart) / static_cast<double>(_frequency.QuadPart)), msg.c_str());
+
+		WaitForSingleObject(_logMutex, INFINITE);
+		_jobLogs.push(str);
+		ReleaseMutex(_logMutex);
 	}
 }

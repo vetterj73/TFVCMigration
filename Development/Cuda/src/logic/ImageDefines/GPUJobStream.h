@@ -36,6 +36,7 @@ namespace CyberJob
 		void *Context() { return _context; }
 		void Context(void *context) { _context = context; }
 
+		GPUJobManager* _pGPUJobManager;
 
 	private:
 		///
@@ -43,8 +44,6 @@ namespace CyberJob
 		///
 		GPUJobStream(){};
 	
-		GPUJobManager* _pGPUJobManager;
-
 		unsigned int _phase;
 		cudaStream_t _stream;
 

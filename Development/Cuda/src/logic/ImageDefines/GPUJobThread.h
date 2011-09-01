@@ -25,11 +25,11 @@ namespace CyberJob
 		{
 			IDLE,
 			ACTIVE,
+			COMPLETED,
 		};
 
 		///
-		///	Constructor - starts the thread
-		///	@todo - logging...
+		///	Constructor
 		///
 		GPUJobThread::GPUJobThread(GPUJobManager* pGPUJobManager, string uniqueName);
 		//GPUJobThread(string uniqueName);
@@ -38,52 +38,21 @@ namespace CyberJob
 		///
 		///	
 		/// 
-		GPUThreadStatus Status();
-		void Status(GPUThreadStatus status);
+		GPUThreadStatus Status() { return _status; }
+		void Status(GPUThreadStatus status) { _status = status; }
 
 		///
 		///
 		///
-		void Start();
-
-		///
-		///	Stops the thread.  This is called in the destructor
-		/// if the client doesn't call it.
-		///
-		void Kill();
-
-		///
-		///	MarkAsFinished
-		/// Does nothing in the GPUJob implementation 
-		///
-		//void MarkAsFinished() {}
-
-		///
-		///	This should not be called by client.
-		///
-		DWORD RunThread();
+		bool LaunchThread();
 
 	private:
-		///
-		///	intentially private default constructor.
-		///
-		GPUJobThread(){};
-	
-		void ProcessQueue();
-		GPUJob * GetNextJob();
+		static DWORD WINAPI GPUThreadFunc(LPVOID p);
 
-		///
-		///	Basic stuff to ensure thread safety.
-		///
 		GPUJobManager* _pGPUJobManager;
 
 		GPUThreadStatus _status;
-
-		HANDLE _thread;
-
-		HANDLE _statusMutex;
-
-		HANDLE _startSignal;
-		HANDLE _killSignal;
+		GPUJob* _pGPUJob;
+		HANDLE _threadHandle;
 	};
 }

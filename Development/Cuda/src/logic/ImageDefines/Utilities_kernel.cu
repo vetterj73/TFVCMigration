@@ -6,7 +6,6 @@
 #define _UTILITIES_KERNEL_H_
 
 #include <stdio.h>
-#include "Utilities_kernel.h"
 
 #define TILE_WIDTH 16
 

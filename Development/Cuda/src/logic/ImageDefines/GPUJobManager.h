@@ -12,15 +12,24 @@ namespace CyberJob
 	class GPUJobThread;
 	class GPUJobStream;
 
-
+	typedef void (*CLEAR_JOBSTREAM)(CyberJob::GPUJobStream *jobStream);
+	
 	///
 	///	Interface for a job (a task to perform on a separate thread).
 	///
 	class GPUJob
 	{
 	public:
+		enum GPUJobStatus
+		{
+			IDLE,
+			ACTIVE,
+			WAITING,
+			COMPLETED,
+		};
+
 		virtual void Run()=0;
-		virtual bool GPURun(GPUJobStream *jobStream)=0; // true = job done, false = more to do
+		virtual GPUJobStatus GPURun(GPUJobStream *jobStream)=0; // returns job status after function execution
 
 		virtual unsigned int NumberOfStreams()=0;
 	};
@@ -37,7 +46,7 @@ namespace CyberJob
 		/// Max size of baseName is 32 (truncated to 32 if over 32).
 		/// Max number of threads is 99 (changed to 99 if over 99).
 		///	
-		GPUJobManager(string baseName, unsigned int numThreads, unsigned int numStreams);
+		GPUJobManager(string baseName, unsigned int numThreads, unsigned int numStreams, CLEAR_JOBSTREAM fp);
 
 		///
 		///	Destructor
@@ -70,15 +79,21 @@ namespace CyberJob
 
 		DWORD RunGPUThread();
 
+		void LogTimeStamp(std::string msg);
+		void DeltaTimeStamp(std::string msg, LARGE_INTEGER starttime);
+		void PrintTimeStamps();
 
 	private:
 
 		void ManageStreams();
 
+		bool _killThread;
 		HANDLE _GPUThread;
 		HANDLE _queueMutex;
 		HANDLE _startSignal;
 		HANDLE _killSignal;
+
+		HANDLE _logMutex;
 
 		unsigned int _maxStreams;
 
@@ -86,5 +101,10 @@ namespace CyberJob
 		vector<GPUJobStream*> _jobStreams;
 
 		queue<GPUJob*>	_jobQueue;
+
+		CLEAR_JOBSTREAM _clearStreamFunctionPointer;
+
+		LARGE_INTEGER _startTime, _frequency;
+		queue<std::string> _jobLogs;
 	};
 };

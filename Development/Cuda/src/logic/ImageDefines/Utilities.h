@@ -18,12 +18,14 @@ void inverse(
 	unsigned int cols);
 
 
-bool GPUImageMorph(CyberJob::GPUJobStream *jobStream, unsigned char* pInBuf,  unsigned int iInSpan, 
+CyberJob::GPUJob::GPUJobStatus GPUImageMorph(CyberJob::GPUJobStream *jobStream, unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3]);
+
+void ImageMorphCudaDelete( CyberJob::GPUJobStream *jobStream);
 
 // Fill a ROI of the output image by transforming the input image
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)

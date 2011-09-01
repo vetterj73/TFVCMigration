@@ -7,6 +7,8 @@ using namespace CyberJob;
 class Image;
 class CyberJob::GPUJobStream;
 
+void ClearMorphJobStream(CyberJob::GPUJobStream *jobStream);
+
 class MorphJob : public CyberJob::GPUJob
 {
 public:
@@ -18,9 +20,11 @@ public:
 		unsigned int ordinal);
 
 	void Run();
-	bool GPURun(CyberJob::GPUJobStream *jobStream); // true = job done, false = more to do
+	CyberJob::GPUJob::GPUJobStatus GPURun(CyberJob::GPUJobStream *jobStream);
 
 	unsigned int NumberOfStreams() { return 3; }
+
+	unsigned int OrdinalNumber() { return _ordinal; }
 
 protected:
 	Image *_pStitched;
