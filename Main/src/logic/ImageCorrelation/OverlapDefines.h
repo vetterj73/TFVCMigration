@@ -37,6 +37,8 @@ public:
 
 	bool IsValid() const {return _bValid;};
 	bool IsProcessed() const {return _bProcessed;};
+	bool IsGoodForSolver() const {return _bGood4Solver;};
+	void SetIsGoodForSolver(bool bValue) {_bGood4Solver = bValue;};
 
 	CorrelationPair* GetCoarsePair() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
@@ -50,6 +52,7 @@ protected:
 	bool ChopOverlap();	
 	bool _bValid;
 	bool _bProcessed;	
+	bool _bGood4Solver;
 
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;

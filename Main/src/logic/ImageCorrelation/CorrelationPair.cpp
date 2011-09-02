@@ -59,7 +59,8 @@ CorrelationPair::CorrelationPair()
 	
 	_type = NULL_OVERLAP;
 
-	_bIsProcessed=false;
+	_bIsProcessed = false;
+	_bGood4Solver = true;
 
 	_bUsedNgc = false;
 }
@@ -92,6 +93,9 @@ CorrelationPair::CorrelationPair(
 	_type = type;
 
 	_bIsProcessed = false;
+	_bGood4Solver = true;
+
+	_bUsedNgc = false;
 }
 
 CorrelationPair::CorrelationPair(const CorrelationPair& b)
@@ -115,6 +119,10 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_type = b._type;
 
 	_bIsProcessed = b._bIsProcessed;
+	_bGood4Solver = b._bGood4Solver;
+
+	_bUsedNgc = b._bUsedNgc;
+	
 	_result = b._result;
 }
 
@@ -146,7 +154,10 @@ CorrelationResult CorrelationPair::GetCorrelationResult() const
 bool CorrelationPair::Reset()
 {
 	_bIsProcessed = false;
+	_bGood4Solver = true;
+
 	_bUsedNgc = false;
+
 	_result.Default();
 
 	return(true);

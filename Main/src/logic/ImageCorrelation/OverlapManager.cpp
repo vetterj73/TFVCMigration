@@ -3,6 +3,7 @@
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
 #include "MosaicLayer.h"
+#include "EquationWeights.h"
 #include <direct.h> //_mkdir
 
 #pragma region constructor and reset
@@ -946,7 +947,6 @@ bool OverlapManager::FinishOverlaps()
 
 #pragma endregion
 
-
 #pragma region Alignment result check/verification
 
 // Calculate parameters for a line
@@ -977,50 +977,65 @@ bool CalLineParameter(
 // Calculate max inconsist offset based on estimation of line
 // pdx, pdy and iNum: input x and y arrays and their size
 // pMaxInconsist and piIndex: output, max inconsist offset and its index
-bool CalMaxInconsistFromLine(
-	const double* pdx, const double* pdy, unsigned int iNum,
-	double* pMaxInconsist, int* piIndex)
+bool CalInconsistBasedOnLine(
+	const double* pdx, const double* pdy, 
+	unsigned int iNum, double dMultiSdvTh,
+	double* pOffsetFromLine)
 {
 	// Not enough data for process
 	if(iNum <= 2)
 		return(false);
 
-	// Figure out pixel index with biggest inconsist 
+	// All pixels used in line creation
 	double m, b;
 	CalLineParameter(pdx, pdy, iNum, &m, &b);
 
-	double dDis;
-	double dMaxDis = -1;
-	*piIndex = -1;
+	// Calculate mean and sdv
+	double* pdDis = new double[iNum];
+	double dSdv_dis, dMean_dis=0, dMean_dissquare=0;
 	for(unsigned int i=0; i<iNum; i++)
 	{
-		dDis = fabs(pdy[i] - (m*pdx[i]+b));
-		if(dMaxDis < dDis)
-		{
-			dMaxDis = dDis;
-			*piIndex = i;
-		}
+		pdDis[i] = fabs(pdy[i] - (m*pdx[i]+b));
+		dMean_dis += pdDis[i];
+		dMean_dissquare += (pdDis[i]*pdDis[i]);
+	}
+	dMean_dissquare /= iNum;
+	dMean_dis /= iNum;
+	dSdv_dis = sqrt(dMean_dissquare - dMean_dis*dMean_dis);
+	// protection when the Sdv is very low
+	if(dSdv_dis < 1e-5)
+	{
+		for(unsigned int i=0; i<iNum; i++)
+			pOffsetFromLine[i] = 0;
+
+		delete [] pdDis;
+		return(true);
 	}
 
-	// Ignore the pixel with biggest inconsist
-	double* pdTempx = new double[iNum-1];
-	double* pdTempy = new double[iNum-1];
+	// Ignore pixels with bigger distance from line based on mean and sdv
+	// for line creation
+	double* pdTempx = new double[iNum];
+	double* pdTempy = new double[iNum];
 	int iCount=0;
+	double dTh = dSdv_dis*dMultiSdvTh;
 	for(unsigned int i=0; i<iNum; i++)
 	{
-		if(i != *piIndex)
+		if((pdDis[i]-dMean_dis) < dTh)
 		{
 			pdTempx[iCount] = pdx[i];
 			pdTempy[iCount] = pdy[i];
 			iCount++;
 		}
 	}
+	CalLineParameter(pdTempx, pdTempy, iCount, &m, &b);
 
-	// Calculate max inconsist
-	CalLineParameter(pdTempx, pdTempy, iNum-1, &m, &b);
+	// Calculate the offset from line
+	for(unsigned int i=0; i<iNum; i++)
+	{
+		pOffsetFromLine[i] = pdy[i] - (m*pdx[i] +b);
+	}
 
-	*pMaxInconsist =  pdy[*piIndex] - (m*pdx[*piIndex] +b);
-
+	delete [] pdDis;
 	delete [] pdTempx;
 	delete [] pdTempy;
 
@@ -1029,27 +1044,35 @@ bool CalMaxInconsistFromLine(
 
 // Check inconsist of Fov to Fov overlap reults for a panel
 // Return number of detected inconsist results
-int OverlapManager::FovFovAlignConsistCheckForPanel()
+bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
-	int iInconsistCount = 0;
+	*piCoarseInconsistNum = 0;
+	*piFineInconsistNum = 0;
 	int iNumLayer = (int)_pMosaicSet->GetNumMosaicLayers();
 	for(int i=0; i<iNumLayer; i++)
 	{
 		for(int j =i; j<iNumLayer; j++)
 		{
-			int iFlag = FovFovAlignConsistCheckForTwoIllum(i, j);
-			iInconsistCount += iFlag;
+			int iCoarseNum, iFineNum;
+			if(FovFovAlignConsistCheckForTwoIllum(i, j, &iCoarseNum, &iFineNum))
+			{
+				*piCoarseInconsistNum += iCoarseNum;
+				*piFineInconsistNum += iFineNum;
+			}
 		}
 	}
 
-	return(iInconsistCount);
+	return(true);
 }
 
 // Check inconsist of Fov to Fov overlap reults for layers/illuminations
 // Return number of detected inconsist results
-int OverlapManager::FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, unsigned int iLayer2)
+bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
+	unsigned int iLayer1, unsigned int iLayer2,
+	int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
-	int iInconsistCount = 0;
+	*piCoarseInconsistNum = 0;
+	*piFineInconsistNum = 0;
 	int iNumTrig1 = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfTriggers();
 	int iNumTrig2 = _pMosaicSet->GetLayer(iLayer2)->GetNumberOfTriggers();
 	for(int iTrig1=0; iTrig1<iNumTrig1; iTrig1++)	// trig1
@@ -1061,16 +1084,19 @@ int OverlapManager::FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, uns
 
 		for(int iTrig2=iTrig2Start; iTrig2<=iTrig2End; iTrig2++) // trig2
 		{
-			int iFlag = FovFovAlignConsistChekcForTwoTrig(
-				iLayer1, 	
-				iTrig1,
-				iLayer2,	
-				iTrig2);
-			if(iFlag<0) iInconsistCount++;
+			int iCoarseNum, iFineNum;
+			if(FovFovAlignConsistChekcForTwoTrig(
+				iLayer1, iTrig1,
+				iLayer2, iTrig2,
+				&iCoarseNum, &iFineNum))
+			{
+				*piCoarseInconsistNum += iCoarseNum;
+				*piFineInconsistNum += iFineNum;
+			}
 		}
 	}
 
-	return(iInconsistCount);
+	return(true);
 }
 
 // Check FovFov overlap alignment results for two triggers
@@ -1078,11 +1104,10 @@ int OverlapManager::FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, uns
 //			0: not checked
 //		   -1: alignment results are not consist for column offsets
 //		   -2: alignment results are not consist for row offsets
-int OverlapManager::FovFovAlignConsistChekcForTwoTrig(
-	unsigned int iLayer1, 	
-	unsigned int iTrig1,
-	unsigned int iLayer2,	
-	unsigned int iTrig2)
+bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
+	unsigned int iLayer1, unsigned int iTrig1,
+	unsigned int iLayer2, unsigned int iTrig2,
+	int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
 	// Whether overlaps are for the same trigger
 	// cam to cam overlap for the same trigger
@@ -1143,19 +1168,32 @@ int OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 			}
 		}
 	}
+	*piCoarseInconsistNum = FovFovCoarseInconsistCheck(&trigOverlapPtrList);
 
-	// Collect data for consistent check
-	int iNum = (int)trigOverlapPtrList.size();
+	*piFineInconsistNum = FovFovFineInconsistCheck(&trigOverlapPtrList);
+
+	return(true);
+}
+
+// Check inconsist of coarse alignment results for Fov and Fov
+// Should be called before FovFovFineInconsistCheck()
+// All coarse alignment results failed in check will mark as no good for solver
+// pList: list of the overlaps for check
+// Return number of coarse alignment failed in check
+int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
+{
+	int iNum = (int)pList->size();
 	if(iNum <= 2)
 		return(0);
 
+	// Collect data for consistent check
 	double* pdRowOffsets = new double[iNum];
 	double* pdColOffsets = new double[iNum];
 	double* pdNorminalX = new double[iNum];
 	double* pdNorminalY = new double[iNum];
 	int iCount = 0;
 	double dx, dy;
-	for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
 	{
 		(*j)->GetCoarsePair()->NorminalCenterInWorld(&dx, &dy);
 		pdNorminalX[iCount] = dx;
@@ -1166,44 +1204,42 @@ int OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	}
 
 	// Consistent check
-	int iReturnFlag = 1;
-	double dMaxRowInconsist, dMaxColInconsist;
-	int iRowIndex, iColIndex;
+	int iReturnFlag = 0;
+	double* pColOffsetFromLine = new double[iNum];
+	double* pRowOffsetFromLine = new double[iNum];
+	double dMultiSdvTh = 1.5;
 	// Column check
-	CalMaxInconsistFromLine(pdNorminalX, pdColOffsets, iNum, &dMaxColInconsist, &iColIndex);
-	if(dMaxColInconsist > CorrelationParametersInst.dMaxColInconsistInPixel)
+	CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
+	iCount = 0;
+	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
 	{
-		int iCount = 0;
-		for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+		if(pColOffsetFromLine[iCount] > CorrelationParametersInst.dMaxColInconsistInPixel)
 		{
-			if(iCount == iColIndex)
-			{
-				(*j)->Reset();
-				iReturnFlag = -1;
-				break;
-			}
-			iCount++;
+			(*j)->SetIsGoodForSolver(false);
+			iReturnFlag++;
 		}
+		iCount++;
 	}
 
 	// Row check 
-	CalMaxInconsistFromLine(pdNorminalY, pdRowOffsets, iNum, &dMaxRowInconsist, &iRowIndex);
-	if(dMaxRowInconsist > CorrelationParametersInst.dMaxRowInconsistInPixel)
+	CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
+	iCount = 0;
+	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
 	{
-		int iCount = 0;
-		for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
+		if(pRowOffsetFromLine[iCount] > CorrelationParametersInst.dMaxRowInconsistInPixel)
 		{
-			if(iCount == iRowIndex)
+			if((*j)->IsGoodForSolver()) // Make sure not count twice
 			{
-				(*j)->Reset();
-				iReturnFlag = -2;
-				break;
+				(*j)->SetIsGoodForSolver(false);
+				iReturnFlag++;
 			}
-			iCount++;
 		}
+		iCount++;
 	}
 
 	// Clean up
+	delete [] pColOffsetFromLine;
+	delete [] pRowOffsetFromLine;
 	delete [] pdRowOffsets;
 	delete [] pdColOffsets;
 	delete [] pdNorminalX;
@@ -1212,5 +1248,112 @@ int OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	return(iReturnFlag);
 }
 
+// Check inconsist of fine alignment results for Fov and Fov
+// Should be called after FovFovCoarseInconsistCheck()
+// All fine alignment results failed in check will mark as no good for solver
+// All overlaps with coarse alignment no good for solver will be skipped
+// All fine alignments with zero weight in solver will be skipped
+// pList: list of the overlaps for check
+// Return number of fine alignment failed in check
+int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
+{
+	list<double> rowOffsetList, colOffsetList, norminalXList, norminalYList;
+	list<CorrelationPair*> pairList;
+
+	// Collect data for consistent check
+	int iCount = 0;
+	double dx, dy;
+	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
+	{
+		// Skip overlap with coarse alignment no good for solver
+		if(!(*j)->IsGoodForSolver()) continue; 
+
+		list<CorrelationPair>* pairListPtr = (*j)->GetFinePairListPtr();
+		for(list<CorrelationPair>::iterator k = pairListPtr->begin(); k != pairListPtr->end(); k++)
+		{
+			// If weight for solver is zero, skip 
+			double dWeight = EquationWeights::Instance().CalWeight(&(*k));
+			if(dWeight <= 0) continue;
+
+			pairList.push_back(&(*k));
+
+			k->NorminalCenterInWorld(&dx, &dy);
+			norminalXList.push_back(dx);
+			norminalYList.push_back(dy);
+			rowOffsetList.push_back(k->GetCorrelationResult().RowOffset);
+			colOffsetList.push_back(k->GetCorrelationResult().ColOffset);
+		}
+	}
+
+	int iNum = (int)norminalXList.size();
+	double* pdRowOffsets = new double[iNum];
+	double* pdColOffsets = new double[iNum];
+	double* pdNorminalX = new double[iNum];
+	double* pdNorminalY = new double[iNum];
+
+	list<double>::iterator i1 = rowOffsetList.begin();
+	list<double>::iterator i2 = colOffsetList.begin();
+	list<double>::iterator i3 = norminalXList.begin();
+	list<double>::iterator i4 = norminalYList.begin();
+	for(int i=0; i<iNum; i++)
+	{
+		pdRowOffsets[i] = *i1;
+		pdColOffsets[i] = *i2;
+		pdNorminalX[i] = *i3;
+		pdNorminalY[i] = *i4;
+
+		i1++;
+		i2++;
+		i3++;
+		i4++;
+	}
+
+	// Consistent check
+	int iReturnFlag = 0;
+	double* pColOffsetFromLine = new double[iNum];
+	double* pRowOffsetFromLine = new double[iNum];
+	double dMultiSdvTh = 1.5;
+	// Column check
+	CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
+	iCount = 0;
+	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
+	{
+		if(pColOffsetFromLine[iCount] > CorrelationParametersInst.dMaxColInconsistInPixel)
+		{
+			(*j)->SetIsGoodForSolver(false);
+			iReturnFlag++;
+		}
+
+		iCount++;
+	}
+
+	// Row check 
+	CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
+	iCount = 0;
+	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
+	{
+		if(pRowOffsetFromLine[iCount] > CorrelationParametersInst.dMaxRowInconsistInPixel)
+		{
+			if((*j)->IsGoodForSolver())	// Make sure not set it twice
+			{
+				(*j)->SetIsGoodForSolver(false);
+				iReturnFlag++;
+				
+			}
+		}
+		
+		iCount++;
+	}
+
+	// Clean up
+	delete [] pColOffsetFromLine;
+	delete [] pRowOffsetFromLine;
+	delete [] pdRowOffsets;
+	delete [] pdColOffsets;
+	delete [] pdNorminalX;
+	delete [] pdNorminalY;
+
+	return(iReturnFlag);
+}
 
 #pragma endregion

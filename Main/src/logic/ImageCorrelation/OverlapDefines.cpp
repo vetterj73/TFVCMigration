@@ -7,6 +7,8 @@
 Overlap::Overlap()
 {
 	_bValid = false;
+	_bProcessed = false;
+	_bGood4Solver = true;
 }
 
 Overlap::Overlap(const Overlap& overlap) 
@@ -28,6 +30,7 @@ void Overlap::operator=(const Overlap& b)
 
 	_bValid = b._bValid;
 	_bProcessed = b._bProcessed;
+	_bGood4Solver = b._bGood4Solver;
 
 	_coarsePair = b._coarsePair;
 }
@@ -52,6 +55,7 @@ void Overlap::config(
 
 	_bValid = CalCoarseCorrPair();
 	_bProcessed = false;
+	_bGood4Solver = true;
 
 	if(_bValid)
 	{
@@ -71,6 +75,7 @@ bool Overlap::Reset()
 
 	// Reset processed flag 
 	_bProcessed = false;
+	_bGood4Solver = true;
 
 	return(true);
 }

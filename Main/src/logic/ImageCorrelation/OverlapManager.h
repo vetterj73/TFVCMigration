@@ -70,7 +70,7 @@ public:
 
 	FiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
 
-	int FovFovAlignConsistCheckForPanel();
+	bool FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum);
 
 protected:
 	bool IsCadImageNeeded();
@@ -101,13 +101,17 @@ protected:
 		bool bFidBrighterThanBackground,
 		bool bFiducialAllowNegativeMatch);
 
-	int FovFovAlignConsistCheckForTwoIllum(unsigned int iLayer1, unsigned int iLayer2);
+	bool FovFovAlignConsistCheckForTwoIllum(
+		unsigned int iLayer1, unsigned int iLayer2,
+		int* piCoarseInconsistNum, int* piFineInconsistNum);
 
-	int FovFovAlignConsistChekcForTwoTrig(
-		unsigned int iLayer1, 	
-		unsigned int iTrig1,
-		unsigned int iLayer2,	
-		unsigned int iTrig2);
+	bool FovFovAlignConsistChekcForTwoTrig(
+		unsigned int iLayer1, unsigned int iTrig1,
+		unsigned int iLayer2, unsigned int iTrig2,
+		int* piCoarseInconsistNum, int* piFineInconsistNum);
+
+	int FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList);
+	int FovFovFineInconsistCheck(list<FovFovOverlap*>* pList);
 
 private:	
 	MosaicSet *_pMosaicSet;

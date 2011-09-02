@@ -87,6 +87,8 @@ public:
 	bool IsValid() const {return _roi1.IsValid();};
 
 	bool IsProcessed() const {return _bIsProcessed;};
+	bool IsGoodForSolver() const {return _bGood4Solver;};
+	void SetIsGoodForSolver(bool bValue) {_bGood4Solver = bValue;};
 
 	// Do alignment and reset
 	bool DoAlignment(bool bApplyCorrSizeUpLimit=false, bool* pbCorrSizeReduced=NULL);	
@@ -127,6 +129,7 @@ private:
 	OverlapType _type;
 
 	bool _bIsProcessed;
+	bool _bGood4Solver;
 	bool _bUsedNgc;	// Ngc is used for calcaulation
 	unsigned int _iDecim;	// For regoff
 	unsigned int _iColSearchExpansion; // For NGC

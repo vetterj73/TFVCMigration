@@ -322,7 +322,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {
 	// Validation check for overlap
-	if(!pOverlap->IsProcessed()) return(false);
+	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// First Fov's information
 	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicImage()->Index();
@@ -343,6 +343,10 @@ bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
+		// Skip any fine that is not processed or not good
+		if(!i->IsProcessed() || !i->IsGoodForSolver())
+			continue;
+
 		// validation check for correlation pair
 		CorrelationResult result;
 		bool bFlag = i->GetCorrelationResult(&result);
@@ -414,7 +418,7 @@ bool RobustSolver::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 {
 	// Validation check for overlap
-	if(!pOverlap->IsProcessed()) return(false);
+	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
 	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();
@@ -489,7 +493,7 @@ bool RobustSolver::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 bool RobustSolver::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 {
 	// Validation check for overlap
-	if(!pOverlap->IsProcessed()) return(false);
+	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
 	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();

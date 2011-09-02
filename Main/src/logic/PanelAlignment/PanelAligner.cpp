@@ -298,6 +298,10 @@ bool PanelAligner::CreateTransforms()
 	int iNumIllums = _pSet->GetNumMosaicLayers();
 
 	_lastProcessedFids.clear();
+
+	//int iCoarseInconsistNum, iFineInconsistNum;
+	//_pOverlapManager->FovFovAlignConsistCheckForPanel(&iCoarseInconsistNum, &iFineInconsistNum);
+
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
 	{
@@ -358,7 +362,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
 			for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
 			{
-				if(ite->IsProcessed())
+				if(ite->IsProcessed() && ite->IsGoodForSolver())
 					solver->AddFovFovOvelapResults(&(*ite));
 			}
 
@@ -366,7 +370,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iIllumIndex, iTrig, iCam);
 			for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
 			{
-				if(ite->IsProcessed())
+				if(ite->IsProcessed() && ite->IsGoodForSolver())
 					solver->AddCadFovOvelapResults(&(*ite));
 			}
 
@@ -374,7 +378,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
 			for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 			{
-				if(ite->IsProcessed())
+				if(ite->IsProcessed() && ite->IsGoodForSolver())
 				{
 					solver->AddFidFovOvelapResults(&(*ite));
 
