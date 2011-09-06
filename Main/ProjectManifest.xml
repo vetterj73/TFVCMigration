@@ -3,7 +3,7 @@
 <manifest version="1.0">
   <project name="CyberStitch" version="1.0" build_number="24.0">
     <dependencies>
-      <dependency project_name="Bitmap" version="1.2010.6.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Bitmap" target=".\Bitmap\" />
+      <dependency project_name="Bitmap" version="1.2010.7.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Bitmap" target=".\Bitmap\" />
       <dependency project_name="CyberCommon" version="1.0.42.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\CyberCommon\Managed" target=".\CyberCommon\" />
       <dependency project_name="DirectXSDK" version="10.0.0.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\DirectXSDK" target=".\DirectXSDK\" />
       <dependency project_name="Rudd" version="2.0.2.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Rudd" target=".\RuddLib\" />
