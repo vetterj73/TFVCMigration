@@ -18,6 +18,7 @@ public:
 		unsigned int lastCol,
 		unsigned int lastRow,
 		unsigned int ordinal);
+	~MorphJob();
 
 	void Run();
 	CyberJob::GPUJob::GPUJobStatus GPURun(CyberJob::GPUJobStream *jobStream);

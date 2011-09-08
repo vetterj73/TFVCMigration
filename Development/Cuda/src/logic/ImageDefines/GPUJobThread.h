@@ -44,15 +44,31 @@ namespace CyberJob
 		///
 		///
 		///
-		bool LaunchThread();
+		unsigned int TotalJobs() { return _totalJobs; }
+
+		///
+		///
+		///
+		bool StartThread();
+
+		DWORD RunHostThread();
 
 	private:
-		static DWORD WINAPI GPUThreadFunc(LPVOID p);
+
+		void ProcessQueue();
 
 		GPUJobManager* _pGPUJobManager;
 
 		GPUThreadStatus _status;
 		GPUJob* _pGPUJob;
 		HANDLE _threadHandle;
+
+		unsigned int _totalJobs;
+
+		HANDLE _queueMutex;
+		HANDLE _startSignal;
+		HANDLE _killSignal;
+		queue<GPUJob*>	_jobQueue;
+		HANDLE _thread;
 	};
 }

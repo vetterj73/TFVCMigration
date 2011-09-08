@@ -151,7 +151,7 @@ namespace MosaicDM
 
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::GPUJobManager jm(buf, 8, 3, &ClearMorphJobStream);
+		CyberJob::GPUJobManager jm(buf, 8/*16*/, 3, &ClearMorphJobStream);
 		vector<MorphJob*> morphJobs;
 
 		deltaBatch = 0;
@@ -177,7 +177,7 @@ namespace MosaicDM
 		// Wait until it is complete...
 		jm.MarkAsFinished();
 		while(jm.TotalJobs() > 0)
-			Sleep(10);
+			Sleep(1);
 
 		deltaBatch += clock() - startBatch;//calculate the difference in ticks
 

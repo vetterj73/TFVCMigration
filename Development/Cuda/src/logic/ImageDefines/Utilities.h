@@ -18,6 +18,9 @@ void inverse(
 	unsigned int cols);
 
 
+bool CudaBufferRegister(unsigned char *ptr, size_t size);
+bool CudaBufferUnregister(unsigned char *ptr);
+
 CyberJob::GPUJob::GPUJobStatus GPUImageMorph(CyberJob::GPUJobStream *jobStream, unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,

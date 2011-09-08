@@ -2,6 +2,8 @@
 #include "MorphJob.h"
 #include "Image.h"
 
+bool CudaBufferRegister(unsigned char *ptr, size_t size);
+bool CudaBufferUnregister(unsigned char *ptr);
 
 MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV, 
 		unsigned int firstCol,
@@ -18,8 +20,14 @@ MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV,
 	_pStitched = pStitchedImage;
 	_pFOV = pFOV;
 	_ordinal = ordinal;
+
+	CudaBufferRegister(_pFOV->GetBuffer(), _pFOV->Columns()*_pFOV->Rows());
 }
 
+MorphJob::~MorphJob()
+{
+	CudaBufferUnregister(_pFOV->GetBuffer());
+}
 
 void MorphJob::Run()
 {
