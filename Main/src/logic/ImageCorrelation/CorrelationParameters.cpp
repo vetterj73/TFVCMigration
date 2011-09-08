@@ -53,7 +53,7 @@ CorrelationParameters::CorrelationParameters(void)
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 
 	// Support Bayer(color image)
-	bGrayScale = true;					// Grey scale image in default
+	//bGrayScale = true;					// Grey scale image in default
 
 	// Adjust morph to create stitched image for component height
 	bool bAdjustMorph4ComponentHeight = true;

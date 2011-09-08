@@ -4,6 +4,7 @@
 #include "MosaicTile.h"
 #include "MorphJob.h"
 #include "JobManager.h"
+#include "ColorImage.h"
 
 using namespace CyberJob;
 namespace MosaicDM 
@@ -107,7 +108,11 @@ namespace MosaicDM
 		if(_pStitchedImage != NULL)
 			return;
 
-		_pStitchedImage = new Image();
+		if(GetMosaicSet()->IsBayerPattern())
+			_pStitchedImage = new ColorImage();
+		else 
+			_pStitchedImage = new Image();		
+
 		ImgTransform inputTransform;
 		inputTransform.Config(_pMosaicSet->GetNominalPixelSizeX(), 
 			_pMosaicSet->GetNominalPixelSizeY(), 0, 0, 0);
@@ -194,7 +199,8 @@ namespace MosaicDM
 
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
-					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1));
+					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),
+					GetMosaicSet()->IsBayerPattern());
 				jm.AddAJob((Job*)pJob);
 				morphJobs.push_back(pJob);
 			}
@@ -300,7 +306,7 @@ namespace MosaicDM
 		if(pTile == NULL)
 			return NULL;
 
-		return (Image*)pTile;
+		return pTile->GetImagPtr();
 	}
 
 	unsigned int MosaicLayer::GetNumberOfTiles()
@@ -324,7 +330,8 @@ namespace MosaicDM
 		for(unsigned int i=0; i<numTiles; i++)
 		{
 			_pTileArray[i].ClearImageBuffer();
-			_pTileArray[i].SetTransform(_pTileArray[i].GetNominalTransform());
+			if(_pTileArray[i].GetImagPtr() != NULL)
+				_pTileArray[i].GetImagPtr()->SetTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
 			_maskImages[i].SetTransform(_maskImages[i].GetNominalTransform());
 		}	
 		_bIsMaskImgValid = false;
@@ -348,7 +355,7 @@ namespace MosaicDM
 			pdCenY[iCam] = 0;
 			for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
 			{
-				pdCenY[iCam] += GetTile(iCam, iTrig)->CenterY();
+				pdCenY[iCam] += GetTile(iCam, iTrig)->GetImagPtr()->CenterY();
 			}
 			pdCenY[iCam] /= GetNumberOfTriggers();
 		}
@@ -362,7 +369,7 @@ namespace MosaicDM
 			pdCenX[iTrig] = 0;
 			for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
 			{
-				pdCenX[iTrig] += GetTile(iCam, iTrig)->CenterX();
+				pdCenX[iTrig] += GetTile(iCam, iTrig)->GetImagPtr()->CenterX();
 			}
 			pdCenX[iTrig] /= GetNumberOfCameras();
 		}
@@ -377,7 +384,7 @@ namespace MosaicDM
 
 		for(unsigned int i=0 ; i<GetNumberOfTiles(); i++)
 		{
-			_maskImages[i].SetTransform(_pTileArray[i].GetTransform());
+			_maskImages[i].SetTransform(_pTileArray[i].GetImagPtr()->GetTransform());
 			_maskImages[i].CreateOwnBuffer();
 		}
 

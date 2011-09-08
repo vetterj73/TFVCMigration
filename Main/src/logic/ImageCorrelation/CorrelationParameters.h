@@ -6,13 +6,6 @@
 using std::string;
 
 typedef enum {                           /* Don't change order of enums */
-   BGGR,
-   GBRG,
-   GRBG,
-   RGGB
-}BayerPattern;
-
-typedef enum {                           /* Don't change order of enums */
    FIDREGOFF,
    FIDVSFINDER,
    FIDCYBERNGC
@@ -75,7 +68,7 @@ public:
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 
 	// Support Bayer(color image)
-	bool bGrayScale;						// Grey scale image or Bayer(color) image
+	//bool bGrayScale;						// Grey scale image or Bayer(color) image
 
 	// Adjust morph to create stitched image for component height
 	bool bAdjustMorph4ComponentHeight;

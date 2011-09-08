@@ -16,7 +16,9 @@ namespace MosaicDM
 					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
 					  double nominalPixelSizeYInMeters,
-					  bool ownBuffers)
+					  bool ownBuffers,
+					  bool bBayerPattern,
+					  int iBayerType)
 	{
 		_objectWidthInMeters = objectWidthInMeters;
 		_objectLengthInMeters = objectLengthInMeters;
@@ -28,6 +30,11 @@ namespace MosaicDM
 		_registeredImageAddedCallback = NULL;
 		_pCallbackContext = NULL;
 		_ownBuffers = ownBuffers;
+		
+		_bBayerPattern = bBayerPattern;
+		_iBayerType = iBayerType;
+		if(_bBayerPattern)
+			_ownBuffers = true;
 	}
 
 	MosaicSet::~MosaicSet()

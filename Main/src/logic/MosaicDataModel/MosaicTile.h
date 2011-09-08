@@ -9,7 +9,7 @@ namespace MosaicDM
 	///
 	///	MosaicTile is one tile of a MosaicLayer.  It contains the image and its transforms
 	///
-	class MosaicTile : public Image
+	class MosaicTile
 	{
 		public:
 			friend class MosaicLayer;
@@ -41,6 +41,8 @@ namespace MosaicDM
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
 				double rotation, double centerOffsetXInMeters, double centerOffsetYInMeters);
 
+			Image* GetImagPtr() {return _pImage;};
+
 		protected:
 			void ClearImageBuffer()
 			{
@@ -52,5 +54,6 @@ namespace MosaicDM
 		private:
 			MosaicLayer *_pMosaicLayer;
 			bool _containsImage;
+			Image* _pImage;
 	};
 }

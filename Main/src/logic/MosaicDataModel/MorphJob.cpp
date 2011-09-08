@@ -1,13 +1,15 @@
 #include "StdAfx.h"
 #include "MorphJob.h"
 #include "Image.h"
+#include "ColorImage.h"
 
 
 MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV, 
 		unsigned int firstCol,
 		unsigned int firstRow,
 		unsigned int lastCol,
-		unsigned int lastRow)
+		unsigned int lastRow,
+		bool bColor)
 {
 	_rect.FirstColumn = firstCol;
 	_rect.FirstRow = firstRow;
@@ -16,13 +18,19 @@ MorphJob::MorphJob(Image* pStitchedImage, Image *pFOV,
 
 	_pStitched = pStitchedImage;
 	_pFOV = pFOV;
+	_bColor = bColor;
 }
 
 
 void MorphJob::Run()
 {
 	if(_pStitched !=NULL && _rect.IsValid())
-		_pStitched->MorphFrom(_pFOV, _rect);
+	{	
+		if(_bColor)
+			((ColorImage*)_pStitched)->ColorMorphFrom((ColorImage*)_pFOV, _rect);
+		else
+			_pStitched->MorphFrom(_pFOV, _rect);
+	}
 }
 
 MorphWithHeightJob::MorphWithHeightJob(

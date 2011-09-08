@@ -4,8 +4,6 @@
 
 #pragma once
 
-
-
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row
@@ -24,6 +22,21 @@ void inverse(
 // iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
 // dTrans: the 3*3 transform from [Col_out Row_out] to [Col_in, Row_in]
 bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3]);
+
+// Fill a ROI of the output color image by transforming the input color image
+// Support convert YCrCb seperate channel to RGB seperate channels only
+// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
+// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
+// pOutBuf and iOutspan : output buffer and its span
+// iROIWidth, iHeight: the size of buffer need to be transformed
+// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
+// dInvTrans: the 3*3 transform from output image to input image (has the same unit as dHeightResolution)
+bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
@@ -53,17 +66,6 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 	double dHeightResolution, double dPupilDistance,
 	double dPerpendicalPixelX, double dPerpendicalPixelY); 
 
-// Modified from Eric Rudd's BayerLum() function
-// Convert Bayer image into Luminance
-// Output data only valid int the range of columns [2, nCols-3] and rows [2 nRows-3]
-void BayerToLum(                
-   int            ncols,		// Image dimensions
-   int            nrows,
-   unsigned char  bayer[],      // Input 8-bit Bayer image 
-   int            bstride,      // Addressed as bayer[col + row*bstride] 
-   unsigned char  lum[],        // output Luminance image 
-   int            lstride);      // Addressed as out[col + row*ostride] 
-
 // 
 //	This will give the number of pixels in a common way...
 //
@@ -87,3 +89,30 @@ void ClipSub(
 	T* pData1, unsigned int iSpan1, 
 	T* pData2, unsigned int iSpan2,
 	unsigned int iWidth, unsigned int iHeight);
+
+enum COLORSTYLE
+{
+	YCrCb,
+	RGB,
+	BGR,
+	YONLY,
+};
+
+enum BayerType 
+{                           // Don't change order of enums
+   BGGR,
+   GBRG,
+   GRBG,
+   RGGB
+};
+
+void BayerLum(                   /* Bayer interpolation */
+   int            ncols,         /* Image dimensions */
+   int            nrows,
+   unsigned char  bayer[],       /* Input 8-bit Bayer image */
+   int            bstride,       /* Addressed as bayer[col + row*bstride] */  
+   BayerType      order,          /* Bayer pattern order; use the enums in bayer.h */
+   unsigned char  out[],         /* Output 24-bit BGR image */
+   int            ostride,       /* Addressed as out[col + row*ostride] */
+   COLORSTYLE	  type,				// Type of work
+   bool			  bChannelSeperate);	// true, the channel stored seperated

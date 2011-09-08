@@ -41,7 +41,9 @@ namespace MMosaicDM
 					  unsigned int imageStrideInPixels,
 					  double pixelSizeXInMeters,
 					  double pixelSizeYInMeters,
-					  bool ownBuffers)
+					  bool ownBuffers,
+					  bool bBayerPattern,
+					  int iBayerType)
 			{
 				_pMosaicSet = new MosaicDM::MosaicSet(
 						objectWidthInMeters,
@@ -51,8 +53,9 @@ namespace MMosaicDM
 						imageStrideInPixels,
 						pixelSizeXInMeters,
 						pixelSizeYInMeters,
-						ownBuffers
-					);
+						ownBuffers,
+						bBayerPattern,
+						iBayerType);
 
 				// This sets up the Logging interface from unmanaged...
 				SetLoggableObject(_pMosaicSet);

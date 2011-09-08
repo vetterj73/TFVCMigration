@@ -45,7 +45,9 @@ namespace MosaicDM
 					  unsigned int imageStrideInPixels,
 					  double nominalPixelSizeXInMeters,
 					  double nominalPixelSizeYInMeters,
-					  bool ownBuffers);
+					  bool ownBuffers,
+					  bool bBayerPattern,
+					  int iBayerType);
 
 			///
 			///	Destructor
@@ -91,6 +93,8 @@ namespace MosaicDM
 			unsigned int GetObjectWidthInPixels();
 			unsigned int GetObjectLengthInPixels();
 			bool GetOwnBuffers(){return _ownBuffers;}
+			bool IsBayerPattern(){return _bBayerPattern;}; 
+			int GetBayerType(){return _iBayerType;};
 
 			///
 			///	Get the correlation flags associated with the certain layers
@@ -138,5 +142,8 @@ namespace MosaicDM
 			void FireImageAdded(unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 			CorrelationFlagsMap _correlationFlagsMap;
 			bool _ownBuffers;
+			bool _bBayerPattern;
+			int _iBayerType;
+
 	};
 }

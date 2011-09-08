@@ -2,6 +2,7 @@
 #include "lsqrpoly.h" 
 #include "math.h"
 #include "morpho.h"
+#include <string.h>
 
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
@@ -85,6 +86,189 @@ void inverse(
 	delete [] sigma;
 	delete [] answer;
 	delete [] b;
+}
+
+// Fill a ROI of the output color image by transforming the input color image
+// Support convert YCrCb seperate channel to RGB combined channels only
+// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
+// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
+// pOutBuf and iOutspan : output buffer and its span
+// iROIWidth, iHeight: the size of buffer need to be transformed
+// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
+// dInvTrans: the 3*3 transform from output image to input image (has the same unit as dHeightResolution)
+bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3]) 
+{
+	// Sanity check
+	if((iOutROIStartX+iOutROIWidth>iOutSpan) || (iInWidth>iInSpan)
+		|| (iInWidth <2) || (iInHeight<2)
+		|| (iOutROIWidth<=0) || (iOutROIHeight<=0))
+		return(false);
+
+	unsigned int iY, iX;
+
+	// Whether it is an affine transform
+	bool bAffine;
+	if(dInvTrans[2][0] == 0 &&
+		dInvTrans[2][1] == 0 &&
+		dInvTrans[2][2] == 1)
+		bAffine = true;
+	else
+		bAffine = false;
+
+	int iInSpanP1 = iInSpan+1;
+
+	// some local variable
+	unsigned char *pInCh[3];
+	for(int i=0; i<3; i++)
+	{
+		pInCh[i] = pInBuf + i*iInSpan*iInHeight;
+	}
+
+	int iflrdX, iflrdY;
+	int iPix0, iPix1, iPixW, iPixWP1;
+	int iPixDiff10;
+	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
+	double dIX, dIY, dX, dY, dDiffX, dDiffY;
+	double dVal;
+ 
+	unsigned char* pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
+	if(bAffine)
+	{
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dX = dInvTrans[0][0]*dIX + dT01__dIY_T02;
+				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
+
+			  /* Check if back projection is outside of the input image range. Note that
+				 2x2 interpolation touches the pixel to the right and below right,
+				 so right and bottom checks are pulled in a pixel. */
+				if ((dX < 0) | (dY < 0) |
+				  (dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					for(int i=0; i<3; i++)
+						pOutLine[iX*3+i] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+					/* Compute fractional differences */
+					iflrdX = (int)dX;	/* Compared to int-to-double, double-to-int */
+					iflrdY = (int)dY;	/*   much more costly */
+			    
+					for(int i=0; i<3; i++)
+					{
+						/* Compute pointer to input pixel at (dX,dY) */
+						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+						iPix0   = (int) pbPixPtr[0]; /* The 2x2 neighborhood used */
+						iPix1   = (int) pbPixPtr[1];
+						iPixW   = (int) pbPixPtr[iInSpan];
+						iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+						iPixDiff10 = iPix1 - iPix0; /* Used twice, so compute once */
+
+						dDiffX = dX - (double) iflrdX;
+						dDiffY = dY - (double) iflrdY;
+
+						pOutLine[iX*3+i] = (unsigned char)((double) iPix0			
+							+ dDiffY * (double) (iPixW - iPix0)	
+							+ dDiffX * ((double) iPixDiff10	
+							+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+							+ 0.5); // for round up
+					}
+				}
+			} //ix
+			
+			pOutLine += iOutSpan;		/* Next line in the output buffer */
+		} // iy
+	}
+	else 
+	{	/* Perspective transform: Almost identical to the above. */
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+			dT21__dIY_T22 = dInvTrans[2][1] * dIY + dInvTrans[2][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
+				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
+				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
+				if ((dX < 0) | (dY < 0) |
+					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					for(int i=0; i<3; i++)
+						pOutLine[iX*3+i] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+					for(int i=0; i<3; i++)
+					{
+						/* Compute fractional differences */
+						iflrdX =(int)dX;
+						iflrdY = (int)dY;
+			    
+						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+						iPix0   = (int) pbPixPtr[0];
+						iPix1   = (int) pbPixPtr[1];
+						iPixW   = (int) pbPixPtr[iInSpan];
+						iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+						iPixDiff10 = iPix1 - iPix0;
+
+						dDiffX = dX - (double) iflrdX;
+						dDiffY = dY - (double) iflrdY;
+
+						pOutLine[iX*3+i] = (unsigned char)((double) iPix0			
+							+ dDiffY * (double) (iPixW - iPix0)	
+							+ dDiffX * ((double) iPixDiff10	
+							+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+							+ 0.5);
+					}
+				}
+			} // ix
+			pOutLine += iOutSpan;		/* Next line in the output buffer */
+		} // iy
+    } // else
+
+
+	pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
+	for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+	{
+		for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX)
+		{
+			// YCrCb to RGB conversion
+			int iTemp[3];
+			iTemp[0] = pOutLine[iX*3] + pOutLine[iX*3+1];								// R
+			iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]>>1) - (pOutLine[iX*3+2]>>1);	// G
+			iTemp[2] = pOutLine[iX*3] + pOutLine[iX*3+2];								// B
+
+			for(int i=0; i<3; i++)
+			{
+				if(iTemp[i]<0) iTemp[i]=0;
+				if(iTemp[i]>255) iTemp[i]=255;
+				pOutLine[iX*3+i] = iTemp[i];
+			}
+		}
+		pOutLine += iOutSpan;		/* Next line in the output buffer */
+	}
+
+	return(true);
 }
 
 // Fill a ROI of the output image by transforming the input image
@@ -417,78 +601,8 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 }
 
 
-// Modified from Eric Rudd's BayerLum() function
-// Convert Bayer image into Luminance
-// Output data only valid int the range of columns [2, nCols-3] and rows [2 nRows-3]
-void BayerToLum(                
-   int            ncols,		// Image dimensions
-   int            nrows,
-   unsigned char  bayer[],      // Input 8-bit Bayer image 
-   int            bstride,      // Addressed as bayer[col + row*bstride] 
-   unsigned char  lum[],        // output Luminance image 
-   int            lstride)      // Addressed as out[col + row*ostride] 
-{
-   unsigned char *bptr, *optr;
-   int col, row, y;
 
-   bptr = bayer + 2*bstride;
-   optr = lum + 2*lstride;
-   for (row=2; row<nrows-2; row++) {
-      for (col=2; col<ncols-2; col++) {
-         y =
-           + 156*(
-                   +bptr[col                ]
-                 )
 
-           + 30*(
-                   +bptr[col     + 1*bstride]
-                   +bptr[col     - 1*bstride]
-                   +bptr[col - 1            ]
-                   +bptr[col + 1            ]
-                )
-
-           - 20*(
-                   +bptr[col     + 2*bstride]
-                   +bptr[col     - 2*bstride]
-                   +bptr[col + 2            ]
-                   +bptr[col - 2            ]
-                )
-
-           + 16*(
-                   +bptr[col - 1 + 1*bstride]
-                   +bptr[col + 1 + 1*bstride]
-                   +bptr[col - 1 - 1*bstride]
-                   +bptr[col + 1 - 1*bstride]
-                )
-
-           +    (
-                   +bptr[col - 1 + 2*bstride]
-                   +bptr[col + 1 + 2*bstride]
-                   +bptr[col - 2 + 1*bstride]
-                   +bptr[col + 2 + 1*bstride]
-                   +bptr[col - 2 - 1*bstride]
-                   +bptr[col + 2 - 1*bstride]
-                   +bptr[col - 1 - 2*bstride]
-                   +bptr[col + 1 - 2*bstride]
-                )
-
-           -  3*(
-                   +bptr[col - 2 + 2*bstride]
-                   +bptr[col + 2 + 2*bstride]
-                   +bptr[col - 2 + 2*bstride]
-                   +bptr[col + 2 + 2*bstride]
-                )
-         ;
-
-		int iTemp = y/256;
-		if(iTemp >= 255) iTemp = 255;
-		if(iTemp <= 0) iTemp = 0;
-		optr[col] = iTemp;
-	  }    
-      bptr += bstride;
-      optr += lstride;
-   }
-}
   
 int GetNumPixels(double sizeInMeters, double pixelSize)
 {
@@ -553,4 +667,484 @@ template void ClipSub(
 	unsigned int iWidth, unsigned int iHeight);
 
 
+static INLINE int clip(int value) {
+   if (value <   0) value = 0;
+   if (value > 255) value = 255;
+   return value;
+}
+
+// Modified from Rudd's BayerLum()
+void BayerLum(                   /* Bayer interpolation */
+   int            ncols,         /* Image dimensions */
+   int            nrows,
+   unsigned char  bayer[],       /* Input 8-bit Bayer image */
+   int            bstride,       /* Addressed as bayer[col + row*bstride] */  
+   BayerType      order,          /* Bayer pattern order; use the enums in bayer.h */
+   unsigned char  out[],         /* Output 24-bit BGR image */
+   int            ostride,       /* Addressed as out[col + row*ostride] */
+   COLORSTYLE     type,				// Type of color
+   bool			  bChannelSeperate)	// true, the channel stored seperated
+
+   /* BayerLum() performs Bayer interpolation by linear filtering, as
+   described in
+
+      Eric P. Rudd and Swaminathan Manickam, "A Luminance-Based Bayer
+      Interpolation Filter"
+      http://doc.cyberoptics.com/Research/ruddpapers/lumeval.pdf
+
+   The philosophy behind this filter is that luminance (Y) is the most
+   important and that chrominance errors are less visible.  Accordingly, a
+   5x5 kernel is used to reconstruct Y, and 3x3 (bilinear) filters are used to
+   compute R-Y and B-Y.  The outputs of these three filters are then combined.
+   This approach is faster than using a large filter kernel for all three
+   colors.
+
+   Most of the parameters are obvious, but "order" deserves a little more
+   explanation.  Assuming that bayer[] begins at the southwest (SW) corner, the
+   Bayer pattern at that corner can assume four different configurations:
+
+      G R   (BGGR)
+      B G
+
+      R G   (GBRG)
+      G B
+
+      B G   (GRBG)
+      G R
+
+      G B   (RGGB)
+      R G
+
+   Use the enums defined in bayer.h to specify which order to use. */
+{
+	int b, by, col, colinc, g, r, row, ry, y;
+	int ColOrder, RowOrder;
+
+   /* Housekeeping */
+
+	ColOrder = order & 1;               /* Bit 0 */
+	RowOrder = (order & 2) >> 1;        /* Bit 1 */
+
+   /* Compute luminance with maximally-flat filter having zeros at
+   (+/-f, +/-f) and (0, +/-f) and (+/-f, 0).  Compute r-y and b-y from
+   RGB values with bilinear filter.  Finally combine the results.
+
+   */
+
+	unsigned char *bptr = bayer + 2*bstride;
+	unsigned char *optr = out + 2*ostride;
+	unsigned char *c0Ptr = out + 2*ostride;
+	unsigned char *c1Ptr = c0Ptr + nrows*ostride;
+	unsigned char *c2Ptr = c1Ptr + nrows*ostride;
+	for (row=2; row<nrows-2; row++) 
+	{
+		for (col=2; col<ncols-2; col++) 
+		{
+			y =
+				+ 156*(
+                   +bptr[col                ]
+                 )
+
+				+ 30*(
+                   +bptr[col     + 1*bstride]
+                   +bptr[col     - 1*bstride]
+                   +bptr[col - 1            ]
+                   +bptr[col + 1            ]
+                )
+
+				- 20*(
+                   +bptr[col     + 2*bstride]
+                   +bptr[col     - 2*bstride]
+                   +bptr[col + 2            ]
+                   +bptr[col - 2            ]
+                )
+
+				+ 16*(
+                   +bptr[col - 1 + 1*bstride]
+                   +bptr[col + 1 + 1*bstride]
+                   +bptr[col - 1 - 1*bstride]
+                   +bptr[col + 1 - 1*bstride]
+                )
+
+				+    (
+                   +bptr[col - 1 + 2*bstride]
+                   +bptr[col + 1 + 2*bstride]
+                   +bptr[col - 2 + 1*bstride]
+                   +bptr[col + 2 + 1*bstride]
+                   +bptr[col - 2 - 1*bstride]
+                   +bptr[col + 2 - 1*bstride]
+                   +bptr[col - 1 - 2*bstride]
+                   +bptr[col + 1 - 2*bstride]
+                )
+
+				-  3*(
+                   +bptr[col - 2 + 2*bstride]
+                   +bptr[col + 2 + 2*bstride]
+                   +bptr[col - 2 - 2*bstride]
+                   +bptr[col + 2 - 2*bstride]
+                );
+
+			// Only collect luminance
+			if(type == YONLY)
+			{
+				optr[col] = y;
+				continue;
+			}
+
+			if ((row&1) == RowOrder) 
+			{
+				if ((col&1) == ColOrder) 
+				{	/* Blue */
+					b = 64*bptr[col];
+
+					g = 16*(
+						+bptr[col  -1*bstride]
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+						+bptr[col  +1*bstride]
+									 );
+
+					r = 16*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+									 );
+				} 
+				else 
+				{                   /* Green in blue  row */
+					b = 32*(
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+									 );
+
+					g = 8*(
+					   +bptr[col-1-1*bstride]
+					   +bptr[col+1-1*bstride]
+					   +4*bptr[col]
+					   +bptr[col-1+1*bstride]
+					   +bptr[col+1+1*bstride]
+									 );
+
+					r = 32*(
+					   +bptr[col  -1*bstride]
+					   +bptr[col  +1*bstride]
+								 );
+				}
+			}
+			else 
+			{
+				if ((col&1) == ColOrder) 
+				{ /* Green in red row */
+					b = 32*(
+						+bptr[col  -1*bstride]
+						+bptr[col  +1*bstride]
+								 );
+
+					g = 8*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+4*bptr[col]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+								 );
+
+					r = 32*(
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+								 );
+				} 
+				else 
+				{   /* Red */
+					b = 16*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+								 );
+
+					g = 16*(
+						+bptr[col  -1*bstride]
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+						+bptr[col  +1*bstride]
+								 );
+
+					r = 64*bptr[col];
+				}
+			}
+
+         /* At this point, r, g, b = 64 times desired value and
+            y = 256 times desired value. */
+
+			ry = 3*r - 2*g -   b;
+			by =  -r - 2*g + 3*b;
+
+			switch(type)
+			{
+			case YCrCb:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = y;
+					c1Ptr[col] = ry;
+					c2Ptr[col] = by;
+				}
+				else
+				{
+					optr[col*3] = y;
+					optr[col*3+1] = ry;
+					optr[col*3+2] = by;
+				}
+				break;
+
+			case RGB:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = clip((y + ry)/256);			// R
+					c1Ptr[col] = clip((2*y - ry - by)/512);		// G
+					c2Ptr[col] = clip((y + by)/256);			// B
+				}
+				else
+				{
+
+					optr[col*3] = clip((y + ry)/256);			// R
+					optr[col*3+1]= clip((2*y - ry - by)/512);	// G
+					optr[col*3+2] = clip((y + by)/256);			// B
+				}
+				break;
+
+			case BGR:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = clip((y + by)/256);			// B
+					c1Ptr[col] = clip((2*y - ry - by)/512);		// G
+					c2Ptr[col] = clip((y + ry)/256);			// R
+				}
+				else
+				{
+					optr[col*3] = clip((y + by)/256);			// B
+					optr[col*3+1]= clip((2*y - ry - by)/512);	// G
+					optr[col*3+2] = clip((y + ry)/256);			// R
+				}
+			}
+		}
+		bptr += bstride;
+		optr += ostride;
+		c0Ptr+= ostride;
+		c1Ptr+= ostride;
+		c2Ptr+= ostride;
+	}
+
+   /* Because of the 5x5 luminance kernel, the normal interpolation scheme
+   cannot get any closer than two pixels to the border of the image.  We use
+   a bilinear filter to get one rank of pixels closer.  Since not very many
+   pixels need to be set here, some tricky programming is used to reduce the
+   code size at the expense of speed.  The "if" statement after the row "for"
+   loop makes the inner loop visit columns
+
+      1, 2, ..., ncols-3, ncols-2
+
+   for rows 1 and nrows-2, and just columns 1 and ncols-2 for the interior
+   rows.  The outermost rank of pixels is bordered by a simple copy from the
+   adjacent BGR pixels. The copies to the first and last pixels in each row
+   are carried out by simple assignment statements after the inner loop below;
+   the copies to rows 0 and ncols-1 are handled by calls to memcpy(). */
+
+	bptr = bayer + bstride;
+	optr = out + ostride;
+	c0Ptr = out + ostride;
+	c1Ptr = c0Ptr + nrows*ostride;
+	c2Ptr = c1Ptr + nrows*ostride;
+	for (row=1; row<nrows-1; row++) 
+	{
+		if ((row==1) || (row==nrows-2)) 
+		{
+			colinc = 1;
+		} 
+		else 
+		{
+			colinc = ncols - 3;
+		}
+
+		for (col=1; col<ncols-1; col+=colinc) 
+		{
+			if ((row&1) == RowOrder) 
+			{
+				if ((col&1) == ColOrder) 
+				{ /* Blue */
+					b = 64*bptr[col];
+
+					g = 16*(
+						+bptr[col  -1*bstride]
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+						+bptr[col  +1*bstride]
+								 );
+
+					r = 16*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+								 );
+				} 
+				else 
+				{                   /* Green in blue  row */
+					b = 32*(
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+                             );
+
+					g = 8*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+4*bptr[col]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+                             );
+
+					r = 32*(
+						+bptr[col  -1*bstride]
+						+bptr[col  +1*bstride]
+                             );
+				}
+			}
+			else 
+			{
+				if ((col&1) == ColOrder) 
+				{ /* Green in red row */
+					b = 32*(
+						+bptr[col  -1*bstride]
+						+bptr[col  +1*bstride]
+                             );
+
+					g = 8*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+4*bptr[col]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+                             );
+
+					r = 32*(
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+                             );
+				}
+				else 
+				{                   /* Red */
+					b = 16*(
+						+bptr[col-1-1*bstride]
+						+bptr[col+1-1*bstride]
+						+bptr[col-1+1*bstride]
+						+bptr[col+1+1*bstride]
+                             );
+
+					g = 16*(
+						+bptr[col  -1*bstride]
+						+bptr[col-1     ]
+						+bptr[col+1     ]
+						+bptr[col  +1*bstride]
+                             );
+
+					r = 64*bptr[col];
+				}
+			}
+
+         /* At this point, r, g, b = 64 times desired value */
+			switch(type)
+			{
+			case YONLY:
+				optr[col] = r/256 + g/128 +b/256;
+				break;
+
+			case YCrCb:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = r/256 + g/128 +b/256;		// Y
+					c1Ptr[col] = clip(r/64-c0Ptr[col]);		// Cr
+					c2Ptr[col] = clip(b/64-c0Ptr[col]);		// Cb
+				}
+				else
+				{
+					optr[col*3] = r/256 + g/128 +b/256;		// Y
+					optr[col*3+1] = clip(r/64-c0Ptr[col]);	// Cr
+					optr[col*3+2] = clip(b/64-c0Ptr[col]);	// Cb
+				}
+				break;
+
+			case RGB:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = clip(r/64);			// R
+					c1Ptr[col] = clip(g/64);			// G
+					c2Ptr[col] = clip(b/64);			// B
+				}
+				else
+				{
+
+					optr[col*3] = clip(r/64);			// R
+					optr[col*3+1]= clip(g/64);			// G
+					optr[col*3+2] = clip(b/64);			// B
+				}
+				break;
+
+			case BGR:
+				if(bChannelSeperate)
+				{
+					c0Ptr[col] = clip(b/64);			// B
+					c1Ptr[col] = clip(g/64);			// G
+					c2Ptr[col] = clip(r/64);			// R
+				}
+				else
+				{
+					optr[col*3] = clip(b/64);			// B
+					optr[col*3+1]= clip(g/64);			// G
+					optr[col*3+2] = clip(r/64);			// R
+				}
+				break;
+			}
+		}
+
+		if(bChannelSeperate)
+		{
+			c0Ptr[0] = c0Ptr[1];
+			c1Ptr[0] = c1Ptr[1];
+			c2Ptr[0] = c2Ptr[1];
+			c0Ptr[ncols-1] = c0Ptr[ncols-2];
+			c1Ptr[ncols-1] = c1Ptr[ncols-2];
+			c2Ptr[ncols-1] = c2Ptr[ncols-2];
+		}
+		else
+		{	
+			optr[0] = optr[3];
+			optr[1] = optr[4];
+			optr[2] = optr[5];
+			optr[3*ncols-3] = optr[3*ncols-6];
+			optr[3*ncols-2] = optr[3*ncols-5];
+			optr[3*ncols-1] = optr[3*ncols-4];
+		}
+		bptr += bstride;
+		optr += ostride;
+		c0Ptr+= ostride;
+		c1Ptr+= ostride;
+		c2Ptr+= ostride;
+   }
+
+   if(bChannelSeperate)
+   {
+		unsigned char* tempPtr = out;
+		for(int i=0; i<3; i++)
+		{
+			memcpy(tempPtr, tempPtr+ostride, ncols*sizeof(*out));
+			memcpy(tempPtr+ostride*(nrows-1), tempPtr+ostride*(nrows-2), ncols*sizeof(*out));
+			tempPtr += ostride*nrows;
+		}
+   }
+   else
+   {
+		memcpy(out, out+ostride, ncols*sizeof(*out)*3);
+		memcpy(out+ostride*(nrows-1), out+ostride*(nrows-2), ncols*sizeof(*out)*3);
+   }
+}
 

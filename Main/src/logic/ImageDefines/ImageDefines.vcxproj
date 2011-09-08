@@ -166,6 +166,7 @@ copy *.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ColorImage.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
@@ -176,6 +177,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="Utilities.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ColorImage.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Image16.cpp" />
     <ClCompile Include="ImgTransform.cpp" />

@@ -2,17 +2,20 @@
 #include "MosaicTile.h"
 #include "MosaicLayer.h"
 #include "MosaicSet.h"
+#include "ColorImage.h"
 
 namespace MosaicDM 
 {
 	MosaicTile::MosaicTile()
 	{
+		_pImage = NULL;
 		_pMosaicLayer = NULL;
 		_containsImage = false;
 	}
 
 	MosaicTile::~MosaicTile(void)
 	{
+		if(_pImage != NULL) delete _pImage;
 	}
 
 	void MosaicTile::Initialize(MosaicLayer* pMosaicLayer, double centerOffsetX, double centerOffsetY)
@@ -29,8 +32,13 @@ namespace MosaicDM
 	{
 		ImgTransform inputTransform;
 		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters, rotation, offsetXInMeters, offsetYInMeters);
+
+		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern())
+			_pImage = new ColorImage();
+		else
+			_pImage = new Image();
 		
-		Configure(
+		_pImage->Configure(
 			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
@@ -39,12 +47,28 @@ namespace MosaicDM
 
 	bool MosaicTile::SetImageBuffer(unsigned char* pImageBuffer)
 	{
-		if(_pMosaicLayer->GetMosaicSet()->GetOwnBuffers())
+		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern()) // For bayer/color image
 		{
-			memcpy(GetBuffer(), pImageBuffer, BufferSizeInBytes());	
-		} else
+			((ColorImage*)_pImage)->DemosiacFrom(pImageBuffer, 
+				_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
+				(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+
+			/*/ For debug
+			((ColorImage*)_pImage)->SetColorStyle(RGB);
+			((ColorImage*)_pImage)->SetChannelStoreSeperated(false);
+			_pImage->Save("C:\\Temp\\ColorFov.bmp"); 
+			//*/
+		}
+		else // For gray image 
 		{
-			SetBuffer(pImageBuffer);
+			if(_pMosaicLayer->GetMosaicSet()->GetOwnBuffers())
+			{
+				memcpy(_pImage->GetBuffer(), pImageBuffer, _pImage->BufferSizeInBytes());	
+			} 
+			else
+			{
+				_pImage->SetBuffer(pImageBuffer);
+			}
 		}
 
 		_containsImage = true;
