@@ -787,7 +787,7 @@ void BayerLum(                   /* Bayer interpolation */
 			// Only collect luminance
 			if(type == YONLY)
 			{
-				optr[col] = y;
+				optr[col] = clip(y>>8);
 				continue;
 			}
 
@@ -885,15 +885,15 @@ void BayerLum(                   /* Bayer interpolation */
 			case YCrCb:
 				if(bChannelSeperate)
 				{
-					c0Ptr[col] = y;
-					c1Ptr[col] = ry;
-					c2Ptr[col] = by;
+					c0Ptr[col] = clip(y/256);
+					c1Ptr[col] = clip(ry/256);
+					c2Ptr[col] = clip(ry/256);
 				}
 				else
 				{
-					optr[col*3] = y;
-					optr[col*3+1] = ry;
-					optr[col*3+2] = by;
+					optr[col*3] = clip(y/256);
+					optr[col*3+1] = clip(ry/256);
+					optr[col*3+2] = clip(by/256);
 				}
 				break;
 
