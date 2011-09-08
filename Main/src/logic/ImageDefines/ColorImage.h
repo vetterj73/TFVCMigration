@@ -7,7 +7,7 @@
 class ColorImage : public Image
 {
 public:
-	ColorImage(COLORSTYLE colorStyle = RGB, bool bChannelStoredSeperate = false);
+	ColorImage(COLORSTYLE colorStyle, bool bChannelStoredSeperate);
 	~ColorImage(void);
 
 	bool DemosaicFrom(const Image* bayerImg, BayerType type);

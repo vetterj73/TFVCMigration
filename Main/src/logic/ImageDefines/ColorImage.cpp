@@ -21,7 +21,7 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 
 	for(unsigned int iy=0; iy<_rows; iy++) 
 	{
-		for(unsigned int ix=0; ix<_columns; ix)
+		for(unsigned int ix=0; ix<_columns; ix++)
 		{
 			// Get address for data
 			int iAddress[3];
@@ -80,7 +80,7 @@ void ColorImage::SetChannelStoreSeperated(bool bValue)
 	// Seperate channel to combined channel		
 	for(unsigned int iy=0; iy<_rows; iy++) 
 	{
-		for(unsigned int ix=0; ix<_columns; ix)
+		for(unsigned int ix=0; ix<_columns; ix++)
 		{
 			for(int i=0; i<3; i++)
 			{
@@ -102,7 +102,6 @@ void ColorImage::SetChannelStoreSeperated(bool bValue)
 			pInLine += ByteRowStride();
 		}
 	}
-
 
 	::memcpy(_buffer, pTempBuf, BufferSizeInBytes());
 	_bChannelStoredSeperate = bValue;
@@ -151,9 +150,8 @@ bool  ColorImage::DemosaicFrom(const Image* bayerImg, BayerType type)
 
 bool ColorImage::DemosiacFrom(unsigned char* pBayerBuf, int iCols, int iRows, int iSpan, BayerType type)
 {
-
 	// If size in pixel is not the same
-	if(_rows != iRows || iCols != iCols)
+	if(_rows != iRows || _columns != iCols)
 	{
 		_rows = iRows;
 		_columns = iCols;
@@ -165,7 +163,7 @@ bool ColorImage::DemosiacFrom(unsigned char* pBayerBuf, int iCols, int iRows, in
 	}
 
 	int iOutSpan =  _pixelRowStride;
-	if(_colorStyle!=YONLY && _bChannelStoredSeperate)
+	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
 		iOutSpan = ByteRowStride();
 	
 	BayerLum(                  

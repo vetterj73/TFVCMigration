@@ -34,7 +34,8 @@ namespace MosaicDM
 		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters, rotation, offsetXInMeters, offsetYInMeters);
 
 		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern())
-			_pImage = new ColorImage();
+			_pImage = new ColorImage(YCrCb, true); // YCrCb color, seperate channel
+			//_pImage = new ColorImage(RGB, false); // RGB color, combined channel
 		else
 			_pImage = new Image();
 		
