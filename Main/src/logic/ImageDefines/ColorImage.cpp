@@ -35,14 +35,14 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 				
 			int iTemp[3];			
 			// YCrCb to BGR conversion
-			if(_colorStyle == YCrCb && value == RGB)
+			if(_colorStyle == YCrCb && value == BGR)
 			{
 				iTemp[2] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[1]]-128)*2;									// R
 				iTemp[1] = (int)pLine[iAddress[0]] - ((int)pLine[iAddress[1]]-128) - ((int)pLine[iAddress[2]]-128);	// G
 				iTemp[0] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[2]]-128)*2;	// B
 			}
 			// BGR to YCrCb conversion
-			if(_colorStyle ==  RGB && value == YCrCb)
+			if(_colorStyle ==  BGR && value == YCrCb)
 			{
 				iTemp[0] = (pLine[iAddress[2]]>>2) + (pLine[iAddress[1]]>>1) + (pLine[iAddress[0]]>>2);	// Y	
 				iTemp[1] = (pLine[iAddress[2]] - iTemp[0])/2+128;										// Cr
@@ -199,7 +199,7 @@ bool  ColorImage::ColorMorphFrom(const ColorImage* pImgIn, UIRect roi)
 	*/
 
 	// Validation check (only for 8-bit image)
-	if(_bytesPerPixel != 1) return(false);
+	if(_bytesPerPixel != 3) return(false);
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
@@ -220,11 +220,11 @@ bool  ColorImage::ColorMorphFrom(const ColorImage* pImgIn, UIRect roi)
 	dT[2][1] = dTemp[2][0];
 	dT[2][2] = dTemp[2][2];
 
-	// Image morph
+	// Image morph: YCrCb in sperated channels to BGR in combined channels
 	ColorImageMorph(
 		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
 		pImgIn->Columns(), pImgIn->Rows(),
-		_buffer, _pixelRowStride,
+		_buffer, ByteRowStride(),
 		roi.FirstColumn, roi.FirstRow,
 		roi.Columns(), roi.Rows(),
 		dT);

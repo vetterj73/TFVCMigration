@@ -122,7 +122,7 @@ void Image::Configure(
 // Get buffer point at certain location
 unsigned char*	Image::GetBuffer(unsigned col, unsigned int row) const
 {
-	return(GetBuffer() + ByteRowStride()*row + GetBytesPerPixel()*col);
+	return(GetBuffer() + PixelRowStride()*row + GetBytesPerPixel()*col);
 }
 
 void Image::SetBuffer(unsigned char* buf)

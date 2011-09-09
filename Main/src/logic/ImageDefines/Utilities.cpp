@@ -250,7 +250,7 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	double dInvTrans[3][3]) 
 {
 	// Sanity check
-	if((iOutROIStartX+iOutROIWidth>iOutSpan) || (iInWidth>iInSpan)
+	if((iOutROIStartX+iOutROIWidth>iOutSpan/3) || (iInWidth>iInSpan)
 		|| (iInWidth <2) || (iInHeight<2)
 		|| (iOutROIWidth<=0) || (iOutROIHeight<=0))
 		return(false);
@@ -303,8 +303,10 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				if ((dX < 0) | (dY < 0) |
 				  (dX >= iInWidth-1) | (dY >= iInHeight-1)) 
 				{
-					for(int i=0; i<3; i++)
-						pOutLine[iX*3+i] = 0x00;	/* Clipped */
+					
+					pOutLine[iX*3] = 0x00;	/* Clipped */
+					pOutLine[iX*3+1] = 128;	/* Clipped */
+					pOutLine[iX*3+2] = 128;	/* Clipped */
 				}
 				else 
 				{
@@ -315,7 +317,7 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 					for(int i=0; i<3; i++)
 					{
 						/* Compute pointer to input pixel at (dX,dY) */
-						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+						unsigned char* pbPixPtr = pInCh[i] + iflrdX + iflrdY * iInSpan;
 
 						iPix0   = (int) pbPixPtr[0]; /* The 2x2 neighborhood used */
 						iPix1   = (int) pbPixPtr[1];
@@ -357,8 +359,9 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				if ((dX < 0) | (dY < 0) |
 					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
 				{
-					for(int i=0; i<3; i++)
-						pOutLine[iX*3+i] = 0x00;	/* Clipped */
+					pOutLine[iX*3] = 0x00;	/* Clipped */
+					pOutLine[iX*3+1] = 128;	/* Clipped */
+					pOutLine[iX*3+2] = 128;	/* Clipped */
 				}
 				else 
 				{
@@ -392,7 +395,6 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 		} // iy
     } // else
 
-
 	pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
 	for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
 	{
@@ -411,7 +413,7 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				pOutLine[iX*3+i] = iTemp[i];
 			}
 		}
-		pOutLine += iOutSpan;		/* Next line in the output buffer */
+		pOutLine += iOutSpan;		// Next line in the output buffer
 	}
 
 	return(true);

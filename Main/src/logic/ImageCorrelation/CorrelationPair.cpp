@@ -175,7 +175,7 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 	{
 		unsigned int iCount = 0;
 		unsigned char* pLineBuf = _pMaskImg->GetBuffer() + 
-			_roi1.FirstRow*_pMaskImg->ByteRowStride();
+			_roi1.FirstRow*_pMaskImg->PixelRowStride();
 		for(unsigned int iy=_roi1.FirstRow; iy<=_roi1.LastRow; iy++)
 		{
 			for(unsigned int ix=_roi1.FirstColumn; ix<=_roi1.LastColumn; ix++)
@@ -184,7 +184,7 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 					iCount++;
 			}
 
-			pLineBuf += _pMaskImg->ByteRowStride();
+			pLineBuf += _pMaskImg->PixelRowStride();
 		}
 
 		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrelationParametersInst.dMaskAreaRatioTh*100)

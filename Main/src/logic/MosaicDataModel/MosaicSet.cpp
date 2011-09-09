@@ -6,6 +6,7 @@
 #include "CorrelationFlags.h"
 #include "Utilities.h"
 #include "Bitmap.h"
+#include "ColorImage.h"
 
 namespace MosaicDM 
 {
@@ -183,20 +184,11 @@ namespace MosaicDM
 			char buffer[20];
 			sprintf(buffer, "layer%d.bmp", i);
 			string file = fullDir + buffer;
-			
-			// Save the image using Bitmap Library...
-			Bitmap *bmp = Bitmap::NewBitmapFromBuffer( 
-				GetObjectWidthInPixels(), 
-				GetObjectLengthInPixels(), 
-				GetObjectLengthInPixels(),
-				pImage->GetBuffer(),
-				8);
 
-			if(bmp == NULL)
-				return false;
-
-			bmp->write(file);
-			delete bmp;
+			if(_bBayerPattern)
+				((ColorImage*)pImage)->Save(file);
+			else
+				pImage->Save(file);
 		}
 
 		return true;
