@@ -34,19 +34,19 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 			}
 				
 			int iTemp[3];			
-			// YCrCb to RGB conversion
+			// YCrCb to BGR conversion
 			if(_colorStyle == YCrCb && value == RGB)
 			{
-				iTemp[0] = pLine[iAddress[0]] + pLine[iAddress[1]];									// R
-				iTemp[1] = pLine[iAddress[0]] - (pLine[iAddress[1]]>>1) - (pLine[iAddress[2]]>>1);	// G
-				iTemp[2] = pLine[iAddress[0]] + pLine[iAddress[2]];	// B
+				iTemp[2] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[1]]-128)*2;									// R
+				iTemp[1] = (int)pLine[iAddress[0]] - ((int)pLine[iAddress[1]]-128) - ((int)pLine[iAddress[2]]-128);	// G
+				iTemp[0] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[2]]-128)*2;	// B
 			}
-			// RGB to YCrCb conversion
+			// BGR to YCrCb conversion
 			if(_colorStyle ==  RGB && value == YCrCb)
 			{
-				iTemp[0] = (pLine[ix*3]>>2) + (pLine[ix*3+1]>>1) + (pLine[ix*3+2]>>2);	// Y								// R
-				iTemp[1] = pLine[ix*3] - iTemp[0];										// Cr
-				iTemp[2] = pLine[ix*3+2] - iTemp[0];									// Cb
+				iTemp[0] = (pLine[iAddress[2]]>>2) + (pLine[iAddress[1]]>>1) + (pLine[iAddress[0]]>>2);	// Y	
+				iTemp[1] = (pLine[iAddress[2]] - iTemp[0])/2+128;										// Cr
+				iTemp[2] = (pLine[iAddress[0]] - iTemp[0])/2+128;									// Cb
 			}
 
 			// Write back
@@ -92,14 +92,14 @@ void ColorImage::SetChannelStoreSeperated(bool bValue)
 		}
 		// Next line in the output buffer
 		if(_bChannelStoredSeperate)
-		{
-			pOutLine += ByteRowStride();
+		{			
 			pInLine += PixelRowStride();
+			pOutLine += ByteRowStride();
 		}
 		else
 		{
-			pOutLine += PixelRowStride();
 			pInLine += ByteRowStride();
+			pOutLine += PixelRowStride();
 		}
 	}
 

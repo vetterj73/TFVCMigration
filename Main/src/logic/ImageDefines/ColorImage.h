@@ -2,7 +2,7 @@
 #include "image.h"
 #include "Utilities.h"
 
-// Only support RGB and YCrCb color type only 
+// Only support BGR and YCrCb color type only 
 
 class ColorImage : public Image
 {

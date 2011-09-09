@@ -88,8 +88,154 @@ void inverse(
 	delete [] b;
 }
 
+// Fill a ROI of the output image by transforming the input image
+// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
+// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
+// pOutBuf and iOutspan : output buffer and its span
+// iROIWidth, iHeight: the size of buffer need to be transformed
+// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
+// dInvTrans: the 3*3 transform from output image to input image (has the same unit as dHeightResolution)
+bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3]) 
+{
+	// Sanity check
+	if((iOutROIStartX+iOutROIWidth>iOutSpan) || (iInWidth>iInSpan)
+		|| (iInWidth <2) || (iInHeight<2)
+		|| (iOutROIWidth<=0) || (iOutROIHeight<=0))
+		return(false);
+
+	unsigned int iY, iX;
+
+	// Whether it is an affine transform
+	bool bAffine;
+	if(dInvTrans[2][0] == 0 &&
+		dInvTrans[2][1] == 0 &&
+		dInvTrans[2][2] == 1)
+		bAffine = true;
+	else
+		bAffine = false;
+
+	unsigned char* pbOutBuf = pOutBuf + iOutROIStartY*iOutSpan;
+	int iInSpanP1 = iInSpan+1;
+
+	// some local variable
+	unsigned char* pbPixPtr;
+	int iflrdX, iflrdY;
+	int iPix0, iPix1, iPixW, iPixWP1;
+	int iPixDiff10;
+	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
+	double dIX, dIY, dX, dY, dDiffX, dDiffY;
+	double dVal;
+ 
+	if(bAffine)
+	{
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dX = dInvTrans[0][0]*dIX + dT01__dIY_T02;
+				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
+
+			  /* Check if back projection is outside of the input image range. Note that
+				 2x2 interpolation touches the pixel to the right and below right,
+				 so right and bottom checks are pulled in a pixel. */
+				if ((dX < 0) | (dY < 0) |
+				  (dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					pbOutBuf[iX] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+					/* Compute fractional differences */
+					iflrdX = (int)dX;	/* Compared to int-to-double, double-to-int */
+					iflrdY = (int)dY;	/*   much more costly */
+			    
+					/* Compute pointer to input pixel at (dX,dY) */
+					pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+					iPix0   = (int) pbPixPtr[0]; /* The 2x2 neighborhood used */
+					iPix1   = (int) pbPixPtr[1];
+					iPixW   = (int) pbPixPtr[iInSpan];
+					iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+					iPixDiff10 = iPix1 - iPix0; /* Used twice, so compute once */
+
+					dDiffX = dX - (double) iflrdX;
+					dDiffY = dY - (double) iflrdY;
+
+					pbOutBuf[iX] = (unsigned char)((double) iPix0			
+						+ dDiffY * (double) (iPixW - iPix0)	
+						+ dDiffX * ((double) iPixDiff10	
+						+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+						+ 0.5); // for round up 
+				}
+			} //ix
+			pbOutBuf += iOutSpan;		/* Next line in the output buffer */
+		} // iy
+	}
+	else 
+	{	/* Perspective transform: Almost identical to the above. */
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+			dT21__dIY_T22 = dInvTrans[2][1] * dIY + dInvTrans[2][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
+				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
+				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
+				if ((dX < 0) | (dY < 0) |
+					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					pbOutBuf[iX] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+					/* Compute fractional differences */
+					iflrdX =(int)dX;
+					iflrdY = (int)dY;
+			    
+					pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+					iPix0   = (int) pbPixPtr[0];
+					iPix1   = (int) pbPixPtr[1];
+					iPixW   = (int) pbPixPtr[iInSpan];
+					iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+					iPixDiff10 = iPix1 - iPix0;
+
+					dDiffX = dX - (double) iflrdX;
+					dDiffY = dY - (double) iflrdY;
+
+					pbOutBuf[iX] = (unsigned char)((double) iPix0			
+						+ dDiffY * (double) (iPixW - iPix0)	
+						+ dDiffX * ((double) iPixDiff10	
+						+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+						+ 0.5);
+				}
+			} // ix
+			pbOutBuf += iOutSpan;
+		} // iy
+    } // else
+
+	return(true);
+}
+
 // Fill a ROI of the output color image by transforming the input color image
-// Support convert YCrCb seperate channel to RGB combined channels only
+// Support convert YCrCb seperate channel to BGR combined channels only
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
 // pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
 // pOutBuf and iOutspan : output buffer and its span
@@ -254,9 +400,9 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 		{
 			// YCrCb to RGB conversion
 			int iTemp[3];
-			iTemp[0] = pOutLine[iX*3] + pOutLine[iX*3+1];								// R
-			iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]>>1) - (pOutLine[iX*3+2]>>1);	// G
-			iTemp[2] = pOutLine[iX*3] + pOutLine[iX*3+2];								// B
+			iTemp[2] = pOutLine[iX*3] + (pOutLine[iX*3+1]-128)*2;								// R
+			iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]-128) - (pOutLine[iX*3+2]-128);	// G
+			iTemp[0] = pOutLine[iX*3] + (pOutLine[iX*3+2]-128)*2;								// B
 
 			for(int i=0; i<3; i++)
 			{
@@ -267,152 +413,6 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 		}
 		pOutLine += iOutSpan;		/* Next line in the output buffer */
 	}
-
-	return(true);
-}
-
-// Fill a ROI of the output image by transforming the input image
-// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
-// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
-// pOutBuf and iOutspan : output buffer and its span
-// iROIWidth, iHeight: the size of buffer need to be transformed
-// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
-// dInvTrans: the 3*3 transform from output image to input image (has the same unit as dHeightResolution)
-bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
-	unsigned int iInWidth, unsigned int iInHeight, 
-	unsigned char* pOutBuf, unsigned int iOutSpan,
-	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
-	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
-	double dInvTrans[3][3]) 
-{
-	// Sanity check
-	if((iOutROIStartX+iOutROIWidth>iOutSpan) || (iInWidth>iInSpan)
-		|| (iInWidth <2) || (iInHeight<2)
-		|| (iOutROIWidth<=0) || (iOutROIHeight<=0))
-		return(false);
-
-	unsigned int iY, iX;
-
-	// Whether it is an affine transform
-	bool bAffine;
-	if(dInvTrans[2][0] == 0 &&
-		dInvTrans[2][1] == 0 &&
-		dInvTrans[2][2] == 1)
-		bAffine = true;
-	else
-		bAffine = false;
-
-	unsigned char* pbOutBuf = pOutBuf + iOutROIStartY*iOutSpan;
-	int iInSpanP1 = iInSpan+1;
-
-	// some local variable
-	unsigned char* pbPixPtr;
-	int iflrdX, iflrdY;
-	int iPix0, iPix1, iPixW, iPixWP1;
-	int iPixDiff10;
-	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
-	double dIX, dIY, dX, dY, dDiffX, dDiffY;
-	double dVal;
- 
-	if(bAffine)
-	{
-		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
-		{
-			dIY = (double) iY;
-			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
-			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
-
-			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
-			{
-				dIX = (double) iX;
-				dX = dInvTrans[0][0]*dIX + dT01__dIY_T02;
-				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
-
-			  /* Check if back projection is outside of the input image range. Note that
-				 2x2 interpolation touches the pixel to the right and below right,
-				 so right and bottom checks are pulled in a pixel. */
-				if ((dX < 0) | (dY < 0) |
-				  (dX >= iInWidth-1) | (dY >= iInHeight-1)) 
-				{
-					pbOutBuf[iX] = 0x00;	/* Clipped */
-				}
-				else 
-				{
-					/* Compute fractional differences */
-					iflrdX = (int)dX;	/* Compared to int-to-double, double-to-int */
-					iflrdY = (int)dY;	/*   much more costly */
-			    
-					/* Compute pointer to input pixel at (dX,dY) */
-					pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
-
-					iPix0   = (int) pbPixPtr[0]; /* The 2x2 neighborhood used */
-					iPix1   = (int) pbPixPtr[1];
-					iPixW   = (int) pbPixPtr[iInSpan];
-					iPixWP1 = (int) pbPixPtr[iInSpanP1];
-
-					iPixDiff10 = iPix1 - iPix0; /* Used twice, so compute once */
-
-					dDiffX = dX - (double) iflrdX;
-					dDiffY = dY - (double) iflrdY;
-
-					pbOutBuf[iX] = (unsigned char)((double) iPix0			
-						+ dDiffY * (double) (iPixW - iPix0)	
-						+ dDiffX * ((double) iPixDiff10	
-						+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
-						+ 0.5); // for round up 
-				}
-			} //ix
-			pbOutBuf += iOutSpan;		/* Next line in the output buffer */
-		} // iy
-	}
-	else 
-	{	/* Perspective transform: Almost identical to the above. */
-		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
-		{
-			dIY = (double) iY;
-			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
-			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
-			dT21__dIY_T22 = dInvTrans[2][1] * dIY + dInvTrans[2][2];
-
-			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
-			{
-				dIX = (double) iX;
-				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
-				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
-				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
-				if ((dX < 0) | (dY < 0) |
-					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
-				{
-					pbOutBuf[iX] = 0x00;	/* Clipped */
-				}
-				else 
-				{
-					/* Compute fractional differences */
-					iflrdX =(int)dX;
-					iflrdY = (int)dY;
-			    
-					pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
-
-					iPix0   = (int) pbPixPtr[0];
-					iPix1   = (int) pbPixPtr[1];
-					iPixW   = (int) pbPixPtr[iInSpan];
-					iPixWP1 = (int) pbPixPtr[iInSpanP1];
-
-					iPixDiff10 = iPix1 - iPix0;
-
-					dDiffX = dX - (double) iflrdX;
-					dDiffY = dY - (double) iflrdY;
-
-					pbOutBuf[iX] = (unsigned char)((double) iPix0			
-						+ dDiffY * (double) (iPixW - iPix0)	
-						+ dDiffX * ((double) iPixDiff10	
-						+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
-						+ 0.5);
-				}
-			} // ix
-			pbOutBuf += iOutSpan;
-		} // iy
-    } // else
 
 	return(true);
 }
@@ -877,7 +877,7 @@ void BayerLum(                   /* Bayer interpolation */
          /* At this point, r, g, b = 64 times desired value and
             y = 256 times desired value. */
 
-			ry = 3*r - 2*g -   b;
+			ry = 3*r - 2*g -   b;		// 256 time of desired value
 			by =  -r - 2*g + 3*b;
 
 			switch(type)
@@ -886,14 +886,14 @@ void BayerLum(                   /* Bayer interpolation */
 				if(bChannelSeperate)
 				{
 					c0Ptr[col] = clip(y/256);
-					c1Ptr[col] = clip(ry/256);
-					c2Ptr[col] = clip(ry/256);
+					c1Ptr[col] = clip(ry/256/2+128);
+					c2Ptr[col] = clip(by/256/2+128);
 				}
 				else
 				{
 					optr[col*3] = clip(y/256);
-					optr[col*3+1] = clip(ry/256);
-					optr[col*3+2] = clip(by/256);
+					optr[col*3+1] = clip(ry/256/2+128);
+					optr[col*3+2] = clip(by/256/2+128);
 				}
 				break;
 
@@ -1062,14 +1062,14 @@ void BayerLum(                   /* Bayer interpolation */
 				if(bChannelSeperate)
 				{
 					c0Ptr[col] = r/256 + g/128 +b/256;		// Y
-					c1Ptr[col] = clip(r/64-c0Ptr[col]);		// Cr
-					c2Ptr[col] = clip(b/64-c0Ptr[col]);		// Cb
+					c1Ptr[col] = clip((r/64-(int)c0Ptr[col])/2+128);		// Cr
+					c2Ptr[col] = clip((b/64-(int)c0Ptr[col])/2+128);		// Cb
 				}
 				else
 				{
 					optr[col*3] = r/256 + g/128 +b/256;		// Y
-					optr[col*3+1] = clip(r/64-c0Ptr[col]);	// Cr
-					optr[col*3+2] = clip(b/64-c0Ptr[col]);	// Cb
+					optr[col*3+1] = clip((r/64-(int)optr[col*3])/2+128);	// Cr
+					optr[col*3+2] = clip((b/64-(int)optr[col*3])/2+128);	// Cb
 				}
 				break;
 

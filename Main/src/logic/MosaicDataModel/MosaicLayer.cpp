@@ -109,7 +109,7 @@ namespace MosaicDM
 			return;
 
 		if(GetMosaicSet()->IsBayerPattern())
-			_pStitchedImage = new ColorImage(RGB, false);
+			_pStitchedImage = new ColorImage(BGR, false);
 		else 
 			_pStitchedImage = new Image();		
 
