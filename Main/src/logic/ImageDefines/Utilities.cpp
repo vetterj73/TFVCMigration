@@ -395,6 +395,7 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 		} // iy
     } // else
 
+	// YCrCb to BGR
 	pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
 	for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
 	{
@@ -602,9 +603,226 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 	return(true);
 }
 
+// Fill a ROI of the output image with a height map by transforming the input image
+// Support convert YCrCb seperate channel to BGR combined channels only
+// Assume the center of image corresponding a vertical line from camera to object surface
+// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
+// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
+// pOutBuf and iOutspan : output buffer and its span
+// iROIWidth, iHeight: the size of buffer need to be transformed
+// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
+// dInvTrans: the 3*3 transform from output image to input image
+// pHeightImage and iHeightSpan, height image buffer and its span
+// dHeightResolution: the height represented by each grey level
+// dPupilDistance: camera pupil distance
+// dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
+// that its connection with camera center is vertical to panel surface
+bool ColorImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3],
+	unsigned char* pHeightImage, unsigned int iHeightSpan,
+	double dHeightResolution, double dPupilDistance,
+	double dPerpendicalPixelX, double dPerpendicalPixelY) 
+{
+	// Sanity check
+	if((iOutROIStartX+iOutROIWidth>iOutSpan/3) || (iInWidth>iInSpan)
+		|| (iInWidth <2) || (iInHeight<2)
+		|| (iOutROIWidth<=0) || (iOutROIHeight<=0))
+		return(false);
 
+	unsigned int iY, iX;
 
+	// Whether it is an affine transform
+	bool bAffine;
+	if(dInvTrans[2][0] == 0 &&
+		dInvTrans[2][1] == 0 &&
+		dInvTrans[2][2] == 1)
+		bAffine = true;
+	else
+		bAffine = false;
 
+	unsigned char* pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
+	int iInSpanP1 = iInSpan+1;
+
+	// some local variable
+	unsigned char *pInCh[3];
+	for(int i=0; i<3; i++)
+	{
+		pInCh[i] = pInBuf + i*iInSpan*iInHeight;
+	}
+
+	int iflrdX, iflrdY;
+	int iPix0, iPix1, iPixW, iPixWP1;
+	int iPixDiff10;
+	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
+	double dIX, dIY, dX, dY, dDiffX, dDiffY;
+	double dVal;
+ 
+	double dDividedPupilDistrance = 1.0/dPupilDistance;
+	if(bAffine)
+	{
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dX = dInvTrans[0][0]*dIX + dT01__dIY_T02;
+				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
+
+				// Adjust for height
+				int iHeightInPixel = pHeightImage[iY*iHeightSpan+iX];
+				if(iHeightInPixel >0)
+				{
+					double dHeight = iHeightInPixel *dHeightResolution;		// Height in physical unit
+					//double dRatio = dHeight/(dPupilDistance-dHeight);		// Sacrifice some speed for performance
+					double dRatio = dHeight*dDividedPupilDistrance;			// Sacrifice some performance for speed
+					double dOffsetX = (dX-dPerpendicalPixelX)*dRatio;
+					double dOffsetY = (dY-dPerpendicalPixelY)*dRatio;
+					dX += dOffsetX;
+					dY += dOffsetY;
+				}
+
+			  /* Check if back projection is outside of the input image range. Note that
+				 2x2 interpolation touches the pixel to the right and below right,
+				 so right and bottom checks are pulled in a pixel. */
+				if ((dX < 0) | (dY < 0) |
+				  (dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					pOutLine[iX*3] = 0x00;	/* Clipped */
+					pOutLine[iX*3+1] = 128;	/* Clipped */
+					pOutLine[iX*3+2] = 128;	/* Clipped */
+				}
+				else 
+				{
+
+					for(int i=0; i<3; i++)
+					{
+						/* Compute fractional differences */
+						iflrdX =(int)dX;
+						iflrdY = (int)dY;
+			    
+						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+						iPix0   = (int) pbPixPtr[0];
+						iPix1   = (int) pbPixPtr[1];
+						iPixW   = (int) pbPixPtr[iInSpan];
+						iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+						iPixDiff10 = iPix1 - iPix0;
+
+						dDiffX = dX - (double) iflrdX;
+						dDiffY = dY - (double) iflrdY;
+
+						pOutLine[iX*3+i] = (unsigned char)((double) iPix0			
+							+ dDiffY * (double) (iPixW - iPix0)	
+							+ dDiffX * ((double) iPixDiff10	
+							+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+							+ 0.5);
+					}
+				}
+			} //ix
+			pOutLine += iOutSpan;		/* Next line in the output buffer */
+		} // iy
+	}
+	else 
+	{	/* Perspective transform: Almost identical to the above. */
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+			dT21__dIY_T22 = dInvTrans[2][1] * dIY + dInvTrans[2][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
+				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
+				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
+
+				// Adjust for height
+				int iHeightInPixel = pHeightImage[iY*iHeightSpan+iX];
+				if(iHeightInPixel >0)
+				{
+					double dHeight = iHeightInPixel *dHeightResolution;		// Height in physical unit
+					//double dRatio = dHeight/(dPupilDistance-dHeight);		// Sacrifice some speed for performance
+					double dRatio = dHeight*dDividedPupilDistrance;			// Sacrifice some performance for speed
+					double dOffsetX = (dX-dPerpendicalPixelX)*dRatio;
+					double dOffsetY = (dY-dPerpendicalPixelY)*dRatio;
+					dX += dOffsetX;
+					dY += dOffsetY;
+				}
+
+				if ((dX < 0) | (dY < 0) |
+					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					pOutLine[iX*3] = 0x00;	/* Clipped */
+					pOutLine[iX*3+1] = 128;	/* Clipped */
+					pOutLine[iX*3+2] = 128;	/* Clipped */
+				}
+				else 
+				{
+					for(int i=0; i<3; i++)
+					{
+							/* Compute fractional differences */
+						iflrdX =(int)dX;
+						iflrdY = (int)dY;
+			    
+						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+
+						iPix0   = (int) pbPixPtr[0];
+						iPix1   = (int) pbPixPtr[1];
+						iPixW   = (int) pbPixPtr[iInSpan];
+						iPixWP1 = (int) pbPixPtr[iInSpanP1];
+
+						iPixDiff10 = iPix1 - iPix0;
+
+						dDiffX = dX - (double) iflrdX;
+						dDiffY = dY - (double) iflrdY;
+
+						pOutLine[iX*3+i] = (unsigned char)((double) iPix0			
+							+ dDiffY * (double) (iPixW - iPix0)	
+							+ dDiffX * ((double) iPixDiff10	
+							+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 
+							+ 0.5);
+					}
+				}
+			} // ix
+			pOutLine += iOutSpan;
+		} // iy
+    } // else
+
+	// YCrCb to BGR
+	pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
+	for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+	{
+		for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX)
+		{
+			// YCrCb to RGB conversion
+			int iTemp[3];
+			iTemp[2] = pOutLine[iX*3] + (pOutLine[iX*3+1]-128)*2;								// R
+			iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]-128) - (pOutLine[iX*3+2]-128);	// G
+			iTemp[0] = pOutLine[iX*3] + (pOutLine[iX*3+2]-128)*2;								// B
+
+			for(int i=0; i<3; i++)
+			{
+				if(iTemp[i]<0) iTemp[i]=0;
+				if(iTemp[i]>255) iTemp[i]=255;
+				pOutLine[iX*3+i] = iTemp[i];
+			}
+		}
+		pOutLine += iOutSpan;		// Next line in the output buffer
+	}
+
+	return(true);
+}
   
 int GetNumPixels(double sizeInMeters, double pixelSize)
 {

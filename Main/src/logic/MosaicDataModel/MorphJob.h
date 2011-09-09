@@ -34,7 +34,8 @@ public:
 		unsigned int lastRow,
 		Image* pHeightImage, 
 		double dHeightResolution,
-		double dPupilDistance);
+		double dPupilDistance,
+		bool bColor = false);
 
 	void Run();
 

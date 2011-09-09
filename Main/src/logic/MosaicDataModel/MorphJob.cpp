@@ -42,9 +42,11 @@ MorphWithHeightJob::MorphWithHeightJob(
 		unsigned int lastRow,
 		Image* pHeightImage, 
 		double dHeightResolution,
-		double dPupilDistance)
+		double dPupilDistance,
+		bool bColor)
 	:MorphJob(pStitchedImage, pFOV, 
-		firstCol, firstRow, lastCol, lastRow)
+		firstCol, firstRow, lastCol, lastRow,
+		bColor)
 {
 	_pHeightImage = pHeightImage;
 	_dHeightResolution = dHeightResolution;
@@ -54,5 +56,14 @@ MorphWithHeightJob::MorphWithHeightJob(
 void MorphWithHeightJob::Run()
 {
 	if(_pStitched !=NULL && _rect.IsValid())
-		_pStitched->MorphFromWithHeight(_pFOV, _rect, _pHeightImage, _dHeightResolution, _dPupilDistance);
+	{
+		if(_bColor)
+		{
+			((ColorImage*)_pStitched)->ColorMorphFromWithHeight((ColorImage*)_pFOV, _rect, _pHeightImage, _dHeightResolution, _dPupilDistance);
+		}
+		else
+		{
+			_pStitched->MorphFromWithHeight(_pFOV, _rect, _pHeightImage, _dHeightResolution, _dPupilDistance);
+		}
+	}
 }
