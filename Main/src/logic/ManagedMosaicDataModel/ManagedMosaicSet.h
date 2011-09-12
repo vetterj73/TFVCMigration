@@ -154,6 +154,11 @@ namespace MMosaicDM
 
 			/// Saves all stitched images to a folder...
 			bool SaveAllStitchedImagesToDirectory(System::String^ directoryName);
+			bool SaveAllStitchedImagesWithHeightToDirectory(
+				System::String^ directoryName,
+				System::IntPtr pHeighBuf, 
+				double dHeightResolution, double dPupilDistance);
+			
 
 			/// Loads all stitched images from a folder...
 			bool LoadAllStitchedImagesFromDirectory(System::String^ dirrectoryName);

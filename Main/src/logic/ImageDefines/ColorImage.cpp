@@ -255,7 +255,7 @@ bool  ColorImage::ColorMorphFromWithHeight(
 	*/
 
 	// Validation check (only for 8-bit image)
-	if(_bytesPerPixel != 1) return(false);
+	if(_bytesPerPixel != 3) return(false);
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
@@ -287,10 +287,10 @@ bool  ColorImage::ColorMorphFromWithHeight(
 	}
 	
 	// Image morph
-	ImageMorphWithHeight(
+	ColorImageMorphWithHeight(
 		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
 		pImgIn->Columns(), pImgIn->Rows(),
-		_buffer, _pixelRowStride,
+		_buffer, ByteRowStride(),
 		roi.FirstColumn, roi.FirstRow,
 		roi.Columns(), roi.Rows(),
 		dT,

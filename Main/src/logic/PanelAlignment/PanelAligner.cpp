@@ -242,7 +242,7 @@ bool PanelAligner::CreateMasks()
 				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 
 				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
-					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
+					0, 0, maskImg->Columns()-1, maskImg->Rows()-1, false);
 				jm.AddAJob((CyberJob::Job*)pJob);
 				morphJobs.push_back(pJob);
 			}
@@ -334,7 +334,7 @@ bool PanelAligner::CreateTransforms()
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
-		mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
+		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
 		string s;
 		sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 

@@ -274,7 +274,8 @@ namespace MosaicDM
 				MorphWithHeightJob *pJob = new MorphWithHeightJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
 					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),
-					&heightImage, dHeightResolution, dPupilDistance);
+					&heightImage, dHeightResolution, dPupilDistance,
+					GetMosaicSet()->IsBayerPattern());
 				jm.AddAJob((Job*)pJob);
 				morphJobs.push_back(pJob);
 			}

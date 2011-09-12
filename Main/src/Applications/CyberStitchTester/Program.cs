@@ -135,42 +135,60 @@ namespace CyberStitchTester
                     Output("The mosaic does not contain all images!");
                 else
                 {
-                    _cycleCount++;
-                    if (_bBayerPattern)
-                    {
-                        if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
-                            Output("Could not save mosaic images");
-                    }
-
+                    _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
                     managedFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
-
-                    // Save a 3 channel image with CAD data...
-                    uint iLayerIndex1 = 0;
-                    uint iLayerIndex2 = 0;
-                    switch (_mosaicSet.GetNumMosaicLayers())
+                    
+                    if (_bBayerPattern) // for bayer pattern
                     {
-                        case 1:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 0;
-                            break;
+                        double dMaxHeight =0;
+                        if(bAdjustForHeight)
+                            dMaxHeight = _panel.GetMaxComponentHeight();
 
-                        case 2:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 1;
-                            break;
-
-                        case 4:
-                            iLayerIndex1 = 2;
-                            iLayerIndex2 = 3;
-                            break;
+                        if(dMaxHeight>0)
+                        {
+                            bool bSmooth = true;
+                            IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
+                            double dHeightRes = _panel.GetHeightResolution();
+                            double dPupilDistance = 0.3702;
+                            if (_mosaicSet.SaveAllStitchedImagesWithHeightToDirectory("c:\\temp\\", heightBuf, dHeightRes, dPupilDistance) == false)
+                                Output("Could not save mosaic images");                                 
+                        }
+                        else
+                        {
+                            if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\") == false)
+                                Output("Could not save mosaic images");
+                        }
                     }
-
-                    // Create the stitched image
-                    double dMaxHeight = _panel.GetMaxComponentHeight();
-                    if (!_bBayerPattern)
+                    else // for gray scale
                     {
-                        if (dMaxHeight > 0 && bAdjustForHeight)
+                        // Save a 3 channel image with CAD data...
+                        uint iLayerIndex1 = 0;
+                        uint iLayerIndex2 = 0;
+                        switch (_mosaicSet.GetNumMosaicLayers())
+                        {
+                            case 1:
+                                iLayerIndex1 = 0;
+                                iLayerIndex2 = 0;
+                                break;
+
+                            case 2:
+                                iLayerIndex1 = 0;
+                                iLayerIndex2 = 1;
+                                break;
+
+                            case 4:
+                                iLayerIndex1 = 2;
+                                iLayerIndex2 = 3;
+                                break;
+                        }
+
+                        // Create the stitched image
+                        double dMaxHeight = 0; 
+                        if(bAdjustForHeight)
+                             dMaxHeight = _panel.GetMaxComponentHeight();
+
+                        if (dMaxHeight > 0)
                         {
                             bool bSmooth = true;
                             IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
@@ -216,8 +234,8 @@ namespace CyberStitchTester
                                 _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                         }
 
+                        // Get the stitch grid 
                         // Must after get stitched image of the same layer
-                        // Get the stitch grid
                         int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];
                         int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
                         _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
@@ -231,7 +249,8 @@ namespace CyberStitchTester
                              _panel.GetCADBuffer(),
                              _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                          */
-                    }
+                    }                       
+
                 }
 
                 // should we do another cycle?

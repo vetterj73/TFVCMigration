@@ -118,6 +118,9 @@ namespace MosaicDM
 
 			/// Saves all stitched images to a folder...
 			bool SaveAllStitchedImagesToDirectory(string directoryName);
+			bool SaveAllStitchedImagesWithHeightToDirectory(
+				string directoryName,
+				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance);
 
 			/// Loads all stitched images from a folder...
 			bool LoadAllStitchedImagesFromDirectory(string directoryName);

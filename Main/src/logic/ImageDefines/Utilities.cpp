@@ -371,7 +371,7 @@ bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 						iflrdX =(int)dX;
 						iflrdY = (int)dY;
 			    
-						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+						unsigned char* pbPixPtr = pInCh[i] + iflrdX + iflrdY * iInSpan;
 
 						iPix0   = (int) pbPixPtr[0];
 						iPix1   = (int) pbPixPtr[1];
@@ -708,7 +708,7 @@ bool ColorImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 						iflrdX =(int)dX;
 						iflrdY = (int)dY;
 			    
-						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+						unsigned char* pbPixPtr = pInCh[i] + iflrdX + iflrdY * iInSpan;
 
 						iPix0   = (int) pbPixPtr[0];
 						iPix1   = (int) pbPixPtr[1];
@@ -775,7 +775,7 @@ bool ColorImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 						iflrdX =(int)dX;
 						iflrdY = (int)dY;
 			    
-						unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+						unsigned char* pbPixPtr = pInCh[i] + iflrdX + iflrdY * iInSpan;
 
 						iPix0   = (int) pbPixPtr[0];
 						iPix1   = (int) pbPixPtr[1];

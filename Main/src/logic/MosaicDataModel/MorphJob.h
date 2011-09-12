@@ -11,7 +11,7 @@ public:
 		unsigned int firstRow,
 		unsigned int lastCol,
 		unsigned int lastRow,
-		bool bColor = false);
+		bool bColor);
 
 	virtual void Run();
 
@@ -35,7 +35,7 @@ public:
 		Image* pHeightImage, 
 		double dHeightResolution,
 		double dPupilDistance,
-		bool bColor = false);
+		bool bColor);
 
 	void Run();
 

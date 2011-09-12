@@ -13,6 +13,21 @@ namespace MMosaicDM
 		return bGood;
 	}
 
+	bool ManagedMosaicSet::SaveAllStitchedImagesWithHeightToDirectory(
+		System::String^ directoryName,
+		System::IntPtr pHeighBuf, 
+		double dHeightResolution, double dPupilDistance)
+	{
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(directoryName);
+		std::string nativeDirName = (char*)stringPtr.ToPointer();			
+
+		bool bGood = _pMosaicSet->SaveAllStitchedImagesWithHeightToDirectory(
+			nativeDirName, (unsigned char*)(void*)pHeighBuf,
+			dHeightResolution, dPupilDistance);
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
+		return bGood;
+	}
+
 	bool ManagedMosaicSet::LoadAllStitchedImagesFromDirectory(System::String^ directoryName)
 	{
 		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(directoryName);
