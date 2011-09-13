@@ -92,16 +92,6 @@ namespace MosaicDM
 		_stitchedImageValid = true;
 	}
 
-	Image *MosaicLayer::GetStitchedImage(bool bRecreate)
-	{
-		if(bRecreate) 
-			_stitchedImageValid = false;
-
-		CreateStitchedImageIfNecessary();
-
-		return _pStitchedImage;
-	}
-
 	void MosaicLayer::AllocateStitchedImageIfNecessary()
 	{
 		// Create it once for each panel type...
@@ -169,68 +159,21 @@ namespace MosaicDM
 		return(true);
 	}
 
-	// @todo - Need to redo this for each new panel!!!!
-	void MosaicLayer::CreateStitchedImageIfNecessary()
-	{
-		if(_stitchedImageValid)
-			return;
-
-		_stitchedImageValid = true;
-		AllocateStitchedImageIfNecessary();
-
-		// Calcaute the grid for stitching image
-		if(!CalculateStitchGrids())
-			return;
-		
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin creating stitched image", _layerIndex); 
-		
-		unsigned int iNumTrigs = GetNumberOfTriggers();
-		unsigned int iNumCams = GetNumberOfCameras();
-		char buf[20];
-		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::JobManager jm(buf, 8);
-		vector<MorphJob*> morphJobs;
-		// Morph each Fov to create stitched panel image
-		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
-		{
-			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
-			{
-				Image* pFOV = GetImage(iCam, iTrig);
-
-				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
-					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
-					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1));
-				jm.AddAJob((Job*)pJob);
-				morphJobs.push_back(pJob);
-			}
-		}
-
-		// Wait until it is complete...
-		jm.MarkAsFinished();
-		while(jm.TotalJobs() > 0)
-			Sleep(10);
-
-		for(unsigned int i=0; i<morphJobs.size(); i++)
-			delete morphJobs[i];
-		morphJobs.clear();
-
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End creating stitched image", _layerIndex); 
-	}
-
-	
-	Image *MosaicLayer::GetStitchedImageWithHeight(
-		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance,
+	Image *MosaicLayer::GetStitchedImage(
+		unsigned char* pHeighBuf, 
+		double dHeightResolution, 
+		double dPupilDistance,
 		bool bRecreate)
 	{
 		if(bRecreate) 
 			_stitchedImageValid = false;
 
-		CreateStitchedImageWithHeightIfNecessary(pHeighBuf, dHeightResolution, dPupilDistance);
+		CreateStitchedImageIfNecessary(pHeighBuf, dHeightResolution, dPupilDistance);
 
 		return _pStitchedImage;
 	}
 
-	void MosaicLayer::CreateStitchedImageWithHeightIfNecessary(
+	void MosaicLayer::CreateStitchedImageIfNecessary(
 		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
 	{
 		if(_stitchedImageValid)
@@ -262,7 +205,7 @@ namespace MosaicDM
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
 		CyberJob::JobManager jm(buf, 8);
-		vector<MorphWithHeightJob*> morphJobs;
+		vector<MorphJob*> morphJobs;
 		// Morph each Fov to create stitched panel image
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
@@ -270,7 +213,7 @@ namespace MosaicDM
 			{
 				Image* pFOV = GetImage(iCam, iTrig);
 
-				MorphWithHeightJob *pJob = new MorphWithHeightJob(_pStitchedImage, pFOV,
+				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
 					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),
 					&heightImage, dHeightResolution, dPupilDistance);

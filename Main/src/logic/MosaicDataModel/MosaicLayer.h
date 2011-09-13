@@ -83,9 +83,10 @@ namespace MosaicDM
 			///
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
 			///
-			Image *GetStitchedImage(bool bRecreate = false);
-			Image *GetStitchedImageWithHeight(
-				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance,
+			Image *GetStitchedImage(
+				unsigned char* pHeighBuf=0, 
+				double dHeightResolution=0, 
+				double dPupilDistance=0,
 				bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
@@ -101,9 +102,10 @@ namespace MosaicDM
 				bool bFiducialAllowNegativeMatch,
 				unsigned int layerIndex);
 
-			void CreateStitchedImageIfNecessary();
-			void CreateStitchedImageWithHeightIfNecessary(
-				unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance);
+			void CreateStitchedImageIfNecessary(
+				unsigned char* pHeighBuf=0, 
+				double dHeightResolution=0, 
+				double dPupilDistance=0);
 			void AllocateStitchedImageIfNecessary();
 			bool CalculateStitchGrids();
 

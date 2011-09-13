@@ -92,13 +92,12 @@ public:
 	void				WorldToImage(double dx, double dy, double* pdRow, double* pdCol);
 
 	DRect				GetBoundBoxInWorld() const;
-	bool				MorphFrom(const Image* pImgIn, UIRect roi);
-	bool				MorphFromWithHeight(
+	bool				MorphFrom(
 							Image* pImgIn, 
 							UIRect roi,
-							const Image* pHeightImg, 
-							double dHeightResolution, 
-							double dPupilDistance);
+							const Image* pHeightImg=0, 
+							double dHeightResolution=0, 
+							double dPupilDistance=0);
 
 	bool				Save(string sFileName);
 

@@ -206,7 +206,7 @@ namespace MosaicDM
 		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
 		{
 			MosaicLayer *pLayer = GetLayer(i);
-			Image *pImage = pLayer->GetStitchedImageWithHeight(pHeighBuf, dHeightResolution, dPupilDistance);
+			Image *pImage = pLayer->GetStitchedImage(pHeighBuf, dHeightResolution, dPupilDistance);
 			if(pImage == NULL)
 				return false;
 

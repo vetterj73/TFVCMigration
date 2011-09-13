@@ -51,7 +51,7 @@ namespace MMosaicDM
 
 			System::IntPtr GetStitchedBuffer(bool bRecreate)
 			{
-				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(bRecreate);
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(0,0,0,bRecreate);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
@@ -62,7 +62,7 @@ namespace MMosaicDM
 
 			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance, bool bRecreate)
 			{
-				Image* stitchedImage = _pMosaicLayer->GetStitchedImageWithHeight(
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(
 					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance,
 					bRecreate);
 				return (System::IntPtr)stitchedImage->GetBuffer();

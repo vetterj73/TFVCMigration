@@ -6,39 +6,27 @@ class Image;
 class MorphJob : public CyberJob::Job
 {
 public:
-	MorphJob(Image* pStitchedImage, Image *pFOV, 
+	MorphJob(
+		Image* pStitchedImage, 
+		Image *pFOV, 
 		unsigned int firstCol,
 		unsigned int firstRow,
 		unsigned int lastCol,
-		unsigned int lastRow);
+		unsigned int lastRow,		
+		Image* pHeightImage=0, 
+		double dHeightResolution=0,
+		double dPupilDistance=0);
 
 	virtual void Run();
 
 protected:
 	Image *_pStitched;
 	Image *_pFOV;
-	UIRect _rect;
-};
-
-class MorphWithHeightJob : public MorphJob
-{
-public:
-	MorphWithHeightJob(
-		Image* pStitchedImage, 
-		Image *pFOV, 
-		unsigned int firstCol,
-		unsigned int firstRow,
-		unsigned int lastCol,
-		unsigned int lastRow,
-		Image* pHeightImage, 
-		double dHeightResolution,
-		double dPupilDistance);
-
-	void Run();
-
-protected:
+	UIRect _rect;	
 	Image* _pHeightImage;
 	double _dHeightResolution;
 	double _dPupilDistance;
 };
+
+
 
