@@ -30,6 +30,5 @@ public:
 
 private:
 	COLORSTYLE _colorStyle;
-	bool _bChannelStoredSeperate;
 };
 

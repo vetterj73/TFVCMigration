@@ -9,6 +9,7 @@ Image::Image(unsigned int iBytePerPixel)
 	_columns		= 0;
 	_pixelRowStride = 0;
 	_bytesPerPixel	= iBytePerPixel;
+	_bChannelStoredSeperate = false;
 	_IOwnMyOwnBuffer= false;	
 	_buffer			=0;
 }
@@ -50,7 +51,8 @@ void Image::operator=(const Image& b)
 	_columns			= b._columns;
 	_pixelRowStride		= b._pixelRowStride;	
 	_bytesPerPixel		= b._bytesPerPixel;
-	
+	_bChannelStoredSeperate = b._bChannelStoredSeperate;
+
 	_thisToWorld		= b._thisToWorld;
 	_nominalTrans		= b._nominalTrans;
 
@@ -76,13 +78,13 @@ Image::~Image()
 void Image::Configure(
 	int iColumns, 
 	int iRows, 
-	int iStride,
+	int iPixelStride,
 	bool bCreateOwnBuffer,
 	unsigned char *buffer)
 {
 	_rows				= iRows;
 	_columns			= iColumns;
-	_pixelRowStride		= iStride;
+	_pixelRowStride		= iPixelStride;
 
 	DeleteBufferIfOwner();
 	
@@ -98,7 +100,7 @@ void Image::Configure(
 void Image::Configure(	
 		int iColumns, 
 		int iRows, 
-		int iStride,
+		int iPixelStride,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -107,7 +109,7 @@ void Image::Configure(
 	Configure(
 		iColumns, 
 		iRows, 
-		iStride,
+		iPixelStride,
 		bCreateOwnBuffer,
 		buffer);
 
@@ -119,10 +121,21 @@ void Image::Configure(
 
 #pragma region buffer operations
 
+unsigned int Image::ByteRowStride() const 
+{
+	if(_bChannelStoredSeperate)
+		return _pixelRowStride;
+	else
+		return _pixelRowStride*GetBytesPerPixel();
+};
+
 // Get buffer point at certain location
 unsigned char*	Image::GetBuffer(unsigned col, unsigned int row) const
 {
-	return(GetBuffer() + PixelRowStride()*row + col);
+	if(_bChannelStoredSeperate)
+		return(GetBuffer() + PixelRowStride()*row + col);
+	else
+		return(GetBuffer() + ByteRowStride()*row + col*GetBytesPerPixel());
 }
 
 void Image::SetBuffer(unsigned char* buf)
@@ -167,7 +180,7 @@ void Image::ZeroBuffer()
 bool Image::Save(string sFileName)
 {
 	Bitmap* pBmp = Bitmap::NewBitmapFromBuffer(
-		_rows, _columns, ByteRowStride(), _buffer, _bytesPerPixel*8);
+		_rows, _columns, PixelRowStride()*_bytesPerPixel, _buffer, _bytesPerPixel*8);
 	
 	if(pBmp == NULL) return(false);
 		

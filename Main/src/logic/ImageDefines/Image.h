@@ -37,14 +37,14 @@ public:
 	void Configure(	
 		int iColumns, 
 		int iRows, 
-		int iStride,		
+		int iPixelStride,		
 		bool bCreateOwnBuffer,
 		unsigned char *buffer = NULL);	
 
 	void Configure(	
 		int iColumns, 
 		int iRows, 
-		int iStride,
+		int iPixelStride,
 		ImgTransform nominalTrans,
 		ImgTransform actualTrans,
 		bool bCreateOwnBuffer,
@@ -66,9 +66,9 @@ public:
 	unsigned int		GetBitsPerPixel(){return GetBytesPerPixel()*8;};
 	unsigned int		Rows() const {return _rows;};
 	unsigned int		Columns() const {return _columns;};
-	unsigned int		ByteRowStride() const {return _pixelRowStride*GetBytesPerPixel();};
+	unsigned int		ByteRowStride() const;
 	unsigned int		PixelRowStride() const {return _pixelRowStride;};
-	unsigned int		BufferSizeInBytes() const {return ByteRowStride()*Rows();};
+	unsigned int		BufferSizeInBytes() const {return PixelRowStride()*Rows()*GetBytesPerPixel();};
 	unsigned int		BufferSizeInPixels(){return _rows * _pixelRowStride;};
 	
 	pair<double,double> ImageCenter( ) const;
@@ -112,6 +112,7 @@ protected:
 	unsigned int		_pixelRowStride;
 	unsigned int		_bytesPerPixel;
 
+	bool				_bChannelStoredSeperate;	// true: for channels are seprately stored, false for channels are combined stored  
 	bool				_IOwnMyOwnBuffer;	// Whether image class create and maintain image buffer 
 	unsigned char*		_buffer;			// Image buffer
 	
