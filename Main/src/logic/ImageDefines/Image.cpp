@@ -304,7 +304,7 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 	*/
 
 	// Validation check (only for 8-bit image)
-	if(_bytesPerPixel != 1) return(false);
+	if(_bytesPerPixel != 1 && _bytesPerPixel != 3) return(false);
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
@@ -329,10 +329,10 @@ bool Image::MorphFrom(const Image* pImgIn, UIRect roi)
 	ImageMorph(
 		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
 		pImgIn->Columns(), pImgIn->Rows(),
-		_buffer, _pixelRowStride,
+		_buffer, ByteRowStride(),
 		roi.FirstColumn, roi.FirstRow,
 		roi.Columns(), roi.Rows(),
-		dT);
+		dT, GetBytesPerPixel());
 
 	return(true);
 }
@@ -361,7 +361,7 @@ bool Image::MorphFromWithHeight(
 	*/
 
 	// Validation check (only for 8-bit image)
-	if(_bytesPerPixel != 1) return(false);
+	if(_bytesPerPixel != 1 && _bytesPerPixel != 3) return(false);
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();
@@ -396,10 +396,10 @@ bool Image::MorphFromWithHeight(
 	ImageMorphWithHeight(
 		pImgIn->GetBuffer(), pImgIn->PixelRowStride(),
 		pImgIn->Columns(), pImgIn->Rows(),
-		_buffer, _pixelRowStride,
+		_buffer, ByteRowStride(),
 		roi.FirstColumn, roi.FirstRow,
 		roi.Columns(), roi.Rows(),
-		dT,
+		dT, GetBytesPerPixel(),
 		pHeightImg->GetBuffer(), pHeightImg->PixelRowStride(),
 		dHeightResolution, dPupilDistance,
 		dPerpendicalPixelX, dPerpendicalPixelY);

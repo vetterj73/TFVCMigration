@@ -14,20 +14,6 @@ void inverse(
 	unsigned int rows,
 	unsigned int cols);
 
-// Fill a ROI of the output image by transforming the input image
-// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
-// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
-// pOutBuf and iOutspan : output buffer and its span
-// iROIWidth, iHeight: the size of buffer need to be transformed
-// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
-// dTrans: the 3*3 transform from [Col_out Row_out] to [Col_in, Row_in]
-bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
-	unsigned int iInWidth, unsigned int iInHeight, 
-	unsigned char* pOutBuf, unsigned int iOutSpan,
-	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
-	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
-	double dInvTrans[3][3]);
-
 // Fill a ROI of the output color image by transforming the input color image
 // Support convert YCrCb seperate channel to RGB seperate channels only
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
@@ -36,35 +22,12 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 // iROIWidth, iHeight: the size of buffer need to be transformed
 // iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
 // dInvTrans: the 3*3 transform from output image to input image (has the same unit as dHeightResolution)
-bool ColorImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
-	double dInvTrans[3][3]);
-
-// Fill a ROI of the output image with a height map by transforming the input image
-// Assume the center of image corresponding a vertical line from camera to object surface
-// Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
-// pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
-// pOutBuf and iOutspan : output buffer and its span
-// iROIWidth, iHeight: the size of buffer need to be transformed
-// iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
-// dInvTrans: the 3*3 transform from output image to input image
-// pHeightImage and iHeightSpan, height image buffer and its span
-// dHeightResolution: the height represented by each grey level
-// dPupilDistance: camera pupil distance (has the same unit as dHeightResolution)
-// dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
-// that its connection with camera center is vertical to panel surface
-bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
-	unsigned int iInWidth, unsigned int iInHeight, 
-	unsigned char* pOutBuf, unsigned int iOutSpan,
-	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
-	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
-	double dInvTrans[3][3],
-	unsigned char* pHeightImage, unsigned int iHeightSpan,
-	double dHeightResolution, double dPupilDistance,
-	double dPerpendicalPixelX, double dPerpendicalPixelY); 
+	double dInvTrans[3][3], unsigned int iChannel);
 
 // Fill a ROI of the output image with a height map by transforming the input image
 // Support convert YCrCb seperate channel to BGR combined channels only
@@ -80,12 +43,12 @@ bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan,
 // dPupilDistance: camera pupil distance
 // dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
 // that its connection with camera center is vertical to panel surface
-bool ColorImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
+bool ImageMorphWithHeight(unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
-	double dInvTrans[3][3],
+	double dInvTrans[3][3], unsigned int iNumChannels,
 	unsigned char* pHeightImage, unsigned int iHeightSpan,
 	double dHeightResolution, double dPupilDistance,
 	double dPerpendicalPixelX, double dPerpendicalPixelY);

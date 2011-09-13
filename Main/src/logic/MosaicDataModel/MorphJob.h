@@ -10,8 +10,7 @@ public:
 		unsigned int firstCol,
 		unsigned int firstRow,
 		unsigned int lastCol,
-		unsigned int lastRow,
-		bool bColor);
+		unsigned int lastRow);
 
 	virtual void Run();
 
@@ -19,7 +18,6 @@ protected:
 	Image *_pStitched;
 	Image *_pFOV;
 	UIRect _rect;
-	bool _bColor;
 };
 
 class MorphWithHeightJob : public MorphJob
@@ -34,8 +32,7 @@ public:
 		unsigned int lastRow,
 		Image* pHeightImage, 
 		double dHeightResolution,
-		double dPupilDistance,
-		bool bColor);
+		double dPupilDistance);
 
 	void Run();
 

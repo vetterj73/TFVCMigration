@@ -242,7 +242,7 @@ bool PanelAligner::CreateMasks()
 				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 
 				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
-					0, 0, maskImg->Columns()-1, maskImg->Rows()-1, false);
+					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
 				jm.AddAJob((CyberJob::Job*)pJob);
 				morphJobs.push_back(pJob);
 			}
