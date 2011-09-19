@@ -105,7 +105,7 @@ namespace PanelAlignM {
 		void NumThreads(unsigned int numThreads);
 		void LogFiducialOverlaps(bool bLog);
 		void LogOverlaps(bool bLog);
-		void LogMaskVectors(bool bLog);	
+		void LogTransformVectors(bool bLog);	
 		void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
 		void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
 		void UseCyberNgc4Fiducial();

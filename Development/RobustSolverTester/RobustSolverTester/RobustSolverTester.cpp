@@ -56,19 +56,22 @@ int  ReadCSV(string fileName, int* data)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	int* iBlockLens = new int[5000]; 	
-	int iFlag = ReadCSV("C:\\Temp\\BlockLength.csv", iBlockLens);	
+	string cPath = "C:\\Temp\\";
+
+	int* iBlockLens = new int[5000];
+	int iFlag = ReadCSV(cPath + "BlockLength.csv", iBlockLens);	
 	if(iFlag<=0) 
 		cout << "Read BlockLength.csv failed" << endl;
 	int iCols = iBlockLens[0];
-	int iRows = iBlockLens[1];
+	int iRows = iBlockLens[1];	
+	int iBW =  iBlockLens[2];
 	
 	double* dMatrixA_t = new double[iCols*iRows];	
-	iFlag = ReadCSV("C:\\Temp\\MatrixA_t.csv", dMatrixA_t);
+	iFlag = ReadCSV(cPath + "MatrixA_t.csv", dMatrixA_t);
 	if(iFlag<=0) 
 		cout << "Read MatrixA_t.csv failed" << endl;
 	double* dVectorB = new double[iRows];
-	iFlag = ReadCSV("C:\\Temp\\VectorB.csv", dVectorB);
+	iFlag = ReadCSV(cPath + "VectorB.csv", dVectorB);
 	if(iFlag<=0) 
 		cout << "Read VectorB.csv failed" << endl;
 	
@@ -76,8 +79,6 @@ int _tmain(int argc, _TCHAR* argv[])
 	double cond = 0;	
 	double* dVectorX = new double[iCols];
 	double* dResidual = new double[iRows];
-
-	int iBW =  iBlockLens[2];
 
 	int algHRetVal = 
 		alg_hb(                // Robust regression by Huber's "Algorithm H"/ Banded version.
@@ -109,6 +110,23 @@ int _tmain(int argc, _TCHAR* argv[])
 		<< "; cond=" << cond
 		<< endl;
 
+	ofstream of(cPath + "verctox_test.csv");
+	of << scientific;
+	for(int i=0; i<iCols/6; i++)
+	{
+		for(int j=0; j<6; ++j)
+		{
+			if( j!=0 )
+				of << ",";
+
+			double d = dVectorX[i*6 + j];
+
+			of << d;
+		}
+		of << endl;
+	}
+	of.close();
+
 	delete [] iBlockLens;
 	delete [] dMatrixA_t;
 	delete [] dVectorB;
@@ -119,6 +137,4 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	return 0;
 }
-
-
 

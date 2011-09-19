@@ -736,7 +736,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 	for(unsigned int k=0; k<_iMatrixWidth; k++)
 	{ 
 		of <<  piCounts[k];
-		if(k != ilines-1);
+		if(k != _iMatrixWidth-1);
 			of<<",";
 	}
 	of << std::endl;

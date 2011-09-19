@@ -117,7 +117,7 @@ void PanelAligner::LogOverlaps(bool bLog)
 	CorrelationParametersInst.bSaveOverlaps = bLog;
 }
 
-void PanelAligner::LogMaskVectors(bool bLog)
+void PanelAligner::LogTransformVectors(bool bLog)
 {
 	CorrelationParametersInst.bSaveTransformVectors= bLog;
 }
@@ -337,7 +337,7 @@ bool PanelAligner::CreateTransforms()
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
 		string s;
-		sprintf_s(cTemp, 100, "%sMaskVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 
+		sprintf_s(cTemp, 100, "%sTransformVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 
 		s.clear();
 		s.assign(cTemp);
 		_pSolver->OutputVectorXCSV(s);

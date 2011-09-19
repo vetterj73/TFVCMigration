@@ -139,9 +139,9 @@ namespace PanelAlignM {
 		_pAligner->LogOverlaps(bLog);
 	}
 
-	void ManagedPanelAlignment::LogMaskVectors(bool bLog)	
+	void ManagedPanelAlignment::LogTransformVectors(bool bLog)	
 	{
-		_pAligner->LogMaskVectors(bLog);
+		_pAligner->LogTransformVectors(bLog);
 	}
 
 	void ManagedPanelAlignment::FiducialSearchExpansionXInMeters(double fidSearchXInMeters)

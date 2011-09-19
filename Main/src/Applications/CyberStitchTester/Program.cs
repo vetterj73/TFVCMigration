@@ -87,14 +87,13 @@ namespace CyberStitchTester
             // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
             _aligner.SetAllLogTypes(true);
-            //_aligner.LogMaskVectors(true);
+            //_aligner.LogTransformVectors(true);
 
             // Set up production for aligner
             try
             {
                 _aligner.NumThreads(_numThreads);
                 //_aligner.LogOverlaps(true);
-                //_aligner.LogMaskVectors(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 Output("Before ChangeProduction");
