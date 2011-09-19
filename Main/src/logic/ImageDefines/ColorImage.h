@@ -15,8 +15,6 @@ public:
 
 	COLORSTYLE GetColorStyle() {return _colorStyle;};
 	void SetColorStyle(COLORSTYLE value);
-
-	bool IsChannelStoredSeperated() {return _bChannelStoredSeperate;};
 	void SetChannelStoreSeperated(bool bValue);
 
 	bool IsChannelStoredSeperate() {return _bChannelStoredSeperate;};

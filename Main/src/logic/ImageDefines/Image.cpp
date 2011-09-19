@@ -288,6 +288,8 @@ DRect Image::GetBoundBoxInWorld() const
 
 
 // This image's ROI content is mapped from pImgIn
+// Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
+// Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 bool Image::MorphFrom(
 	Image* pImgIn, 
 	UIRect roi,
@@ -312,6 +314,9 @@ bool Image::MorphFrom(
 
 	// Validation check (only for 8-bit image)
 	if(_bytesPerPixel != 1 && _bytesPerPixel != 3) return(false);
+	if(pImgIn->GetBytesPerPixel() != _bytesPerPixel) return(false);
+	if(_bytesPerPixel == 3)
+		if(_bChannelStoredSeperate==true || pImgIn->IsChannelStoredSeperated()==false) return(false); 
 	
 	// Create tansform matrix from (Col_out, Row_out) to (Col_in, Row_in)
 	ImgTransform tIn_inv = pImgIn->GetTransform().Inverse();

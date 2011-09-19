@@ -70,6 +70,8 @@ public:
 	unsigned int		PixelRowStride() const {return _pixelRowStride;};
 	unsigned int		BufferSizeInBytes() const {return PixelRowStride()*Rows()*GetBytesPerPixel();};
 	unsigned int		BufferSizeInPixels(){return _rows * _pixelRowStride;};
+
+	bool IsChannelStoredSeperated() {return _bChannelStoredSeperate;};
 	
 	pair<double,double> ImageCenter( ) const;
 	double				CenterX() const;

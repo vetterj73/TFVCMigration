@@ -663,45 +663,86 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		iDestRow++;
 	}
 	
-	unsigned int k;
 	unsigned int temp=0;
-	for(k=0; k<_iMatrixWidth-iMaxLength+1; k++)
+	for(unsigned int k=0; k<_iMatrixWidth-iMaxLength+1; k++)
 		temp += piCounts[k];
 
 	if(bRemoveEmptyRows)
 	{
 		// Skip the empty rows in input matrix (columns in workspace)
-		for(k=0; k<_iMatrixWidth; k++)
+		for(unsigned int k=0; k<_iMatrixWidth; k++)
 			::memcpy(_dMatrixA+k*(_iMatrixHeight-*piEmptyRows), workspace+k*_iMatrixHeight, (_iMatrixHeight-*piEmptyRows)*sizeof(double));
 
 	}
 	else	// include empty rows
 		::memcpy(_dMatrixA, workspace, _iMatrixSize*sizeof(double));
 
-	for(k=0; k<_iMatrixHeight; k++)
+	for(unsigned int k=0; k<_iMatrixHeight; k++)
 		_dVectorB[k] = dCopyB[k];
 
  /*/ for debug
-	// Save Matrix A 
-	ofstream of("C:\\2D_SPI\\reorderA.csv");
-
+	// Save transposed Matrix A 
+	ofstream of("C:\\Temp\\MatrixA_t.csv");
 	of << std::scientific;
 
-	int ilines = nRows;
+	int ilines = _iMatrixHeight;
 	if(bRemoveEmptyRows)
-		ilines = nRows-*piEmptyRows;
+		ilines = _iMatrixHeight-*piEmptyRows;
 
-	for(k=0; k<ilines; k++)
-	{ 
-		for(j=0; j<_iMatrixWidth; j++)
-		{
-			of << MatrixA[j*ilines+k]<<",";
+	for(unsigned int j=0; j<_iMatrixWidth; j++)
+	{
+		for(unsigned int k=0; k<ilines; k++)
+		{ 
+	
+			of << _dMatrixA[j*ilines+k];
+			if(j != ilines-1)
+				of <<",";
 		}
 		of << std::endl;
 	}
 
 	of.close();
-*/
+
+	// Save Matrix A
+	of.open("C:\\Temp\\MatrixA.csv");		
+	for(unsigned int k=0; k<ilines; k++)
+	{ 
+		for(unsigned int j=0; j<_iMatrixWidth; j++)
+		{
+			of << _dMatrixA[j*ilines+k];
+			if(j != _iMatrixWidth-1)
+				of <<",";
+		}
+		of << std::endl;
+	}
+	of.close();
+
+	// Save Matrix B
+	of.open("C:\\Temp\\VectorB.csv");
+	for(unsigned int k=0; k<ilines; k++)
+	{ 
+		of << _dVectorB[k];
+		if(k != ilines-1);
+			of<<",";
+	}
+	of << std::endl;
+	of.close();
+
+	// Save blocklength
+	of.open("C:\\Temp\\BlockLength.csv");
+	of << _iMatrixWidth << ",";
+	of << ilines << ",";
+	of << iMaxLength << ",";
+	for(unsigned int k=0; k<_iMatrixWidth; k++)
+	{ 
+		of <<  piCounts[k];
+		if(k != ilines-1);
+			of<<",";
+	}
+	of << std::endl;
+	of.close();
+//*/
+
 	delete [] workspace;
 	delete [] dCopyB;
 

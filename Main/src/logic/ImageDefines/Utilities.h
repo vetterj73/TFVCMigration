@@ -15,8 +15,8 @@ void inverse(
 	unsigned int cols);
 
 
-// Fill a ROI of the output image with a height map by transforming the input image
-// Support convert YCrCb seperate channel to BGR combined channels only
+// Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
+// Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 // Assume the center of image corresponding a vertical line from camera to object surface
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
 // pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
@@ -24,7 +24,8 @@ void inverse(
 // iROIWidth, iHeight: the size of buffer need to be transformed
 // iOutROIStartX, iOutROIStartY, iOutROIWidth and iOutROIHeight: the ROI of the output image
 // dInvTrans: the 3*3 transform from output image to input image
-// pHeightImage and iHeightSpan, height image buffer and its span
+// iNumChannels: number of image channels, must be 1 or 3
+// pHeightImage and iHeightSpan, height image buffer and its span, if it is NULL, don't adjust for height map
 // dHeightResolution: the height represented by each grey level
 // dPupilDistance: camera pupil distance
 // dPerpendicalPixelX and dPerpendicalPixelY, the pixel corresponding to the point in the panel surface 
