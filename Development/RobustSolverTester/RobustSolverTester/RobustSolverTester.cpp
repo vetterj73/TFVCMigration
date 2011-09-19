@@ -58,6 +58,9 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	string cPath = "C:\\Temp\\";
 
+	//NOTES: The writing to disc process trunk the data a little bit
+	//Therefore, data here is a little different with the original one
+
 	int* iBlockLens = new int[5000];
 	int iFlag = ReadCSV(cPath + "BlockLength.csv", iBlockLens);	
 	if(iFlag<=0) 
