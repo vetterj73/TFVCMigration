@@ -721,25 +721,19 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 	of.open("C:\\Temp\\VectorB.csv");
 	for(unsigned int k=0; k<ilines; k++)
 	{ 
-		of << _dVectorB[k];
-		if(k != ilines-1);
-			of<<",";
+		of << _dVectorB[k] << std::endl;
 	}
-	of << std::endl;
 	of.close();
 
 	// Save blocklength
 	of.open("C:\\Temp\\BlockLength.csv");
-	of << _iMatrixWidth << ",";
-	of << ilines << ",";
-	of << iMaxLength << ",";
+	of << _iMatrixWidth << std::endl;
+	of << ilines <<std::endl;
+	of << iMaxLength <<std::endl;
 	for(unsigned int k=0; k<_iMatrixWidth; k++)
 	{ 
-		of <<  piCounts[k];
-		if(k != _iMatrixWidth-1);
-			of<<",";
+		of <<  piCounts[k] << std::endl;
 	}
-	of << std::endl;
 	of.close();
 //*/
 

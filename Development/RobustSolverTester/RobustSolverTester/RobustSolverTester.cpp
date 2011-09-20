@@ -56,7 +56,10 @@ int  ReadCSV(string fileName, int* data)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	string cPath = "C:\\Temp\\";
+	//string cPath = "C:\\Temp\\Origin\\";
+	string cPath = "C:\\Temp\\Origin-One\\";
+	//string cPath = "C:\\Temp\\I2T0C0Row+100\\";
+	//string cPath = "C:\\Temp\\FidError-One\\";
 
 	//NOTES: The writing to disc process trunk the data a little bit
 	//Therefore, data here is a little different with the original one

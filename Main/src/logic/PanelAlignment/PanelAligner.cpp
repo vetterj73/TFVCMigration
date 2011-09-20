@@ -377,6 +377,15 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
 			for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 			{
+				/*/ for debug
+				if(iIllumIndex==2 && iTrig==0 && iCam==0)
+				{
+					// Simulate FOV location error
+					CorrelationResult result = ite->GetCoarsePair()->GetCorrelationResult();
+					result.RowOffset += 100;
+					ite->GetCoarsePair()->SetCorrlelationResult(result);
+				}
+				//*/
 				if(ite->IsProcessed() && ite->IsGoodForSolver())
 				{
 					solver->AddFidFovOvelapResults(&(*ite));

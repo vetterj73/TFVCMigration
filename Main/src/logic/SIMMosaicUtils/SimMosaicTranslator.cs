@@ -43,7 +43,11 @@ namespace SIMMosaicUtils
                 bool bAlignWithCAD = false;
                 bool bAlignWithFiducial = true;
                 bool bFiducialBrighterThanBackground = true;
-
+            /* For debug
+                bAlignWithFiducial = false;
+                if (iDeviceIndex == 1 && i == 0)
+                    bAlignWithFiducial = true;
+            //*/
                 ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch);
 
                 if (layer == null)
