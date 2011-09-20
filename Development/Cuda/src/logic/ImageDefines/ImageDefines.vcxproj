@@ -176,9 +176,8 @@ copy *.h ..\..\..\pub\include</Command>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GPUJobManager.h" />
-    <ClInclude Include="GPUJobStream.h" />
-    <ClInclude Include="GPUJobThread.h" />
+    <ClInclude Include="GPUStream.h" />
+    <ClInclude Include="GPUManager.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
@@ -198,9 +197,8 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="GPUJobManager.cu" />
-    <CudaCompile Include="GPUJobStream.cu" />
-    <CudaCompile Include="GPUJobThread.cu" />
+    <CudaCompile Include="GPUManager.cu" />
+    <CudaCompile Include="GPUStream.cu" />
     <CudaCompile Include="Utilities.cu">
       <Include Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>
       <Include Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(CUDA_PATH)/include;$(CUDA_DATA)/C/common/inc;./</Include>

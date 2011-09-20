@@ -37,15 +37,9 @@ void MorphJob::Run()
 		_pStitched->MorphFrom(_pFOV, _rect);
 }
 
-void ImageMorphCudaDelete(CyberJob::GPUJobStream *jobStream);
-void ClearMorphJobStream(CyberJob::GPUJobStream *jobStream)
+CyberJob::CGPUJob::GPUJobStatus MorphJob::GPURun(CyberJob::GPUStream *jobStream)
 {
-	ImageMorphCudaDelete(jobStream);
-}
-
-CyberJob::GPUJob::GPUJobStatus MorphJob::GPURun(CyberJob::GPUJobStream *jobStream)
-{
-	CyberJob::GPUJob::GPUJobStatus results = CyberJob::GPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
+	CyberJob::CGPUJob::GPUJobStatus results = CyberJob::CGPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
 	
 	//printf_s("GPUJob execution: oridinal - %ld;\n", _ordinal );
 

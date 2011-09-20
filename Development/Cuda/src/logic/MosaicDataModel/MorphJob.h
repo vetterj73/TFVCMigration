@@ -1,15 +1,15 @@
 #pragma once
-#include "GPUJobManager.h"
+#include "GPUManager.h"
 #include "UIRect.h"
 
 using namespace CyberJob;
 
 class Image;
-class CyberJob::GPUJobStream;
+class CyberJob::GPUStream;
 
-void ClearMorphJobStream(CyberJob::GPUJobStream *jobStream);
+//void ClearMorphJobStream(CyberJob::GPUStream *jobStream);
 
-class MorphJob : public CyberJob::GPUJob
+class MorphJob : public CyberJob::CGPUJob
 {
 public:
 	MorphJob(Image* pStitchedImage, Image *pFOV, 
@@ -21,9 +21,9 @@ public:
 	~MorphJob();
 
 	void Run();
-	CyberJob::GPUJob::GPUJobStatus GPURun(CyberJob::GPUJobStream *jobStream);
+	CyberJob::CGPUJob::GPUJobStatus GPURun(CyberJob::GPUStream *jobStream);
 
-	unsigned int NumberOfStreams() { return 3; }
+	//unsigned int NumberOfStreams() { return 3; }
 
 	unsigned int OrdinalNumber() { return _ordinal; }
 

@@ -4,11 +4,12 @@
 #include "MosaicTile.h"
 #include "MorphJob.h"
 #include "JobManager.h"
-#include "GPUJobManager.h"
+#include "GPUManager.h"
 #include <sys/timeb.h>
 #include <time.h>
 
 using namespace CyberJob;
+
 namespace MosaicDM 
 {
 	MosaicLayer::MosaicLayer()
@@ -151,7 +152,6 @@ namespace MosaicDM
 
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::GPUJobManager jm(buf, 8/*16*/, 3, &ClearMorphJobStream);
 		vector<MorphJob*> morphJobs;
 
 		deltaBatch = 0;
@@ -159,25 +159,29 @@ namespace MosaicDM
 
 		// Morph each Fov to create stitched panel image
 		unsigned int index = 100;
+		MorphJob *pJob;
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
 			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 			{
 				Image* pFOV = GetImage(iCam, iTrig);
 
-				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
+				pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
 					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1), index);
-				jm.AddAJob((GPUJob*)pJob);
+				CyberJob::GPUManager::RunJobAsynch((CGPUJob*)pJob/*, SESSIONHANDLE hSession=NULL*/);
+				//jm.AddAJob((GPUJob*)pJob);
 				morphJobs.push_back(pJob);
 				++index;
 			}
 		}
 
+		WaitForSingleObject(pJob->DoneEvent(), INFINITE);
+
 		// Wait until it is complete...
-		jm.MarkAsFinished();
-		while(jm.TotalJobs() > 0)
-			Sleep(1);
+		//jm.MarkAsFinished();
+		//while(jm.TotalJobs() > 0)
+		//	Sleep(1);
 
 		deltaBatch += clock() - startBatch;//calculate the difference in ticks
 

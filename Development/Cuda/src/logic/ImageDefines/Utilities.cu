@@ -42,8 +42,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "GPUJobManager.h"
-#include "GPUJobStream.h"
+#include "GPUManager.h"
+#include "GPUStream.h"
 #include "../MosaicDataModel/MorphJob.h"
 
 // includes, project
@@ -51,22 +51,14 @@
 
 __constant__ double coeffs[3][3];
 
-// Matrix Structure declaration
-typedef struct {
-    unsigned int width;
-    unsigned int height;
-    unsigned int size;
-    unsigned char* elements;
-} ByteMatrix;
-
 // includes, kernels
 #include <Utilities_kernel.cu>
 
 ////////////////////////////////////////////////////////////////////////////////
 // declarations, forward
 
-extern "C"
-void computeGold(float*, const float*, const float*, unsigned int, unsigned int);
+//extern "C"
+//void computeGold(float*, const float*, const float*, unsigned int, unsigned int);
 
 void CopyBufferToDeviceMatrix(ByteMatrix Mdevice, unsigned char* buffer, cudaStream_t *stream);
 void CopyDeviceMatrixToHost(ByteMatrix MHost, ByteMatrix Mdevice, cudaStream_t *stream);
@@ -85,22 +77,19 @@ void FreeDeviceMatrix(ByteMatrix* M);
 void FreeMatrix(ByteMatrix* M);
 void FreeHostMatrix(ByteMatrix* M);
 
-
-void ConvolutionOnDevice(const ByteMatrix A, const ByteMatrix B, ByteMatrix C);
-
-class ImageMorphContext
+bool CanMapHostMemory()
 {
-	public:
-		ByteMatrix Ad;
-		ByteMatrix Bd;
-		ByteMatrix B;
+	struct cudaDeviceProp prop;
 
-		cudaEvent_t phaseEvent;
-};
- 
+	cudaGetDeviceProperties(&prop, 0);
+	if (prop.canMapHostMemory) return true;
+	else return false;
+
+}
 bool CudaBufferRegister(unsigned char *ptr, size_t size)
 {
-	cudaError_t error = cudaHostRegister( ptr, size, cudaHostRegisterPortable);   
+	//cudaError_t error = cudaHostRegister( ptr, size, cudaHostRegisterPortable);
+	cudaError_t error = cudaHostRegister( ptr, size, cudaHostRegisterMapped);
  
 	if (error != cudaSuccess)
 		return false;
@@ -120,7 +109,7 @@ bool CudaBufferUnregister(unsigned char *ptr)
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////
-CyberJob::GPUJob::GPUJobStatus GPUImageMorph( CyberJob::GPUJobStream *jobStream,
+CyberJob::CGPUJob::GPUJobStatus GPUImageMorph( CyberJob::GPUStream *jobStream,
 	unsigned char* pInBuf,  unsigned int iInSpan, 
 	unsigned int iInWidth, unsigned int iInHeight, 
 	unsigned char* pOutBuf, unsigned int iOutSpan,
@@ -128,27 +117,11 @@ CyberJob::GPUJob::GPUJobStatus GPUImageMorph( CyberJob::GPUJobStream *jobStream,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3]) 
 {
-//int main(int argc, char** argv) {
-
-	MorphJob* temp = (MorphJob*)(jobStream->GPUJob());
 	char str[128];
+	MorphJob* temp = (MorphJob*)(jobStream->GPUJob());
 
 	unsigned int thePhase = jobStream->Phase();
 	jobStream->Phase(thePhase+1);
-
-	ImageMorphContext *context = (ImageMorphContext*)jobStream->Context();
-	if (context == NULL)
-	{
-		context = new ImageMorphContext();
-		jobStream->Context(context);
-
-		//sprintf_s(str, "Job %d; Allocate;", temp->OrdinalNumber());
-		//jobStream->_pGPUJobManager->LogTimeStamp(str);
-
-		context->Ad = AllocateDeviceMatrix(iInSpan, iInHeight);
-		context->B = AllocateHostMatrix(iOutROIWidth*2, iOutROIHeight*2);
-		context->Bd = AllocateDeviceMatrix(iOutROIWidth*2, iOutROIHeight*2);
-	}
 
 	switch (thePhase)
 	{
@@ -157,16 +130,10 @@ CyberJob::GPUJob::GPUJobStatus GPUImageMorph( CyberJob::GPUJobStream *jobStream,
 		//sprintf_s(str, "Job %d; Phase %d-0;", temp->OrdinalNumber(), thePhase);
 		//jobStream->_pGPUJobManager->LogTimeStamp(str);
 
-		// setup job context
-
-		ResizeDeviceMatrix(&context->Ad, iInSpan, iInHeight);
-		ResizeHostMatrix(&context->B, iOutROIWidth, iOutROIHeight);
-		ResizeDeviceMatrix(&context->Bd, iOutROIWidth, iOutROIHeight);
-
 		//LARGE_INTEGER timestamp;
 		///*assert(*/::QueryPerformanceCounter(&timestamp)/*)*/;
 
-		CopyBufferToDeviceMatrix(context->Ad, pInBuf, jobStream->Stream());
+		CopyBufferToDeviceMatrix(jobStream->StdInBuffer(), pInBuf, jobStream->Stream());
 
 		//sprintf_s(str, "Job %d; Phase %d; Xfer time", temp->OrdinalNumber(), thePhase);
 		//jobStream->_pGPUJobManager->DeltaTimeStamp(str, timestamp);
@@ -179,75 +146,66 @@ CyberJob::GPUJob::GPUJobStatus GPUImageMorph( CyberJob::GPUJobStream *jobStream,
 
 			// Setup the execution configuration
 			dim3 threads(TILE_WIDTH, 12/*TILE_WIDTH*/);
-			dim3 grid(((context->Bd.width - 1) / threads.x) + 1, ((context->Bd.height - 1) / threads.y) + 1);
+			dim3 grid(((iOutROIWidth - 1) / threads.x) + 1, ((iOutROIHeight - 1) / threads.y) + 1);
 
   			// Launch the device computation threads!
 			ConvolutionKernel<<< grid, threads, 0, *jobStream->Stream()>>>
-				(context->Ad.elements, context->Bd.elements, context->Ad.width, context->Ad.height, iInWidth,
-				context->Bd.width, context->Bd.height, iOutSpan, iOutROIStartX, iOutROIStartY);
+				(jobStream->StdInBuffer().elements, jobStream->StdOutBuffer().elements, iInSpan,
+				iInHeight, iInWidth,
+				iOutROIWidth, iOutROIHeight, iOutSpan, iOutROIStartX, iOutROIStartY);
 		}
 
-		return GPUJob::GPUJobStatus::ACTIVE;
+		return CGPUJob::GPUJobStatus::ACTIVE;
 
 	case 1:
-		if (context == NULL) return GPUJob::GPUJobStatus::COMPLETED; // error, complete job
+		//CopyDeviceMatrixToHost(context->B, context->Bd, jobStream->Stream());
 
-		CopyDeviceMatrixToHost(context->B, context->Bd, jobStream->Stream());
+		/*cudaError_t */cudaMemcpy2D  ( pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY,  
+				iOutSpan,
+				jobStream->StdOutBuffer().elements,
+				iOutROIWidth,
+				iOutROIWidth,
+				iOutROIHeight,
+				cudaMemcpyDeviceToHost );
 
-		cudaEventCreate(&context->phaseEvent);
+		cudaEventCreate(jobStream->PhaseEvent());
 
-		cudaEventRecord(context->phaseEvent);
+		cudaEventRecord(*jobStream->PhaseEvent(), *jobStream->Stream());
 
-		return GPUJob::GPUJobStatus::ACTIVE;
+		return CGPUJob::GPUJobStatus::ACTIVE;
 
 	case 2:
-		if (context == NULL) return GPUJob::GPUJobStatus::COMPLETED; // error, complete job
+		//cudaError_t result = cudaEventQuery(context->phaseEvent);
+		//if (result != cudaSuccess)
+		//{
+		//	if (result == cudaErrorNotReady)
+		//	{
+		//		//sprintf_s(str, "Job %d; Phase %d; cudaErrorNotReady", temp->OrdinalNumber(), thePhase);
+		//		//jobStream->_pGPUJobManager->LogTimeStamp(str);
+		//	}
+		//	else
+		//	{
+		//		sprintf_s(str, "Job %d; Phase %d; cudaError %d;", temp->OrdinalNumber(), thePhase, result);
+		//		//jobStream->_pGPUJobManager->LogTimeStamp(str);
+		//	}
 
-		cudaError_t result = cudaEventQuery(context->phaseEvent);
+		//	// maintain current phase to continue to check CopyDeviceMatrixToHost event for completion
+		//	jobStream->Phase(thePhase);
 
-		if (result != cudaSuccess)
-		{
-			if (result == cudaErrorNotReady)
-			{
-				//sprintf_s(str, "Job %d; Phase %d; cudaErrorNotReady", temp->OrdinalNumber(), thePhase);
-				//jobStream->_pGPUJobManager->LogTimeStamp(str);
-			}
-			else
-			{
-				sprintf_s(str, "Job %d; Phase %d; cudaError %d;", temp->OrdinalNumber(), thePhase, result);
-				jobStream->_pGPUJobManager->LogTimeStamp(str);
-			}
+		//	return CGPUJob::GPUJobStatus::WAITING;
+		//}
 
-			// maintain current phase to continue to check CopyDeviceMatrixToHost event for completion
-			jobStream->Phase(thePhase);
-
-			return GPUJob::GPUJobStatus::WAITING;
-		}
-
-		//cudaEventSynchronize(context->phaseEvent); // wait on CopyDeviceMatrixToHost event not used
+		cudaEventSynchronize(*jobStream->PhaseEvent()/*context->phaseEvent*/); // wait on CopyDeviceMatrixToHost event not used
 
 		// copy morphed FOV image to panel image buffer
-		CopyHostMatrixToBuffer(pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, context->B, iOutSpan);
+		//CopyHostMatrixToBuffer(pOutBuf + iOutROIStartX + iOutSpan * iOutROIStartY, context->B, iOutSpan);
 
-		cudaEventDestroy(context->phaseEvent);
+		cudaEventDestroy(*jobStream->PhaseEvent()/*context->phaseEvent*/);
 
-		return GPUJob::GPUJobStatus::COMPLETED;
+		return CGPUJob::GPUJobStatus::COMPLETED;
 	}
 
-	return GPUJob::GPUJobStatus::COMPLETED;
-}
-
-void ImageMorphCudaDelete(CyberJob::GPUJobStream *jobStream)
-{
-	ImageMorphContext *context = (ImageMorphContext*)jobStream->Context();
-	if (context != NULL)
-	{
-		cudaFree(context->Ad.elements);
-		cudaFree(context->Bd.elements);
-		//cudaFreeHost(context->A.elements);
-		//FreeHostMatrix(&context->B);
-		cudaFreeHost(context->B.elements);
-	}
+	return CGPUJob::GPUJobStatus::COMPLETED;
 }
 
 // Allocate a device matrix of same size as M.

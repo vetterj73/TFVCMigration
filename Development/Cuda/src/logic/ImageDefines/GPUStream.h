@@ -6,6 +6,7 @@ using std::queue;
 using std::string;
 
 #include <cutil.h>
+#include "GPUManager.h"
 
 namespace CyberJob
 {
@@ -15,44 +16,54 @@ namespace CyberJob
 	///
 	///	Encapsulates a GPU stream for running jobs.
 	///
-	class GPUJobStream
+	class GPUStream
 	{
 	public:
 		///
 		///	Constructor - starts the thread
 		///	@todo - logging...
 		///
-		GPUJobStream(GPUJobManager* pGPUJobManager, string uniqueName);
-		~GPUJobStream(void);
+		GPUStream(/*GPUManager* pGPUManager, */string uniqueName);
+		~GPUStream(void);
  
 		cudaStream_t *Stream() { return &_stream; }
 
 		unsigned int Phase() { return _phase; }
 		void Phase(unsigned int phase) { _phase = phase; }
 
-		GPUJob *GPUJob() { return _pGPUJob; }
-		void GPUJob(CyberJob::GPUJob *pGPUJob);
+		CGPUJob *GPUJob() { return _pGPUJob; }
+		void GPUJob(CyberJob::CGPUJob *pGPUJob);
 
 		void *Context() { return _context; }
 		void Context(void *context) { _context = context; }
 
-		GPUJobManager* _pGPUJobManager;
+		const ByteMatrix StdInBuffer() { return _stdInBuffer; }
+		const ByteMatrix StdOutBuffer() { return _stdOutBuffer; }
+
+		cudaEvent_t *PhaseEvent() { return &_phaseEvent; }
+
+		//GPUJobManager* _pGPUJobManager;
 
 	private:
 		///
 		///	intentially private default constructor.
 		///
-		GPUJobStream(){};
+		GPUStream(){};
 	
 		unsigned int _phase;
 		cudaStream_t _stream;
 
 
-		CyberJob::GPUJob *_pGPUJob;
+		CyberJob::CGPUJob *_pGPUJob;
 
 		///
 		///	Job type specific context
 		///
 		void *_context;
+
+		ByteMatrix _stdInBuffer;
+		ByteMatrix _stdOutBuffer;
+
+		cudaEvent_t _phaseEvent;
 	};
 }
