@@ -40,7 +40,11 @@ namespace SIMMosaicUtils
                 ManagedSIMCaptureSpec pSpec = device.GetSIMCaptureSpec((int)i);
                 bool bFiducialAllowNegativeMatch = true;   // Dark field allow negative match
                 if (i % 2 == 0) bFiducialAllowNegativeMatch = false; // Bright field not allow negavie match
-                ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, false, true, true, bFiducialAllowNegativeMatch);
+                bool bAlignWithCAD = false;
+                bool bAlignWithFiducial = true;
+                bool bFiducialBrighterThanBackground = true;
+
+                ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch);
 
                 if (layer == null)
                     throw new ApplicationException("AddDeviceToMosaic - Layer was null - this should never happen!");
