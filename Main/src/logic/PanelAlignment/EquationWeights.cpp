@@ -19,7 +19,7 @@ EquationWeights::EquationWeights(void)
 	wMcal = 2.5e6;		// Magnification m0/m4 (pixel size) match calibtation
 	wYRdelta = 5e6;		// Angle different for adjacent cameras(Y) should match calibration
 	wYcent = 1e3;		// Fov center Y position match calibration
-	wXcent = 1e0;		// Fov center X position match calibration
+	wXcent = 1e-1;		// Fov center X position match calibration
 	wYdelta = 1e4;		// distance between cameras in Y match calibration
 	wXdelta = 1e3;		// distance between cameras in X match calibration
 
