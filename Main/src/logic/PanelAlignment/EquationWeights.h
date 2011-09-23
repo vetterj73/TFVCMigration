@@ -23,10 +23,11 @@ public:
 	double wMxy;		// Magnification match (m0 = m4)
 	double wRcal;		// Rotation m1/m3 match calibration
 	double wMcal;		// Magnification m0/m4 (pixel size) match calibtation
+	double wYRdelta;	// Angle different for adjacent cameras(Y) should match calibration
 	double wYcent;		// Fov center Y position match calibration
+	double wXcent;		// Fov center X position match calibration
 	double wYdelta;		// distance between cameras in Y match calibration
 	double wXdelta;		// distance between cameras in X match calibration
-	double wXIndexwt;	// Position of the FOV in X
 
 	// for projective transform
 	double wPMEq;		// m6 = m10 and m7 = m11

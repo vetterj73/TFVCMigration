@@ -17,10 +17,11 @@ EquationWeights::EquationWeights(void)
 	wMxy = 5e7;			// Magnification match (m0 = m4)
 	wRcal = 5e6;		// Rotation m1/m3 match calibration
 	wMcal = 2.5e6;		// Magnification m0/m4 (pixel size) match calibtation
+	wYRdelta = 5e6;		// Angle different for adjacent cameras(Y) should match calibration
 	wYcent = 1e3;		// Fov center Y position match calibration
+	wXcent = 1e0;		// Fov center X position match calibration
 	wYdelta = 1e4;		// distance between cameras in Y match calibration
-	wXdelta = 2.5e3;	// distance between cameras in X match calibration
-	wXIndexwt = 0.01;	// Position of the FOV in X
+	wXdelta = 1e3;		// distance between cameras in X match calibration
 
 	// for projective transform
 	wPMEq = 1e12;		// m6 = m10 and m7 = m11

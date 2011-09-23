@@ -68,12 +68,12 @@ RobustSolver::RobustSolver(
 	if(_bProjectiveTrans)	// For projective transform
 	{		
 		_iNumParamsPerFov = 12;			// parameters per Fov
-		_iNumCalibConstrains = 16;		// calibration related constraints
+		_iNumCalibConstrains = 17;		// calibration related constraints
 	}
 	else		// For Affine transform
 	{
 		_iNumParamsPerFov = 6;			// parameters per Fov
-		_iNumCalibConstrains = 10;		// calibration related constraints
+		_iNumCalibConstrains = 11;		// calibration related constraints
 	}
 
 	_iMatrixWidth = _iNumFovs * _iNumParamsPerFov;
@@ -170,43 +170,62 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 
 	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 
-	//* 1 rotation match 
+	/*
+	Affine transform
+		[	M0	M1	M2	]	
+		[	M3	M4	M5	]
+	Projective transform
+		[	M0	M1	M2	M6	M7	M8	]	
+		[	M3	M4	M5	M9	M10	M11	]
+	*/
+	//* 1 rotation consist (M1+M3=0)
 	pdRowBegin[iFOVPos+1] = Weights.wRxy;
 	pdRowBegin[iFOVPos+3] = Weights.wRxy;
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 2  magnification match 
+	//* 2  Square pixel (M0-M4=0)
 	pdRowBegin[iFOVPos+0] = Weights.wMxy;
 	pdRowBegin[iFOVPos+4] = -Weights.wMxy;
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 3 rotate images 90 degrees 
+	//* 3 rotation match (M1 = cal[1]) 
 	pdRowBegin[iFOVPos+1] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
 	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(1);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 4 rotate images 90 degrees 
+	//* 4 rotate match (M3 = cal[3])
 	pdRowBegin[iFOVPos+3] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
 	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(3);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 5 square pixels x 
+	//* 5 pixel size match in Y (M0 = cal[0]) 
 	pdRowBegin[iFOVPos+0] = Weights.wMcal;	// b VALUE IS NON_ZERO!!
 	_dVectorB[_iCurrentRow] = Weights.wMcal * transFov.GetItem(0);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 6 square pixels y 
+	//* 6 pixel size match in X (M4 = cal[4])
 	pdRowBegin[iFOVPos+4] = Weights.wMcal;	// b VALUE IS NON_ZERO!!
 	_dVectorB[_iCurrentRow] = Weights.wMcal * transFov.GetItem(4);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 7 fov center Y pos
+	//* 7 (M1-next camera M1) match Calib
+	if(iNextCamFovPos > 0) // Next camera exists
+	{
+		pdRowBegin[iFOVPos+1] = Weights.wYRdelta;
+		pdRowBegin[iNextCamFovPos+1] = - Weights.wYRdelta;
+		_dVectorB[_iCurrentRow] = Weights.wYRdelta * (transFov.GetItem(1) - transNextCamFov.GetItem(1));
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
+	}
+
+	//* 8 fov center Y pos match Cal
+	// Use FOV center instread of (0,0) is to add more constraint for projective transform
 	pdRowBegin[iFOVPos+3] = Weights.wYcent * dPixelCenRow;
 	pdRowBegin[iFOVPos+4] = Weights.wYcent * dPixelCenCol;
 	pdRowBegin[iFOVPos+5] = Weights.wYcent;
@@ -220,7 +239,22 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 8 distance between cameras in Y
+	//* 9 Position of the FOV in X match Cal
+	// Use FOV center instread of (0,0) is to add more constraint for projective transform
+	pdRowBegin[iFOVPos+0] = Weights.wXcent * dPixelCenRow;
+	pdRowBegin[iFOVPos+1] = Weights.wXcent * dPixelCenCol;
+	pdRowBegin[iFOVPos+2] = Weights.wXcent;
+	if(_bProjectiveTrans)
+	{
+		pdRowBegin[iFOVPos+6] = Weights.wXcent * dPixelCenRow * dPixelCenRow;
+		pdRowBegin[iFOVPos+7] = Weights.wXcent * dPixelCenRow * dPixelCenCol;
+		pdRowBegin[iFOVPos+8] = Weights.wXcent * dPixelCenCol * dPixelCenCol;
+	}
+	_dVectorB[_iCurrentRow] = Weights.wXcent  * dFovCalCenX;
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	//* 10 distance between cameras in Y
 	if(iNextCamFovPos > 0) // Next camera exists
 	{
 		pdRowBegin[iFOVPos+3]		= Weights.wYdelta * dPixelCenRow;
@@ -244,7 +278,7 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 		_iCurrentRow++;
 	}
 
-	//* 9 distance between cameras in X
+	//* 11 distance between cameras in X
 	if(iNextCamFovPos > 0) // Next camera exists
 	{
 		pdRowBegin[iFOVPos+0]		= Weights.wXdelta * dPixelCenRow;
@@ -268,46 +302,40 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 		_iCurrentRow++;
 	}
 
-	//* 10 Position of the FOV in X 
-	pdRowBegin[iFOVPos+2] = Weights.wXIndexwt;	// b VALUE IS NON_ZERO!!
-	_dVectorB[_iCurrentRow] = Weights.wXIndexwt * transFov.GetItem(2);
-	pdRowBegin += _iMatrixWidth;
-	_iCurrentRow++;
-
 	// For projective transform
 	if(_bProjectiveTrans)
 	{	
-		//* 11 M6 = M10
+		//* 12 M6 = M10
 		pdRowBegin[iFOVPos+6] = Weights.wPMEq;
 		pdRowBegin[iFOVPos+10] = -Weights.wPMEq;
 		pdRowBegin += _iMatrixWidth;
 		_iCurrentRow++;
 					
-		//* 12 M7 = M11
+		//* 13 M7 = M11
 		pdRowBegin[iFOVPos+7] = Weights.wPMEq;
 		pdRowBegin[iFOVPos+11]= -Weights.wPMEq;
 		pdRowBegin += _iMatrixWidth;
 		_iCurrentRow++;
 					
-		//* 13 M8 = 0
+		//* 14 M8 = 0
 		pdRowBegin[iFOVPos+8] = Weights.wPM89;
 		pdRowBegin += _iMatrixWidth;
 		_iCurrentRow++;
 
-		//* 14 M9 = 0;
+		//* 15 M9 = 0;
 		pdRowBegin[iFOVPos+9] = Weights.wPM89;
 		pdRowBegin += _iMatrixWidth;
 		_iCurrentRow++;
 							
 		if(iNextCamFovPos > 0 ) // Next camera exists
 		{	
-			//* 15 M10 = Next camera M10
+			//* 16 M10 = Next camera M10
 			pdRowBegin[iFOVPos+10] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+10] = -Weights.wPMNext;
 			pdRowBegin += _iMatrixWidth;
 			_iCurrentRow++;
 						
-			//* 16 M11 = Next camera M11
+			//* 17 M11 = Next camera M11
 			pdRowBegin[iFOVPos+11] = Weights.wPMNext;
 			pdRowBegin[iNextCamFovPos+11] = -Weights.wPMNext;
 			pdRowBegin += _iMatrixWidth;
