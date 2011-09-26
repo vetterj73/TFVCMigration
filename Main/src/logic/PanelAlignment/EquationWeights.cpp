@@ -23,6 +23,9 @@ EquationWeights::EquationWeights(void)
 	wYdelta = 1e4;		// distance between cameras in Y match calibration
 	wXdelta = 1e3;		// distance between cameras in X match calibration
 
+	wYcentNoFid = 1e5;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
+	wXcentNoFid = 1e5;	// Fov center X position match calibration without fiducial equation (for single FOV only)
+
 	// for projective transform
 	wPMEq = 1e12;		// m6 = m10 and m7 = m11
 	wPM89 = 1e12;		// M8 = 0 and M9 = 0

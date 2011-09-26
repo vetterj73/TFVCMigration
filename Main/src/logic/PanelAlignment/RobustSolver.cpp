@@ -123,7 +123,7 @@ void RobustSolver::ZeroTheSystem()
 
 #pragma region Add equations
 // Add Constraints for one image
-bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex)
+bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
 {
 	// Validation check
 	if(iCamIndex>=pMosaic->GetNumberOfCameras() || iTrigIndex>=pMosaic->GetNumberOfTriggers())
@@ -226,31 +226,39 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 
 	//* 8 fov center Y pos match Cal
 	// Use FOV center instread of (0,0) is to add more constraint for projective transform
-	pdRowBegin[iFOVPos+3] = Weights.wYcent * dPixelCenRow;
-	pdRowBegin[iFOVPos+4] = Weights.wYcent * dPixelCenCol;
-	pdRowBegin[iFOVPos+5] = Weights.wYcent;
+	double dTempWeight = Weights.wYcent;
+	// If fiducial information is not used, one FOV will have high weight
+	if(!bUseFiducials && pMosaic->Index()==0 && iTrigIndex == 1 && iCamIndex == 1)
+		dTempWeight = Weights.wYcentNoFid;
+	pdRowBegin[iFOVPos+3] = dTempWeight * dPixelCenRow;
+	pdRowBegin[iFOVPos+4] = dTempWeight * dPixelCenCol;
+	pdRowBegin[iFOVPos+5] = dTempWeight;
 	if(_bProjectiveTrans)
 	{
-		pdRowBegin[iFOVPos+9] = Weights.wYcent * dPixelCenRow * dPixelCenRow;
-		pdRowBegin[iFOVPos+10] = Weights.wYcent * dPixelCenRow * dPixelCenCol;
-		pdRowBegin[iFOVPos+11] = Weights.wYcent * dPixelCenCol * dPixelCenCol;
+		pdRowBegin[iFOVPos+9] = dTempWeight * dPixelCenRow * dPixelCenRow;
+		pdRowBegin[iFOVPos+10] = dTempWeight * dPixelCenRow * dPixelCenCol;
+		pdRowBegin[iFOVPos+11] = dTempWeight * dPixelCenCol * dPixelCenCol;
 	}
-	_dVectorB[_iCurrentRow] = Weights.wYcent  * dFovCalCenY;
+	_dVectorB[_iCurrentRow] = dTempWeight  * dFovCalCenY;
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
 	//* 9 Position of the FOV in X match Cal
 	// Use FOV center instread of (0,0) is to add more constraint for projective transform
-	pdRowBegin[iFOVPos+0] = Weights.wXcent * dPixelCenRow;
-	pdRowBegin[iFOVPos+1] = Weights.wXcent * dPixelCenCol;
-	pdRowBegin[iFOVPos+2] = Weights.wXcent;
+	dTempWeight = Weights.wXcent;
+	// If fiducial information is not used, one FOV will have high weight
+	if(!bUseFiducials && pMosaic->Index()==0 && iTrigIndex == 1 && iCamIndex == 1)
+		dTempWeight = Weights.wXcentNoFid;
+	pdRowBegin[iFOVPos+0] = dTempWeight * dPixelCenRow;
+	pdRowBegin[iFOVPos+1] = dTempWeight * dPixelCenCol;
+	pdRowBegin[iFOVPos+2] = dTempWeight;
 	if(_bProjectiveTrans)
 	{
-		pdRowBegin[iFOVPos+6] = Weights.wXcent * dPixelCenRow * dPixelCenRow;
-		pdRowBegin[iFOVPos+7] = Weights.wXcent * dPixelCenRow * dPixelCenCol;
-		pdRowBegin[iFOVPos+8] = Weights.wXcent * dPixelCenCol * dPixelCenCol;
+		pdRowBegin[iFOVPos+6] = dTempWeight * dPixelCenRow * dPixelCenRow;
+		pdRowBegin[iFOVPos+7] = dTempWeight * dPixelCenRow * dPixelCenCol;
+		pdRowBegin[iFOVPos+8] = dTempWeight * dPixelCenCol * dPixelCenCol;
 	}
-	_dVectorB[_iCurrentRow] = Weights.wXcent  * dFovCalCenX;
+	_dVectorB[_iCurrentRow] = dTempWeight  * dFovCalCenX;
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 

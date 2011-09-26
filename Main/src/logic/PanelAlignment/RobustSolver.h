@@ -39,13 +39,13 @@ public:
 		bool bProjectiveTrans = false);
 	~RobustSolver(void);
 
-	bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex);
+	bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
 	bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
 	bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
 	bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
 	void SolveXAlgHB();
 	
-	ImgTransform RobustSolver::GetResultTransform(
+	ImgTransform GetResultTransform(
 		unsigned int iLlluminationIndex,
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex) const;

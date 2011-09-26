@@ -43,8 +43,11 @@ CorrelationParameters::CorrelationParameters(void)
 	dFiducialSearchExpansionY = 2e-3;
 
 	// Alignment result check
-	dMaxColInconsistInPixel = 10;
+	dMaxColInconsistInPixel = 10;		// Max inconsist in pixel for columns and Rows
 	dMaxRowInconsistInPixel = 20;
+
+	// Fiducial check
+	bFiducialCheck = true;				// Whether do fiducial check
 
 	// Expansion from Cad image to create mask image in pixels
 	iMaskExpansionFromCad = 10;			

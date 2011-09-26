@@ -58,8 +58,11 @@ public:
 	double dFiducialSearchExpansionY;
 
 	// Alignment result check
-	double dMaxColInconsistInPixel;
+	double dMaxColInconsistInPixel;			// Max inconsist in pixel for columns and Rows
 	double dMaxRowInconsistInPixel;
+
+	// Fiducial check
+	bool bFiducialCheck;					// Whether do fiducial check
 
 	// Expansion from Cad image to create mask image in pixels
 	int iMaskExpansionFromCad;

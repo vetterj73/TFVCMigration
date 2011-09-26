@@ -29,6 +29,9 @@ public:
 	double wYdelta;		// distance between cameras in Y match calibration
 	double wXdelta;		// distance between cameras in X match calibration
 
+	double wYcentNoFid;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
+	double wXcentNoFid;	// Fov center X position match calibration without fiducial equation (for single FOV only)
+
 	// for projective transform
 	double wPMEq;		// m6 = m10 and m7 = m11
 	double wPM89;		// M8 = 0 and M9 = 0
