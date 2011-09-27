@@ -213,7 +213,7 @@ bool PanelAligner::CreateMasks()
 	// Create matrix and vector for solver
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
-		AddOverlapResultsForIllum(_pMaskSolver, i);
+		AddOverlapResultsForIllum(_pMaskSolver, i, true); // Use fiducials
 	}
 
 	// Solve transforms
@@ -301,10 +301,17 @@ bool PanelAligner::CreateTransforms()
 
 	_lastProcessedFids.clear();
 
+	// For debug
+	DisturbFiducialAlignment();
+
+	// Fiducial alignment check based on SIM calibration
+	if(CorrelationParametersInst.bFiducialAlignCheck)
+		FiducialAlignmentCheckOnCalibration();
+
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
 	{
-		AddOverlapResultsForIllum(_pSolver, i);
+		AddOverlapResultsForIllum(_pSolver, i, true); // Use fiducials
 	}
 
 	// Solve transforms
@@ -346,16 +353,15 @@ bool PanelAligner::CreateTransforms()
 }
 
 // Add overlap results for a certain illumation/mosaic image to solver
-void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex)
+void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials)
 {
 	MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
 	for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 	{
 		for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 		{
-			// For certain Fov
 			// Add calibration constraints
-			solver->AddCalibationConstraints(pMosaic, iCam, iTrig);
+			solver->AddCalibationConstraints(pMosaic, iCam, iTrig, bUseFiducials);
 
 			// Add Fov and Fov overlap results
 			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
@@ -373,25 +379,19 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 					solver->AddCadFovOvelapResults(&(*ite));
 			}
 
-			// Add Fiducial and Fov overlap results
-			FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
-			for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+			if(bUseFiducials)
 			{
-				/*/ for debug
-				if(iIllumIndex==2 && iTrig==0 && iCam==0)
+				// Add Fiducial and Fov overlap results
+				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+				for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 				{
-					// Simulate FOV location error
-					CorrelationResult result = ite->GetCoarsePair()->GetCorrelationResult();
-					result.RowOffset += 100;
-					ite->GetCoarsePair()->SetCorrlelationResult(result);
-				}
-				//*/
-				if(ite->IsProcessed() && ite->IsGoodForSolver())
-				{
-					solver->AddFidFovOvelapResults(&(*ite));
+					if(ite->IsProcessed() && ite->IsGoodForSolver())
+					{
+						solver->AddFidFovOvelapResults(&(*ite));
 
-					// These are used to verify that the last fids actually worked...
-					_lastProcessedFids.push_back(*ite);
+						// These are used to verify that the last fids actually worked...
+						_lastProcessedFids.push_back(*ite);
+					}
 				}
 			}
 		}
@@ -507,4 +507,59 @@ bool PanelAligner::Save3ChannelImage(string filePath,
 	return true;
 }
 
+// Check fiducial alignment based on SIM calibration
+int PanelAligner::FiducialAlignmentCheckOnCalibration()
+{
+	// Create matrix and vector for solver without fiducial information	
+	_pSolver->Reset();
+	int iNumIllums = _pSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumIllums; i++)
+	{
+		AddOverlapResultsForIllum(_pSolver, i, false); // Not use fiducials
+	}
+
+	// Solve transforms without fiducial information
+	_pSolver->SolveXAlgHB();
+
+	// Get the fiducial information
+	FiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
+
+	// Fiducial alignment check
+	FiducialResultCheck fidChecker(pFidResultsSet, _pSolver);
+	int iFlag = fidChecker.CheckFiducialResults();
+
+	_pSolver->Reset();
+
+	return(iFlag);
+}
+
+// For debug
+void PanelAligner::DisturbFiducialAlignment()
+{
+	unsigned int iNumIllums = _pSet->GetNumMosaicLayers();
+	
+	for(unsigned int iIllumIndex=0; iIllumIndex<iNumIllums; iIllumIndex++)
+	{
+		MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
+		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+			{
+				// Add Fiducial and Fov overlap results
+				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+				for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+				{
+					// for debug
+					if(iIllumIndex==2 && iTrig==0 && iCam==0)
+					{
+						// Simulate FOV location error
+						CorrelationResult result = ite->GetCoarsePair()->GetCorrelationResult();
+						result.RowOffset += 100;
+						ite->GetCoarsePair()->SetCorrlelationResult(result);
+					}
+				}
+			}
+		}
+	}
+}
 

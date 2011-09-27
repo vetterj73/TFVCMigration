@@ -1,6 +1,7 @@
 #include "OverlapDefines.h"
 #include "Logger.h"
 #include "MosaicTile.h"
+#include "EquationWeights.h"
 
 #pragma region Overlap class
 
@@ -622,6 +623,60 @@ bool FidFovOverlap::IsReadyToProcess() const
 		_bValid;
 
 	return(bFlag);
+}
+
+// Get the weight for the solver
+double FidFovOverlap::GetWeightForSolver()
+{
+	// Validation check for overlap
+	if(!IsProcessed())
+		return(-1);
+
+	CorrelationPair* pPair = GetCoarsePair();
+
+	// Validation check for correlation pair
+	CorrelationResult result;
+	if(!pPair->GetCorrelationResult(&result))
+		return(-2);
+
+	return(Weights.CalWeight(pPair));
+}
+
+// Calculate fiducial center based on transform
+bool FidFovOverlap::CalFidCenterBasedOnTransform(ImgTransform trans, double* pdx, double* pdy)
+{
+	double w = GetWeightForSolver();
+	if(w <= 0) 
+		return(false);
+
+	CorrelationPair* pPair = GetCoarsePair();
+	CorrelationResult result;
+	pPair->GetCorrelationResult(&result);
+
+	// Get Centers of ROIs (fiducial image is always the second one)
+	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
+	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+
+	// The center of ROI in fiducial image
+	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
+	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+
+	// Fiducial center in fiducial image 	
+	double rowFidinImgB, colFidinImgB;
+	GetFidImage()->WorldToImage(_dFidCenterX, _dFidCenterY, &rowFidinImgB, &colFidinImgB);
+
+	// Get offset
+	double offsetRows = result.RowOffset;
+	double offsetCols = result.ColOffset;
+
+	// Fiducial location in FOV
+	double rowFidInFov = rowImgA-offsetRows + (rowFidinImgB-rowImgB);
+	double colFidInFov = colImgA-offsetCols + (colFidinImgB-colImgB);
+
+	// Fiducial location based on transform
+	trans.Map(rowFidInFov, colFidInFov, pdx, pdy);
+
+	return(true);
 }
 
 // For Debug 

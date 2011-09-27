@@ -62,8 +62,12 @@ protected:
 	bool IsReadyToCreateMasks() const;
 	bool CreateMasks();
 	bool CreateTransforms();
-	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex);
+	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials);
 
+	int FiducialAlignmentCheckOnCalibration();
+
+	// For debug
+	void DisturbFiducialAlignment();
 
 private:
 	FidFovOverlapList _lastProcessedFids;

@@ -175,6 +175,11 @@ public:
 	double GetFiducialYPos() const {return _dFidCenterY;};
 
 	bool IsReadyToProcess() const;
+	
+	double GetWeightForSolver(); 
+
+	bool CalFidCenterBasedOnTransform(ImgTransform trans, double* pdx, double* pdy);
+	
 
 	// For Vsfinder
 	FiducialSearchMethod GetFiducialSearchMethod() const {return _fidSearchMethod;};

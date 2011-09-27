@@ -62,7 +62,10 @@ public:
 	double dMaxRowInconsistInPixel;
 
 	// Fiducial check
-	bool bFiducialCheck;					// Whether do fiducial check
+	bool bFiducialAlignCheck;				// Whether do fiducial alignment check
+	double dMaxPanelCadScaleDiff;			// Max panel scale compared with calibration that can be tolerate
+	double dMaxFidDisScaleDiff;				// Max Fiducial distnace scale that can be tolerate
+	double dMaxSameFidInConsist;			// Max fiducial alignment result inconsist for the same fiducial (in meter)
 
 	// Expansion from Cad image to create mask image in pixels
 	int iMaskExpansionFromCad;

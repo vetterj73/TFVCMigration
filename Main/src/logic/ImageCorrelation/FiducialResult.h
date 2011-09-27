@@ -2,6 +2,7 @@
 
 #include "panel.h" // include "Fearure.h" will lead confusion
 #include "OverlapDefines.h"
+#include "RobustSolver.h"
 #include <list>
 using std::list;
 
@@ -48,6 +49,43 @@ public:
 private:
 	int _iSize;
 	FiducialResults* _pResultSet;
+};
+
+// World distance between two fiducials in the fiducial overlap
+class FiducialDistance
+{
+public:
+	FiducialDistance::FiducialDistance(
+	FidFovOverlap* pFidOverlap1,
+	ImgTransform trans1,
+	FidFovOverlap* pFidOverlap2,
+	ImgTransform trans2);
+
+	bool IsWithOverlap(FidFovOverlap* pFidOverlap);
+	double CalTranScale();
+	void NormalizeTransDis(double dScale);
+
+	FidFovOverlap* _pFidOverlap1;
+	FidFovOverlap* _pFidOverlap2;
+	double _dCadDis;
+	double _dTransDis;
+	bool _bValid;
+	bool _bFromOutlier;
+	bool _bNormalized;
+};
+
+// Check the validation of fiducial results
+class FiducialResultCheck
+{
+public:
+	FiducialResultCheck(FiducialResultsSet* pFidSet, RobustSolver* pSolver);
+
+	int CheckFiducialResults();
+private:
+	FiducialResultsSet* _pFidSet;
+	RobustSolver* _pSolver;
+
+	list<FiducialDistance> _fidDisList;
 };
 
 
