@@ -65,17 +65,17 @@ namespace PanelAlignM {
 
 	// Report fiducial results for a panel back
 	// Should be called afer a panel is stitched and before application is reset for next panel 
-	managedFidResultsSet^ ManagedPanelAlignment::GetFiducialResultsSet()
+	ManagedPanelFidResultsSet^ ManagedPanelAlignment::GetFiducialResultsSet()
 	{
-		FiducialResultsSet* resultsSet= _pAligner->GetFidResultsSetPoint();
-		managedFidResultsSet ^mSet = gcnew managedFidResultsSet;
-		mSet->resultsSet = gcnew List<ManagedFidResults^>;
+		PanelFiducialResultsSet* resultsSet= _pAligner->GetFidResultsSetPoint();
+		ManagedPanelFidResultsSet ^mSet = gcnew ManagedPanelFidResultsSet;
+		mSet->resultsSet = gcnew List<ManagedPanelFidResults^>;
 
 		for(int i=0; i<resultsSet->Size(); i++)
 		{
 			// for each physical fiducial
-			FiducialResults* pResults = resultsSet->GetFiducialResultsPtr(i);
-			ManagedFidResults ^mResults = gcnew ManagedFidResults;
+			PanelFiducialResults* pResults = resultsSet->GetPanelFiducialResultsPtr(i);
+			ManagedPanelFidResults ^mResults = gcnew ManagedPanelFidResults;
 			mResults->results = gcnew List<ManagedFidResult^>;
 
 			mResults->iID = pResults->GetId();
@@ -84,7 +84,7 @@ namespace PanelAlignM {
 			mResults->dConfidence = pResults->CalConfidence();
 
 			// for each fiducial overlap
-			list<FidFovOverlap*>* pResultsList = pResults->GetResultListPtr();
+			list<FidFovOverlap*>* pResultsList = pResults->GetFidOverlapListPtr();
 			for(list<FidFovOverlap*>::iterator j = pResultsList->begin(); j != pResultsList->end(); j++)
 			{
 				// FOV information

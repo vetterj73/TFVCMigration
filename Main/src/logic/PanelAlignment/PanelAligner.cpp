@@ -522,7 +522,7 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 	_pSolver->SolveXAlgHB();
 
 	// Get the fiducial information
-	FiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
+	PanelFiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
 
 	// Fiducial alignment check
 	FiducialResultCheck fidChecker(pFidResultsSet, _pSolver);

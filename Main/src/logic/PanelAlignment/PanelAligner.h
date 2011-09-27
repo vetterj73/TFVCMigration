@@ -47,7 +47,7 @@ public:
 
 	FidFovOverlapList* GetLastProcessedFids();
 	
-	FiducialResultsSet* GetFidResultsSetPoint() {return _pOverlapManager->GetFidResultsSetPoint();};
+	PanelFiducialResultsSet* GetFidResultsSetPoint() {return _pOverlapManager->GetFidResultsSetPoint();};
 
 protected:
 	// CleanUp internal stuff for new production or desctructor

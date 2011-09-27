@@ -68,7 +68,7 @@ public:
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 	bool FinishOverlaps();
 
-	FiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
+	PanelFiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
 
 	bool FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum);
 
@@ -137,6 +137,6 @@ private:
 
 	CyberJob::JobManager *_pJobManager;
 
-	FiducialResultsSet* _pFidResultsSet;
+	PanelFiducialResultsSet* _pFidResultsSet;
 };
 

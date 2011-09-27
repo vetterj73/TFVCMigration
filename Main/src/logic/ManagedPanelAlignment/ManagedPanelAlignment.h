@@ -57,7 +57,7 @@ namespace PanelAlignM {
 			double weight;
 	};
 
-	public ref class ManagedFidResults
+	public ref class ManagedPanelFidResults
 	{
 	public:
 		List<ManagedFidResult^> ^results;
@@ -67,10 +67,10 @@ namespace PanelAlignM {
 		int iID;
 	};
 
-	public ref class managedFidResultsSet
+	public ref class ManagedPanelFidResultsSet
 	{
 	public:
-		List<ManagedFidResults^> ^resultsSet;
+		List<ManagedPanelFidResults^> ^resultsSet;
 		double dConfidence;
 	};
 
@@ -112,7 +112,7 @@ namespace PanelAlignM {
 		int GetNumberOfFidsProcessed();
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 
-		managedFidResultsSet^ GetFiducialResultsSet();
+		ManagedPanelFidResultsSet^ GetFiducialResultsSet();
 
 	private:
 		PanelAligner* _pAligner;

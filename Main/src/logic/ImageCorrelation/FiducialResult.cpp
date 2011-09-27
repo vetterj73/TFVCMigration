@@ -3,19 +3,19 @@
 #include "EquationWeights.h"
 
 ///////////////////////////////////////////////////////////////
-//////		FiducialResults Class
+//////		PanelFiducialResults Class
 ///////////////////////////////////////////////////////////////
-FiducialResults::FiducialResults(void)
+PanelFiducialResults::PanelFiducialResults(void)
 {
 	_pFeature = NULL;
 	_fidFovOverlapPointList.clear();
 }
 
-FiducialResults::~FiducialResults(void)
+PanelFiducialResults::~PanelFiducialResults(void)
 {
 }
 
-void FiducialResults::LogResults()
+void PanelFiducialResults::LogResults()
 {
 	// Validation check
 	if(_pFeature != NULL)
@@ -39,7 +39,7 @@ void FiducialResults::LogResults()
 
 }
 
-double FiducialResults::CalConfidence()
+double PanelFiducialResults::CalConfidence()
 {
 	double dConfidenceScore = 0;
 
@@ -62,29 +62,29 @@ double FiducialResults::CalConfidence()
 }
 
 ///////////////////////////////////////////////////////////////
-//////		FiducialResultsSet Class
+//////		PanelFiducialResultsSet Class
 ///////////////////////////////////////////////////////////////
-FiducialResultsSet::FiducialResultsSet(unsigned int iSize)
+PanelFiducialResultsSet::PanelFiducialResultsSet(unsigned int iSize)
 {
 	_pResultSet = NULL;
 
 	_iSize = iSize;
 	if(iSize=0) 
 	{
-		LOG.FireLogEntry(LogTypeError, "FiducialResultsSet: The input size should not be 0");
+		LOG.FireLogEntry(LogTypeError, "PanelFiducialResultsSet: The input size should not be 0");
 		return;
 	}
 
-	_pResultSet = new FiducialResults[_iSize];
+	_pResultSet = new PanelFiducialResults[_iSize];
 }
 
-FiducialResultsSet::~FiducialResultsSet()
+PanelFiducialResultsSet::~PanelFiducialResultsSet()
 {
 	if(_pResultSet != NULL)
 		delete [] _pResultSet;
 }
 
-void FiducialResultsSet::LogResults()
+void PanelFiducialResultsSet::LogResults()
 {
 	for(int i=0; i<_iSize; i++)
 		_pResultSet[i].LogResults();
@@ -94,7 +94,7 @@ void FiducialResultsSet::LogResults()
 }
 
 // Calculate confidence based on the fid
-double FiducialResultsSet::CalConfidence()
+double PanelFiducialResultsSet::CalConfidence()
 {
 	// Calculate confidence for each physical fiducial
 	list<double> dConfidenceList;
@@ -207,7 +207,7 @@ void FiducialDistance::NormalizeTransDis(double dScale)
 //	FiducialResultCheck Class
 // Check the validation of fiducial alignment results
 ///////////////////////////////////////////////////////
-FiducialResultCheck::FiducialResultCheck(FiducialResultsSet* pFidSet, RobustSolver* pSolver)
+FiducialResultCheck::FiducialResultCheck(PanelFiducialResultsSet* pFidSet, RobustSolver* pSolver)
 {
 	_pFidSet = pFidSet;
 	_pSolver = pSolver;
@@ -230,8 +230,8 @@ int FiducialResultCheck::CheckFiducialResults()
 		for(int j=i+1; j<iNumPhyFid; j++) // j should be bigger than i
 		{
 			// Alignment results for two different physical fiducials 
-			list<FidFovOverlap*>* pResults1 = _pFidSet->GetFiducialResultsPtr(i)->GetResultListPtr();
-			list<FidFovOverlap*>* pResults2 = _pFidSet->GetFiducialResultsPtr(j)->GetResultListPtr();
+			list<FidFovOverlap*>* pResults1 = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
+			list<FidFovOverlap*>* pResults2 = _pFidSet->GetPanelFiducialResultsPtr(j)->GetFidOverlapListPtr();
 
 			// Calculate distance of two alignments for different physical fiducial based on transforms
 			for(list<FidFovOverlap*>::iterator m = pResults1->begin(); m != pResults1->end(); m++)
@@ -314,7 +314,7 @@ int FiducialResultCheck::CheckFiducialResults()
 	int iOutlierCount = 0;
 	for(int i=0; i<iNumPhyFid; i++) // for each physical fiducial
 	{
-		list<FidFovOverlap*>* pResults = _pFidSet->GetFiducialResultsPtr(i)->GetResultListPtr();
+		list<FidFovOverlap*>* pResults = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
 		for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++) // For each alignment
 		{
 			// Outlier check
@@ -369,7 +369,7 @@ int FiducialResultCheck::CheckFiducialResults()
 	// Check consistent of alignments for each physical fiducial
 	for(int i=0; i<iNumPhyFid; i++)
 	{
-		list<FidFovOverlap*>* pResults = _pFidSet->GetFiducialResultsPtr(i)->GetResultListPtr();
+		list<FidFovOverlap*>* pResults = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
 		if(pResults->size() == 1) // No consistent check can be done
 			continue;
 

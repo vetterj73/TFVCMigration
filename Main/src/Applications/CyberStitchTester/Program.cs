@@ -136,7 +136,7 @@ namespace CyberStitchTester
                 {
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
-                    managedFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
+                    ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
                     
                     if (_bBayerPattern) // for bayer pattern
                     {

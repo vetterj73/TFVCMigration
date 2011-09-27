@@ -139,7 +139,7 @@ OverlapManager::OverlapManager(
 
 	// Initial fiducial result set
 	_pFidResultsSet = NULL;
-	_pFidResultsSet = new FiducialResultsSet(_pPanel->NumberOfFiducials());
+	_pFidResultsSet = new PanelFiducialResultsSet(_pPanel->NumberOfFiducials());
 
 	// Create FovFov overlaps
 	CreateFovFovOverlaps();
@@ -634,7 +634,7 @@ void OverlapManager::CreateFidFovOverlaps()
 	int iIndex = 0;
 	for(FeatureListIterator iFid = _pPanel->beginFiducials(); iFid != _pPanel->endFiducials(); iFid++)
 	{
-		_pFidResultsSet->GetFiducialResultsPtr(iIndex)->SetFeaure(iFid->second);
+		_pFidResultsSet->GetPanelFiducialResultsPtr(iIndex)->SetFeaure(iFid->second);
 		iIndex++;
 	}
 
@@ -726,7 +726,7 @@ void OverlapManager::CreateFidFovOverlaps()
 					
 					// Add to fiducial result set
 					FidFovOverlap* pOvelap1 = &(*_fidFovOverlapLists[iLayer][iTrig][iCam].rbegin());
-					_pFidResultsSet->GetFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
+					_pFidResultsSet->GetPanelFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
 				}
 			}
 		}

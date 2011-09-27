@@ -6,19 +6,21 @@
 #include <list>
 using std::list;
 
-// Fiducial alignment result for one physical fiducial
-class FiducialResults
+// Fiducial alignment result for one physical/panel fiducial
+class PanelFiducialResults
 {
 public:
-	FiducialResults(void);
-	~FiducialResults(void);
+	PanelFiducialResults(void);
+	~PanelFiducialResults(void);
 
 	void SetFeaure(Feature* pFeature) {_pFeature = pFeature;};
 	void AddFidFovOvelapPoint(FidFovOverlap* pOverlap)
 		{_fidFovOverlapPointList.push_back(pOverlap);};
 	void LogResults();
 	
-	list<FidFovOverlap*>* GetResultListPtr() {return(&_fidFovOverlapPointList);};
+	list<FidFovOverlap*>* GetFidOverlapListPtr() {return(&_fidFovOverlapPointList);};
+
+	Feature* GetFeaturePtr() {return _pFeature;};
 
 	double CalConfidence();
 
@@ -32,11 +34,11 @@ private:
 };
 
 // Collection of fiducial alignment results
-class FiducialResultsSet
+class PanelFiducialResultsSet
 {
 public:
-	FiducialResultsSet(unsigned int iSize);
-	~FiducialResultsSet();
+	PanelFiducialResultsSet(unsigned int iSize);
+	~PanelFiducialResultsSet();
 
 	void LogResults();
 
@@ -44,11 +46,11 @@ public:
 
 	int Size() {return(_iSize); };
 
-	FiducialResults* GetFiducialResultsPtr(unsigned int i) {return &(_pResultSet[i]);};
+	PanelFiducialResults* GetPanelFiducialResultsPtr(unsigned int i) {return &(_pResultSet[i]);};
 
 private:
 	int _iSize;
-	FiducialResults* _pResultSet;
+	PanelFiducialResults* _pResultSet;
 };
 
 // World distance between two fiducials in the fiducial overlap
@@ -78,11 +80,11 @@ public:
 class FiducialResultCheck
 {
 public:
-	FiducialResultCheck(FiducialResultsSet* pFidSet, RobustSolver* pSolver);
+	FiducialResultCheck(PanelFiducialResultsSet* pFidSet, RobustSolver* pSolver);
 
 	int CheckFiducialResults();
 private:
-	FiducialResultsSet* _pFidSet;
+	PanelFiducialResultsSet* _pFidSet;
 	RobustSolver* _pSolver;
 
 	list<FiducialDistance> _fidDisList;
