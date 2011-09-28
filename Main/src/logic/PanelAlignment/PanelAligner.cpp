@@ -302,7 +302,7 @@ bool PanelAligner::CreateTransforms()
 	_lastProcessedFids.clear();
 
 	// For debug
-	DisturbFiducialAlignment();
+	// DisturbFiducialAlignment();
 
 	// Fiducial alignment check based on SIM calibration
 	if(CorrelationParametersInst.bFiducialAlignCheck)

@@ -212,7 +212,8 @@ FiducialResultCheck::FiducialResultCheck(PanelFiducialResultsSet* pFidSet, Robus
 }
 
 // Check the alignment of fiducial, mark out any outlier, 
-// return	1	: success
+// Only works well when outliers are minority
+// return	 1	: success
 //			-1	: marked out Outliers only
 //			-2	: not marked out exceptions only
 //			-3	: Both Oulier and exception
@@ -248,67 +249,81 @@ int FiducialResultCheck::CheckFiducialResults()
 		}
 	}
 
-	// Calculate normal Scale = stitched panle image/CAD image
-		// Calcualte mean and variance
+	// Calculate normal scale = stitched panle image/CAD image
+	// When only 3 distances (3 fiducials with 1 alignments each) 
+	// or 4 distances (2 fiducials with 2 alignments each) available
+	// one alignement outlier will lead to 2 wrong distnsce
+	// Therefore, it makes the normal scale go wrong
+	bool bNormlized = false;		
 	int iCount = 0;
-	double dSum = 0;
-	double dSumSquare = 0;
-	for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
+	if(fidDisList.size() > 4)
 	{
-		if(i->_bValid)
-		{
-			double dScale = i->CalTranScale();
-			if(fabs(dScale-1) < CorrelationParametersInst.dMaxPanelCadScaleDiff) // Ignore outliers
-			{
-				dSum += dScale;
-				dSumSquare += dScale*dScale;
-				iCount++;
-			}
-		}
-	}
-
-	if(fidDisList.size()-iCount > 0)
-		LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): %d out of %d fiducial distance(s) on panel/CAD Scale is out of range", 
-			fidDisList.size()-iCount, fidDisList.size()); 
-	
-		// Calculate normal scale
-	double dNormScale = 1;
-	if(iCount==0)					// Failed
-		return(-4);
-	else if(iCount==1 || iCount==2)	// 1 or 2 values available
-		 dNormScale = dSum/iCount;
-	else							// 3 or more values available
-	{	// refine
-		dSum /= iCount;
-		dSumSquare /= iCount;
-		double dVar = sqrt(dSumSquare - dSum*dSum);
-		iCount = 0;
-		double dSum2 = 0;
+		// Calcualte mean and variance
+		double dSum = 0;
+		double dSumSquare = 0;
 		for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
 		{
 			if(i->_bValid)
 			{
 				double dScale = i->CalTranScale();
-				if(fabs(dScale-dSum) <= dVar)
+				if(fabs(dScale-1) < CorrelationParametersInst.dMaxPanelCadScaleDiff) // Ignore outliers
 				{
-					dSum2 += dScale;
+					dSum += dScale;
+					dSumSquare += dScale*dScale;
 					iCount++;
 				}
 			}
 		}
-		dNormScale = dSum2/iCount;
-	}
+
+		if(fidDisList.size()-iCount > 0)
+			LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): %d out of %d fiducial distance(s) on panel/CAD Scale is out of range", 
+				fidDisList.size()-iCount, fidDisList.size()); 
+
+		// Calculate normal scale
+		double dNormScale = 1;
+		if(iCount==0)					// Failed
+			return(-4);
+		else if(iCount==1 || iCount==2)	// 1 or 2 values available
+			 dNormScale = dSum/iCount;
+		else							// 3 or more values available
+		{	// refine
+			dSum /= iCount;
+			dSumSquare /= iCount;
+			double dVar = sqrt(dSumSquare - dSum*dSum);
+			iCount = 0;
+			double dSum2 = 0;
+			for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
+			{
+				if(i->_bValid)
+				{
+					double dScale = i->CalTranScale();
+					if(fabs(dScale-dSum) <= dVar)
+					{
+						dSum2 += dScale;
+						iCount++;
+					}
+				}
+			}
+			dNormScale = dSum2/iCount;
+		}
 
 		// Adjust distance base on transform
-	for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
-	{
-		if(i->_bValid)
+		for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
 		{
-			i->NormalizeTransDis(dNormScale);
+			if(i->_bValid)
+			{
+				i->NormalizeTransDis(dNormScale);
+			}
 		}
+
+		bNormlized = true;
 	}
 
 	// Mark alignment outlier out based on distance/scale check
+	double dMaxScale = CorrelationParametersInst.dMaxFidDisScaleDiff;
+	if(!bNormlized) 
+		dMaxScale += CorrelationParametersInst.dMaxPanelCadScaleDiff;
+
 	int iOutlierCount = 0;
 	for(int i=0; i<iNumPhyFid; i++) // for each physical fiducial
 	{
@@ -323,7 +338,7 @@ int FiducialResultCheck::CheckFiducialResults()
 				{
 					iCount1++;
 					double dScale = m->CalTranScale();
-					if(fabs(1-dScale) > CorrelationParametersInst.dMaxFidDisScaleDiff)
+					if(fabs(1-dScale) > dMaxScale)
 					{ 
 						iCount2++;
 					}
@@ -358,7 +373,7 @@ int FiducialResultCheck::CheckFiducialResults()
 	int iExceptCount = 0;
 	for(list<FiducialDistance>::iterator m = fidDisList.begin(); m != fidDisList.end(); m++)
 	{
-		if(m->_bValid && !m->_bFromOutlier && fabs(1-m->CalTranScale())>CorrelationParametersInst.dMaxFidDisScaleDiff)
+		if(m->_bValid && !m->_bFromOutlier && fabs(1-m->CalTranScale())>dMaxScale)
 			iExceptCount++;
 	}
 	if(iExceptCount>0)
