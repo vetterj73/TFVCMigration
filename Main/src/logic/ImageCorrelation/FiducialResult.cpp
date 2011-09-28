@@ -46,12 +46,10 @@ double PanelFiducialResults::CalConfidence()
 	// Pick the higheset one for each physical fiducial
 	for(list<FidFovOverlap*>::iterator i = _fidFovOverlapPointList.begin(); i != _fidFovOverlapPointList.end(); i++)
 	{
-		if((*i)->GetCoarsePair()->IsProcessed())
+		if((*i)->IsProcessed() && (*i)->IsGoodForSolver() && (*i)->GetWeightForSolver()>0)
 		{
 			CorrelationResult result = (*i)->GetCoarsePair()->GetCorrelationResult();
 			double dScore = result.CorrCoeff*(1-result.AmbigScore);
-			if(Weights.CalWeight((*i)->GetCoarsePair())<0)
-				dScore = 0;
 
 			if(dConfidenceScore < dScore)
 				dConfidenceScore = dScore;
@@ -367,6 +365,7 @@ int FiducialResultCheck::CheckFiducialResults()
 		LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): There are %d exception distances not from marked outlier(s)", iExceptCount);
 
 	// Check consistent of alignments for each physical fiducial
+	// Assumption: at most one outlier exists for each physical fiducial
 	for(int i=0; i<iNumPhyFid; i++)
 	{
 		list<FidFovOverlap*>* pResults = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
@@ -402,12 +401,18 @@ int FiducialResultCheck::CheckFiducialResults()
 		dSumYSq /= iCount;
 		double dVarX= sqrt(dSumXSq-dSumX*dSumX);
 		double dVarY= sqrt(dSumYSq-dSumY*dSumY);
+		
+		// If there is only one outlier and all other alignments are on the same physical location 
+		// The outlier's physical position away from all other alignment = dAdjustScale*variance
+		double dAdjustScale = (double)iCount/sqrt((double)iCount-1);
+		double dAdjustDisX = dVarX*dAdjustScale;
+		double dAdjustDisY = dVarY*dAdjustScale;
 
 		// If count==2, only exceptions can be checked, no outlier can be identified
 		if(iCount==2)
 		{
-			if(dVarX > CorrelationParametersInst.dMaxSameFidInConsist ||
-				dVarY > CorrelationParametersInst.dMaxSameFidInConsist)
+			if(dAdjustDisX > CorrelationParametersInst.dMaxSameFidInConsist ||
+				dAdjustDisY > CorrelationParametersInst.dMaxSameFidInConsist)
 			{
 				iExceptCount++;
 				LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): Two alignments for fiducial #%d are inconsistent ", i);
@@ -418,8 +423,8 @@ int FiducialResultCheck::CheckFiducialResults()
 		if(iCount>=3)
 		{
 			// If there is outlier 
-			if(dVarX > CorrelationParametersInst.dMaxSameFidInConsist ||
-				dVarY > CorrelationParametersInst.dMaxSameFidInConsist)
+			if(dAdjustDisX > CorrelationParametersInst.dMaxSameFidInConsist ||
+				dAdjustDisY > CorrelationParametersInst.dMaxSameFidInConsist)
 			{
 				for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++)
 				{
@@ -432,7 +437,8 @@ int FiducialResultCheck::CheckFiducialResults()
 						(*j)->CalFidCenterBasedOnTransform(trans, &x, &y);
 
 						// If it is outlier based on consistent check
-						if(fabs(x-dSumX)>dVarX || fabs(y-dSumY)>dVarY)
+						if((dAdjustDisX>CorrelationParametersInst.dMaxSameFidInConsist && fabs(x-dSumX)>dVarX) || 
+							(dAdjustDisY>CorrelationParametersInst.dMaxSameFidInConsist && fabs(y-dSumY)>dVarY))
 						{
 							(*j)->SetIsGoodForSolver(false);
 							iOutlierCount++;
