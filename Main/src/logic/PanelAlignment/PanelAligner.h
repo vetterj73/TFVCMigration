@@ -65,6 +65,7 @@ protected:
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials);
 
 	int FiducialAlignmentCheckOnCalibration();
+	bool PickOneAlign4EachPanelFiducial();
 
 	// For debug
 	void DisturbFiducialAlignment();

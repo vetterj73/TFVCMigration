@@ -308,6 +308,8 @@ bool PanelAligner::CreateTransforms()
 	if(CorrelationParametersInst.bFiducialAlignCheck)
 		FiducialAlignmentCheckOnCalibration();
 
+	PickOneAlign4EachPanelFiducial();
+
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
 	{
@@ -531,6 +533,53 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 	_pSolver->Reset();
 
 	return(iFlag);
+}
+
+// Pick one alignment result of each panel/physical fiducial for solver
+bool PanelAligner::PickOneAlign4EachPanelFiducial()
+{
+	// Get the fiducial information
+	PanelFiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
+	for(int i=0; i<pFidResultsSet->Size(); i++)	// For each panel fiducial 
+	{
+		// Pick one alignment
+		PanelFiducialResults* results = pFidResultsSet ->GetPanelFiducialResultsPtr(i);
+		list<FidFovOverlap*>* resultList = results->GetFidOverlapListPtr();
+		double dMaxWeight = -1;
+		int iMaxIndex = -1;
+		int iCount = 0;
+		for(list<FidFovOverlap*>::iterator j = resultList->begin(); j != resultList->end(); j++)
+		{
+			if((*j)->IsProcessed() && (*j)->IsGoodForSolver() && (*j)->GetWeightForSolver()>0)
+			{
+				double dWeight = (*j)->GetWeightForSolver();
+				if(dMaxWeight < dWeight)
+				{
+					dMaxWeight = dWeight;
+					iMaxIndex = iCount;
+				}
+				iCount++;
+			}
+		}
+		if(dMaxWeight<=0 || iMaxIndex<0)
+			continue;
+
+		// Set all but the selected one as not good for solver
+		iCount = 0;
+		for(list<FidFovOverlap*>::iterator j = resultList->begin(); j != resultList->end(); j++)
+		{
+			if((*j)->IsProcessed() && (*j)->IsGoodForSolver() && (*j)->GetWeightForSolver()>0)
+			{
+				if(iCount != iMaxIndex)
+				{
+					(*j)->SetIsGoodForSolver(false);
+				}
+				iCount++;
+			}
+		}
+	}
+
+	return(true);
 }
 
 // For debug
