@@ -69,6 +69,9 @@ public:
 
 	// Expansion from Cad image to create mask image in pixels
 	int iMaskExpansionFromCad;
+
+	// Whether use projective transform
+	bool bUseProjectiveTransform;
 	
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad

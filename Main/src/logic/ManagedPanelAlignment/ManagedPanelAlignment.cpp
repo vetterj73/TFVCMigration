@@ -159,6 +159,11 @@ namespace PanelAlignM {
 		_pAligner->UseCyberNgc4Fiducial();
 	}
 
+	void ManagedPanelAlignment::UseProjectiveTransform(bool bValue)
+	{
+		_pAligner->UseProjectiveTransform(bValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{

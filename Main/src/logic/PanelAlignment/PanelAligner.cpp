@@ -58,7 +58,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
 		
 	// Create solver for all illuminations
-	bool bProjectiveTrans = false;
+	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
 	CreateImageOrderInSolver(&_solverMap);	
 	unsigned int iMaxNumCorrelation =  _pOverlapManager->MaxCorrelations();  
 	_pSolver = new RobustSolver(	
@@ -140,6 +140,11 @@ void PanelAligner::FiducialSearchExpansionYInMeters(double fidSearchYInMeters)
 void PanelAligner::UseCyberNgc4Fiducial()
 {
 	CorrelationParametersInst.fidSearchMethod = FIDCYBERNGC;
+}
+
+void PanelAligner::UseProjectiveTransform(bool bValue)
+{
+	CorrelationParametersInst.bUseProjectiveTransform = bValue;
 }
 
 // Add single image (single entry protected by mutex)

@@ -264,13 +264,18 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				if ((dX < 0) | (dY < 0) |
 					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
 				{
-					pOutLine[iX*3] = 0x00;	/* Clipped */
-					pOutLine[iX*3+1] = 128;	/* Clipped */
-					pOutLine[iX*3+2] = 128;	/* Clipped */
+					if(iNumChannels==1)
+						pOutLine[iX] = 0x00;	/* Clipped */
+					else
+					{
+						pOutLine[iX*3] = 0x00;	/* Clipped */
+						pOutLine[iX*3+1] = 128;	/* Clipped */
+						pOutLine[iX*3+2] = 128;	/* Clipped */
+					}
 				}
 				else 
 				{
-					for(int i=0; i<3; i++)
+					for(int i=0; i<iNumChannels; i++)
 					{
 							/* Compute fractional differences */
 						iflrdX =(int)dX;
@@ -288,7 +293,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 						dDiffX = dX - (double) iflrdX;
 						dDiffY = dY - (double) iflrdY;
 
-						pOutLine[iX*3+i] = (unsigned char)((double) iPix0			
+						pOutLine[iX*iNumChannels+i] = (unsigned char)((double) iPix0			
 							+ dDiffY * (double) (iPixW - iPix0)	
 							+ dDiffX * ((double) iPixDiff10	
 							+ dDiffY * (double) (iPixWP1 - iPixW - iPixDiff10)) 

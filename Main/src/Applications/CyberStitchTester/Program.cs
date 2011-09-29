@@ -96,6 +96,7 @@ namespace CyberStitchTester
                 //_aligner.LogOverlaps(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
+                //_aligner.UseProjectiveTransform(true);
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {

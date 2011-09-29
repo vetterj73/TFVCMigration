@@ -36,7 +36,7 @@ public:
 	RobustSolver(
 		map<FovIndex, unsigned int>* pFovOrderMap, 
 		unsigned int iMaxNumCorrelations, 
-		bool bProjectiveTrans = false);
+		bool bProjectiveTrans);
 	~RobustSolver(void);
 
 	bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
