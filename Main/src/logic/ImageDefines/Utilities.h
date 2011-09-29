@@ -14,7 +14,6 @@ void inverse(
 	unsigned int rows,
 	unsigned int cols);
 
-
 // Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
 // Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 // Assume the center of image corresponding a vertical line from camera to object surface
@@ -80,13 +79,13 @@ enum BayerType
    RGGB
 };
 
-void BayerLum(                   /* Bayer interpolation */
-   int            ncols,         /* Image dimensions */
+void BayerLum(						// Bayer interpolation 
+   int            ncols,			// Image dimensions 
    int            nrows,
-   unsigned char  bayer[],       /* Input 8-bit Bayer image */
-   int            bstride,       /* Addressed as bayer[col + row*bstride] */  
-   BayerType      order,          /* Bayer pattern order; use the enums in bayer.h */
-   unsigned char  out[],         /* Output 24-bit BGR image */
-   int            ostride,       /* Addressed as out[col + row*ostride] */
-   COLORSTYLE	  type,				// Type of work
+   unsigned char  bayer[],			// Input 8-bit Bayer image
+   int            bstride,			// Addressed as bayer[col + row*bstride]  
+   BayerType      order,			// Bayer pattern order; use the enums in bayer.h
+   unsigned char  out[],			// Output 24-bit BGR/YCrCb image
+   int            ostride,			// Addressed as out[col + row*ostride]
+   COLORSTYLE     type,				// Type of color BGR/YCrCb
    bool			  bChannelSeperate);	// true, the channel stored seperated

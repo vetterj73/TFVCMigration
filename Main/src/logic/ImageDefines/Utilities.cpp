@@ -310,9 +310,9 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 			{
 				// YCrCb to RGB conversion
 				int iTemp[3];
-				iTemp[2] = pOutLine[iX*3] + (pOutLine[iX*3+1]-128)*2;								// R
-				iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]-128) - (pOutLine[iX*3+2]-128);	// G
-				iTemp[0] = pOutLine[iX*3] + (pOutLine[iX*3+2]-128)*2;								// B
+				iTemp[2] = pOutLine[iX*3] + (pOutLine[iX*3+1]-128);								// R
+				iTemp[1] = pOutLine[iX*3] - (pOutLine[iX*3+1]-128 + pOutLine[iX*3+2]-128)/2;	// G
+				iTemp[0] = pOutLine[iX*3] + (pOutLine[iX*3+2]-128);								// B
 
 				for(int i=0; i<3; i++)
 				{
@@ -398,15 +398,15 @@ static INLINE int clip(int value) {
 }
 
 // Modified from Rudd's BayerLum()
-void BayerLum(                   /* Bayer interpolation */
-   int            ncols,         /* Image dimensions */
+void BayerLum(						// Bayer interpolation 
+   int            ncols,			// Image dimensions 
    int            nrows,
-   unsigned char  bayer[],       /* Input 8-bit Bayer image */
-   int            bstride,       /* Addressed as bayer[col + row*bstride] */  
-   BayerType      order,          /* Bayer pattern order; use the enums in bayer.h */
-   unsigned char  out[],         /* Output 24-bit BGR image */
-   int            ostride,       /* Addressed as out[col + row*ostride] */
-   COLORSTYLE     type,				// Type of color
+   unsigned char  bayer[],			// Input 8-bit Bayer image
+   int            bstride,			// Addressed as bayer[col + row*bstride]  
+   BayerType      order,			// Bayer pattern order; use the enums in bayer.h
+   unsigned char  out[],			// Output 24-bit BGR/YCrCb image
+   int            ostride,			// Addressed as out[col + row*ostride]
+   COLORSTYLE     type,				// Type of color BGR/YCrCb
    bool			  bChannelSeperate)	// true, the channel stored seperated
 
    /* BayerLum() performs Bayer interpolation by linear filtering, as
@@ -606,18 +606,34 @@ void BayerLum(                   /* Bayer interpolation */
 
 			switch(type)
 			{
+			/* 
+				Cr = 3/4*R - 1/2*G - 1/4*B
+				Cb = -1/4*R -1/2*g + 3/4*B
+				When R, G, B in range of [0, 255]
+				Cr and Cb in range of [-255*3/4, 255*3/4] = [-191, 191], Which is out or range of 2^8 [-128, 127]
+				If scale Cr and Cb down by 2, RGB image converted from YCrCb will lose some resolution in intensity.
+				For circuit board, the chance of Cr and Cb out of [-128, 127] is rare
+				Therefore, in order to save storage, Cr and Cb is clip into [-128, 127]+128 = [0, 255]
+			*/
 			case YCrCb:
 				if(bChannelSeperate)
 				{
 					c0Ptr[col] = clip(y/256);
-					c1Ptr[col] = clip(ry/256/2+128);
-					c2Ptr[col] = clip(by/256/2+128);
+					c1Ptr[col] = clip(ry/256+128);
+					c2Ptr[col] = clip(by/256+128);
+					/* For debug
+					int iCr = ry/256;
+					int iCb = by/256;
+					if(iCr>127 || iCr<-128 || iCb>127 || iCb<-128)
+					{
+						int ihh=10;
+					}//*/
 				}
 				else
 				{
 					optr[col*3] = clip(y/256);
-					optr[col*3+1] = clip(ry/256/2+128);
-					optr[col*3+2] = clip(by/256/2+128);
+					optr[col*3+1] = clip(ry/256+128);
+					optr[col*3+2] = clip(by/256+128);
 				}
 				break;
 
@@ -785,15 +801,15 @@ void BayerLum(                   /* Bayer interpolation */
 			case YCrCb:
 				if(bChannelSeperate)
 				{
-					c0Ptr[col] = r/256 + g/128 +b/256;		// Y
-					c1Ptr[col] = clip((r/64-(int)c0Ptr[col])/2+128);		// Cr
-					c2Ptr[col] = clip((b/64-(int)c0Ptr[col])/2+128);		// Cb
+					c0Ptr[col] = r/256 + g/128 +b/256;				// Y
+					c1Ptr[col] = clip(r/64-(int)c0Ptr[col]+128);	// Cr
+					c2Ptr[col] = clip(b/64-(int)c0Ptr[col]+128);	// Cb
 				}
 				else
 				{
-					optr[col*3] = r/256 + g/128 +b/256;		// Y
-					optr[col*3+1] = clip((r/64-(int)optr[col*3])/2+128);	// Cr
-					optr[col*3+2] = clip((b/64-(int)optr[col*3])/2+128);	// Cb
+					optr[col*3] = r/256 + g/128 +b/256;					// Y
+					optr[col*3+1] = clip(r/64-(int)optr[col*3]+128);	// Cr
+					optr[col*3+2] = clip(b/64-(int)optr[col*3]+128);	// Cb
 				}
 				break;
 

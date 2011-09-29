@@ -37,16 +37,25 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 			// YCrCb to BGR conversion
 			if(_colorStyle == YCrCb && value == BGR)
 			{
-				iTemp[2] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[1]]-128)*2;									// R
-				iTemp[1] = (int)pLine[iAddress[0]] - ((int)pLine[iAddress[1]]-128) - ((int)pLine[iAddress[2]]-128);	// G
-				iTemp[0] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[2]]-128)*2;	// B
+				iTemp[2] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[1]]-128);									// R
+				iTemp[1] = (int)pLine[iAddress[0]] - ((int)pLine[iAddress[1]]-128 + (int)pLine[iAddress[2]]-128)/2;	// G
+				iTemp[0] = (int)pLine[iAddress[0]] + ((int)pLine[iAddress[2]]-128);	// B
 			}
 			// BGR to YCrCb conversion
+			/* 
+				Cr = 3/4*R - 1/2*G - 1/4*B
+				Cb = -1/4*R -1/2*g + 3/4*B
+				When R, G, B in range of [0, 255]
+				Cr and Cb in range of [-255*3/4, 255*3/4] = [-191, 191], Which is out or range of 2^8 [-128, 127]
+				If scale Cr and Cb down by 2, RGB image converted from YCrCb will lose some resolution in intensity.
+				For circuit board, the chance of Cr and Cb out of [-128, 127] is rare
+				Therefore, in order to save storage, Cr and Cb is clip into [-128, 127]+128 = [0, 255]
+			*/
 			if(_colorStyle ==  BGR && value == YCrCb)
 			{
-				iTemp[0] = (pLine[iAddress[2]]>>2) + (pLine[iAddress[1]]>>1) + (pLine[iAddress[0]]>>2);	// Y	
-				iTemp[1] = (pLine[iAddress[2]] - iTemp[0])/2+128;										// Cr
-				iTemp[2] = (pLine[iAddress[0]] - iTemp[0])/2+128;									// Cb
+				iTemp[0] = (pLine[iAddress[2]] + pLine[iAddress[1]]*2 + pLine[iAddress[0]])>>2;	// Y	
+				iTemp[1] = pLine[iAddress[2]] - iTemp[0] + 128;										// Cr
+				iTemp[2] = pLine[iAddress[0]] - iTemp[0] + 128;									// Cb
 			}
 
 			// Write back
