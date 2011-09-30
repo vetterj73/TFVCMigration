@@ -97,9 +97,9 @@ public:
 	bool				MorphFrom(
 							Image* pImgIn, 
 							UIRect roi,
-							const Image* pHeightImg=0, 
-							double dHeightResolution=0, 
-							double dPupilDistance=0);
+							const Image* pHeightImg, 
+							double dHeightResolution, 
+							double dPupilDistance);
 
 	bool				Save(string sFileName);
 

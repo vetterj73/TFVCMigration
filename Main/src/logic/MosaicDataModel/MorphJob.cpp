@@ -32,6 +32,6 @@ void MorphJob::Run()
 {
 	if(_pStitched !=NULL && _rect.IsValid())
 	{	
-		_pStitched->MorphFrom(_pFOV, _rect);
+		_pStitched->MorphFrom(_pFOV, _rect, _pHeightImage, _dHeightResolution, _dPupilDistance);
 	}
 }
