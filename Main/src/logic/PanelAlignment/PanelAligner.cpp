@@ -145,6 +145,12 @@ void PanelAligner::UseCyberNgc4Fiducial()
 void PanelAligner::UseProjectiveTransform(bool bValue)
 {
 	CorrelationParametersInst.bUseProjectiveTransform = bValue;
+	// If the projective transform is used, panel may have serious warp, 
+	// Disable fiducial alignment check, which highly depends on panel scale 
+	if(CorrelationParametersInst.bUseProjectiveTransform) 
+	{
+		CorrelationParametersInst.bFiducialAlignCheck = false;
+	}
 }
 
 // Add single image (single entry protected by mutex)
