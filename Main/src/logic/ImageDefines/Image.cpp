@@ -337,14 +337,14 @@ bool Image::MorphFrom(
 	dT[2][1] = dTemp[2][0];
 	dT[2][2] = dTemp[2][2];
 
-	double dPerpendicalPixelX = (pImgIn->Columns()-1)/2.0; 
-	double dPerpendicalPixelY = (pImgIn->Rows()-1)/2.0;
+	double dPerpendicalPixelX = (pImgIn->Columns()-1)/2.0;	//Image's X (columns)
+	double dPerpendicalPixelY = (pImgIn->Rows()-1)/2.0;		//Image's Y (rows)
 	if(dT[2][0]!=0 || dT[2][1] != 0) // projective transform
 	{
 		pair<double, double> perpendicalPixel;
 		perpendicalPixel = pImgIn->CalPerpendicalPoint(dPupilDistance);
-		dPerpendicalPixelX = perpendicalPixel.first;
-		dPerpendicalPixelY = perpendicalPixel.second;
+		dPerpendicalPixelX = perpendicalPixel.first;		//Image's X (columns)
+		dPerpendicalPixelY = perpendicalPixel.second;		//Image's Y (rows)
 	}
 	
 	// Image morph
