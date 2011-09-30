@@ -382,10 +382,6 @@ bool Image::MorphFrom(
 // return in (cloumn Row)
 pair<double,double> Image::CalPerpendicalPoint(double dPupilDistance)
 {
-	// The transform
-	double a[3][3];
-	_thisToWorld.GetMatrix(a); 
-	
 	// Image center
 	double xo, yo;
 	ImageToWorld((Rows()-1)/2.0, (Columns()-1)/2.0, &xo, &yo);
