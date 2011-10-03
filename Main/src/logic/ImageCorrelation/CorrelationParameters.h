@@ -57,7 +57,8 @@ public:
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
 
-	// Alignment result check
+	// FovFov Alignment result check for each trigger
+	bool bFovFovAlignCheck;					// Whether do FovFov alignment check for each trigger
 	double dMaxColInconsistInPixel;			// Max inconsist in pixel for columns and Rows
 	double dMaxRowInconsistInPixel;
 

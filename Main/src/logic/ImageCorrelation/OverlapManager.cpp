@@ -1169,7 +1169,7 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 		for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
 		{
 			// If right overlap and processed
-			bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
+			bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed() && i->IsGoodForSolver());
 			if(bFlag)
 			{
 				bool bInList = false;
@@ -1222,9 +1222,21 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 // Return number of coarse alignment failed in check
 int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 {
-	int iNum = (int)pList->size();
-	if(iNum <= 2)
+	if(pList->size()<= 2)
 		return(0);
+
+	// Collect all valid coarse pair
+	list<FovFovOverlap*> validList;
+	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
+	{
+		double dScore = (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff;
+		double dAmbig = (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore;
+		double dCoarseReliableScore = dScore * (1-dAmbig);
+		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
+			validList.push_back((*j));
+	}
+	int iNum = validList.size();
+	if(iNum<=2) return(0);
 
 	// Collect data for consistent check
 	double* pdRowOffsets = new double[iNum];
@@ -1233,7 +1245,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double* pdNorminalY = new double[iNum];
 	int iCount = 0;
 	double dx, dy;
-	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
+	for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 	{
 		(*j)->GetCoarsePair()->NorminalCenterInWorld(&dx, &dy);
 		pdNorminalX[iCount] = dx;
@@ -1253,7 +1265,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	if(bFlag)
 	{
 		iCount = 0;
-		for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
+		for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 		{
 			if(fabs(pColOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxColInconsistInPixel)
 			{
@@ -1272,7 +1284,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	if(bFlag)
 	{
 		iCount = 0;
-		for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
+		for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 		{
 			if(fabs(pRowOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxRowInconsistInPixel)
 			{

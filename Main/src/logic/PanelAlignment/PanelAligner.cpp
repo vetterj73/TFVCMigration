@@ -303,10 +303,13 @@ bool PanelAligner::CreateMasks()
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
-	// Consist check for overlap results
-	int iCoarseInconsistNum, iFineInconsistNum;
-	_pOverlapManager->FovFovAlignConsistCheckForPanel(&iCoarseInconsistNum, &iFineInconsistNum);
-	
+	// Consist check for FovFov alignment of each trigger
+	if(CorrelationParametersInst.bFovFovAlignCheck)
+	{
+		int iCoarseInconsistNum, iFineInconsistNum;
+		_pOverlapManager->FovFovAlignConsistCheckForPanel(&iCoarseInconsistNum, &iFineInconsistNum);
+	}
+
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms");
 	int iNumIllums = _pSet->GetNumMosaicLayers();
 

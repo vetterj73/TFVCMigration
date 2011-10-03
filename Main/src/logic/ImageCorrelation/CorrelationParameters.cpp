@@ -42,7 +42,8 @@ CorrelationParameters::CorrelationParameters(void)
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
 
-	// Alignment result check
+	// FovFov Alignment result check for each trigger
+	bFovFovAlignCheck = true;					// Whether do FovFov alignment check for each trigger
 	dMaxColInconsistInPixel = 10;		// Max inconsist in pixel for columns and Rows
 	dMaxRowInconsistInPixel = 20;
 
