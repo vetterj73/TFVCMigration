@@ -199,39 +199,53 @@ namespace CyberStitchTester
                                 _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
                                 _panel.GetCADBuffer(), //heightBuf,
                                 _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                            /*
-                                                    _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
-                                                        _mosaicSet.GetLayer(0).GetStitchedBuffer(true),
-                                                        _mosaicSet.GetLayer(1).GetStitchedBuffer(true),
-                                                        _panel.GetCADBuffer(), //heightBuf,
-                                                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                         /*   
+                            _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(0).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(1).GetStitchedBuffer(),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                                                    _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
-                                                        _mosaicSet.GetLayer(0).GetStitchedBuffer(true),
-                                                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
-                                                        _panel.GetCADBuffer(), //heightBuf,
-                                                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                            _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(0).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                                                    _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
-                                                        _mosaicSet.GetLayer(1).GetStitchedBuffer(true),
-                                                        _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
-                                                        _panel.GetCADBuffer(), //heightBuf,
-                                                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                                                    /*_aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
-                                                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(true),
-                                                        _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(true),
-                                                        _panel.GetCADBuffer(),
-                                                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                                                     */
+                            _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(1).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBufferWithHeight(heightBuf, dHeightRes, dPupilDistance),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                          //*/
                         }
                         else
                         {
-                            _aligner.Save3ChannelImage("c:\\temp\\3channelresultcycle" + _cycleCount + ".bmp",
+                            _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                                 _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
                                 _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                                _panel.GetCADBuffer(),
+                                _panel.GetCADBuffer(), //heightBuf,
                                 _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                            /*
+                            _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(0).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(1).GetStitchedBuffer(),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                            _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(0).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                            _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                                _mosaicSet.GetLayer(1).GetStitchedBuffer(),
+                                _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
+                                _panel.GetCADBuffer(), //heightBuf,
+                                _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                             //*/
                         }
 
                         // Get the stitch grid 
