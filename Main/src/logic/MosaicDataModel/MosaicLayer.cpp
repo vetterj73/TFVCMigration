@@ -200,7 +200,7 @@ namespace MosaicDM
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image with Height", _layerIndex); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
 		
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
@@ -231,7 +231,7 @@ namespace MosaicDM
 			delete morphJobs[i];
 		morphJobs.clear();
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image with Height", _layerIndex); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
 	}
 
 	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
