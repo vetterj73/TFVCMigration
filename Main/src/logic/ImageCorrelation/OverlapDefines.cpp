@@ -233,8 +233,8 @@ void Overlap::Run()
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 0 && iTrig1 == 1 && iCam1 == 1 &&
-			iIllum2 == 2 && iTrig2 == 1 && iCam2 == 1)
+		if(iIllum1 == 0 && iTrig1 == 7 && iCam1 == 0 &&
+			iIllum2 == 2 && iTrig2 == 7 && iCam2 == 0)
 			iIllum1 = 0;
 	}//*/
 
@@ -352,20 +352,21 @@ void Overlap::Run()
 	
 	_bProcessed = true;
 
-	/* For debug
+
+	/*/ for debug
 	if(_type == Fov_To_Fov)
 	{
-		if(	((FovFovOverlap*)this)->GetSecondMosaicImage()->Index() ==2 && 
-			((FovFovOverlap*)this)->GetSecondImagePosition().second ==6 &&
-			((FovFovOverlap*)this)->GetSecondImagePosition().first ==0)
-		{
-			DumpOvelapImages();
-			DumpResultImages();
-		}
+		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
+		int iIllum1, iIllum2, iCam1, iCam2, iTrig1, iTrig2;
+		iIllum1 = pTemp->GetFirstMosaicImage()->Index();
+		iIllum2 = pTemp->GetSecondMosaicImage()->Index();
+		iCam1 = pTemp->GetFirstCameraIndex();
+		iCam2 = pTemp->GetSecondCameraIndex();
+		iTrig1 = pTemp->GetFirstTriggerIndex();
+		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(	((FovFovOverlap*)this)->GetFirstMosaicImage()->Index() ==2 && 
-			((FovFovOverlap*)this)->GetFirstImagePosition().second ==6 &&
-			((FovFovOverlap*)this)->GetFirstImagePosition().first ==0)
+		if(iIllum1 == 0 && iTrig1 == 7 && iCam1 == 0 &&
+			iIllum2 == 2 && iTrig2 == 7 && iCam2 == 0)
 		{
 			DumpOvelapImages();
 			DumpResultImages();
