@@ -119,6 +119,15 @@ namespace SIMMosaicUtils
 
                         if (Math.Abs((int)i-(int)j)==2) // For four illuminations, (0, 2) and (1,3) are the same illumination type
                             flag.SetApplyCorrelationAreaSizeUpLimit(true);
+
+                        // Two layers not from the same SIM devices
+                        if (set.GetNumMosaicLayers() == 4)
+                        {
+                            if((i<2 && j>=2) ||(i>=2 && j<2))
+                            {
+                                flag.SetFromSameDevice(false);
+                            }
+                        }
                     }
 
                     flag.SetMaskNeeded(false);

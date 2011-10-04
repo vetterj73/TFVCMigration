@@ -365,8 +365,8 @@ void Overlap::Run()
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 0 && iTrig1 == 7 && iCam1 == 0 &&
-			iIllum2 == 2 && iTrig2 == 7 && iCam2 == 0)
+		if(iIllum1 == 1 && iTrig1 == 3 && iCam1 == 1 &&
+			iIllum2 == 3 && iTrig2 == 3 && iCam2 == 1)
 		{
 			DumpOvelapImages();
 			DumpResultImages();
@@ -391,13 +391,15 @@ FovFovOverlap::FovFovOverlap(
 	pair<unsigned int, unsigned int> ImgPos2,
 	DRect validRect,
 	bool bApplyCorrSizeUpLimit,
-	bool bHasMask)
+	bool bHasMask,
+	bool bFromSameDevice)
 {
 	_pMosaic1 = pMosaic1;
 	_pMosaic2 = pMosaic2;
 	_imgPos1 = ImgPos1;
 	_imgPos2 = ImgPos2;
 	_bHasMask = bHasMask;
+	_bFromSameDevice = bFromSameDevice;
 
 	Image* pImg1 = _pMosaic1->GetImage(ImgPos1.first, ImgPos1.second);
 	Image* pImg2 = _pMosaic2->GetImage(ImgPos2.first, ImgPos2.second);

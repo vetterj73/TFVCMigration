@@ -40,6 +40,16 @@ public:
 		_pCorrelationFlags->SetMaskNeeded(maskNeeded);
 	}
 
+	bool IsFromSameDevice()
+	{
+		return _pCorrelationFlags->IsFromSameDevice();
+	}
+
+	void SetFromSameDevice(bool bValue)
+	{
+		_pCorrelationFlags->SetFromSameDevice(bValue);
+	}
+
 	// When ApplyCorrelationAreaSizeUpLimit == true; (default = false)
 	// If the size of correlation pair is bigger than an internal defined size,
 	// only the area with intern define size will be used for correlation calculation

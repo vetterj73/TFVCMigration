@@ -59,8 +59,11 @@ public:
 
 	// FovFov Alignment result check for each trigger
 	bool bFovFovAlignCheck;					// Whether do FovFov alignment check for each trigger
-	double dMaxColInconsistInPixel;			// Max inconsist in pixel for columns and Rows
+	// Those values should be big enough to ignore small angle difference and small enought to catch exception
+	double dMaxColInconsistInPixel;			// Max inconsist in pixel for columns and Rows for the same device
 	double dMaxRowInconsistInPixel;
+	double dColAdjust4DiffDevice;			// Adjust for the different device
+	double dRowAdjust4DiffDevice;
 
 	// Fiducial check
 	bool bFiducialAlignCheck;				// Whether do fiducial alignment check

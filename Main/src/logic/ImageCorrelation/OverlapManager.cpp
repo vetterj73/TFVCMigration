@@ -274,6 +274,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
 	bool bMask = pFlags->GetMaskNeeded();
+	bool bFromSameDevice = pFlags->IsFromSameDevice();
 	if(bMask) 		// Prepare mask images
 		pLayer1->PrepareMaskImages();
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
@@ -359,7 +360,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
-							_validRect, bApplyCorSizeUpLimit, bMask);
+							_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
 
 						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
 						{
@@ -374,7 +375,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
-							_validRect, bApplyCorSizeUpLimit, bMask);
+							_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -427,7 +428,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pair<unsigned int, unsigned int>(iCam1, iTrig1),
 								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
-								_validRect, bApplyCorSizeUpLimit, bMask);
+								_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
@@ -1235,8 +1236,10 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
 			validList.push_back((*j));
 	}
-	int iNum = validList.size();
+	int iNum = (int)validList.size();
 	if(iNum<=2) return(0);
+
+	bool bFromSameDevice = (*pList->begin())->IsFromSameDevice();
 
 	// Collect data for consistent check
 	double* pdRowOffsets = new double[iNum];
@@ -1261,13 +1264,15 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double* pRowOffsetFromLine = new double[iNum];
 	double dMultiSdvTh = 1.1;
 	// Column check
+	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
+	if(!bFromSameDevice) dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	bool bFlag = CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	if(bFlag)
 	{
 		iCount = 0;
 		for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 		{
-			if(fabs(pColOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxColInconsistInPixel)
+			if(fabs(pColOffsetFromLine[iCount]) > dMaxColInconsist)
 			{
 				(*j)->SetIsGoodForSolver(false);
 				LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovCoarseInconsistCheck(): InConsist detected in Column of overlap (Layer=%d, Trig=%d, Cam=%d) and (Layer=%d, Trig=%d, cam=%d)",
@@ -1280,13 +1285,15 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	}
 
 	// Row check 
+	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
+	if(!bFromSameDevice) dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	bFlag = CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	if(bFlag)
 	{
 		iCount = 0;
 		for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 		{
-			if(fabs(pRowOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxRowInconsistInPixel)
+			if(fabs(pRowOffsetFromLine[iCount]) > dMaxRowInconsist)
 			{
 				if((*j)->IsGoodForSolver()) // Make sure not count twice
 				{
@@ -1354,6 +1361,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 	// Not enough number for test 
 	if(iNum<=2) return(0);
 
+	bool bFromSameDevice = (*pList->begin())->IsFromSameDevice();
+
 	double* pdRowOffsets = new double[iNum];
 	double* pdColOffsets = new double[iNum];
 	double* pdNorminalX = new double[iNum];
@@ -1382,11 +1391,13 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 	double* pRowOffsetFromLine = new double[iNum];
 	double dMultiSdvTh = 1.1;
 	// Column check
+	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
+	if(!bFromSameDevice) dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
 	{
-		if(fabs(pColOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxColInconsistInPixel)
+		if(fabs(pColOffsetFromLine[iCount]) > dMaxColInconsist)
 		{
 			(*j)->SetIsGoodForSolver(false);
 			LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovFineInconsistCheck():InConsist detected in Column (%d, %d) and (%d, %d), %d pair",
@@ -1400,11 +1411,13 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 	}
 
 	// Row check 
+	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
+	if(!bFromSameDevice) dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
 	{
-		if(fabs(pRowOffsetFromLine[iCount]) > CorrelationParametersInst.dMaxRowInconsistInPixel)
+		if(fabs(pRowOffsetFromLine[iCount]) > dMaxRowInconsist)
 		{
 			if((*j)->IsGoodForSolver())	// Make sure not set it twice
 			{
