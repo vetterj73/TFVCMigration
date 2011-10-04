@@ -1265,7 +1265,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double dMultiSdvTh = 1.1;
 	// Column check
 	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
-	if(!bFromSameDevice) dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
+	if(!bFromSameDevice) 
+		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	bool bFlag = CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	if(bFlag)
 	{
@@ -1286,7 +1287,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 
 	// Row check 
 	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
-	if(!bFromSameDevice) dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
+	if(!bFromSameDevice) 
+		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	bFlag = CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	if(bFlag)
 	{
@@ -1392,7 +1394,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 	double dMultiSdvTh = 1.1;
 	// Column check
 	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
-	if(!bFromSameDevice) dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
+	if(!bFromSameDevice) 
+		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
@@ -1412,7 +1415,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 
 	// Row check 
 	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
-	if(!bFromSameDevice) dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
+	if(!bFromSameDevice) 
+		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
