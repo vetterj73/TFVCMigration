@@ -58,7 +58,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mSet.GetCorrelationSet(0, 0) == null);
             Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
             
-            mSet.AddLayer(3, 4,false, true, true, true);
+            mSet.AddLayer(3, 4,false, true, true, true, 0);
             Assert.IsTrue(mSet.GetCorrelationSet(0, 0) != null);
             Assert.IsTrue(mSet.GetCorrelationSet(1, 1) == null);
 
@@ -77,7 +77,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mcf.GetCameraToCamera());
             Assert.IsTrue(mcf.GetTriggerToTrigger() == false);
 
-            mSet.AddLayer(3, 4, false, true, true, true);
+            mSet.AddLayer(3, 4, false, true, true, true, 0);
 
             /// CorrelationFlags 0,1 is same as 1,0
             mcf = mSet.GetCorrelationSet(0, 1);
@@ -88,7 +88,7 @@ namespace ManagedCyberStitchUnitTest
             Assert.IsTrue(mcf.GetCameraToCamera()==false);
             Assert.IsTrue(mcf.GetTriggerToTrigger());
 
-            mSet.AddLayer(3, 4, false, true, true, true);
+            mSet.AddLayer(3, 4, false, true, true, true, 1);
             mcf = mSet.GetCorrelationSet(1, 2);
             Assert.IsTrue(mcf.GetCameraToCamera());
             Assert.IsTrue(mcf.GetTriggerToTrigger());
@@ -102,10 +102,10 @@ namespace ManagedCyberStitchUnitTest
                 (.2, .25, 2592, 1944, 2592, .000017, .000017, false, false, 0);
             Assert.IsTrue(mSet.GetLayer(0) == null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
-            mSet.AddLayer(3, 4, false, true, true, true);
+            mSet.AddLayer(3, 4, false, true, true, true, 0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) == null);
-            mSet.AddLayer(3, 4, false, true, true, true);
+            mSet.AddLayer(3, 4, false, true, true, true, 0);
             Assert.IsTrue(mSet.GetLayer(0) != null);
             Assert.IsTrue(mSet.GetLayer(1) != null);
 

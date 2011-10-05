@@ -14,7 +14,7 @@ namespace SIMMosaicUtils
         public static void InitializeMosaicFromCurrentSimConfig(ManagedMosaicSet set, bool bMaskForDiffDevices)
         {
             for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
-                AddDeviceToMosaic(ManagedCoreAPI.GetDevice(i), set);
+                AddDeviceToMosaic(ManagedCoreAPI.GetDevice(i), (uint)i, set);
 
             SetDefaultCorrelationFlags(set, bMaskForDiffDevices);
         }
@@ -24,7 +24,7 @@ namespace SIMMosaicUtils
         /// </summary>
         /// <param name="device"></param>
         /// <param name="set"></param>
-        public static void AddDeviceToMosaic(ManagedSIMDevice device, ManagedMosaicSet set)
+        public static void AddDeviceToMosaic(ManagedSIMDevice device, uint deviceIndex, ManagedMosaicSet set)
         {
             if (device.NumberOfCaptureSpecs <= 0)
                 throw new ApplicationException("AddDeviceToMosaic - There are not CaptureSpecs defined for teh device!");
@@ -48,7 +48,7 @@ namespace SIMMosaicUtils
                 if (iDeviceIndex == 1 && i == 0)
                     bAlignWithFiducial = true;
             //*/
-                ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch);
+                ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
 
                 if (layer == null)
                     throw new ApplicationException("AddDeviceToMosaic - Layer was null - this should never happen!");

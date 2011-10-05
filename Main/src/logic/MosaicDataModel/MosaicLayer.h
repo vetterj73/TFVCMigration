@@ -100,7 +100,8 @@ namespace MosaicDM
 				bool bAlignWithFiducial,
 				bool bFiducialBrighterThanBackground,
 				bool bFiducialAllowNegativeMatch,
-				unsigned int layerIndex);
+				unsigned int layerIndex,
+				unsigned int deviceIndex);
 
 			void CreateStitchedImageIfNecessary(
 				unsigned char* pHeighBuf=0, 
@@ -126,7 +127,8 @@ namespace MosaicDM
 			bool _bAlignWithFiducial;
 			bool _bFiducialBrighterThanBackground;
 			bool _bFiducialAllowNegativeMatch;
-			unsigned int _layerIndex;       // This is used in alignment..
+			unsigned int _layerIndex;       // These indexes are used in alignment..
+			unsigned int _deviceIndex;
 
 			int* _piStitchGridRows;
 			int* _piStitchGridCols; 

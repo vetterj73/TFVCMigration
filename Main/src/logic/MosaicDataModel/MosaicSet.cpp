@@ -111,7 +111,8 @@ namespace MosaicDM
 		bool bAlignWithCAD,
 		bool bAlignWithFiducial,
 		bool bFiducialBrighterThanBackground,
-		bool bFiducialAllowNegativeMatch)
+		bool bFiducialAllowNegativeMatch,
+		unsigned int iDeviceIndex)
 	{
 		FireLogEntry(LogTypeDiagnostic, "Layer Added to Mosaic!");
 
@@ -119,7 +120,7 @@ namespace MosaicDM
 
 		pML->Initialize(this, numCameras, numTriggers, bAlignWithCAD, 
 			bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch,
-			(unsigned int)_layerList.size());
+			(unsigned int)_layerList.size(), iDeviceIndex);
 		_layerList.push_back(pML);
 
 

@@ -55,7 +55,8 @@ namespace MosaicDM
 		bool bAlignWithFiducial,
 		bool bFiducialBrighterThanBackground,
 		bool bFiducialAllowNegativeMatch,
-		unsigned int layerIndex)
+		unsigned int layerIndex,
+		unsigned int deviceIndex)
 	{
 		_pMosaicSet = pMosaicSet;
 		_numCameras = numCameras;
@@ -63,6 +64,7 @@ namespace MosaicDM
 		_bAlignWithCAD = bAlignWithCAD;
 		_bAlignWithFiducial = bAlignWithFiducial;
 		_layerIndex = layerIndex;
+		_deviceIndex = deviceIndex;
 		_bFiducialBrighterThanBackground = bFiducialBrighterThanBackground;
 		_bFiducialAllowNegativeMatch = bFiducialAllowNegativeMatch;
 

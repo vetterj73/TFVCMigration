@@ -69,7 +69,8 @@ namespace MosaicDM
 				bool bAlignWithCAD,
 				bool bAlignWithFiducial,
 				bool bFiducialBrighterThanBackground,
-				bool bFiducialAllowNegativeMatch);
+				bool bFiducialAllowNegativeMatch,
+				unsigned int iDeviceIndex);
 			
 			///
 			/// Gets a layer from the MosaicSet
