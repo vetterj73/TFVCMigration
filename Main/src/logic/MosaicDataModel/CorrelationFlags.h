@@ -14,7 +14,6 @@ namespace MosaicDM
 			_triggerToTrigger = true;
 			_maskNeeded = false;
 			_applyCorrelationAreaSizeUpLimit = false;
-			_fromSameDevice = true;
 		}
 
 		bool GetCameraToCamera(){return _cameraToCamera;};
@@ -29,14 +28,10 @@ namespace MosaicDM
 		bool GetApplyCorrelationAreaSizeUpLimit(){return _applyCorrelationAreaSizeUpLimit;};
 		void SetApplyCorrelationAreaSizeUpLimit(bool ApplyCorrelationAreaSizeUpLimit){_applyCorrelationAreaSizeUpLimit = ApplyCorrelationAreaSizeUpLimit;};
 
-		bool IsFromSameDevice() {return _fromSameDevice;};
-		void SetFromSameDevice(bool bValue) {_fromSameDevice = bValue;};
-
 	private:
 		bool _cameraToCamera;
 		bool _triggerToTrigger;
 		bool _maskNeeded;
 		bool _applyCorrelationAreaSizeUpLimit;
-		bool _fromSameDevice;
 	};
 }

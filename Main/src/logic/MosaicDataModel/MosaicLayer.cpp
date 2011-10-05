@@ -47,6 +47,11 @@ namespace MosaicDM
 		return _layerIndex;
 	}
 
+	unsigned int MosaicLayer::DeviceIndex()
+	{
+		return _deviceIndex;
+	}
+
 	void MosaicLayer::Initialize(
 		MosaicSet *pMosaicSet, 
         unsigned int numCameras,

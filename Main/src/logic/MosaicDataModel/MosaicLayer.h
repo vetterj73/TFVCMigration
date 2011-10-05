@@ -49,6 +49,7 @@ namespace MosaicDM
 			bool HasAllImages();
 
 			unsigned int Index();
+			unsigned int DeviceIndex();
 
 			///
 			///	Gets the set this layer belongs to

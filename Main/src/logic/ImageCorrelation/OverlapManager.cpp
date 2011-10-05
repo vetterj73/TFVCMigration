@@ -274,7 +274,6 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
 	bool bMask = pFlags->GetMaskNeeded();
-	bool bFromSameDevice = pFlags->IsFromSameDevice();
 	if(bMask) 		// Prepare mask images
 		pLayer1->PrepareMaskImages();
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
@@ -360,7 +359,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
-							_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
+							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
 						{
@@ -375,7 +374,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pair<unsigned int, unsigned int>(iCam1, iTrig1),
 							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
-							_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
+							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -428,7 +427,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pair<unsigned int, unsigned int>(iCam1, iTrig1),
 								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
-								_validRect, bApplyCorSizeUpLimit, bMask, bFromSameDevice);
+								_validRect, bApplyCorSizeUpLimit, bMask);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{

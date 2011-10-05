@@ -86,8 +86,7 @@ public:
 		pair<unsigned int, unsigned int> ImgPos2,
 		DRect validRect,
 		bool bApplyCorrSizeUpLimit,
-		bool bHasMask,
-		bool bFromSameDevice);
+		bool bHasMask);
 
 	MosaicLayer* GetFirstMosaicImage() const {return _pMosaic1;};
 	unsigned int GetFirstTriggerIndex() const {return _imgPos1.second;};
@@ -98,7 +97,6 @@ public:
 	unsigned int GetSecondTriggerIndex() const {return _imgPos2.second;};
 	unsigned int GetSecondCameraIndex() const {return _imgPos2.first;};
 	pair<unsigned int, unsigned int> GetSecondImagePosition() const {return _imgPos2;};
-	bool IsFromSameDevice() {return _bFromSameDevice;};
 
 	bool IsReadyToProcess() const;
 
@@ -107,6 +105,8 @@ public:
 		unsigned int iTrig1,
 		unsigned int iLlum2,
 		unsigned int iTrig2) const;
+
+	bool IsFromSameDevice() const;
 
 	// For debug
 	bool DumpOvelapImages();
@@ -119,7 +119,6 @@ private:
 	pair<unsigned int, unsigned int> _imgPos1;
 	pair<unsigned int, unsigned int> _imgPos2;
 	bool _bHasMask;
-	bool _bFromSameDevice;
 };
 
 // Overlap between CAD image and FOV image
