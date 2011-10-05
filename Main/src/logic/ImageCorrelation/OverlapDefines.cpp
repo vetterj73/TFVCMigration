@@ -356,7 +356,7 @@ void Overlap::Run()
 	_bProcessed = true;
 
 
-	//*/ for debug
+	/*/ for debug
 	if(_type == Fov_To_Fov)
 	{
 		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
@@ -368,8 +368,8 @@ void Overlap::Run()
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 0 && iTrig1 == 1 && iCam1 == 3 &&
-			iIllum2 == 1 && iTrig2 == 1 && iCam2 == 3)
+		if(iIllum1 == 0 && iTrig1 == 4 && iCam1 == 2 &&
+			iIllum2 == 1 && iTrig2 == 4 && iCam2 == 2)
 		{
 			DumpOvelapImages();
 			DumpResultImages();
