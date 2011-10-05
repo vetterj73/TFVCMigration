@@ -356,7 +356,7 @@ void Overlap::Run()
 	_bProcessed = true;
 
 
-	/*/ for debug
+	//*/ for debug
 	if(_type == Fov_To_Fov)
 	{
 		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
@@ -368,8 +368,8 @@ void Overlap::Run()
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 3 && iTrig1 == 6 && iCam1 == 0 &&
-			iIllum2 == 3 && iTrig2 == 6 && iCam2 == 1)
+		if(iIllum1 == 0 && iTrig1 == 1 && iCam1 == 3 &&
+			iIllum2 == 1 && iTrig2 == 1 && iCam2 == 3)
 		{
 			DumpOvelapImages();
 			DumpResultImages();
@@ -470,7 +470,7 @@ bool FovFovOverlap::DumpOvelapImages()
 		sprintf_s(cTemp, 100, "%sFovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d.bmp",  
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
-		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount);
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, i->GetIndex());
 
 		s.clear();
 		s.append(cTemp);
@@ -505,7 +505,7 @@ bool FovFovOverlap::DumpResultImages()
 		sprintf_s(cTemp, 100, "%sResult_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp",
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pMosaic1->Index(), _imgPos1.second, _imgPos1.first,
-		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, iCount,
+		_pMosaic2->Index(), _imgPos2.second, _imgPos2.first, i->GetIndex(),
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
 		(int)(i->GetCorrelationResult().AmbigScore*100));
 
