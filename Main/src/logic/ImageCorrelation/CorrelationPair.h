@@ -113,6 +113,9 @@ public:
 
 	void NorminalCenterInWorld(double* fdx, double* fdy);
 
+	int GetIndex() {return _iIndex;};
+	void SetIndex(int iValue) {_iIndex = iValue;}; 
+
 	// For Debug
 	void DumpImg(string sFileName) const;
 	bool DumpImgWithResult(string sFileName) const;
@@ -131,6 +134,7 @@ private:
 	UIRect _roi2;
 
 	Overlap* _pOverlap;
+	int _iIndex;
 
 	bool _bIsProcessed;
 	bool _bGood4Solver;

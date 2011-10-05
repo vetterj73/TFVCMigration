@@ -59,6 +59,7 @@ CorrelationPair::CorrelationPair()
 	_pMaskImg = NULL;
 	
 	_pOverlap = NULL;
+	_iIndex  = -1;
 
 	_bIsProcessed = false;
 	_bGood4Solver = true;
@@ -92,6 +93,7 @@ CorrelationPair::CorrelationPair(
 	_iRowSearchExpansion = iRowSearchExpansion;
 
 	_pOverlap = pOverlap;
+	_iIndex  = -1;
 
 	_bIsProcessed = false;
 	_bGood4Solver = true;
@@ -99,14 +101,14 @@ CorrelationPair::CorrelationPair(
 	_bUsedNgc = false;
 }
 
-// Copy inside the same parent overlap
+// Copy for the same parent overlap
 // Otherwise, the overlap point need be overrided
 CorrelationPair::CorrelationPair(const CorrelationPair& b)
 {
 	*this = b;
 }
 
-// Copy inside the same parent overlap
+// Copy for the same parent overlap
 // Otherwise, the overlap point need be overrided
 void CorrelationPair::operator=(const CorrelationPair& b)
 {
@@ -123,6 +125,8 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 
 	//** Warning, two objects point to the same parents  
 	_pOverlap = b._pOverlap;
+
+	_iIndex = b._iIndex;
 
 	_bIsProcessed = b._bIsProcessed;
 	_bGood4Solver = b._bGood4Solver;
@@ -642,6 +646,9 @@ bool CorrelationPair::ChopCorrPair(
 				iBlockRowSearchExpansion,
 				_pOverlap,
 				_pMaskImg);
+
+			// Set the fine overlap index
+			corrPair.SetIndex(iy*10+ix);
 
 			pOutPairList->push_back(corrPair);
 		}
