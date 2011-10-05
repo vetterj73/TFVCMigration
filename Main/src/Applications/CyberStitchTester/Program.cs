@@ -94,7 +94,7 @@ namespace CyberStitchTester
             {
                 _aligner.NumThreads(_numThreads);
                 //_aligner.LogOverlaps(true);
-                _aligner.LogFiducialOverlaps(true);
+                //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 //_aligner.UseProjectiveTransform(true);
                 Output("Before ChangeProduction");

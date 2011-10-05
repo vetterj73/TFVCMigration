@@ -330,7 +330,7 @@ bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSi
 	
 	// Enable negative corrlation 
 	job |= REGOFF_ABS; 
-	job |= REGOFF_HPNORM;
+	//job |= REGOFF_HPNORM;
 
 	int      histclip(1);   /* Histogram clipping factor; clips peaks to prevent
 						   noise in large flat regions from being excessively
