@@ -5,6 +5,7 @@
 #include "Logger.h"
 #include "CorrelationParameters.h"
 #include "Utilities.h"
+#include "OverlapDefines.h"
 
 #pragma region CorrelationResult class
 
@@ -57,7 +58,7 @@ CorrelationPair::CorrelationPair()
 	_pImg2 = NULL;
 	_pMaskImg = NULL;
 	
-	_type = NULL_OVERLAP;
+	_pOverlap = NULL;
 
 	_bIsProcessed = false;
 	_bGood4Solver = true;
@@ -66,15 +67,15 @@ CorrelationPair::CorrelationPair()
 }
 
 CorrelationPair::CorrelationPair(
-		Image* pImg1, 
-		Image* pImg2, 
-		UIRect roi1, 
-		pair<unsigned int, unsigned int> topLeftCorner2, // (column row)
-		unsigned int iDecim,
-		unsigned int iColSearchExpansion,
-		unsigned int iRowSearchExpansion,
-		OverlapType type,
-		Image* pMaskImg)
+	Image* pImg1, 
+	Image* pImg2, 
+	UIRect roi1, 
+	pair<unsigned int, unsigned int> topLeftCorner2, // (column row)
+	unsigned int iDecim,
+	unsigned int iColSearchExpansion,
+	unsigned int iRowSearchExpansion,
+	Overlap* pOverlap,
+	Image* pMaskImg)
 {
 	_pImg1 = pImg1;
 	_pImg2 = pImg2;
@@ -90,7 +91,7 @@ CorrelationPair::CorrelationPair(
 	_iColSearchExpansion = iColSearchExpansion;
 	_iRowSearchExpansion = iRowSearchExpansion;
 
-	_type = type;
+	_pOverlap = pOverlap;
 
 	_bIsProcessed = false;
 	_bGood4Solver = true;
@@ -98,11 +99,15 @@ CorrelationPair::CorrelationPair(
 	_bUsedNgc = false;
 }
 
+// Copy inside the same parent overlap
+// Otherwise, the overlap point need be overrided
 CorrelationPair::CorrelationPair(const CorrelationPair& b)
 {
 	*this = b;
 }
 
+// Copy inside the same parent overlap
+// Otherwise, the overlap point need be overrided
 void CorrelationPair::operator=(const CorrelationPair& b)
 {
 	_pImg1 = b._pImg1;
@@ -116,7 +121,8 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_iColSearchExpansion = b._iColSearchExpansion;
 	_iRowSearchExpansion = b._iRowSearchExpansion;
 
-	_type = b._type;
+	//** Warning, two objects point to the same parents  
+	_pOverlap = b._pOverlap;
 
 	_bIsProcessed = b._bIsProcessed;
 	_bGood4Solver = b._bGood4Solver;
@@ -148,6 +154,14 @@ bool CorrelationPair::GetCorrelationResult(CorrelationResult* pResult) const
 CorrelationResult CorrelationPair::GetCorrelationResult() const
 {
 	return(_result);
+}
+
+OverlapType CorrelationPair::GetOverlapType()
+{
+	if(_pOverlap == NULL)
+		return NULL_OVERLAP;
+	else
+		return _pOverlap->GetOverlapType();
 }
 
 // Reset to the satus before doing alignment
@@ -312,6 +326,7 @@ bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSi
 	
 	// Enable negative corrlation 
 	job |= REGOFF_ABS; 
+	//job |= REGOFF_HPNORM;
 
 	int      histclip(1);   /* Histogram clipping factor; clips peaks to prevent
 						   noise in large flat regions from being excessively
@@ -625,7 +640,7 @@ bool CorrelationPair::ChopCorrPair(
 				iBlockDecim,
 				iBlockColSearchExpansion,
 				iBlockRowSearchExpansion,
-				_type,
+				_pOverlap,
 				_pMaskImg);
 
 			pOutPairList->push_back(corrPair);

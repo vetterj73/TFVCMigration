@@ -33,7 +33,10 @@ void Overlap::operator=(const Overlap& b)
 	_bProcessed = b._bProcessed;
 	_bGood4Solver = b._bGood4Solver;
 
+	//** Warning Coarse pair need to point to different parents,
 	_coarsePair = b._coarsePair;
+	// Override the parent point
+	_coarsePair.SetOverlapPtr(this);
 }
 
 void Overlap::config(
@@ -174,7 +177,7 @@ bool Overlap::CalCoarseCorrPair()
 		_pImg1, _pImg2, 
 		roi1, pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
 		iDecim, iColSearchExpansion, iRowSearchExpansion,
-		_type, _pMaskImg);
+		this, _pMaskImg);
 
 	if(!coarsePair.IsValid())
 		return(false);

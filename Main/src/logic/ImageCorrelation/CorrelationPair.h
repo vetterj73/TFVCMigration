@@ -8,6 +8,8 @@
 #include "UIRect.h"
 #include "Bitmap.h"
 
+class Overlap;
+
 // Contains the correlation result
 class CorrelationResult
 {
@@ -59,7 +61,7 @@ public:
 		unsigned int iDecim,
 		unsigned int iColSearchExpansion,
 		unsigned int iRowSearchExpansion,
-		OverlapType type,
+		Overlap* _pOverlap,
 		Image* pMaskImage = NULL);
 
 	CorrelationPair(const CorrelationPair& b);
@@ -79,7 +81,9 @@ public:
 	bool GetCorrelationResult(CorrelationResult* pResult) const;
 	CorrelationResult GetCorrelationResult() const;
 
-	OverlapType GetOverlapType() const {return _type;};
+	Overlap* GetOverlapPtr() {return _pOverlap;};
+	void SetOverlapPtr(Overlap* pValue) { _pOverlap = pValue;};
+	OverlapType GetOverlapType();
 
 	unsigned int Columns() const {return _roi1.Columns();};
 	unsigned int Rows() const {return _roi1.Rows();};
@@ -126,7 +130,7 @@ private:
 	UIRect _roi1;
 	UIRect _roi2;
 
-	OverlapType _type;
+	Overlap* _pOverlap;
 
 	bool _bIsProcessed;
 	bool _bGood4Solver;

@@ -43,6 +43,8 @@ public:
 	CorrelationPair* GetCoarsePair() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
 
+	OverlapType GetOverlapType() {return _type;};
+
 	// Do alignment and reset
 	void Run();
 	bool Reset();
