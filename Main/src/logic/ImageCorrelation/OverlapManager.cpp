@@ -1325,6 +1325,10 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 					(*j)->GetFirstMosaicImage()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
 					(*j)->GetSecondMosaicImage()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
 				iReturnFlag++;
+
+				// for debug
+				//(*j)->DumpOvelapImages();
+				//(*j)->DumpResultImages();
 			}
 			iCount++;
 		}
@@ -1349,6 +1353,10 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 						(*j)->GetFirstMosaicImage()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
 						(*j)->GetSecondMosaicImage()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
 					iReturnFlag++;
+
+					// for debug
+					//(*j)->DumpOvelapImages();
+					//(*j)->DumpResultImages();
 				}
 			}
 			iCount++;
@@ -1464,6 +1472,10 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 				pOverlap->GetSecondMosaicImage()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 				iIndex);
 			iReturnFlag++;
+
+			// for debug
+			//pOverlap->DumpOvelapImages();
+			//pOverlap->DumpResultImages();
 		}
 
 		iCount++;
@@ -1489,6 +1501,10 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 					pOverlap->GetSecondMosaicImage()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 					iIndex);
 				iReturnFlag++;
+
+				// for debug
+				//pOverlap->DumpOvelapImages();
+				//pOverlap->DumpResultImages();
 			}
 		}
 		
