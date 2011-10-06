@@ -53,7 +53,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Fiducial check
 	bFiducialAlignCheck = true;			// Whether do fiducial check
 	dMaxPanelCadScaleDiff = 5e-3;		// Max panel scale compared with calibration that can be tolerate
-	dMaxFidDisScaleDiff = 1e-3;			// Max Fiducial distnace scale that can be tolerate
+	dMaxFidDisScaleDiff = 2e-3;			// Max Fiducial distnace scale that can be tolerate
 	dMaxSameFidInConsist = 5e-5;		// Max fiducial alignment result inconsist for the same fiducial (in meter)
 
 	// Expansion from Cad image to create mask image in pixels
