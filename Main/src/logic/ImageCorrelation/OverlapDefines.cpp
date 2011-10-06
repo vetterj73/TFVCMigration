@@ -291,6 +291,10 @@ void Overlap::Run()
 			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
 
+	// Set status
+	if(_type == Fov_To_Fov)
+		((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
+	
 	// Create fine correlation pair list
 	unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
 	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
@@ -355,7 +359,6 @@ void Overlap::Run()
 	
 	_bProcessed = true;
 
-
 	/*/ for debug
 	if(_type == Fov_To_Fov)
 	{
@@ -368,8 +371,8 @@ void Overlap::Run()
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 0 && iTrig1 == 4 && iCam1 == 2 &&
-			iIllum2 == 1 && iTrig2 == 4 && iCam2 == 2)
+		if(iIllum1 == 2 && iTrig1 == 5 && iCam1 == 0 &&
+			iIllum2 == 3 && iTrig2 == 5 && iCam2 == 0)
 		{
 			DumpOvelapImages();
 			DumpResultImages();

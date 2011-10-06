@@ -110,6 +110,9 @@ public:
 
 	bool IsFromSameDevice() const;
 
+	bool IsAdjustedBasedOnCoarseAlignment() const { return _bAdjustedBaseOnCoarse;};
+	void SetAdjustedBasedOnCoarseAlignment(bool bValue) {_bAdjustedBaseOnCoarse = bValue;};
+
 	// For debug
 	bool DumpOvelapImages();
 	bool DumpResultImages();
@@ -121,6 +124,8 @@ private:
 	pair<unsigned int, unsigned int> _imgPos1;
 	pair<unsigned int, unsigned int> _imgPos2;
 	bool _bHasMask;
+
+	bool _bAdjustedBaseOnCoarse;  // Status 
 };
 
 // Overlap between CAD image and FOV image

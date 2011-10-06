@@ -1025,58 +1025,99 @@ bool CalInconsistBasedOnLine(
 	}
 
 //** For 4 points or more
-	// All pixels used in line creation
-	double m, b;
-	CalLineParameter(pdx, pdy, iNum, &m, &b);
-
-	// Calculate mean and sdv
-	double* pdDis = new double[iNum];
-	double dSdv_dis, dMean_dis=0, dMean_dissquare=0;
+	// Calculat the SDV of X
+	double dSumX=0, dSumSqX=0;
 	for(unsigned int i=0; i<iNum; i++)
 	{
-		pdDis[i] = pdy[i] - (m*pdx[i]+b);
-		dMean_dis += pdDis[i];
-		dMean_dissquare += (pdDis[i]*pdDis[i]);
+		dSumX += pdx[i];
+		dSumSqX += pdx[i]*pdx[i];
 	}
-	dMean_dissquare /= iNum;
-	dMean_dis /= iNum;
-	dSdv_dis = sqrt(dMean_dissquare - dMean_dis*dMean_dis);
-	// protection when the Sdv is very low
-	if(dSdv_dis < 1e-5)
+	double dSdvX = sqrt(dSumSqX/iNum - (dSumX/iNum)*(dSumX/iNum));
+
+	if(dSdvX>5e-4 || iNum >= 6)	// If the num is big or SDV of X is big
 	{
+		// All pixels used in line creation
+		double m, b;
+		CalLineParameter(pdx, pdy, iNum, &m, &b);
+
+		// Calculate mean and sdv
+		double* pdDis = new double[iNum];
+		double dSdv_dis, dMean_dis=0, dMean_dissquare=0;
 		for(unsigned int i=0; i<iNum; i++)
-			pOffsetFromLine[i] = 0;
-
-		delete [] pdDis;
-		return(true);
-	}
-
-	// Ignore pixels with bigger distance from line based on mean and sdv
-	// for line creation
-	double* pdTempx = new double[iNum];
-	double* pdTempy = new double[iNum];
-	int iCount=0;
-	double dTh = dSdv_dis*dMultiSdvTh;
-	for(unsigned int i=0; i<iNum; i++)
-	{
-		if(fabs(pdDis[i]-dMean_dis) < dTh)
 		{
-			pdTempx[iCount] = pdx[i];
-			pdTempy[iCount] = pdy[i];
-			iCount++;
+			pdDis[i] = pdy[i] - (m*pdx[i]+b);
+			dMean_dis += pdDis[i];
+			dMean_dissquare += (pdDis[i]*pdDis[i]);
 		}
-	}
-	CalLineParameter(pdTempx, pdTempy, iCount, &m, &b);
+		dMean_dissquare /= iNum;
+		dMean_dis /= iNum;
+		dSdv_dis = sqrt(dMean_dissquare - dMean_dis*dMean_dis);
+		// protection when the Sdv is very low
+		if(dSdv_dis < 1e-5)
+		{
+			for(unsigned int i=0; i<iNum; i++)
+				pOffsetFromLine[i] = 0;
 
-	// Calculate the offset from line
-	for(unsigned int i=0; i<iNum; i++)
+			delete [] pdDis;
+			return(true);
+		}
+
+		// Ignore pixels with bigger distance from line based on mean and sdv
+		// for line creation
+		double* pdTempx = new double[iNum];
+		double* pdTempy = new double[iNum];
+		int iCount=0;
+		double dTh = dSdv_dis*dMultiSdvTh;
+		for(unsigned int i=0; i<iNum; i++)
+		{
+			if(fabs(pdDis[i]-dMean_dis) < dTh)
+			{
+				pdTempx[iCount] = pdx[i];
+				pdTempy[iCount] = pdy[i];
+				iCount++;
+			}
+		}
+		CalLineParameter(pdTempx, pdTempy, iCount, &m, &b);
+
+		// Calculate the offset from line
+		for(unsigned int i=0; i<iNum; i++)
+		{
+			pOffsetFromLine[i] = pdy[i] - (m*pdx[i] +b);
+		}	
+		delete [] pdDis;
+		delete [] pdTempx;
+		delete [] pdTempy;
+	}
+	else // If the num is small and SDV of X is small
 	{
-		pOffsetFromLine[i] = pdy[i] - (m*pdx[i] +b);
-	}
+		// mean of y 
+		double dSumY=0;
+		for(unsigned int i=0; i<iNum; i++)
+		{
+			dSumY += pdy[i];
+		}
+		double dMeanY = dSumY/iNum;
+		
+		// Find the one that is away from mean most
+		int iIndex = -1;
+		double dMaxDis = -1;
+		for(unsigned int i=0; i<iNum; i++)
+		{
+			if(dMaxDis < fabs(pdy[i]-dMeanY))
+			{
+				dMaxDis = fabs(pdy[i]-dMeanY);
+				iIndex = i;
+			}
+		}
+		// Ajust mean by remove the most distance one
+		dMeanY = (dSumY-pdy[iIndex])/(iNum-1);
 
-	delete [] pdDis;
-	delete [] pdTempx;
-	delete [] pdTempy;
+		// Calculate the offset from line
+		for(unsigned int i=0; i<iNum; i++)
+		{
+			pOffsetFromLine[i] = pdy[i] - dMeanY;
+		}	
+	}
 
 	return(true);
 }
@@ -1116,6 +1157,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
 	*piFineInconsistNum = 0;
 	int iNumTrig1 = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfTriggers();
 	int iNumTrig2 = _pMosaicSet->GetLayer(iLayer2)->GetNumberOfTriggers();
+
 	for(int iTrig1=0; iTrig1<iNumTrig1; iTrig1++)	// trig1
 	{
 		int iTrig2Start = iTrig1-1;
@@ -1125,6 +1167,12 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
 
 		for(int iTrig2=iTrig2Start; iTrig2<=iTrig2End; iTrig2++) // trig2
 		{
+			/* for debug 
+			if(iLayer1==2 && iTrig1==5 && iLayer2==3 && iTrig2==5)
+			{
+				int i= 0;
+			}//*/
+
 			int iCoarseNum, iFineNum;
 			if(FovFovAlignConsistChekcForTwoTrig(
 				iLayer1, iTrig1,
@@ -1229,10 +1277,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	list<FovFovOverlap*> validList;
 	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
 	{
-		double dScore = (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff;
-		double dAmbig = (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore;
-		double dCoarseReliableScore = dScore * (1-dAmbig);
-		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
+		// Coarse alignment results will affect fine alignment
+		if((*j)->IsAdjustedBasedOnCoarseAlignment())	
 			validList.push_back((*j));
 	}
 	int iNum = (int)validList.size();
@@ -1340,6 +1386,15 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 		// Skip overlap with coarse alignment no good for solver
 		if(!(*j)->IsGoodForSolver()) continue; 
 
+		// Coarse offset that affect fine alignment
+		double dCoarseRowOffset = 0;
+		double dCoarseColOffset = 0;
+		if((*j)->IsAdjustedBasedOnCoarseAlignment())
+		{
+			dCoarseRowOffset = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
+			dCoarseColOffset = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
+		}
+
 		list<CorrelationPair>* pairListPtr = (*j)->GetFinePairListPtr();
 		for(list<CorrelationPair>::iterator k = pairListPtr->begin(); k != pairListPtr->end(); k++)
 		{
@@ -1352,8 +1407,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 			k->NorminalCenterInWorld(&dx, &dy);
 			norminalXList.push_back(dx);
 			norminalYList.push_back(dy);
-			rowOffsetList.push_back(k->GetCorrelationResult().RowOffset);
-			colOffsetList.push_back(k->GetCorrelationResult().ColOffset);
+			rowOffsetList.push_back(k->GetCorrelationResult().RowOffset + dCoarseRowOffset);
+			colOffsetList.push_back(k->GetCorrelationResult().ColOffset + dCoarseColOffset);
 		}
 	}
 
