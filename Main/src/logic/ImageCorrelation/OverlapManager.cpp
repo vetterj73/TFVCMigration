@@ -1034,7 +1034,7 @@ bool CalInconsistBasedOnLine(
 	}
 	double dSdvX = sqrt(dSumSqX/iNum - (dSumX/iNum)*(dSumX/iNum));
 
-	if(dSdvX>5e-4 || iNum >= 6)	// If the num is big or SDV of X is big
+	if(dSdvX>2e-3)	// If SDV of X is big, a line with angle
 	{
 		// All pixels used in line creation
 		double m, b;
@@ -1088,35 +1088,54 @@ bool CalInconsistBasedOnLine(
 		delete [] pdTempx;
 		delete [] pdTempy;
 	}
-	else // If the num is small and SDV of X is small
+	else // If SDV of X is small, a flat line
 	{
-		// mean of y 
-		double dSumY=0;
+		// Mean  and sdv of y 
+		double dSumY=0, dSumSqY=0;
 		for(unsigned int i=0; i<iNum; i++)
 		{
 			dSumY += pdy[i];
+			dSumSqY += pdy[i]*pdy[i];
 		}
 		double dMeanY = dSumY/iNum;
+		double dSdvY = sqrt(dSumSqY/iNum-dMeanY*dMeanY);
+		// protection when the Sdv is very low
+		if(dSdvY < 1e-5)
+		{
+			for(unsigned int i=0; i<iNum; i++)
+				pOffsetFromLine[i] = 0;
+
+			return(true);
+		}
 		
-		// Find the one that is away from mean most
-		int iIndex = -1;
-		double dMaxDis = -1;
+		// Ignore pixels with bigger distance from line based on mean and sdv
+		double* pdTempy = new double[iNum];
+		int iCount=0;
+		double dTh = dSdvY*dMultiSdvTh;
 		for(unsigned int i=0; i<iNum; i++)
 		{
-			if(dMaxDis < fabs(pdy[i]-dMeanY))
+			if(fabs(pdy[i]-dMeanY) < dTh)
 			{
-				dMaxDis = fabs(pdy[i]-dMeanY);
-				iIndex = i;
+				pdTempy[iCount] = pdy[i];
+				iCount++;
 			}
 		}
-		// Ajust mean by remove the most distance one
-		dMeanY = (dSumY-pdy[iIndex])/(iNum-1);
+
+		// Calculate the adjusted mean
+		dSumY = 0;
+		for(unsigned int i=0; i<iCount; i++)
+		{
+			dSumY += pdTempy[i];
+		}
+		dMeanY = dSumY/iCount;
 
 		// Calculate the offset from line
 		for(unsigned int i=0; i<iNum; i++)
 		{
 			pOffsetFromLine[i] = pdy[i] - dMeanY;
 		}	
+
+		delete [] pdTempy;
 	}
 
 	return(true);
@@ -1168,7 +1187,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
 		for(int iTrig2=iTrig2Start; iTrig2<=iTrig2End; iTrig2++) // trig2
 		{
 			/* for debug 
-			if(iLayer1==2 && iTrig1==5 && iLayer2==3 && iTrig2==5)
+			if(iLayer1==2 && iTrig1==0 && iLayer2==3 && iTrig2==0)
 			{
 				int i= 0;
 			}//*/
