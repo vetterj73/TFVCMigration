@@ -109,7 +109,7 @@ copy *.h ..\..\..\pub\include</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;cudart.lib;cutil64D.lib;npp.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;cudart.lib;cutil64D.lib;npp.lib;cufft.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
@@ -161,7 +161,7 @@ copy *.h ..\..\..\pub\include</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;Bitmap.lib;cudart.lib;cutil64D.lib;npp.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib;cudart.lib;cutil64D.lib;npp.lib;cufft.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
@@ -183,6 +183,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="ImgTransform.h" />
     <ClInclude Include="JobManager.h" />
     <ClInclude Include="JobThread.h" />
+    <ClInclude Include="PCorrJob.h" />
     <ClInclude Include="STL.h" />
     <ClInclude Include="UIRect.h" />
     <ClInclude Include="Utilities.h" />
@@ -193,6 +194,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="ImgTransform.cpp" />
     <ClCompile Include="JobManager.cpp" />
     <ClCompile Include="JobThread.cpp" />
+    <ClCompile Include="PCorrJob.cpp" />
     <ClCompile Include="UIRect.cpp" />
     <ClCompile Include="Utilities.cpp" />
   </ItemGroup>

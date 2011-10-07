@@ -6,7 +6,6 @@
 
 #include "GPUManager.h"
 
-
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row

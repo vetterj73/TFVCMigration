@@ -6,6 +6,7 @@ using std::queue;
 using std::string;
 
 #include <cutil.h>
+#include <cufft.h>
 #include "GPUManager.h"
 
 namespace CyberJob
@@ -42,6 +43,8 @@ namespace CyberJob
 
 		cudaEvent_t *PhaseEvent() { return &_phaseEvent; }
 
+		cufftHandle *Plan() { return &_plan; }
+
 		//GPUJobManager* _pGPUJobManager;
 
 	private:
@@ -65,5 +68,7 @@ namespace CyberJob
 		ByteMatrix _stdOutBuffer;
 
 		cudaEvent_t _phaseEvent;
+
+		cufftHandle _plan;
 	};
 }

@@ -24,10 +24,10 @@ namespace CyberJob
 		cudaMalloc((void**)&_stdInBuffer.elements, _stdInBuffer.size);
 		cudaMalloc((void**)&_stdOutBuffer.elements, _stdOutBuffer.size);
 
-		//_phaseEvent = NULL;
-
 		_pGPUJob = NULL;
 		_phase = 0;
+
+		_plan = NULL;
 	}
 
 	GPUStream::~GPUStream(void)
