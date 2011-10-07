@@ -275,7 +275,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				}
 				else 
 				{
-					for(int i=0; i<iNumChannels; i++)
+					for(unsigned int i=0; i<iNumChannels; i++)
 					{
 							/* Compute fractional differences */
 						iflrdX =(int)dX;

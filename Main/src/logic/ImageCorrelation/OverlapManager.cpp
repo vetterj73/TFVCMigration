@@ -1052,8 +1052,8 @@ bool CalInconsistBasedOnLine(
 		dMean_dissquare /= iNum;
 		dMean_dis /= iNum;
 		dSdv_dis = sqrt(dMean_dissquare - dMean_dis*dMean_dis);
-		// protection when the Sdv is very low
-		if(dSdv_dis < 1e-5)
+		// When Sdv is smaller, return true;
+		if(dSdv_dis * sqrt((double)iNum) < 1)
 		{
 			for(unsigned int i=0; i<iNum; i++)
 				pOffsetFromLine[i] = 0;
@@ -1063,10 +1063,9 @@ bool CalInconsistBasedOnLine(
 		}
 
 		// Ignore pixels with bigger distance from line based on mean and sdv
-		// for line creation
 		double* pdTempx = new double[iNum];
 		double* pdTempy = new double[iNum];
-		int iCount=0;
+		unsigned int iCount=0;
 		double dTh = dSdv_dis*dMultiSdvTh;
 		for(unsigned int i=0; i<iNum; i++)
 		{
@@ -1077,7 +1076,19 @@ bool CalInconsistBasedOnLine(
 				iCount++;
 			}
 		}
-		CalLineParameter(pdTempx, pdTempy, iCount, &m, &b);
+
+		// Check sdv on X
+		double dSumX=0, dSumSqX=0;
+		for(unsigned int i=0; i<iCount; i++)
+		{
+			dSumX += pdTempx[i];
+			dSumSqX += pdTempx[i]*pdTempx[i];
+		}
+		double dSdvX = sqrt(dSumSqX/iCount - (dSumX/iCount)*(dSumX/iCount));
+
+		// Create new line only when Sdv on X is big enough
+		if(dSdvX>2e-3)
+			CalLineParameter(pdTempx, pdTempy, iCount, &m, &b);
 
 		// Calculate the offset from line
 		for(unsigned int i=0; i<iNum; i++)
@@ -1099,8 +1110,8 @@ bool CalInconsistBasedOnLine(
 		}
 		double dMeanY = dSumY/iNum;
 		double dSdvY = sqrt(dSumSqY/iNum-dMeanY*dMeanY);
-		// protection when the Sdv is very low
-		if(dSdvY < 1e-5)
+		// When Sdv is smaller, return true;
+		if(dSdvY * sqrt((double)iNum) < 1)
 		{
 			for(unsigned int i=0; i<iNum; i++)
 				pOffsetFromLine[i] = 0;
@@ -1110,7 +1121,7 @@ bool CalInconsistBasedOnLine(
 		
 		// Ignore pixels with bigger distance from line based on mean and sdv
 		double* pdTempy = new double[iNum];
-		int iCount=0;
+		unsigned int iCount=0;
 		double dTh = dSdvY*dMultiSdvTh;
 		for(unsigned int i=0; i<iNum; i++)
 		{
@@ -1187,7 +1198,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
 		for(int iTrig2=iTrig2Start; iTrig2<=iTrig2End; iTrig2++) // trig2
 		{
 			/* for debug 
-			if(iLayer1==2 && iTrig1==0 && iLayer2==3 && iTrig2==0)
+			if(iLayer1==0 && iTrig1==8 && iLayer2==0 && iTrig2==8)
 			{
 				int i= 0;
 			}//*/
