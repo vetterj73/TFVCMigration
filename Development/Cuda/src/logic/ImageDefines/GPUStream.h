@@ -24,7 +24,7 @@ namespace CyberJob
 		///	Constructor - starts the thread
 		///	@todo - logging...
 		///
-		GPUStream(/*GPUManager* pGPUManager, */string uniqueName);
+		GPUStream(string uniqueName);
 		~GPUStream(void);
  
 		cudaStream_t *Stream() { return &_stream; }
@@ -42,10 +42,6 @@ namespace CyberJob
 		const ByteMatrix StdOutBuffer() { return _stdOutBuffer; }
 
 		cudaEvent_t *PhaseEvent() { return &_phaseEvent; }
-
-		cufftHandle *Plan() { return &_plan; }
-
-		//GPUJobManager* _pGPUJobManager;
 
 	private:
 		///
@@ -68,7 +64,5 @@ namespace CyberJob
 		ByteMatrix _stdOutBuffer;
 
 		cudaEvent_t _phaseEvent;
-
-		cufftHandle _plan;
 	};
 }

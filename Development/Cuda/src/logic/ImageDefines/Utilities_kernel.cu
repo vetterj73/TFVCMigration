@@ -8,6 +8,9 @@
 #include <stdio.h>
 
 #define TILE_WIDTH 16
+#define MAX_ROW_SIZE 2000 // max shared memory is 0x4000 bytes
+#define MAX_COL_SIZE 2000 // max shared memory is 0x4000 bytes
+
 
 __global__ void ImageMorphKernel(unsigned char* dA, unsigned char* dB, unsigned int iInSpan, unsigned int iInHeight,
 	unsigned int iInWidth, unsigned int iOutROIWidth, unsigned int iOutROIHeight, unsigned int iOutSpan,
@@ -89,7 +92,6 @@ __global__ void ImageMorphKernel(unsigned char* dA, unsigned char* dB, unsigned 
 }
 
 __global__ void ApplyEqualizationKernel(unsigned char* dA, unsigned char* dB, complexf* dZ,
-   //float apal[], float bpal[],
    int width, int height,
    int instride, int outstride)
 {
@@ -99,8 +101,11 @@ __global__ void ApplyEqualizationKernel(unsigned char* dA, unsigned char* dB, co
 
 	if (row >= height || col >= width) return;
 
-    dZ[row * outstride + col].r = acurve[dA[row * instride + col]];
-    dZ[row * outstride + col].i = bcurve[dB[row * instride + col]];
+	//if (row <= height/2+240/*/2 /*&& col <= width/2*/)
+	//{
+		dZ[row * outstride + col].r = acurve[dA[row * instride + col]];
+		dZ[row * outstride + col].i = bcurve[dB[row * instride + col]];
+	//}
 }
 
 __global__ void DecimHorizontalKernel(complexf* dIn, complexf* dOut,
@@ -110,7 +115,7 @@ __global__ void DecimHorizontalKernel(complexf* dIn, complexf* dOut,
 	int			decimx,
 	int			kernelsize ) // 2*decimx + decimx/2; // 2->5, 4->10
 {
-	__shared__ complexf shared[1024];
+	__shared__ complexf shared[MAX_ROW_SIZE+16];
 
 	// Identify the row and column of the Pd element to work on
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -169,7 +174,7 @@ __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
 	int			decimy,
 	int			kernelsize ) // 2*decimx + decimx/2; // 2->5, 4->10
 {
-	__shared__ complexf shared[1024];
+	__shared__ complexf shared[MAX_COL_SIZE+16];
 
 	// Identify the row and column of the Pd element to work on
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -219,7 +224,7 @@ __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
 __global__ void CrossFilterVerticalKernel(complexf* dZ,
 	int width, int height, int cw, int stride)
 {
-	__shared__ complexf shared[1024];
+	__shared__ complexf shared[MAX_COL_SIZE+2];
 
 	// Identify the row and column of the Pd element to work on
 	int i = threadIdx.y; // column index for shared memory workspace
@@ -252,7 +257,7 @@ __global__ void CrossFilterVerticalKernel(complexf* dZ,
 __global__ void CrossFilterHorizontalKernel(complexf* dZ,
 	int width, int height, int cw, int stride)
 {
-	__shared__ complexf shared[1024];
+	__shared__ complexf shared[MAX_ROW_SIZE+2];
 
 	// Identify the row and column of the Pd element to work on
 	int i = threadIdx.x; // row index for shared memory workspace
@@ -285,7 +290,7 @@ __global__ void ConjugateMultKernel(complexf* dIn, complexf* dOut,
 	float* dSum, int width, int height, int stride)
 {
 
-	__shared__ float shared[512];
+	__shared__ float shared[1024];
 
 	// Identify the row and column of the Pd element to work on
 	int row = blockIdx.y * blockDim.y + threadIdx.y;

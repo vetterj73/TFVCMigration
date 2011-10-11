@@ -30,8 +30,26 @@ PCorrJob::PCorrJob(
 	_z = z;
 	_cw = crosswindow;
 	_sum = sum; 
-	_work = new float[256]; 
+	_work = new float[1024]; 
 	//_ordinal = ordinal;
+
+	cufftResult results = cufftPlan2d( &_plan, _nrd, _ncd, CUFFT_C2C);
+	if (results != CUFFT_SUCCESS)
+	{
+		results = (cufftResult)0; // code to break on
+		// log error
+	}
+	if (_plan == 0xffffffff/* || _plan == 0*/)
+	{
+		results = (cufftResult)0; // code to break on
+		// log error
+		//cufftResult results = cufftPlan2d( &_plan, _nrd, _ncd, CUFFT_C2C);
+		//if (results != CUFFT_SUCCESS)
+		//{
+		//	results = (cufftResult)0; // code to break on
+		//	// log error
+		//}
+	}
 
 	//if (!bCSInitialized)
 	//{
@@ -58,7 +76,14 @@ PCorrJob::PCorrJob(
 
 PCorrJob::~PCorrJob()
 {
-	delete _work; 
+	delete _work;
+
+	cufftResult results = cufftDestroy( _plan );
+	if (results != CUFFT_SUCCESS)
+	{
+		results = (cufftResult)0; // code to break on
+		// log error
+	}
 	//CudaBufferUnregister((unsigned char*)_a);
 	//CudaBufferUnregister((unsigned char*)_b);
 	//CudaBufferUnregister((unsigned char*)_z);
@@ -78,9 +103,6 @@ CyberJob::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberJob::GPUStream *jobStream)
 {
 	CyberJob::CGPUJob::GPUJobStatus results = CyberJob::CGPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
 	
-	//results = _pStitched->GPUMorphFrom(_pFOV, _rect, jobStream);
-	//printf_s("GPUJob execution: oridinal - %ld;\n", _ordinal );
-
 	results = GPUPCorr( jobStream,
 		_ncols,			/* Number of columns in images */
 		_nrows,			/* Number of rows in images */
@@ -90,7 +112,7 @@ CyberJob::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberJob::GPUStream *jobStream)
 		_bstride,
 		_apal, _bpal,
 		_decimx, _decimy,
-		_ncd, _nrd, _z, _work, _cw);
+		_ncd, _nrd, _z, _work, _cw, _plan);
 
 	if (results == CGPUJob::GPUJobStatus::COMPLETED)
 	{
@@ -100,10 +122,8 @@ CyberJob::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberJob::GPUStream *jobStream)
 		{
 			value += _work[i];
 		}
-		*_sum = 2.0 * value;
+		*_sum = value;
 	}
-	//if(_pStitched !=NULL && _rect.IsValid())
-	//	results = _pStitched->GPUMorphFrom(_pFOV, _rect, jobStream);
 
 	return results;
 }

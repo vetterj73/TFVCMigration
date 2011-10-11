@@ -168,6 +168,7 @@ namespace CyberJob
 
 		static GPUManager&			Singleton();
 
+		static GPUSTATUS			CheckGPUManager();
 		//static SIMSTATUS			InitializeGPUManager();
 		//static SIMSTATUS			RemoveGPUManager( void );
 
@@ -180,6 +181,7 @@ namespace CyberJob
 		DWORD						RunGPUThread();
 
 	private:
+		GPUSTATUS					GPUManagerStatus();
 		GPUSTATUS					ConstructGPUManager();
 
 		GPUSTATUS					QueueJob(CGPUJob* pJob, SESSIONHANDLE hSession);

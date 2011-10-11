@@ -1,6 +1,8 @@
 #pragma once
 #include "GPUManager.h"
 #include "rtypes.h"
+#include <cutil.h>
+#include <cufft.h>
 
 using namespace CyberJob;
 
@@ -54,6 +56,9 @@ protected:
 
 	float *_sum;
 	float *_work;
+
+	cufftHandle _plan;
+
 	unsigned int _ordinal;
 };
 
@@ -65,5 +70,5 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 	int astride, int bstride,
 	float apal[], float bpal[],
 	/*int columns, int rows,*/ int decimx, int decimy,
-	int ncd, int nrd, complexf *z, float *work, int crosswindow); 
+	int ncd, int nrd, complexf *z, float *work, int crosswindow, cufftHandle plan); 
 

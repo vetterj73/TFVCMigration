@@ -5,12 +5,17 @@
 #define FOV_Width 2592
 #define FOV_Height 1944
 
+typedef struct {
+   float r;
+   float i;
+} complexf;
+
 namespace CyberJob
 {
 
-	GPUStream::GPUStream(/*GPUJobManager* pGPUJobManager, */string uniqueName)
+	GPUStream::GPUStream(string uniqueName)
 	{
-		//_pGPUJobManager = pGPUJobManager;
+		cudaError_t error;
 
 		cudaStreamCreate(&_stream);
 
@@ -18,16 +23,18 @@ namespace CyberJob
 
 		_stdInBuffer.width = _stdOutBuffer.width = FOV_Width;
 		_stdInBuffer.height = _stdOutBuffer.height = FOV_Height;
-		_stdInBuffer.size = _stdOutBuffer.size = FOV_Width * FOV_Height * sizeof(unsigned char);
+		_stdInBuffer.size = _stdOutBuffer.size = FOV_Width * FOV_Height * sizeof(complexf);
 
 		_stdInBuffer.elements = _stdOutBuffer.elements = NULL;
-		cudaMalloc((void**)&_stdInBuffer.elements, _stdInBuffer.size);
-		cudaMalloc((void**)&_stdOutBuffer.elements, _stdOutBuffer.size);
+		error = cudaMalloc((void**)&_stdInBuffer.elements, _stdInBuffer.size);
+		error = cudaMalloc((void**)&_stdOutBuffer.elements, _stdOutBuffer.size);
+		if (error != cudaSuccess)
+		{
+			error = cudaSuccess;
+		}
 
 		_pGPUJob = NULL;
 		_phase = 0;
-
-		_plan = NULL;
 	}
 
 	GPUStream::~GPUStream(void)

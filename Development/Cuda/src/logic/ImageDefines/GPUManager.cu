@@ -121,6 +121,11 @@ namespace CyberJob {
 		return *_instance;
 	}
 
+	GPUSTATUS GPUManager::CheckGPUManager()
+	{
+		return Singleton().GPUManagerStatus();
+	}
+
 	GPUSTATUS GPUManager::RunJob(CGPUJob* pJob, SESSIONHANDLE hSession)
 	{
 		GPUSTATUS status = RunJobAsynch(pJob, hSession);
@@ -145,6 +150,12 @@ namespace CyberJob {
 	}
 
 	const unsigned int cMaxNameSize = 36;
+
+	GPUSTATUS GPUManager::GPUManagerStatus( void )
+	{
+		GPUSTATUS status = 0;
+		return status;
+	}
 
 	GPUSTATUS GPUManager::ConstructGPUManager( void )
 	{

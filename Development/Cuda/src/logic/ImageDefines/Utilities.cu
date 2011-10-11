@@ -153,10 +153,10 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 	int bstride,
 	float apal[], float bpal[],
 	/*int columns, int rows,*/ int decimx, int decimy,
-	int ncd, int nrd, complexf * z, float * work, int crosswindow) 
+	int ncd, int nrd, complexf * z, float * work, int crosswindow, cufftHandle plan) 
 {
 	//cufftHandle plan;
-	cufftResult result;
+	cufftResult results;
 
 	unsigned int thePhase = jobStream->Phase();
 	jobStream->Phase(thePhase+1);
@@ -166,9 +166,13 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 	switch (thePhase)
 	{
 	case 0:
-		//result = cufftPlan2d( jobStream->Plan(), ncd, nrd, CUFFT_C2C);
-		result = cufftPlan2d( jobStream->Plan(), nrd, ncd, CUFFT_C2C);
-		result = cufftSetStream(*jobStream->Plan(), *jobStream->Stream());
+		//result = cufftPlan2d( jobStream->Plan(), nrd, ncd, CUFFT_C2C);
+		results = cufftSetStream(plan, *jobStream->Stream());
+		if (results != CUFFT_SUCCESS)
+		{
+			results = (cufftResult)0; // code to break on
+			// log error
+		}
 		//CopyBufferToDeviceMatrix(jobStream->StdInBuffer(), pInBuf, jobStream->Stream());
 
 		////sprintf_s(str, "Job %d; Phase %d; Xfer time", temp->OrdinalNumber(), thePhase);
@@ -189,6 +193,12 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 				nrows,
 				cudaMemcpyHostToDevice,
 				 *jobStream->Stream());
+			if (error2D != cudaSuccess)
+			{
+				error2D = (cudaError_t)0; // code to break on
+				// log error
+			}
+			
 
 			// copy B to device stdin with offset
 			int alignment = 0x20;
@@ -205,6 +215,11 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 				nrows,
 				cudaMemcpyHostToDevice,
 				 *jobStream->Stream());
+			if (error2D != cudaSuccess)
+			{
+				error2D = (cudaError_t)0; // code to break on
+				// log error
+			}
 
 			// copy apal to device constant memory
 			cudaMemcpyToSymbolAsync(acurve, apal, 256*sizeof(float), 0, cudaMemcpyHostToDevice, *jobStream->Stream());
@@ -212,7 +227,7 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 			cudaMemcpyToSymbolAsync(bcurve, bpal, 256*sizeof(float), 0, cudaMemcpyHostToDevice, *jobStream->Stream());
 
 			// Setup merge of a and b images into complex image
-			dim3 threads(TILE_WIDTH, 12/*TILE_WIDTH*/);
+			dim3 threads(TILE_WIDTH, /*12*/TILE_WIDTH);
 			dim3 grid(((ncols - 1) / threads.x) + 1, ((nrows - 1) / threads.y) + 1);
 
 			ApplyEqualizationKernel<<< grid, threads, 0, *jobStream->Stream()>>>
@@ -286,8 +301,34 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 			}
 		}
 
-		result = cufftExecC2C( *jobStream->Plan(), (cufftComplex*)jobStream->StdOutBuffer().elements,
-			(cufftComplex*)jobStream->StdOutBuffer().elements, CUFFT_FORWARD);
+		//if (ncd == 256 && nrd == 256 )
+		//{
+		//	cudaError_t err = cudaGetLastError();
+		//}
+
+		//if (ncols == 1024 && nrows == 768 && ncd == 256 && nrd == 192 )
+		//{
+		//	cudaError_t err = cudaGetLastError();
+		//}
+		//{
+		//complexf *buffer = (complexf*)malloc(256*192*sizeof(complexf));
+		//for (int i=0; i<256*192; ++i)
+		//{
+		//	buffer[i].r = 1.0;
+		//	buffer[i].i = 1.0;
+		//}
+
+		//cudaMemcpy(jobStream->StdOutBuffer().elements, buffer,
+		//		256*192*sizeof(complexf), cudaMemcpyHostToDevice/*, *jobStream->Stream()*/);
+		//}
+
+		results = cufftExecC2C( plan, (cufftComplex*)jobStream->StdOutBuffer().elements,
+			(cufftComplex*)jobStream->StdInBuffer().elements, CUFFT_FORWARD);
+		if (results != CUFFT_SUCCESS)
+		{
+			cudaError_t err = cudaGetLastError();
+			// log error
+		}
 
 		{
 			// Setup vertical circular convolution for CrossFilter
@@ -296,7 +337,7 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 
   			// Launch the device computation threads!
 			CrossFilterVerticalKernel<<< Vgrid, Vthreads, 0, *jobStream->Stream()>>>
-				((complexf*)jobStream->StdOutBuffer().elements,
+				((complexf*)jobStream->StdInBuffer().elements,
 				ncd, nrd, crosswindow, ncd);
 
 			// Setup horizontal circular convolution for CrossFilter
@@ -305,7 +346,7 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 
   			// Launch the device computation threads!
 			CrossFilterHorizontalKernel<<< Hgrid, Hthreads, 0, *jobStream->Stream()>>>
-				((complexf*)jobStream->StdOutBuffer().elements,
+				((complexf*)jobStream->StdInBuffer().elements,
 				ncd, nrd, crosswindow, ncd);
 		}
 
@@ -321,15 +362,20 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 
   			// Launch the device computation threads!
 			ConjugateMultKernel<<< grid, threads, 0, *jobStream->Stream()>>>
-				((complexf*)jobStream->StdOutBuffer().elements,
-				(complexf*)jobStream->StdInBuffer().elements,
-				(float*)(jobStream->StdOutBuffer().elements+offset),
+				((complexf*)jobStream->StdInBuffer().elements,
+				(complexf*)jobStream->StdOutBuffer().elements,
+				(float*)(jobStream->StdInBuffer().elements+offset),
 				ncd, nrd, ncd);
 
 		}
 
-		result = cufftExecC2C( *jobStream->Plan(), (cufftComplex*)jobStream->StdInBuffer().elements,
+		results = cufftExecC2C( plan, (cufftComplex*)jobStream->StdOutBuffer().elements,
 			(cufftComplex*)jobStream->StdOutBuffer().elements, CUFFT_INVERSE);
+		if (results != CUFFT_SUCCESS)
+		{
+			cudaError_t err = cudaGetLastError();
+			// log error
+		}
 
 		return CGPUJob::GPUJobStatus::ACTIVE;
 
@@ -339,7 +385,7 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 			int offset = ncols * nrows * sizeof(complexf);
 			if (offset % alignment ) offset += alignment - (offset%alignment);
 			int total = (((ncd - 1) / TILE_WIDTH) + 1) * (((nrd/2/* - 1*/) / TILE_WIDTH) + 1);
-			cudaError_t error = cudaMemcpyAsync(work, jobStream->StdOutBuffer().elements+offset,
+			cudaError_t error = cudaMemcpyAsync(work, jobStream->StdInBuffer().elements+offset,
 				total*sizeof(float), cudaMemcpyDeviceToHost, *jobStream->Stream());
 
 			int imagesize = /*110*/ncd * /*378*/nrd * sizeof(complexf);
@@ -348,6 +394,8 @@ CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
 			error = cudaMemcpyAsync(z, jobStream->StdOutBuffer().elements,
 				imagesize, cudaMemcpyDeviceToHost, *jobStream->Stream());
 		}
+
+		//cudaEventDestroy(*jobStream->PhaseEvent());
 
 		cudaEventCreate(jobStream->PhaseEvent());
 
