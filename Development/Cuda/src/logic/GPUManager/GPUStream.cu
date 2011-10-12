@@ -10,7 +10,7 @@ typedef struct {
    float i;
 } complexf;
 
-namespace CyberJob
+namespace CyberGPU
 {
 
 	GPUStream::GPUStream(string uniqueName)
@@ -45,7 +45,7 @@ namespace CyberJob
 		cudaStreamDestroy(_stream);
 	}
 
-	void GPUStream::GPUJob(CyberJob::CGPUJob *pGPUJob)
+	void GPUStream::GPUJob(CyberGPU::CGPUJob *pGPUJob)
 	{
 		_pGPUJob = pGPUJob;
 		_phase = 0;

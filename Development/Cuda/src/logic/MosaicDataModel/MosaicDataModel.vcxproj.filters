@@ -30,9 +30,6 @@
     <ClInclude Include="CorrelationFlags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MorphJob.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Stdafx.cpp">
@@ -48,9 +45,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CorrelationFlags.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MorphJob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -27,7 +27,7 @@ Environment:
 
 //#define UNMANAGED_EXPORTS
 
-namespace CyberJob {
+namespace CyberGPU {
 
 	CGPUJob::CGPUJob()
 	{

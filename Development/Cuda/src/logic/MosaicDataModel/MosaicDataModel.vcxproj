@@ -93,7 +93,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\GPUManager</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -111,7 +111,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\GPUManager</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -128,7 +128,7 @@ copy *.h ..\..\..\pub\include</Command>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\GPUManager</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -145,7 +145,7 @@ copy *.h ..\..\..\pub\include</Command>
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ImageDefines;..\..\..\LoggableObject\include;..\..\..\Bitmap\include;..\GPUManager</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -164,7 +164,6 @@ copy *.h ..\..\..\pub\include</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorrelationFlags.h" />
-    <ClInclude Include="MorphJob.h" />
     <ClInclude Include="MosaicLayer.h" />
     <ClInclude Include="MosaicSet.h" />
     <ClInclude Include="MosaicTile.h" />
@@ -172,7 +171,6 @@ copy *.h ..\..\..\pub\include</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorrelationFlags.cpp" />
-    <ClCompile Include="MorphJob.cpp" />
     <ClCompile Include="MosaicLayer.cpp" />
     <ClCompile Include="MosaicSet.cpp" />
     <ClCompile Include="MosaicTile.cpp" />

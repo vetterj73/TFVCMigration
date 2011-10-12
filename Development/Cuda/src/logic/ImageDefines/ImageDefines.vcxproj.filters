@@ -42,17 +42,8 @@
     <ClInclude Include="GPUManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPUStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PCorrJob.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ImgTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -71,24 +62,8 @@
     <ClCompile Include="JobManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PCorrJob.cpp">
+    <ClCompile Include="Utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Utilities_kernel.cu">
-      <Filter>Source Files</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <CudaCompile Include="Utilities.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="GPUManager.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
-    <CudaCompile Include="GPUStream.cu">
-      <Filter>Source Files</Filter>
-    </CudaCompile>
   </ItemGroup>
 </Project>

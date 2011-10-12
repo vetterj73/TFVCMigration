@@ -15,36 +15,46 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GPUStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GPUManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ImageDefines\GPUStream.h">
+    <ClInclude Include="PCorrJob.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\ImageDefines\PCorrJob.h">
+    <ClInclude Include="MorphJob.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\ImageDefines\PCorrJob.cpp">
+    <ClCompile Include="PCorrJob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ImageDefines\Utilities.cpp">
+    <ClCompile Include="MorphJob.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ReadMe.txt" />
-    <None Include="..\ImageDefines\GPUManager.cu">
+    <CudaCompile Include="GPUManager.cu">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\ImageDefines\GPUStream.cu">
+    </CudaCompile>
+    <CudaCompile Include="GPUStream.cu">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\ImageDefines\Utilities_kernel.cu">
+    </CudaCompile>
+    <CudaCompile Include="MorphJob.cu">
       <Filter>Source Files</Filter>
-    </None>
-    <None Include="..\ImageDefines\Utilities.cu">
+    </CudaCompile>
+    <CudaCompile Include="PCorrJob.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+    <CudaCompile Include="PCorrJob_kernel.cu">
+      <Filter>Source Files</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MorphJob_kernel.cu">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

@@ -178,6 +178,9 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GPUManager\GPUManager.vcxproj">
+      <Project>{f0882d7f-b769-42d1-a057-ed2476c59b8b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
       <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
     </ProjectReference>

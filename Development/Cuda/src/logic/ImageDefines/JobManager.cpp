@@ -1,11 +1,14 @@
 #include "JobManager.h"
 #include "JobThread.h"
+//#include "GPUManager.h"
 namespace CyberJob
 {
 	const unsigned int cMaxNameSize = 36;
 	JobManager::JobManager(string baseName, unsigned int numThreads)
 	{
 		_currentThread = 0;
+
+		//GPUManager::CheckGPUManager();
 
 		// Validation of lengths...
 		string name = baseName;

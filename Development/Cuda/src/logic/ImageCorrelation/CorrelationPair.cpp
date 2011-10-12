@@ -297,6 +297,33 @@ bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSi
 	nrows = RegoffLength(nrows, _iDecim);
 	ncols = RegoffLength(ncols, _iDecim);
 
+	//if(ncols == 1024 && nrows == 768)
+	//	nrows = 640;
+
+	//int ncd = ncols/_iDecim;
+	//int nrd = nrows/_iDecim;
+	//if (ncd == 256 || (ncd == 200/* && nrd == 832*/))
+	//{
+	//	switch (_iDecim)
+	//	{
+	//	case 1:
+	//	default:
+	//		break;
+	//	case 2:
+	//		ncols = 384;
+	//		_iDecim = 1;
+	//		break;
+	//	case 4:
+	//		nrows = 512;
+	//		//_iDecim = 2;
+	//		break;
+	//	}
+	//}
+
+	//ncols = 1024;
+	//nrows = 768;//512;
+	//_iDecim = 4;
+
 	// Pointer to first image
 	unsigned char* first_image_buffer =
 		_pImg1->GetBuffer(iFirstCol1, iFirstRow1);

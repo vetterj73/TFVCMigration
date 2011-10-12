@@ -8,7 +8,7 @@
 #include <sys/timeb.h>
 #include <time.h>
 
-using namespace CyberJob;
+using namespace CyberGPU;
 
 namespace MosaicDM 
 {
@@ -169,7 +169,7 @@ namespace MosaicDM
 				pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
 					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1), index);
-				CyberJob::GPUManager::RunJobAsynch((CGPUJob*)pJob/*, SESSIONHANDLE hSession=NULL*/);
+				CyberGPU::GPUManager::RunJobAsynch((CGPUJob*)pJob/*, SESSIONHANDLE hSession=NULL*/);
 				//jm.AddAJob((GPUJob*)pJob);
 				morphJobs.push_back(pJob);
 				++index;

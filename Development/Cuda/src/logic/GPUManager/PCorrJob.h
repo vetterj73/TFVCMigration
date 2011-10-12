@@ -4,18 +4,18 @@
 #include <cutil.h>
 #include <cufft.h>
 
-using namespace CyberJob;
+using namespace CyberGPU;
 
-class CyberJob::GPUStream;
+class CyberGPU::GPUStream;
 
 //typedef struct {
 //   float r;
 //   float i;
 //} complexf;
 //
-//void ClearMorphJobStream(CyberJob::GPUStream *jobStream);
+//void ClearMorphJobStream(CyberGPU::GPUStream *jobStream);
 
-class PCorrJob : public CyberJob::CGPUJob
+class PCorrJob : public CyberGPU::CGPUJob
 {
 public:
 	//PCorrJob(int ncd, int nrd, complexf *z, unsigned int ordinal);
@@ -31,7 +31,7 @@ public:
 	~PCorrJob();
 
 	void Run();
-	CyberJob::CGPUJob::GPUJobStatus GPURun(CyberJob::GPUStream *jobStream);
+	CyberGPU::CGPUJob::GPUJobStatus GPURun(CyberGPU::GPUStream *jobStream);
 
 	//unsigned int NumberOfStreams() { return 3; }
 
@@ -62,7 +62,7 @@ protected:
 	unsigned int _ordinal;
 };
 
-CyberJob::CGPUJob::GPUJobStatus GPUPCorr( CyberJob::GPUStream *jobStream,
+CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 	int ncols,			/* Number of columns in images */
 	int nrows,			/* Number of rows in images */
 	unsigned char a[],	/* Pointer to first image  */

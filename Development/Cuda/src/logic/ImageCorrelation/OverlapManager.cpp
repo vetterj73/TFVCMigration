@@ -11,7 +11,7 @@ OverlapManager::OverlapManager(
 	Panel* pPanel,
 	unsigned int numThreads)
 {	
-	_pJobManager = new CyberJob::JobManager("Overlap", numThreads);
+	_pJobManager = new CyberJob::JobManager("Overlap", /*1*/numThreads);
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
 

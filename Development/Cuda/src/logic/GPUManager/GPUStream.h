@@ -9,7 +9,7 @@ using std::string;
 #include <cufft.h>
 #include "GPUManager.h"
 
-namespace CyberJob
+namespace CyberGPU
 {
 
 	class GPUJob;
@@ -33,7 +33,7 @@ namespace CyberJob
 		void Phase(unsigned int phase) { _phase = phase; }
 
 		CGPUJob *GPUJob() { return _pGPUJob; }
-		void GPUJob(CyberJob::CGPUJob *pGPUJob);
+		void GPUJob(CyberGPU::CGPUJob *pGPUJob);
 
 		void *Context() { return _context; }
 		void Context(void *context) { _context = context; }
@@ -53,7 +53,7 @@ namespace CyberJob
 		cudaStream_t _stream;
 
 
-		CyberJob::CGPUJob *_pGPUJob;
+		CyberGPU::CGPUJob *_pGPUJob;
 
 		///
 		///	Job type specific context

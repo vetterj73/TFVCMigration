@@ -99,9 +99,9 @@ void PCorrJob::Run()
 
 #define TILE_WIDTH 16
 
-CyberJob::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberJob::GPUStream *jobStream)
+CyberGPU::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberGPU::GPUStream *jobStream)
 {
-	CyberJob::CGPUJob::GPUJobStatus results = CyberJob::CGPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
+	CyberGPU::CGPUJob::GPUJobStatus results = CyberGPU::CGPUJob::GPUJobStatus::COMPLETED; // true = conversion complete
 	
 	results = GPUPCorr( jobStream,
 		_ncols,			/* Number of columns in images */
@@ -114,7 +114,7 @@ CyberJob::CGPUJob::GPUJobStatus PCorrJob::GPURun(CyberJob::GPUStream *jobStream)
 		_decimx, _decimy,
 		_ncd, _nrd, _z, _work, _cw, _plan);
 
-	if (results == CGPUJob::GPUJobStatus::COMPLETED)
+	if (results == CyberGPU::CGPUJob::GPUJobStatus::COMPLETED)
 	{
 		float value = 0.0;
 		int total = (((_ncd - 1) / TILE_WIDTH) + 1) * (((_nrd / 2) / TILE_WIDTH) + 1);

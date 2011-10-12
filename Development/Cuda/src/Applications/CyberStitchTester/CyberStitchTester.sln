@@ -15,6 +15,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetExternalDeps", "..\..\Ge
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImageDefines", "..\..\logic\ImageDefines\ImageDefines.vcxproj", "{2FF0A361-FC84-437C-95C9-7BF9B637AAC9}"
 	ProjectSection(ProjectDependencies) = postProject
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B} = {F0882D7F-B769-42D1-A057-ED2476C59B8B}
 		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
 	EndProjectSection
 EndProject
@@ -31,6 +32,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ManagedMosaicDataModel", "..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModel.vcxproj", "{84C9E16A-93E3-4105-A3AF-0533131EB43D}"
 	ProjectSection(ProjectDependencies) = postProject
 		{2FF0A361-FC84-437C-95C9-7BF9B637AAC9} = {2FF0A361-FC84-437C-95C9-7BF9B637AAC9}
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B} = {F0882D7F-B769-42D1-A057-ED2476C59B8B}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedMosaicDataModelUnitTest", "..\..\logic\ManagedMosaicDataModel\ManagedMosaicDataModelUnitTest\ManagedMosaicDataModelUnitTest.csproj", "{0DA7E84B-98C6-49B4-89E9-C685FA3C928D}"
@@ -86,9 +88,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIO", "..\..\log
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIOUnitTest", "..\..\logic\ManagedPanelIO\ManagedPanelIOUnitTest\ManagedPanelIOUnitTest.csproj", "{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GPUManager", "..\..\logic\GPUManager\GPUManager.vcxproj", "{F0882D7F-B769-42D1-A057-ED2476C59B8B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {7B804D93-5BED-44B3-94E6-4CC7F32F3B07}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 20
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://tfs.cyberoptics.com:8080/tfs/tpc1
 		SccLocalPath0 = .
@@ -155,6 +162,9 @@ Global
 		SccProjectTopLevelParentUniqueName18 = CyberStitchTester.sln
 		SccProjectName18 = ../../logic/ManagedPanelIO/ManagedPanelIOUnitTest
 		SccLocalPath18 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest
+		SccProjectUniqueName19 = ..\\..\\logic\\GPUManager\\GPUManager.vcxproj
+		SccProjectName19 = ../../logic/GPUManager
+		SccLocalPath19 = ..\\..\\logic\\GPUManager
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -478,6 +488,22 @@ Global
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.ActiveCfg = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.Build.0 = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x86.ActiveCfg = Release|Any CPU
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|Win32.Build.0 = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|x64.ActiveCfg = Debug|x64
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|x64.Build.0 = Debug|x64
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Debug|x86.ActiveCfg = Debug|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|Any CPU.ActiveCfg = Release|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|Win32.ActiveCfg = Release|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|Win32.Build.0 = Release|Win32
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|x64.ActiveCfg = Release|x64
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|x64.Build.0 = Release|x64
+		{F0882D7F-B769-42D1-A057-ED2476C59B8B}.Release|x86.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
