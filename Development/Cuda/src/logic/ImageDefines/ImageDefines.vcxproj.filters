@@ -39,9 +39,6 @@
     <ClInclude Include="JobManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPUManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ImgTransform.cpp">

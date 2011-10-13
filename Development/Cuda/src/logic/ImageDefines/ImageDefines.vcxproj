@@ -173,7 +173,6 @@ copy *.h ..\..\..\pub\include</Command>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="GPUManager.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
