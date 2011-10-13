@@ -64,7 +64,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ManagedPanel\ManagedPanel.vcxproj">
       <Project>{D6409417-3FC6-4EF2-9AFC-04CC54CC71CF}</Project>
-      <Name>CPanel</Name>
+      <Name>ManagedPanel</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

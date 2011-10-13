@@ -86,13 +86,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIO", "..\..\log
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIOUnitTest", "..\..\logic\ManagedPanelIO\ManagedPanelIOUnitTest\ManagedPanelIOUnitTest.csproj", "{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberStitchFidTester", "..\CyberStitchFidTester\CyberStitchFidTester.csproj", "{13971E81-714F-4CED-BE9A-361B52C9CD11}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 19
+		SccNumberOfProjects = 20
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://tfs.cyberoptics.com:8080/tfs/tpc1
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = CyberStitchTester.csproj
+		SccProjectTopLevelParentUniqueName1 = CyberStitchTester.sln
 		SccLocalPath1 = .
 		SccProjectUniqueName2 = ..\\..\\GetExternalDeps\\GetExternalDeps.vcxproj
 		SccProjectTopLevelParentUniqueName2 = CyberStitchTester.sln
@@ -155,6 +158,10 @@ Global
 		SccProjectTopLevelParentUniqueName18 = CyberStitchTester.sln
 		SccProjectName18 = ../../logic/ManagedPanelIO/ManagedPanelIOUnitTest
 		SccLocalPath18 = ..\\..\\logic\\ManagedPanelIO\\ManagedPanelIOUnitTest
+		SccProjectUniqueName19 = ..\\CyberStitchFidTester\\CyberStitchFidTester.csproj
+		SccProjectTopLevelParentUniqueName19 = CyberStitchTester.sln
+		SccProjectName19 = ../CyberStitchFidTester
+		SccLocalPath19 = ..\\CyberStitchFidTester
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -478,6 +485,24 @@ Global
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.ActiveCfg = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x64.Build.0 = Release|Any CPU
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81}.Release|x86.ActiveCfg = Release|Any CPU
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|Win32.ActiveCfg = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|Win32.Build.0 = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|x64.ActiveCfg = Debug|x64
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|x64.Build.0 = Debug|x64
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|x86.ActiveCfg = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Debug|x86.Build.0 = Debug|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|Any CPU.ActiveCfg = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|Mixed Platforms.Build.0 = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|Win32.ActiveCfg = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|Win32.Build.0 = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x64.ActiveCfg = Release|x64
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x64.Build.0 = Release|x64
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x86.ActiveCfg = Release|x86
+		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -494,6 +519,8 @@ Global
 		{D52CAE91-2B4B-4061-BD21-1C9F39426386} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{928F2EF7-3F5A-4B8C-A3D4-81B0AAD5CBAF} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{889C54E2-0039-4413-9FF7-804880438C03} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{13971E81-714F-4CED-BE9A-361B52C9CD11} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 	EndGlobalSection
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 7
