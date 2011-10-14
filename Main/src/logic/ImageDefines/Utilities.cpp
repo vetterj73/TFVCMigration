@@ -411,7 +411,7 @@ void BayerLum(						// Bayer interpolation
    BayerType      order,			// Bayer pattern order; use the enums in bayer.h
    unsigned char  out[],			// Output 24-bit BGR/YCrCb image
    int            ostride,			// Addressed as out[col + row*ostride]
-   COLORSTYLE     type,				// Type of color BGR/YCrCb
+   COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate)	// true, the channel stored seperated
 
    /* BayerLum() performs Bayer interpolation by linear filtering, as
@@ -876,20 +876,28 @@ void BayerLum(						// Bayer interpolation
 		c2Ptr+= ostride;
    }
 
-   if(bChannelSeperate)
+   if(type == YONLY) // One channel
    {
-		unsigned char* tempPtr = out;
-		for(int i=0; i<3; i++)
-		{
-			memcpy(tempPtr, tempPtr+ostride, ncols*sizeof(*out));
-			memcpy(tempPtr+ostride*(nrows-1), tempPtr+ostride*(nrows-2), ncols*sizeof(*out));
-			tempPtr += ostride*nrows;
-		}
+	   	memcpy(out, out+ostride, ncols*sizeof(*out));
+		memcpy(out+ostride*(nrows-1), out+ostride*(nrows-2), ncols*sizeof(*out));
    }
-   else
+   else	// Three channels
    {
-		memcpy(out, out+ostride, ncols*sizeof(*out)*3);
-		memcpy(out+ostride*(nrows-1), out+ostride*(nrows-2), ncols*sizeof(*out)*3);
+	   if(bChannelSeperate)
+	   {
+			unsigned char* tempPtr = out;
+			for(int i=0; i<3; i++)
+			{
+				memcpy(tempPtr, tempPtr+ostride, ncols*sizeof(*out));
+				memcpy(tempPtr+ostride*(nrows-1), tempPtr+ostride*(nrows-2), ncols*sizeof(*out));
+				tempPtr += ostride*nrows;
+			}
+	   }
+	   else
+	   {
+			memcpy(out, out+ostride, ncols*sizeof(*out)*3);
+			memcpy(out+ostride*(nrows-1), out+ostride*(nrows-2), ncols*sizeof(*out)*3);
+	   }
    }
 }
 

@@ -76,4 +76,13 @@ namespace MosaicDM
 		return true;
 	}
 
+	bool MosaicTile::Bayer2Lum(int iBayerTypeIndex)
+	{
+		// Validation check
+		if(!_containsImage)
+			return(false);
+
+		// Bayer to luminance conversion
+		return(_pImage->Bayer2Lum((BayerType)iBayerTypeIndex));
+	}
 }

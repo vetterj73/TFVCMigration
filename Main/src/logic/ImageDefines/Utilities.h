@@ -87,5 +87,5 @@ void BayerLum(						// Bayer interpolation
    BayerType      order,			// Bayer pattern order; use the enums in bayer.h
    unsigned char  out[],			// Output 24-bit BGR/YCrCb image
    int            ostride,			// Addressed as out[col + row*ostride]
-   COLORSTYLE     type,				// Type of color BGR/YCrCb
+   COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate);	// true, the channel stored seperated

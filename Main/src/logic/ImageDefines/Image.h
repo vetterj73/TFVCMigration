@@ -2,6 +2,7 @@
 #include "STL.h"
 #include "ImgTransform.h"
 #include "UIRect.h"
+#include "Utilities.h"
 typedef unsigned char Byte;
 typedef unsigned short Word;
 
@@ -100,6 +101,8 @@ public:
 							const Image* pHeightImg, 
 							double dHeightResolution, 
 							double dPupilDistance);
+
+	bool				Bayer2Lum(BayerType type);
 
 	bool				Save(string sFileName);
 

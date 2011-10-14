@@ -1,5 +1,4 @@
 #include "Image.h"
-#include "Utilities.h"
 #include "Bitmap.h"
 
 #pragma region constructor and configuration
@@ -174,6 +173,36 @@ void Image::ZeroBuffer()
 {
 	if(_buffer != NULL)
 	::memset(_buffer, 0, BufferSizeInBytes());
+}
+
+// Bayer image to luminance conversion 
+bool Image::Bayer2Lum(BayerType type)
+{
+	if(_buffer == NULL) 
+		return(false);
+
+	if(_bytesPerPixel != 1)
+		return(false);
+
+	unsigned char* pTempBuf = new unsigned char[BufferSizeInBytes()];
+	BayerLum(						
+		Columns(),			// Image dimensions 
+		Rows(),
+		_buffer,			// Input 8-bit Bayer image
+		ByteRowStride(),	// Addressed as bayer[col + row*bstride]  
+		type,				// Bayer pattern order; use the enums in bayer.h
+		pTempBuf ,			// Output 24-bit BGR/YCrCb image
+		ByteRowStride(),	// Addressed as out[col + row*ostride]
+		YONLY,				// Type of color BGR/YCrCb/Y
+		false);				// true, the channel stored seperated
+
+	::memcpy(_buffer, pTempBuf, BufferSizeInBytes());
+
+	//Save("C:\\Temp\\lum.bmp");
+
+	delete [] pTempBuf;
+
+	return(true);
 }
 
 // Save image to disc

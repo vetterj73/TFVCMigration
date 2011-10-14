@@ -143,7 +143,7 @@ namespace CyberStitchFidTester
                     CreateIllumImages();
                     RunStitch();
 
-                    _aligner.Save3ChannelImage("c:\\temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
+                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
                                                _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
                                                _fidPanel.GetCADBuffer(),
@@ -198,7 +198,9 @@ namespace CyberStitchFidTester
                     {
                         for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
                         {
-                            // @todo - USE GEORGE'S METHOD FOR CREATING ILLUM
+                            // Convert Bayer to luminance
+                            pLayer.GetTile(j, k).Bayer2Lum(_iBayerType);
+
                             _mosaicSetIllum.AddImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
                         }
                     }
@@ -334,9 +336,9 @@ namespace CyberStitchFidTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSetSim = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetIllum = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetProcessing = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, false, _bBayerPattern, _iBayerType);
+            _mosaicSetSim = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, false, 0); // not bayer pattern
+            _mosaicSetIllum = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, false, false, 0);
+            _mosaicSetProcessing = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, false, false, 0);
             _mosaicSetSim.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSetSim.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetIllum, bMaskForDiffDevices);

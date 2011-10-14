@@ -25,6 +25,11 @@ namespace MMosaicDM
 				return (System::IntPtr)_pMosaicTile->GetImagPtr()->GetBuffer();
 			}
 
+			bool Bayer2Lum(int iType)
+			{
+				return _pMosaicTile->Bayer2Lum(iType);
+			}
+
 			///
 			///	Sets the parameters needed for transform.  If this function isn't called,
 			/// nominal values will be used.

@@ -43,6 +43,8 @@ namespace MosaicDM
 
 			Image* GetImagPtr() {return _pImage;};
 
+			bool Bayer2Lum(int iBayerTypeIndex);
+
 		protected:
 			void ClearImageBuffer()
 			{
