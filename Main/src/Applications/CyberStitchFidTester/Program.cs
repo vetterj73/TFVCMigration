@@ -32,6 +32,8 @@ namespace CyberStitchFidTester
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
 
+        private static ManagedFeatureLocationCheck fidChecker = null;
+
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
         /// 1)  All images are obtained prior to running through CyberStitch.
@@ -80,6 +82,8 @@ namespace CyberStitchFidTester
                     Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
                     return;
                 }
+
+                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
             }
 
 
@@ -149,7 +153,7 @@ namespace CyberStitchFidTester
                                                _fidPanel.GetCADBuffer(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
 
-                    RunFiducialCompare();
+                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials);
                 }
 
                 // should we do another cycle?
@@ -164,9 +168,14 @@ namespace CyberStitchFidTester
             ManagedCoreAPI.TerminateAPI();
         }
 
-        private static void RunFiducialCompare()
+        private static void RunFiducialCompare(IntPtr data, int iFidNums)
         {
-            // @todo - Find a way to compare fids
+            // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
+            int iItems = 6;
+            double[] dResults = new double[iFidNums * iItems];
+
+            // Find fiducial on the board
+            fidChecker.CheckFeatureLocation(data, dResults);
         }
 
         private static void RunStitch()

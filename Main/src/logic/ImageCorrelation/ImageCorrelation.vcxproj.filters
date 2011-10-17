@@ -36,6 +36,9 @@
     <ClInclude Include="FiducialResult.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FeatureLocationCheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OverlapDefines.cpp">
@@ -57,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FiducialResult.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FeatureLocationCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
