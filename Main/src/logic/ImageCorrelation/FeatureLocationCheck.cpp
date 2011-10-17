@@ -134,13 +134,14 @@ bool VsfinderAlign(
 	return(true);
 }
 
-
+// pPanel: the point for fidcial descrptions
 FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 {
 	_pPanel = pPanel;
 	int iNum = _pPanel->NumberOfFiducials();
 	_piTemplateIds = new int[iNum];
 
+	// Vsfinder initialize
 	VsFinderCorrelation::Instance().Config(
 		_pPanel->GetPixelSizeX(), _pPanel->GetNumPixelsInY(), _pPanel->GetNumPixelsInX());
 
@@ -153,6 +154,7 @@ FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 		bool bFidBrighter = true;
 		bool bAllowNegMatch = false;
 
+		// Create Fiducial template 
 		int iVsFinderTemplateId = VsFinderCorrelation::Instance().CreateVsTemplate(iFid->second, bFidBrighter, bAllowNegMatch);
 		if(iVsFinderTemplateId < 0) 
 			return;
@@ -168,6 +170,10 @@ FeatureLocationCheck::~FeatureLocationCheck(void)
 	delete [] _piTemplateIds;
 }
 
+// Find locations of fiducials in a panel image
+// pImage: input, panel image
+// dResults: output, the fidcuial results,
+// for each fiducial return(cad_x, cad_y, Loc_x, loc_y, corrScore, ambig)
 bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[])
 {	
 	// Setttings
@@ -177,15 +183,18 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 	if(pImage == NULL) return(false);
 	double dPixelSize = pImage->PixelSizeX();
 
+	// For each fiducial
 	int iCount = 0;
 	for(FeatureListIterator iFid = _pPanel->beginFiducials(); iFid != _pPanel->endFiducials(); iFid++)
 	{
+		// Prepare search area
 		Box box = iFid->second->GetBoundingBox();
 		double dSearchRowCen, dSearchColCen;
 		pImage->WorldToImage(box.Center().x, box.Center().y, &dSearchRowCen, &dSearchColCen);
 		double dSearchHeight = (box.Width() + dSearchExpansion*2)/dPixelSize; // The CAD and image has 90 degree rotation
 		double dSearchWidth = (box.Height() + dSearchExpansion*2)/dPixelSize;
 
+		// Find fiducial
 		double dCol, dRow, dScore, dAmbig; 
 		bool bFlag= VsfinderAlign(
 			pImage,
@@ -200,8 +209,15 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 			&dRow);
 
 		double dX, dY;
-		pImage->ImageToWorld(dRow, dCol, &dX, &dY);
+		if(dScore==0 || dAmbig==1) // If feature/fiducial is not found
+		{
+			dX = -1;
+			dY = -1;
+		}
+		else
+			pImage->ImageToWorld(dRow, dCol, &dX, &dY);
 
+		// Record results
 		dResults[iCount*iItems] = box.Center().x;	// CAD x  
 		dResults[iCount*iItems+1] = box.Center().y; // CAD y
 		dResults[iCount*iItems+2] = dX;				// Loc x  

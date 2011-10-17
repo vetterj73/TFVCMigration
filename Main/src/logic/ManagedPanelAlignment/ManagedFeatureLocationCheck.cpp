@@ -7,12 +7,12 @@ namespace PanelAlignM {
 	ManagedFeatureLocationCheck::ManagedFeatureLocationCheck(CPanel^ panel)
 	{
 		_pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
-
 		_pChecker = new FeatureLocationCheck(_pPanel);
 	}
 
 	bool ManagedFeatureLocationCheck::CheckFeatureLocation(System::IntPtr pData, array<double>^ pdResults)
 	{
+		// Create image for process
 		ImgTransform inputTransform;
 		inputTransform.Config(_pPanel->GetPixelSizeX(), 
 				_pPanel->GetPixelSizeX(), 0, 0, 0);
@@ -27,6 +27,7 @@ namespace PanelAlignM {
 			false,							// Falg for whether create own buffer
 			(unsigned char*)(void*)pData);
 
+		// Fiducial check
 		int iNum = pdResults->Length;
 		double* pd = new double[iNum];
 		_pChecker->CheckFeatureLocation(&image, pd);

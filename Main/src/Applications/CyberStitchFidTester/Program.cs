@@ -50,6 +50,7 @@ namespace CyberStitchFidTester
             string panelFile = "";
             string fidPanelFile = "";
             bool bContinuous = false;
+            bool bUseProjective = false;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -57,6 +58,8 @@ namespace CyberStitchFidTester
                     bContinuous = true;
                 if (args[i] == "-b")
                     _bBayerPattern = true;
+                if (args[i] == "-w")
+                    bUseProjective = true;
                 if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
                 if (args[i] == "-p" && i < args.Length - 1)
@@ -105,6 +108,8 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
+                if(bUseProjective)
+                    _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
@@ -152,8 +157,8 @@ namespace CyberStitchFidTester
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
                                                _fidPanel.GetCADBuffer(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-
-                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials);
+                    if (fidChecker != null)
+                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials);
                 }
 
                 // should we do another cycle?
