@@ -44,28 +44,29 @@ namespace CyberStitchFidTester
         {
             // Start the logger
             logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
-
             // Gather input data.
             string simulationFile = "";
             string panelFile = "";
             string fidPanelFile = "";
             bool bContinuous = false;
-            bool bUseProjective = false;
 
+            //output csv file shows the comparison results
+            string outputTextPath = @".\fidsCompareResults.csv";
+            StreamWriter writer = null;
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-c")
                     bContinuous = true;
                 if (args[i] == "-b")
                     _bBayerPattern = true;
-                if (args[i] == "-w")
-                    bUseProjective = true;
                 if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
                 if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
                 if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
+                if (args[i] == "-o" && i < args.Length - 1)
+                    outputTextPath = args[i + 1];
             }
 
             _processingPanel = LoadProductionFile(panelFile);
@@ -108,8 +109,6 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
-                if(bUseProjective)
-                    _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
@@ -157,8 +156,15 @@ namespace CyberStitchFidTester
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
                                                _fidPanel.GetCADBuffer(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-                    if (fidChecker != null)
-                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials);
+                    if (_cycleCount==1)
+                    {
+                        writer = new StreamWriter(outputTextPath);
+                        //outline is the output file column names
+                        string outLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
+                        writer.WriteLine(outLine);
+                    }
+
+                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials,writer);
                 }
 
                 // should we do another cycle?
@@ -169,18 +175,42 @@ namespace CyberStitchFidTester
             }
 
             Output("Processing Complete");
+            if (writer != null)
+                writer.Close();
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
         }
 
-        private static void RunFiducialCompare(IntPtr data, int iFidNums)
+        private static void RunFiducialCompare(IntPtr data, int iFidNums,StreamWriter writer)
         {
             // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
             int iItems = 6;
             double[] dResults = new double[iFidNums * iItems];
-
+            double xDifference;
+            double yDifference;
+            double fidDifference=0;
+            string sNofid = "N/A";
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, dResults);
+            for (int i = 0; i < iFidNums * iItems-5; i++)
+            {
+                if (dResults[i + 4] == 0 || dResults[i+5] == 1)
+                {
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6, dResults[i], dResults[i + 1], sNofid, sNofid, dResults[i+4], dResults[i+5]));
+                    i += 5;
+                }
+                else
+                {
+                    xDifference = dResults[i] - dResults[i + 2];
+                    yDifference = dResults[i+1] - dResults[i + 3];
+                    fidDifference += Math.Sqrt(xDifference*xDifference + yDifference*yDifference);
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6, dResults[i], dResults[i + 1], xDifference, yDifference, dResults[i+4], dResults[i+5]));
+                    i += 5;  
+                }
+               
+            }
+            writer.WriteLine("Total diffrent distance is :" + fidDifference);
+           
         }
 
         private static void RunStitch()
