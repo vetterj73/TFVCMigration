@@ -48,16 +48,16 @@ namespace CyberStitchFidTester
             string simulationFile = "";
             string panelFile = "";
             string fidPanelFile = "";
-            bool bContinuous = false;
             bool bUseProjective = false;
+            int numberToRun = 1;
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
             StreamWriter writer = null;
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "-c")
-                    bContinuous = true;
+                if (args[i] == "-n" && i < args.Length - 1)
+                    numberToRun = Convert.ToInt16(args[i + 1]);
                 if (args[i] == "-b")
                     _bBayerPattern = true;
                 if (args[i] == "-w")
@@ -175,8 +175,7 @@ namespace CyberStitchFidTester
                     RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials, writer);
                 }
 
-                // should we do another cycle?
-                if (!bContinuous)
+                if (_cycleCount >= numberToRun)
                     bDone = true;
                 else
                     mDoneEvent.Reset();
