@@ -49,6 +49,7 @@ namespace CyberStitchFidTester
             string panelFile = "";
             string fidPanelFile = "";
             bool bContinuous = false;
+            bool bUseProjective = false;
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
@@ -59,6 +60,8 @@ namespace CyberStitchFidTester
                     bContinuous = true;
                 if (args[i] == "-b")
                     _bBayerPattern = true;
+                if (args[i] == "-w")
+                    bUseProjective = true;
                 if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
                 if (args[i] == "-p" && i < args.Length - 1)
@@ -109,6 +112,8 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
+                if (bUseProjective)
+                    _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
@@ -123,6 +128,7 @@ namespace CyberStitchFidTester
             }
 
             bool bDone = false;
+
             while (!bDone)
             {
                 numAcqsComplete = 0;
@@ -159,12 +165,14 @@ namespace CyberStitchFidTester
                     if (_cycleCount==1)
                     {
                         writer = new StreamWriter(outputTextPath);
+                        writer.WriteLine("Units: Microns");
                         //outline is the output file column names
                         string outLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
                         writer.WriteLine(outLine);
                     }
 
-                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials,writer);
+                    if (fidChecker != null)
+                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials, writer);
                 }
 
                 // should we do another cycle?
@@ -190,21 +198,23 @@ namespace CyberStitchFidTester
             double yDifference;
             double fidDifference=0;
             string sNofid = "N/A";
+            //convert meters to microns
+            int iUnitCoverter = 1000000;
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, dResults);
             for (int i = 0; i < iFidNums * iItems-5; i++)
             {
                 if (dResults[i + 4] == 0 || dResults[i+5] == 1)
                 {
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6, dResults[i], dResults[i + 1], sNofid, sNofid, dResults[i+4], dResults[i+5]));
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i / 6, dResults[i] * iUnitCoverter, dResults[i + 1] * iUnitCoverter, sNofid, sNofid, dResults[i + 4], dResults[i + 5]));
                     i += 5;
                 }
                 else
                 {
-                    xDifference = dResults[i] - dResults[i + 2];
-                    yDifference = dResults[i+1] - dResults[i + 3];
+                    xDifference = (dResults[i] - dResults[i + 2]) * iUnitCoverter;
+                    yDifference = (dResults[i+1] - dResults[i + 3]) * iUnitCoverter;
                     fidDifference += Math.Sqrt(xDifference*xDifference + yDifference*yDifference);
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6, dResults[i], dResults[i + 1], xDifference, yDifference, dResults[i+4], dResults[i+5]));
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i / 6, dResults[i] * iUnitCoverter, dResults[i + 1] * iUnitCoverter, xDifference, yDifference, dResults[i + 4], dResults[i + 5]));
                     i += 5;  
                 }
                
