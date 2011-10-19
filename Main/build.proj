@@ -41,6 +41,8 @@
 
   <!--Unit Test the code -->
   <Target Name="UnitTestCode" DependsOnTargets="BuildCode;NUnitTestCode">
+    <!--Run the big regression test if this is a debug build...-->
+    <Exec ContinueOnError="true" Condition="$(CONFIG)==debug" Command=".\Regression.bat"/>
   </Target>
 
   <!--Publish the results-->
