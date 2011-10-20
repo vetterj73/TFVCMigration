@@ -13,6 +13,15 @@ using SIMMosaicUtils;
 
 namespace CyberStitchFidTester
 {
+    /// <summary>
+    /// The idea behind this program is to run regression tests on CyberStitch.  
+    /// The Concept:
+    /// 1)  Input a SIM Simulation set, a panel file with a small number of fids and a test file with a large number of fids.
+    /// 2)  Output a text file that gives you an indication of how far off the fiducials are in the stitched image 
+    /// compared to known locations.
+    /// 3)  Extra Credit:  This runs as part of the nightly build.  Each night, we can compare a magic number (the total distance offset)
+    /// to the last magic number.  If the Magic Number is increasing, we should be nervous because something we changed is causing problems.
+    /// </summary>
     class Program
     {
         private const double cPixelSizeInMeters = 1.70e-5;
@@ -37,7 +46,6 @@ namespace CyberStitchFidTester
         private static ManagedFeatureLocationCheck fidChecker = null;
 
         // For ouput analysis
-
         private static double[] _dmeanXDiff;
         private static double[] _dmeanYDiff;
         private static double[] _dXDiffTot;
@@ -64,8 +72,8 @@ namespace CyberStitchFidTester
             string simulationFile = "";
             string panelFile = "";
             string fidPanelFile = "";
-            bool bContinuous = false;
             bool bUseProjective = false;
+            bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
 
             //output csv file shows the comparison results
@@ -83,6 +91,8 @@ namespace CyberStitchFidTester
                     fidPanelFile = args[i + 1];
                 else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
+                else if (args[i] == "-r")
+                    bSaveStitchedResultsImage = true;
                 else if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
                 else if (args[i] == "-o" && i < args.Length - 1)
@@ -163,7 +173,6 @@ namespace CyberStitchFidTester
             _dYDiffStdev = new double[ifidsNum];
             _icycleCount = new int[ifidsNum];
 
-
             for (int i = 0; i < ifidsNum; i++)
             {
                 _dmeanXDiff[i] = 0;
@@ -203,7 +212,8 @@ namespace CyberStitchFidTester
                     CreateIllumImages();
                     RunStitch();
 
-                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
+                    if (bSaveStitchedResultsImage)
+                        _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
                                                _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
                                                _fidPanel.GetCADBuffer(),
@@ -220,35 +230,37 @@ namespace CyberStitchFidTester
                     if (fidChecker != null)
                     RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials, writer);
                 }
-				if (_cycleCount >= numberToRun)
+                if (_cycleCount >= numberToRun)
                     bDone = true;
                 else
                     mDoneEvent.Reset();
             }
 
-           	writer.WriteLine(" Fid#,XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev ");
+            writer.WriteLine(" Fid#,XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev ");
             for (int i = 0; i < ifidsNum; i++)
             {
-             	writer.WriteLine(string.Format("{0},{1},{2},{3},{4}", i, _dmeanXDiff[i], _dmeanYDiff[i], _dXDiffStdev[i], _dYDiffStdev[i]));
+                writer.WriteLine(string.Format("{0},{1},{2},{3},{4}", i, _dmeanXDiff[i], _dmeanYDiff[i], _dXDiffStdev[i], _dYDiffStdev[i]));
             }
-			writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
+            writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
 
             Output("Processing Complete");
-          	if (writer != null)
+            if (writer != null)
                 writer.Close();
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
-    	}
+        }
         private static void ShowHelp()
         {
             logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
             logger.AddObjectToThreadQueue("*****************************************");
             logger.AddObjectToThreadQueue("-b // if bayer pattern");
             logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
+            logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
             logger.AddObjectToThreadQueue("-h Show Help");
             logger.AddObjectToThreadQueue("-n <#> // defaults to 1");
             logger.AddObjectToThreadQueue("-o <output.txt>");
             logger.AddObjectToThreadQueue("-p <panelfile.xml>");
+            logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
             logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
             logger.AddObjectToThreadQueue("-w // if projective transform is desired");
             logger.AddObjectToThreadQueue("-----------------------------------------");
