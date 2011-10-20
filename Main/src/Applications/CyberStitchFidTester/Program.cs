@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using MPanelIO;
 using Cyber.DiagnosticUtils;
@@ -25,6 +26,7 @@ namespace CyberStitchFidTester
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
         private static int _cycleCount = 0;
+        private static double allPanelFidDifference = 0.0;
 
         // For debug
         private static int _iBufCount = 0;
@@ -44,6 +46,8 @@ namespace CyberStitchFidTester
         {
             // Start the logger
             logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
+            logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
+
             // Gather input data.
             string simulationFile = "";
             string panelFile = "";
@@ -58,18 +62,24 @@ namespace CyberStitchFidTester
             {
                 if (args[i] == "-n" && i < args.Length - 1)
                     numberToRun = Convert.ToInt16(args[i + 1]);
-                if (args[i] == "-b")
+                else if (args[i] == "-b")
                     _bBayerPattern = true;
-                if (args[i] == "-w")
+                else if (args[i] == "-w")
                     bUseProjective = true;
-                if (args[i] == "-f" && i < args.Length - 1)
+                else if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
-                if (args[i] == "-p" && i < args.Length - 1)
+                else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
-                if (args[i] == "-s" && i < args.Length - 1)
+                else if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
-                if (args[i] == "-o" && i < args.Length - 1)
+                else if (args[i] == "-o" && i < args.Length - 1)
                     outputTextPath = args[i + 1];
+                else if (args[i] == "-h" && i < args.Length - 1)
+                {
+                    ShowHelp();
+                    logger.Kill();
+                    return;
+                }
             }
 
             _processingPanel = LoadProductionFile(panelFile);
@@ -181,11 +191,28 @@ namespace CyberStitchFidTester
                     mDoneEvent.Reset();
             }
 
+            writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
+
             Output("Processing Complete");
             if (writer != null)
                 writer.Close();
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
+        }
+
+        private static void ShowHelp()
+        {
+            logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
+            logger.AddObjectToThreadQueue("*****************************************");
+            logger.AddObjectToThreadQueue("-b // if bayer pattern");
+            logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
+            logger.AddObjectToThreadQueue("-h Show Help");
+            logger.AddObjectToThreadQueue("-n <#> // defaults to 1");
+            logger.AddObjectToThreadQueue("-o <output.txt>");
+            logger.AddObjectToThreadQueue("-p <panelfile.xml>");
+            logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
+            logger.AddObjectToThreadQueue("-w // if projective transform is desired");
+            logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
         private static void RunFiducialCompare(IntPtr data, int iFidNums,StreamWriter writer)
@@ -218,8 +245,8 @@ namespace CyberStitchFidTester
                 }
                
             }
-            writer.WriteLine("Total diffrent distance is :" + fidDifference);
-           
+            writer.WriteLine("Total Combined Offset for this panel:" + fidDifference);
+            allPanelFidDifference += fidDifference;
         }
 
         private static void RunStitch()

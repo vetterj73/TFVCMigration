@@ -51,7 +51,7 @@
 
   <!--Run the sub-build step specific to this project-->
   <Target Name="GenerateDocumentation" DependsOnTargets="UnitTestCode">
-    <Exec ContinueOnError="true" Command="doxygen Doxyfile > $(BUILDRESULTS)Doxygen.log" />
+    <Exec Condition="$(PUBLISH)==true" ContinueOnError="true" Command="doxygen Doxyfile > $(BUILDRESULTS)Doxygen.log" />
   </Target>
 
   <!--Publish the results-->
