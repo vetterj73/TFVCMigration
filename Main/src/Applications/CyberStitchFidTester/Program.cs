@@ -36,6 +36,18 @@ namespace CyberStitchFidTester
 
         private static ManagedFeatureLocationCheck fidChecker = null;
 
+        // For ouput analysis
+
+        private static double[] _dmeanXDiff;
+        private static double[] _dmeanYDiff;
+        private static double[] _dXDiffTot;
+        private static double[] _dYDiffTot;
+        private static double[] _dXDiffSqrTol;
+        private static double[] _dYDiffSqrTol;
+        private static double[] _dXDiffStdev;
+        private static double[] _dYDiffStdev;
+        private static int[] _icycleCount;
+
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
         /// 1)  All images are obtained prior to running through CyberStitch.
@@ -52,6 +64,7 @@ namespace CyberStitchFidTester
             string simulationFile = "";
             string panelFile = "";
             string fidPanelFile = "";
+            bool bContinuous = false;
             bool bUseProjective = false;
             int numberToRun = 1;
 
@@ -122,13 +135,13 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
+                _aligner.LogFiducialOverlaps(true);
                 if (bUseProjective)
                     _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
                 }
-
             }
             catch (Exception except)
             {
@@ -138,6 +151,29 @@ namespace CyberStitchFidTester
             }
 
             bool bDone = false;
+
+            int ifidsNum = _fidPanel.NumberOfFiducials;
+            _dXDiffTot = new double[ifidsNum];
+            _dYDiffTot = new double[ifidsNum];
+            _dmeanXDiff = new double[ifidsNum];
+            _dmeanYDiff = new double[ifidsNum];
+            _dXDiffSqrTol = new double[ifidsNum];
+            _dYDiffSqrTol = new double[ifidsNum];
+            _dXDiffStdev = new double[ifidsNum];
+            _dYDiffStdev = new double[ifidsNum];
+            _icycleCount = new int[ifidsNum];
+
+
+            for (int i = 0; i < ifidsNum; i++)
+            {
+                _dmeanXDiff[i] = 0;
+                _dmeanYDiff[i] = 0;
+                _dXDiffStdev[i] = 0;
+                _dYDiffStdev[i] = 0;
+                _icycleCount[i] = 0;
+                _dXDiffSqrTol[i] = 0;
+                _dYDiffSqrTol[i] = 0;
+            }
 
             while (!bDone)
             {
@@ -172,7 +208,7 @@ namespace CyberStitchFidTester
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
                                                _fidPanel.GetCADBuffer(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-                    if (_cycleCount==1)
+                    if (_cycleCount == 1)
                     {
                         writer = new StreamWriter(outputTextPath);
                         writer.WriteLine("Units: Microns");
@@ -184,22 +220,25 @@ namespace CyberStitchFidTester
                     if (fidChecker != null)
                     RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials, writer);
                 }
-
-                if (_cycleCount >= numberToRun)
+				if (_cycleCount >= numberToRun)
                     bDone = true;
                 else
                     mDoneEvent.Reset();
             }
 
-            writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
+           	writer.WriteLine(" Fid#,XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev ");
+            for (int i = 0; i < ifidsNum; i++)
+            {
+             	writer.WriteLine(string.Format("{0},{1},{2},{3},{4}", i, _dmeanXDiff[i], _dmeanYDiff[i], _dXDiffStdev[i], _dYDiffStdev[i]));
+            }
+			writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
 
             Output("Processing Complete");
-            if (writer != null)
+          	if (writer != null)
                 writer.Close();
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
-        }
-
+    	}
         private static void ShowHelp()
         {
             logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
@@ -215,38 +254,50 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
-        private static void RunFiducialCompare(IntPtr data, int iFidNums,StreamWriter writer)
-        {
+        private static void RunFiducialCompare (IntPtr data, int iFidNums, StreamWriter writer)
+            {
             // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
             int iItems = 6;
-            double[] dResults = new double[iFidNums * iItems];
-            double xDifference;
-            double yDifference;
-            double fidDifference=0;
+            double[] dResults = new double[iFidNums*iItems];
+            double xDifference = 0;
+            double yDifference = 0;
+            double fidDifference = 0;
             string sNofid = "N/A";
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, dResults);
-            for (int i = 0; i < iFidNums * iItems-5; i++)
+            for (int i = 0; i < iFidNums*iItems - 5; i++)
             {
-                if (dResults[i + 4] == 0 || dResults[i+5] == 1)
+                if (dResults[i + 4] == 0 || dResults[i + 5] == 1)
                 {
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i / 6, dResults[i] * iUnitCoverter, dResults[i + 1] * iUnitCoverter, sNofid, sNofid, dResults[i + 4], dResults[i + 5]));
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6,
+                                                   dResults[i]*iUnitCoverter, dResults[i + 1]*iUnitCoverter, sNofid,
+                                                   sNofid, dResults[i + 4], dResults[i + 5]));
                     i += 5;
                 }
                 else
                 {
-                    xDifference = (dResults[i] - dResults[i + 2]) * iUnitCoverter;
-                    yDifference = (dResults[i+1] - dResults[i + 3]) * iUnitCoverter;
+                    _icycleCount[i/6]++;
+                    xDifference = (dResults[i] - dResults[i + 2])*iUnitCoverter;
+                    yDifference = (dResults[i + 1] - dResults[i + 3])*iUnitCoverter;
                     fidDifference += Math.Sqrt(xDifference*xDifference + yDifference*yDifference);
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i / 6, dResults[i] * iUnitCoverter, dResults[i + 1] * iUnitCoverter, xDifference, yDifference, dResults[i + 4], dResults[i + 5]));
-                    i += 5;  
+                    _dXDiffTot[i/6] += Math.Abs(xDifference);
+                    _dmeanXDiff[i/6] = _dXDiffTot[i/6]/_icycleCount[i/6];
+                    _dYDiffTot[i / 6] += Math.Abs(yDifference);
+                    _dmeanYDiff[i/6] = _dYDiffTot[i/6]/_icycleCount[i/6];
+                    _dXDiffSqrTol[i/6] += Math.Pow(xDifference, 2);
+                    _dYDiffSqrTol[i/6] += Math.Pow(yDifference, 2);
+                    _dXDiffStdev[i/6] = Math.Sqrt(_dXDiffSqrTol[i/6]/_icycleCount[i/6] - Math.Pow(_dmeanXDiff[i/6], 2));
+                    _dYDiffStdev[i/6] = Math.Sqrt(_dYDiffSqrTol[i/6]/_icycleCount[i/6] - Math.Pow(_dmeanYDiff[i/6], 2));
+                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6,
+                                                   dResults[i]*iUnitCoverter, dResults[i + 1]*iUnitCoverter, xDifference,
+                                                   yDifference, dResults[i + 4], dResults[i + 5]));
+                    i += 5;
                 }
-               
             }
-            writer.WriteLine("Total Combined Offset for this panel:" + fidDifference);
-            allPanelFidDifference += fidDifference;
+
+            writer.WriteLine("Total diffrent distance is :" + fidDifference);
         }
 
         private static void RunStitch()
