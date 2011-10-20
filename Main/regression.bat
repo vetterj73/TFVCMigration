@@ -22,8 +22,5 @@ REM     RUN All collected panels
 %APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%3FidsProjective.txt -l %OUTPUTBACKUP%3FidsProjective.txt -u .\Results\UnitTest\ -n 6
 %APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%4FidsProjective.txt -l %OUTPUTBACKUP%4FidsProjective.txt -u .\Results\UnitTest\ -n 6
 
-REM		Test that the results are the same as last time
-REM TODO .\src\Applications\DBCompare\bin\Release\DBCompare.exe -1 c:\SentryData\Sentry.yap -2 c:\SentryDataBackup\Sentry.yap -o .\DBCompareResults.txt
-
 
 
