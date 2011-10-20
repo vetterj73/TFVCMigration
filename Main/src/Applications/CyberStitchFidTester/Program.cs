@@ -242,10 +242,10 @@ namespace CyberStitchFidTester
                     mDoneEvent.Reset();
             }
 
-            writer.WriteLine(" Fid#,XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev ");
+            writer.WriteLine(" Fid#,XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev,Number of cycle ");
             for (int i = 0; i < ifidsNum; i++)
             {
-                writer.WriteLine(string.Format("{0},{1},{2},{3},{4}", i, _dmeanXDiff[i], _dmeanYDiff[i], _dXDiffStdev[i], _dYDiffStdev[i]));
+                writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", i, _dmeanXDiff[i], _dmeanYDiff[i], _dXDiffStdev[i], _dYDiffStdev[i],_icycleCount[i]));
             }
             writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
 
