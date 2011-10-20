@@ -45,7 +45,7 @@ namespace CyberStitchFidTester
 
         private static ManagedFeatureLocationCheck fidChecker = null;
 
-        // For ouput analysis
+        // For output analysis
         private static double[] _dmeanXDiff;
         private static double[] _dmeanYDiff;
         private static double[] _dXDiffTot;
@@ -75,28 +75,34 @@ namespace CyberStitchFidTester
             bool bUseProjective = false;
             bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
+            string unitTestFolder="";
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
+            string lastOutputTextPath = @".\fidsCompareResults.csv";
             StreamWriter writer = null;
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "-n" && i < args.Length - 1)
-                    numberToRun = Convert.ToInt16(args[i + 1]);
-                else if (args[i] == "-b")
+                if (args[i] == "-b")
                     _bBayerPattern = true;
-                else if (args[i] == "-w")
-                    bUseProjective = true;
                 else if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
+                else if (args[i] == "-l" && i < args.Length - 1)
+                    lastOutputTextPath = args[i + 1];
+                else if (args[i] == "-n" && i < args.Length - 1)
+                    numberToRun = Convert.ToInt16(args[i + 1]);
+                else if (args[i] == "-o" && i < args.Length - 1)
+                    outputTextPath = args[i + 1];
                 else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
                 else if (args[i] == "-r")
                     bSaveStitchedResultsImage = true;
                 else if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
-                else if (args[i] == "-o" && i < args.Length - 1)
-                    outputTextPath = args[i + 1];
+                else if (args[i] == "-u" && i < args.Length - 1)
+                    unitTestFolder = args[i + 1];
+                else if (args[i] == "-w")
+                    bUseProjective = true;
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -243,6 +249,29 @@ namespace CyberStitchFidTester
             }
             writer.WriteLine(string.Format("MagicNumber: {0}", allPanelFidDifference));
 
+            if (File.Exists(lastOutputTextPath))
+            {
+                string[] lines = File.ReadAllLines(lastOutputTextPath);
+                string lastLine = lines[lines.Length - 1];
+                string[] parts = lastLine.Split(':');
+                double lastMagic = 0;
+                bool bGood = false;
+                if (parts.Length > 1 && double.TryParse(parts[1], out lastMagic))
+                {
+                    if (allPanelFidDifference <= lastMagic)
+                        bGood = true;
+                }
+
+                Console.WriteLine("Are we as good as last time: " + (bGood?"Yes!":"No!"));
+
+                if (Directory.Exists(unitTestFolder))
+                {
+                    string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
+                    NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "MagicNumber", bGood);
+                }
+            }
+
+
             Output("Processing Complete");
             if (writer != null)
                 writer.Close();
@@ -257,11 +286,13 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
             logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
             logger.AddObjectToThreadQueue("-h Show Help");
-            logger.AddObjectToThreadQueue("-n <#> // defaults to 1");
+            logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
+            logger.AddObjectToThreadQueue("-n <#> // Number of panels - defaults to 1");
             logger.AddObjectToThreadQueue("-o <output.txt>");
             logger.AddObjectToThreadQueue("-p <panelfile.xml>");
             logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
             logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
+            logger.AddObjectToThreadQueue("-u <UnitTestFolder>");
             logger.AddObjectToThreadQueue("-w // if projective transform is desired");
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
@@ -309,7 +340,8 @@ namespace CyberStitchFidTester
                 }
             }
 
-            writer.WriteLine("Total diffrent distance is :" + fidDifference);
+            writer.WriteLine("Total Difference for this Panel: " + fidDifference);
+            allPanelFidDifference += fidDifference;
         }
 
         private static void RunStitch()

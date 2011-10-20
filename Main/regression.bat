@@ -15,12 +15,12 @@ REM		Create Output Directory
 mkdir  %OUTPUTDIR%
 
 REM     RUN All collected panels
-%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%2Fids.txt -n 6
-%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%3Fids.txt -n 6
-%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%4Fids.txt -n 6
-%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%2FidsProjective.txt -n 6
-%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%3FidsProjective.txt -n 6
-%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%4FidsProjective.txt -n 6
+%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%2Fids.txt -l %OUTPUTBACKUP%2Fids.txt -u .\Results\UnitTest\ -n 6
+%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%3Fids.txt -l %OUTPUTBACKUP%3Fids.txt -u .\Results\UnitTest\ -n 6
+%APP% -b -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%4Fids.txt -l %OUTPUTBACKUP%4Fids.txt -u .\Results\UnitTest\ -n 6
+%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%2FidsProjective.txt -l %OUTPUTBACKUP%2FidsProjective.txt -u .\Results\UnitTest\ -n 6
+%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%3FidsProjective.txt -l %OUTPUTBACKUP%3FidsProjective.txt -u .\Results\UnitTest\ -n 6
+%APP% -b -w -s "%SIMDATA%SIMScenario.xml" -p "%CADDIR%PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%4FidsProjective.txt -l %OUTPUTBACKUP%4FidsProjective.txt -u .\Results\UnitTest\ -n 6
 
 REM		Test that the results are the same as last time
 REM TODO .\src\Applications\DBCompare\bin\Release\DBCompare.exe -1 c:\SentryData\Sentry.yap -2 c:\SentryDataBackup\Sentry.yap -o .\DBCompareResults.txt

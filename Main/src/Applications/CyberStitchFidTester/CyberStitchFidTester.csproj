@@ -70,7 +70,8 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DiagnosticUtils">
+    <Reference Include="DiagnosticUtils, Version=1.1.56.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\CyberCommon\bin\Release\DiagnosticUtils.dll</HintPath>
     </Reference>
     <Reference Include="ImageUtils">
