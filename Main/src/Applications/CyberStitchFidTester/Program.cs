@@ -258,7 +258,8 @@ namespace CyberStitchFidTester
                 bool bGood = false;
                 if (parts.Length > 1 && double.TryParse(parts[1], out lastMagic))
                 {
-                    if (allPanelFidDifference <= lastMagic)
+                    // Check that we are at least as good as last time (to the nearest micron)
+                    if (Math.Round(allPanelFidDifference) <= Math.Round(lastMagic))
                         bGood = true;
                 }
 

@@ -113,5 +113,14 @@ namespace CPanelIOUnitTest
                                   PixelFormat.Format8bppIndexed,
                                   ImageFormat.Png);
         }
+
+        [TestMethod]
+        public void RoundingTests()
+        {
+            double round = Math.Round(21343.23423, 3);
+
+            Assert.IsTrue(round == 21343.234);
+        }
+
     }
 }
