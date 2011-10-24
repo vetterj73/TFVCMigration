@@ -171,9 +171,9 @@ namespace MosaicDM
 	bool MosaicSet::SaveAllStitchedImagesToDirectory(string directoryName)
 	{
 		string fullDir = directoryName;
-		if(directoryName[directoryName.size()-1] != '/' &&
-		   directoryName[directoryName.size()-1] != '\\')
-		   fullDir += "\\";
+		//if(directoryName[directoryName.size()-1] != '/' &&
+		//   directoryName[directoryName.size()-1] != '\\')
+		//   fullDir += "\\";
 
 		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
 		{
@@ -200,9 +200,9 @@ namespace MosaicDM
 		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
 	{
 		string fullDir = directoryName;
-		if(directoryName[directoryName.size()-1] != '/' &&
-		   directoryName[directoryName.size()-1] != '\\')
-		   fullDir += "\\";
+		//if(directoryName[directoryName.size()-1] != '/' &&
+		//   directoryName[directoryName.size()-1] != '\\')
+		//   fullDir += "\\";
 
 		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
 		{
