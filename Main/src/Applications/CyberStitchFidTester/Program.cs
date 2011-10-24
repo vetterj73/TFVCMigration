@@ -79,7 +79,7 @@ namespace CyberStitchFidTester
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
-            string lastOutputTextPath = @".\fidsCompareResults.csv";
+            string lastOutputTextPath = @".\lastFidsCompareResults.csv";
             StreamWriter writer = null;
             for (int i = 0; i < args.Length; i++)
             {
