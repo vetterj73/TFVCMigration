@@ -131,7 +131,10 @@ namespace CyberStitchFidTester
 
                 fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
             }
-
+            else
+            {
+                Console.WriteLine("Not exist Fid Test File: " + fidPanelFile);
+            }
 
             // Initialize the SIM CoreAPI
             if (!InitializeSimCoreAPI(simulationFile))

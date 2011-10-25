@@ -2,6 +2,7 @@
 #include "Panel.h";
 
 // This class is to find the locations of fiducials on the panel (image)
+class Image;
 class FeatureLocationCheck
 {
 public:
@@ -13,5 +14,11 @@ public:
 private:
 	Panel* _pPanel;
 	int* _piTemplateIds;
+	double _dSearchExpansion;
+
+	// for debug
+	int _iCycleCount;
+	Image* _pFidImages;
+
 };
 

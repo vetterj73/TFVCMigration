@@ -3,6 +3,7 @@
 #include "Image.h"
 #include "RenderShape.h"
 #include "VsFinderCorrelation.h"
+#include "Bitmap.h"
 #include <map>
 using std::map;
 typedef map<int, Feature*> FeatureList;
@@ -22,17 +23,16 @@ void RenderFiducial(
 	Image* pImg, 
 	Feature* pFid, 
 	double resolution, 
-	double dScale)
+	double dScale,
+	double dExpansion)
 {
 	// Area in world space
-	double dExpandX = 0.005;
-	double dExpandY = 0.005;
 	double dHalfWidth = pFid->GetBoundingBox().Width()/2;
 	double dHalfHeight= pFid->GetBoundingBox().Height()/2;
-	double xMinImg = pFid->GetBoundingBox().Min().x - dHalfWidth*(dScale-1)  - dExpandX; 
-	double yMinImg = pFid->GetBoundingBox().Min().y - dHalfHeight*(dScale-1) - dExpandY; 
-	double xMaxImg = pFid->GetBoundingBox().Max().x + dHalfWidth*(dScale-1)  + dExpandX; 
-	double yMaxImg = pFid->GetBoundingBox().Max().y + dHalfHeight*(dScale-1) + dExpandY;
+	double xMinImg = pFid->GetBoundingBox().Min().x - dHalfWidth*(dScale-1)  - dExpansion; 
+	double yMinImg = pFid->GetBoundingBox().Min().y - dHalfHeight*(dScale-1) - dExpansion; 
+	double xMaxImg = pFid->GetBoundingBox().Max().x + dHalfWidth*(dScale-1)  + dExpansion; 
+	double yMaxImg = pFid->GetBoundingBox().Max().y + dHalfHeight*(dScale-1) + dExpansion;
 	
 	// The size of image in pixels
 	unsigned int nRowsImg
@@ -68,7 +68,11 @@ void RenderFiducial(
 
 
 // Create Fiducial images
-void CreateFiducialImage(Panel* pPanel, Image* pImage, Feature* pFeature)
+void CreateFiducialImage(
+	Panel* pPanel, 
+	Image* pImage, 
+	Feature* pFeature,
+	double dExpansion)
 {
 	double dScale = 1.4;
 	
@@ -76,7 +80,8 @@ void CreateFiducialImage(Panel* pPanel, Image* pImage, Feature* pFeature)
 		pImage, 
 		pFeature, 
 		pPanel->GetPixelSizeX(), 
-		dScale);	
+		dScale,
+		dExpansion);	
 }
 
 bool VsfinderAlign(
@@ -134,12 +139,69 @@ bool VsfinderAlign(
 	return(true);
 }
 
+
+// For Debug
+void DumpImg(
+	string sFileName, int iWidth, int iHeight,
+	Image* pImg1, int iStartX1, int iStartY1,
+	Image* pImg2, int iStartX2, int iStartY2)
+{
+	unsigned char* pcBuf1 = pImg1->GetBuffer() 
+		+ pImg1->PixelRowStride()*iStartY1
+		+ iStartX1;
+
+	/* for debug
+	Bitmap *grey1 = Bitmap::NewBitmapFromBuffer( 
+		_roi1.Rows(), 
+		_roi1.Columns(),
+		_pImg1->PixelRowStride(),
+		pcBuf1,
+		8);
+	grey1->write(sFileName);
+	delete grey1;
+	//*/
+
+	unsigned char* pcBuf2 = pImg2->GetBuffer() 
+		+ pImg2->PixelRowStride()*iStartY2
+		+ iStartX2;
+
+	Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+		iHeight, 
+		iWidth,
+		pcBuf1, 
+		pcBuf2,
+		pImg1->PixelRowStride(),
+		pImg2->PixelRowStride() );
+
+	/* for debug
+	Bitmap *grey2 = Bitmap::NewBitmapFromBuffer( 
+		_roi2.Rows(), 
+		_roi2.Columns(),
+		_pImg2->PixelRowStride(),
+		pcBuf2,
+		8);
+	grey2->write(sFileName);
+	delete grey2;
+	//*/
+
+	rbg->write(sFileName);
+
+	delete rbg;
+}
+
 // pPanel: the point for fidcial descrptions
 FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 {
+	// Setttings
+	_dSearchExpansion = 5e-3; // 5 mm
+
 	_pPanel = pPanel;
 	int iNum = _pPanel->NumberOfFiducials();
 	_piTemplateIds = new int[iNum];
+
+	// For debug
+	_iCycleCount = 0;
+	_pFidImages = new Image[iNum];
 
 	// Vsfinder initialize
 	VsFinderCorrelation::Instance().Config(
@@ -148,9 +210,10 @@ FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 	int iCount = 0;
 	for(FeatureListIterator iFid = _pPanel->beginFiducials(); iFid != _pPanel->endFiducials(); iFid++)
 	{
+		// For Debug
 		// Create a fiducial image
-		Image fiducialImg;
-		CreateFiducialImage(_pPanel, &fiducialImg, iFid->second);
+		CreateFiducialImage(_pPanel, &_pFidImages[iCount], iFid->second, _dSearchExpansion);
+
 		bool bFidBrighter = true;
 		bool bAllowNegMatch = false;
 
@@ -167,6 +230,7 @@ FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 
 FeatureLocationCheck::~FeatureLocationCheck(void)
 {
+	delete [] _pFidImages;
 	delete [] _piTemplateIds;
 }
 
@@ -177,7 +241,6 @@ FeatureLocationCheck::~FeatureLocationCheck(void)
 bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[])
 {	
 	// Setttings
-	double dSearchExpansion = 5e-3; // 5 mm
 	int iItems = 6;
 	
 	if(pImage == NULL) return(false);
@@ -191,8 +254,8 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 		Box box = iFid->second->GetBoundingBox();
 		double dSearchRowCen, dSearchColCen;
 		pImage->WorldToImage(box.Center().x, box.Center().y, &dSearchRowCen, &dSearchColCen);
-		double dSearchHeight = (box.Width() + dSearchExpansion*2)/dPixelSize; // The CAD and image has 90 degree rotation
-		double dSearchWidth = (box.Height() + dSearchExpansion*2)/dPixelSize;
+		double dSearchHeight = (box.Width() + _dSearchExpansion*2)/dPixelSize; // The CAD and image has 90 degree rotation
+		double dSearchWidth = (box.Height() + _dSearchExpansion*2)/dPixelSize;
 
 		// Find fiducial
 		double dCol, dRow, dScore, dAmbig; 
@@ -224,6 +287,18 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 		dResults[iCount*iItems+3] = dY;				// Loc y
 		dResults[iCount*iItems+4] = dScore;			// Loc x  
 		dResults[iCount*iItems+5] = dAmbig;			// Loc y
+
+		// For debug image output
+		string sFileName;
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "C:\\Temp\\Cycle%d_Fid%d.bmp", 
+			_iCycleCount, iCount);
+		sFileName.append(cTemp);
+
+		DumpImg(
+			sFileName, (int)dSearchWidth, (int)dSearchHeight,
+			pImage, (int)(dSearchColCen-dSearchWidth/2), (int)(dSearchRowCen-dSearchHeight/2),
+			&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
 
 		iCount++;
 	}
