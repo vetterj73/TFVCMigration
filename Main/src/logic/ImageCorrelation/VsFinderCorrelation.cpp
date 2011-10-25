@@ -128,8 +128,8 @@ bool VsFinderCorrelation::CreateVsTemplate(
 	bool bFiducialAllowNegativeMatch,
 	int* pTemplateID)
 {
-	double dMinScale[2]={0.95, 0.95};
-	double dMaxScale[2]={1.05, 1.05};
+	double dMinScale[2]={0.90, 0.90};
+	double dMaxScale[2]={1.10, 1.10};
 
 	int iFidBrighterThanBackground = bFiducialBrighterThanBackground? 1 : 0;
 
