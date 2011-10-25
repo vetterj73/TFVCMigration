@@ -266,7 +266,7 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 		dResults[iCount*iItems+4] = dScore;			// Loc x  
 		dResults[iCount*iItems+5] = dAmbig;			// Loc y
 
-		// For debug image output
+		/* For debug image output
 		string sFileName;
 		char cTemp[100];
 		sprintf_s(cTemp, 100, "C:\\Temp\\Cycle%d_Fid%d.bmp", 
@@ -292,7 +292,8 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 				sFileName, (int)dSearchWidth, (int)dSearchHeight,
 				pImage, (int)(dCol-dSearchWidth/2), (int)(dRow-dSearchHeight/2),
 				&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
-		}
+		}//*/
+
 		iCount++;
 	}
 
