@@ -150,17 +150,6 @@ void DumpImg(
 		+ pImg1->PixelRowStride()*iStartY1
 		+ iStartX1;
 
-	/* for debug
-	Bitmap *grey1 = Bitmap::NewBitmapFromBuffer( 
-		_roi1.Rows(), 
-		_roi1.Columns(),
-		_pImg1->PixelRowStride(),
-		pcBuf1,
-		8);
-	grey1->write(sFileName);
-	delete grey1;
-	//*/
-
 	unsigned char* pcBuf2 = pImg2->GetBuffer() 
 		+ pImg2->PixelRowStride()*iStartY2
 		+ iStartX2;
@@ -172,17 +161,6 @@ void DumpImg(
 		pcBuf2,
 		pImg1->PixelRowStride(),
 		pImg2->PixelRowStride() );
-
-	/* for debug
-	Bitmap *grey2 = Bitmap::NewBitmapFromBuffer( 
-		_roi2.Rows(), 
-		_roi2.Columns(),
-		_pImg2->PixelRowStride(),
-		pcBuf2,
-		8);
-	grey2->write(sFileName);
-	delete grey2;
-	//*/
 
 	rbg->write(sFileName);
 
@@ -300,6 +278,21 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 			pImage, (int)(dSearchColCen-dSearchWidth/2), (int)(dSearchRowCen-dSearchHeight/2),
 			&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
 
+		// for debug image output
+		if(dScore!=0 && dAmbig!=1)
+		{
+			sprintf_s(cTemp, 100, "C:\\Temp\\Result_Cycle%d_Fid%d_c%dr%d_s%da%d.bmp", 
+				_iCycleCount, iCount, 
+				(int)((dY-box.Center().y)*1e6), (int)((dX-box.Center().x)*1e6),
+				(int)(dScore*100), (int)(dAmbig*100) );
+			sFileName.clear();
+			sFileName.append(cTemp);
+
+			DumpImg(
+				sFileName, (int)dSearchWidth, (int)dSearchHeight,
+				pImage, (int)(dCol-dSearchWidth/2), (int)(dRow-dSearchHeight/2),
+				&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
+		}
 		iCount++;
 	}
 
