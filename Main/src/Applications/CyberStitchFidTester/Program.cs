@@ -109,12 +109,19 @@ namespace CyberStitchFidTester
                 }
             }
 
-            _processingPanel = LoadProductionFile(panelFile);
-            if (_processingPanel == null)
+            if (File.Exists(panelFile))
             {
-                logger.Kill();
-                Console.WriteLine("Could not load Panel File: " + panelFile);
-                return;
+                _processingPanel = LoadProductionFile(panelFile);
+                if (_processingPanel == null)
+                {
+                    logger.Kill();
+                    Console.WriteLine("Could not load Panel File: " + panelFile);
+                    return;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Not exist Panel File: " + panelFile);
             }
 
             if (File.Exists(fidPanelFile))
@@ -218,6 +225,12 @@ namespace CyberStitchFidTester
                     RunStitch();
 
                     //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
+                    // for fiducials(used for stitch) location check
+                    //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
+                    //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
+                    //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
+                    //                          _processingPanel.GetCADBuffer(),
+                    //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
 
                     if (bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
