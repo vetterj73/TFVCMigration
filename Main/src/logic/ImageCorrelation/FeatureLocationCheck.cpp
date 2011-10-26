@@ -99,7 +99,8 @@ bool VsfinderAlign(
 {
 	double x, y, corscore, ambig, ngc;
 	double time_out = 1e5;			// MicroSeconds
-	double dMinScore = 0.5;
+	double dMinScore = 0.4;
+	double dMaxAmbig = 0.7;
 	
 	VsFinderCorrelation::Instance().Find(
 		iTemplateID,		// map ID of template  and finder
@@ -121,7 +122,7 @@ bool VsfinderAlign(
 		dMinScore/3);		// If >0 minumum score to accept at max pyramid level to look for peak override
 							// Use a lower minimum score for vsfinder so that we can get a reliable ambig score
 
-	if(corscore > dMinScore)	// Valid results
+	if(corscore > dMinScore && ambig < dMaxAmbig)	// Valid results
 	{
 		*pdScore = corscore;
 		*pdAmbig = ambig;
@@ -283,7 +284,7 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 		{
 			sprintf_s(cTemp, 100, "C:\\Temp\\Result_Cycle%d_Fid%d_c%dr%d_s%da%d.bmp", 
 				_iCycleCount, iCount, 
-				(int)((dY-box.Center().y)*1e6), (int)((dX-box.Center().x)*1e6),
+				(int)((box.Center().y-dY)*1e6), (int)((box.Center().x-dX)*1e6),
 				(int)(dScore*100), (int)(dAmbig*100) );
 			sFileName.clear();
 			sFileName.append(cTemp);
@@ -296,6 +297,8 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 
 		iCount++;
 	}
+
+	_iCycleCount++;
 
 	return(true);
 }

@@ -122,6 +122,7 @@ namespace CyberStitchFidTester
             else
             {
                 Console.WriteLine("Not exist Panel File: " + panelFile);
+                return;
             }
 
             if (File.Exists(fidPanelFile))
@@ -139,6 +140,7 @@ namespace CyberStitchFidTester
             else
             {
                 Console.WriteLine("Not exist Fid Test File: " + fidPanelFile);
+                return;
             }
 
             // Initialize the SIM CoreAPI
@@ -313,6 +315,7 @@ namespace CyberStitchFidTester
             logger.Kill();
             ManagedCoreAPI.TerminateAPI();
         }
+
         private static void ShowHelp()
         {
             logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
@@ -613,8 +616,8 @@ namespace CyberStitchFidTester
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
-             Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
-                 pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
+            // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
+             //    pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
             uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
