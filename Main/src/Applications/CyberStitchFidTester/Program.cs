@@ -109,6 +109,8 @@ namespace CyberStitchFidTester
                 }
             }
 
+            writer = new StreamWriter(outputTextPath);
+
             if (File.Exists(panelFile))
             {
                 _processingPanel = LoadProductionFile(panelFile);
@@ -242,7 +244,6 @@ namespace CyberStitchFidTester
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
                     {
-                        writer = new StreamWriter(outputTextPath);
                         writer.WriteLine("Units: Microns");
                         //outline is the output file column names
                         string outLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
