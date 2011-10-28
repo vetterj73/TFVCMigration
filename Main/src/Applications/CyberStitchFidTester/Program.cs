@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using Cyber.ImageUtils;
 using MPanelIO;
 using Cyber.DiagnosticUtils;
 using Cyber.MPanel;
@@ -42,8 +43,7 @@ namespace CyberStitchFidTester
         private static bool _bSimulating = false;
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
-
-        private static ManagedFeatureLocationCheck fidChecker = null;
+        private static StreamWriter writer = null;
 
         // For output analysis
         private static double[] _dXDiffSum;
@@ -78,13 +78,15 @@ namespace CyberStitchFidTester
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
             string lastOutputTextPath = @".\lastFidsCompareResults.csv";
-            StreamWriter writer = null;
+            string imagePath = "";
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-b")
                     _bBayerPattern = true;
                 else if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
+                else if (args[i] == "-i" && i < args.Length - 1)
+                    imagePath = args[i + 1];
                 else if (args[i] == "-l" && i < args.Length - 1)
                     lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-n" && i < args.Length - 1)
@@ -110,19 +112,22 @@ namespace CyberStitchFidTester
             }
 
             writer = new StreamWriter(outputTextPath);
-
-            if (File.Exists(panelFile))
+            bool bImageOnly = false;
+            if (File.Exists(imagePath))
+                bImageOnly = true;
+            if (!bImageOnly && File.Exists(panelFile))
             {
                 _processingPanel = LoadProductionFile(panelFile);
                 if (_processingPanel == null)
                 {
-                    logger.Kill();
+                    Terminate();
                     Console.WriteLine("Could not load Panel File: " + panelFile);
                     return;
                 }
             }
-            else
+            else if (!bImageOnly)
             {
+                Terminate();
                 Console.WriteLine("Not exist Panel File: " + panelFile);
                 return;
             }
@@ -132,23 +137,33 @@ namespace CyberStitchFidTester
                 _fidPanel = LoadProductionFile(fidPanelFile);
                 if (_fidPanel == null)
                 {
-                    logger.Kill();
+                    Terminate();
                     Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
                     return;
                 }
-
-                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
             }
             else
             {
-                Console.WriteLine("Not exist Fid Test File: " + fidPanelFile);
+                Terminate();
+                Console.WriteLine("Fid Test File does not exist: " + fidPanelFile);
                 return;
             }
+
+            if (File.Exists(imagePath))
+            {
+                // This allows images to directly be sent in instead of using CyberStitch to create them
+                CyberBitmapData cbd = new CyberBitmapData();
+                cbd.Lock(imagePath);
+                RunFiducialCompare(cbd.Scan0, writer);
+                Terminate();
+                return;
+            }
+
 
             // Initialize the SIM CoreAPI
             if (!InitializeSimCoreAPI(simulationFile))
             {
-                logger.Kill();
+                Terminate();
                 Console.WriteLine("Could not initialize Core API");
                 return;
             }
@@ -174,7 +189,7 @@ namespace CyberStitchFidTester
             catch (Exception except)
             {
                 Output("Error Changing Production: " + except.Message);
-                logger.Kill();
+                Terminate();
                 return;
             }
 
@@ -250,8 +265,8 @@ namespace CyberStitchFidTester
                         writer.WriteLine(outLine);
                     }
 
-                    if (fidChecker != null)
-                    RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.NumberOfFiducials, writer);
+                    if (_fidPanel != null)
+                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), writer);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -311,10 +326,17 @@ namespace CyberStitchFidTester
             }
 
             Output("Processing Complete");
+            Terminate();
+            ManagedCoreAPI.TerminateAPI();
+        }
+
+        private static void Terminate()
+        {
             if (writer != null)
                 writer.Close();
-            logger.Kill();
-            ManagedCoreAPI.TerminateAPI();
+
+            if(logger != null)
+                logger.Kill();
         }
 
         private static void ShowHelp()
@@ -323,6 +345,7 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("*****************************************");
             logger.AddObjectToThreadQueue("-b // if bayer pattern");
             logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
+            logger.AddObjectToThreadQueue("-i <imagePath> instead of running cyberstitch");
             logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
             logger.AddObjectToThreadQueue("-h Show Help");
             logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
@@ -336,8 +359,11 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
-        private static void RunFiducialCompare (IntPtr data, int iFidNums, StreamWriter writer)
+        private static void RunFiducialCompare (IntPtr data, StreamWriter writer)
         {
+            int iFidNums = _fidPanel.NumberOfFiducials;
+            ManagedFeatureLocationCheck fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
+
             // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
             int iItems = 6;
             double[] dResults = new double[iFidNums*iItems];
@@ -349,35 +375,6 @@ namespace CyberStitchFidTester
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, dResults);
-           /* for (int i = 0; i < iFidNums*iItems - 5; i++)
-            {
-                if (dResults[i + 4] == 0 || dResults[i + 5] == 1)
-                {
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6,
-                                                   dResults[i]*iUnitCoverter, dResults[i + 1]*iUnitCoverter, sNofid,
-                                                   sNofid, dResults[i + 4], dResults[i + 5]));
-                    i += 5;
-                }
-                else
-                {
-                    _icycleCount[i/6]++;
-                    xDifference = (dResults[i] - dResults[i + 2])*iUnitCoverter;
-                    yDifference = (dResults[i + 1] - dResults[i + 3])*iUnitCoverter;
-                    fidDifference += Math.Sqrt(xDifference*xDifference + yDifference*yDifference);
-                    _dXDiffSum[i/6] += Math.Abs(xDifference);
-                    _dmeanXDiff[i/6] = _dXDiffSum[i/6]/_icycleCount[i/6];
-                    _dYDiffSum[i / 6] += Math.Abs(yDifference);
-                    _dmeanYDiff[i/6] = _dYDiffSum[i/6]/_icycleCount[i/6];
-                    _dXDiffSqrSum[i/6] += Math.Pow(xDifference, 2);
-                    _dYDiffSqrSum[i/6] += Math.Pow(yDifference, 2);
-                    _dXDiffStdev[i/6] = Math.Sqrt(_dXDiffSqrSum[i/6]/_icycleCount[i/6] - Math.Pow(_dmeanXDiff[i/6], 2));
-                    _dYDiffStdev[i/6] = Math.Sqrt(_dYDiffSqrSum[i/6]/_icycleCount[i/6] - Math.Pow(_dmeanYDiff[i/6], 2));
-                    writer.WriteLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", _cycleCount, i/6,
-                                                   dResults[i]*iUnitCoverter, dResults[i + 1]*iUnitCoverter, xDifference,
-                                                   yDifference, dResults[i + 4], dResults[i + 5]));
-                    i += 5;
-                }
-            }*/
 
             for (int i = 0; i < iFidNums; i++)
             {
