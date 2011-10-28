@@ -1,6 +1,5 @@
 #pragma once
 #include "STL.h"
-//#include "GPUManager.h"
 #include "ImgTransform.h"
 #include "UIRect.h"
 typedef unsigned char Byte;

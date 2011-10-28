@@ -1,6 +1,5 @@
 #include "GPUManager.h"
 #include "GPUStream.h"
-//#include "JobThread.h"
 
 #define FOV_Width 2592
 #define FOV_Height 1944

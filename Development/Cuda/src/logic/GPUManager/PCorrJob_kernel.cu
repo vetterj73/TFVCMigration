@@ -8,8 +8,8 @@
 #include <stdio.h>
 
 #define TILE_WIDTH 16
-#define MAX_ROW_SIZE 2000 // max shared memory is 0x4000 bytes
-#define MAX_COL_SIZE 2000 // max shared memory is 0x4000 bytes
+#define TILE_16 16 // must be 16
+#define TILE_16_HALF 8 // must be 8
 
 
 __global__ void ApplyEqualizationKernel(unsigned char* dA, unsigned char* dB, complexf* dZ,
@@ -22,21 +22,121 @@ __global__ void ApplyEqualizationKernel(unsigned char* dA, unsigned char* dB, co
 
 	if (row >= height || col >= width) return;
 
-	//if (row <= height/2+240/*/2 /*&& col <= width/2*/)
-	//{
-		dZ[row * outstride + col].r = acurve[dA[row * instride + col]];
-		dZ[row * outstride + col].i = bcurve[dB[row * instride + col]];
-	//}
+	dZ[row * outstride + col].r = acurve[dA[row * instride + col]];
+	dZ[row * outstride + col].i = bcurve[dB[row * instride + col]];
+}
+
+__global__ void DecimHorizontalKernelInside(complexf* dIn, complexf* dOut,
+	int			columns, // input matrix columns
+	int			rows, // input and output matrix rows
+	int			instride, // input matrix stride
+	int			outstride, // output matrix stride
+	int			decimx,
+	unsigned int decimx_mask ) // 2*decimx + decimx/2; // 2->5, 4->10
+{
+	complexf temp;
+	__shared__ complexf shared[TILE_16][2*TILE_16];
+
+	// Identify the row and column of the Pd element to work on
+	int tx = threadIdx.x; int ty = threadIdx.y;
+	int row = blockIdx.y * blockDim.y + threadIdx.y;
+	int col = blockIdx.x * blockDim.x + threadIdx.x + TILE_16_HALF;
+	
+	if (row >= rows || col >= columns-TILE_16_HALF) return;
+
+	// put outside pixels in shared memory
+	int offset = 0;
+	if (tx >= TILE_16_HALF) offset = TILE_16;
+	shared[ty][tx+offset] = dIn[row * instride + col-TILE_16_HALF+offset];
+
+	//put inside pixels real value in shared memory
+	shared[ty][tx + TILE_16_HALF].r = dIn[row * instride + col].r;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	unsigned int pixel = tx / decimx;
+	unsigned int index = tx & decimx_mask;
+
+	int position = pixel*decimx+TILE_16_HALF;
+	if (decimx == 4) position += 1;
+
+	temp.r = 0;
+	for (int i=0; i<decimx*2; i+=decimx)
+	{
+		float coef = dKernel[i+index];
+		temp.r += coef*(shared[ty][position+i+index+1].r + shared[ty][position-i-index].r);
+	}
+	shared[ty][tx+TILE_16_HALF].i = temp.r;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	if (index < decimx/2)
+	{
+		int i = decimx*2+index;
+		float coef = dKernel[i];
+		temp.r = coef*(shared[ty][position+i+1].r + shared[ty][position-i].r) +
+			shared[ty][tx+TILE_16_HALF].i + shared[ty][tx+decimx/2+TILE_16_HALF].i;
+	}
+	shared[ty][tx+TILE_16_HALF].i = temp.r;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	if (decimx == 4) temp.r += shared[ty][tx+1+TILE_16_HALF].i;
+
+	//put inside pixels imaginary value in shared memory
+	shared[ty][tx + TILE_16_HALF].i = dIn[row * instride + col].i;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	temp.i = 0;
+	for (int i=0; i<decimx*2; i+=decimx)
+	{
+		float coef = dKernel[i+index];
+		temp.i += coef*(shared[ty][position+i+index+1].i + shared[ty][position-i-index].i);
+	}
+	shared[ty][tx+TILE_16_HALF].r = temp.i;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	if (index < decimx/2)
+	{
+		int i = decimx*2+index;
+		float coef = dKernel[i];
+		temp.i = coef*(shared[ty][position+i+1].i + shared[ty][position-i].i) +
+			shared[ty][tx+TILE_16_HALF].r + shared[ty][tx+decimx/2+TILE_16_HALF].r;
+	}
+	shared[ty][tx+TILE_16_HALF].r = temp.i;
+
+	// Synchronize to make sure the row is loaded
+    __syncthreads();
+
+	if (decimx == 4) temp.i += shared[ty][tx+1+TILE_16_HALF].r;
+
+    // Synchronize to make sure shared memory loaded
+    __syncthreads();
+
+	if (index == 0 )
+	{
+		dOut[row * outstride + col/decimx].r = temp.r;
+		dOut[row * outstride + col/decimx].i = temp.i;
+	}
 }
 
 __global__ void DecimHorizontalKernel(complexf* dIn, complexf* dOut,
 	int			columns, // input matrix columns
+	int			rows, // input and output matrix rows
 	int			instride, // input matrix stride
 	int			outstride, // output matrix stride
 	int			decimx,
 	int			kernelsize ) // 2*decimx + decimx/2; // 2->5, 4->10
 {
-	__shared__ complexf shared[MAX_ROW_SIZE+16];
+	//__shared__ complexf shared[MAX_ROW_SIZE+16];
+	extern __shared__ complexf shared[];
 
 	// Identify the row and column of the Pd element to work on
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -74,18 +174,18 @@ __global__ void DecimHorizontalKernel(complexf* dIn, complexf* dOut,
 
 	for (int i=0; i<kernelsize; ++i)
 	{
-		temp.r += dKernel[i]*(shared[position+i+1].r + shared[position-i].r);
-		temp.i += dKernel[i]*(shared[position+i+1].i + shared[position-i].i);
+		float coef = dKernel[i];
+		temp.r += coef/*dKernel[i]*/*(shared[position+i+1].r + shared[position-i].r);
+		temp.i += coef/*dKernel[i]*/*(shared[position+i+1].i + shared[position-i].i);
+		//float coef = tex2D(CyberGPU::texKernel, (float)i, (float)0);
+		//temp.r += coef*(shared[position+i+1].r + shared[position-i].r);
+		//temp.i += coef*(shared[position+i+1].i + shared[position-i].i);
 	}
 
-	dOut[row * outstride + col].r = temp.r;
-	dOut[row * outstride + col].i = temp.i;
-
-	//if (row == 1)
-	//{
-	//	dOut[col].r = shared[col+8].r;
-	//	dOut[col].i = shared[col+8].i;
-	//}
+	//dOut[row * outstride + col].r = temp.r;
+	//dOut[row * outstride + col].i = temp.i;
+	dOut[col * rows + row].r = temp.r;
+	dOut[col * rows + row].i = temp.i;
 }
 
 __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
@@ -95,7 +195,7 @@ __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
 	int			decimy,
 	int			kernelsize ) // 2*decimx + decimx/2; // 2->5, 4->10
 {
-	__shared__ complexf shared[MAX_COL_SIZE+16];
+	extern __shared__ complexf shared[];
 
 	// Identify the row and column of the Pd element to work on
 	int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -107,7 +207,8 @@ __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
 
 	for (int i=0; i<decimy; ++i)
 	{
-		shared[decim2y+row*decimy+i] = dIn[(row*decimy+i) * instride + col];
+		//shared[decim2y+row*decimy+i] = dIn[(row*decimy+i) * instride + col];
+		shared[decim2y+row*decimy+i] = dIn[ col * rows + (row*decimy+i)];
 	}
 
     // Synchronize to make sure the matrices are loaded
@@ -145,7 +246,7 @@ __global__ void DecimVerticalKernel(complexf* dIn, complexf* dOut,
 __global__ void CrossFilterVerticalKernel(complexf* dZ,
 	int width, int height, int cw, int stride)
 {
-	__shared__ complexf shared[MAX_COL_SIZE+2];
+	extern __shared__ complexf shared[];
 
 	// Identify the row and column of the Pd element to work on
 	int i = threadIdx.y; // column index for shared memory workspace
@@ -178,7 +279,7 @@ __global__ void CrossFilterVerticalKernel(complexf* dZ,
 __global__ void CrossFilterHorizontalKernel(complexf* dZ,
 	int width, int height, int cw, int stride)
 {
-	__shared__ complexf shared[MAX_ROW_SIZE+2];
+	extern __shared__ complexf shared[];
 
 	// Identify the row and column of the Pd element to work on
 	int i = threadIdx.x; // row index for shared memory workspace
@@ -251,9 +352,11 @@ __global__ void ConjugateMultKernel(complexf* dIn, complexf* dOut,
 		if (crow != row) 
 		{
 			// store complex conjugate
-			complexf *fptr = &dOut[crow*width + ccol];
-			fptr->r = value.r;
-			fptr->i = -value.i;
+			//complexf *fptr = &dOut[crow*width + ccol];
+			//fptr->r = value.r;
+			//fptr->i = -value.i;
+			dOut[crow*width + ccol].r = value.r;
+			dOut[crow*width + ccol].i = -value.i;
 		}
 	}
 

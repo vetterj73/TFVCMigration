@@ -14,6 +14,10 @@ namespace CyberGPU
 
 	class GPUJob;
 
+#ifdef __TEXTURE_COEF
+	texture<float, cudaTextureType2D, cudaReadModeElementType> texKernel;
+#endif
+
 	///
 	///	Encapsulates a GPU stream for running jobs.
 	///

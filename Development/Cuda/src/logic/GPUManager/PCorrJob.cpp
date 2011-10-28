@@ -1,7 +1,5 @@
 #include "PCorrJob.h"
 
-bool CudaBufferRegister(unsigned char *ptr, size_t size);
-bool CudaBufferUnregister(unsigned char *ptr);
 //static bool bCSInitialized = false;
 //static 	::CRITICAL_SECTION _cs;
 
@@ -60,7 +58,7 @@ PCorrJob::PCorrJob(
 	//bCSInitialized = true;
 	//CudaBufferRegister(_a, _ncols*_nrows*sizeof(unsigned char));
 	//CudaBufferRegister(_b, _ncols*_nrows*sizeof(unsigned char));
-	//CudaBufferRegister((unsigned char*)_z, _ncd*_nrd*sizeof(complexf));
+	//CudaBufferRegister((unsigned char*)_z, _ncd*_nrows*sizeof(complexf));
 	//::LeaveCriticalSection(&_cs);
 	////::DeleteCriticalSection(&cs);
 }
@@ -74,6 +72,11 @@ PCorrJob::PCorrJob(
 //	CudaBufferRegister((unsigned char*)_z, _ncd*_nrd*sizeof(complexf));
 //}
 
+void PCorrJob::PCorrExit()
+{
+	GPUPCorrExit();
+}
+
 PCorrJob::~PCorrJob()
 {
 	delete _work;
@@ -84,6 +87,11 @@ PCorrJob::~PCorrJob()
 		results = (cufftResult)0; // code to break on
 		// log error
 	}
+
+#ifdef __RUN_PCORR_ONCE
+	PCorrExit();
+	TerminateProcess(GetCurrentProcess(), 0);
+#endif
 	//CudaBufferUnregister((unsigned char*)_a);
 	//CudaBufferUnregister((unsigned char*)_b);
 	//CudaBufferUnregister((unsigned char*)_z);

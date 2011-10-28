@@ -30,6 +30,8 @@ public:
 		int ncd, int nrd, complexf * z, float *sum, int crosswindow);
 	~PCorrJob();
 
+	void PCorrExit();
+
 	void Run();
 	CyberGPU::CGPUJob::GPUJobStatus GPURun(CyberGPU::GPUStream *jobStream);
 
@@ -61,6 +63,8 @@ protected:
 
 	unsigned int _ordinal;
 };
+
+void GPUPCorrExit();
 
 CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 	int ncols,			/* Number of columns in images */

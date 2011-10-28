@@ -200,7 +200,7 @@ namespace CyberGPU
 		bool						_killThread;
 
 		//vector<GPUJobThread*>		_jobThreads;
-		vector<GPUStream*>		_jobStreams;
+		vector<GPUStream*>			_jobStreams;
 
 		HANDLE						_queueMutex;
 		queue<CGPUJob*>				_jobQueue;

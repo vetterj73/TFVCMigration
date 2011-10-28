@@ -98,6 +98,10 @@ static const float kernel4coef[] = {
 	-3.450495203E-02    /*  9.5 */
 };
 
+void GPUPCorrExit()
+{
+	cudaError_t temp = cudaThreadExit();
+}
 
 CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 	int ncols,			/* Number of columns in images */
@@ -192,14 +196,40 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 				ncols, nrows,
 				ncols, ncols);
 
+#ifdef __TEXTURE_COEF
+			cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
+
+			cudaArray* cuArray;
+			cudaMallocArray(&cuArray, &channelDesc, 10, 1);
+			
+			// Set texture parameters
+			CyberGPU::texKernel.addressMode[0] = cudaAddressModeClamp;
+			CyberGPU::texKernel.addressMode[1] = cudaAddressModeClamp;
+			CyberGPU::texKernel.filterMode = cudaFilterModePoint;
+			CyberGPU::texKernel.normalized = false;
+#endif
+
 			bool decimate = true;
+			unsigned int decimx_mask = 0;
 			switch (decimx)
 			{
 			case 2:
 				cudaMemcpyToSymbol(dKernel, kernel2coef, sizeof(kernel2coef), 0, cudaMemcpyHostToDevice);
+				decimx_mask = 1;
+#ifdef __TEXTURE_COEF
+				cudaMemcpyToArray(cuArray, 0, 0, kernel2coef, sizeof(kernel2coef), cudaMemcpyHostToDevice);
+#else
+				cudaMemcpyToSymbol(dKernel, kernel2coef, sizeof(kernel2coef), 0, cudaMemcpyHostToDevice);
+#endif
+			
 				break;
 			case 4:
+				decimx_mask = 3;
+#ifdef __TEXTURE_COEF
+				cudaMemcpyToArray(cuArray, 0, 0, kernel4coef, sizeof(kernel4coef), cudaMemcpyHostToDevice);
+#else
 				cudaMemcpyToSymbol(dKernel, kernel4coef, sizeof(kernel4coef), 0, cudaMemcpyHostToDevice);
+#endif
 				break;
 			default:
 				decimate = false;
@@ -208,6 +238,11 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 
 			if (decimate)
 			{
+#ifdef __TEXTURE_COEF
+				// Bind the array to the texture reference
+				cudaBindTextureToArray(CyberGPU::texKernel, cuArray, channelDesc);
+#endif
+
 				// !!! if ncol (the number of undecimated columns is greater than 500, shared memory is not big enough
 				//     dynamically created shared memory can be passed as the third argument in a cuda call. This is
 				//     one solution. Hard coded shared memory can be allocated inside the cuda call. This is the current
@@ -218,10 +253,18 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 				dim3 Hgrid(1, nrows); // grid is undecimated number of rows 
 
   				// Launch the device computation threads!
-				DecimHorizontalKernel<<< Hgrid, Hthreads, 0, *jobStream->Stream()>>>
+				DecimHorizontalKernel<<< Hgrid, Hthreads, (ncols+16)*sizeof(complexf), *jobStream->Stream()>>>
 					((complexf*)jobStream->StdOutBuffer().elements,
 					(complexf*)jobStream->StdInBuffer().elements,
-					ncols, ncols, ncd, decimx, 2*decimx + decimx/2 ); // 2*decimx + decimx/2; // 2->5, 4->10
+					ncols, nrows, ncols, ncd, decimx, 2*decimx + decimx/2 ); // 2*decimx + decimx/2; // 2->5, 4->10
+
+				//dim3 threads(TILE_16, TILE_16);
+				//dim3 grid(((ncols - TILE_16 - 1) / threads.x) + 1, ((nrows - 1) / threads.y) + 1);
+
+				//DecimHorizontalKernelInside<<< grid, threads, ncd, *jobStream->Stream()>>>
+				//	((complexf*)jobStream->StdOutBuffer().elements,
+				//	(complexf*)jobStream->StdInBuffer().elements,
+				//	ncols, nrows, ncols, ncd, decimx, decimx_mask/*2*decimx + decimx/2*/ ); // 2*decimx + decimx/2; // 2->5, 4->10
 			}
 
 			decimate = true;
@@ -246,7 +289,7 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 				dim3 Vgrid(ncd, 1); // grid is decimated number of columns 
 
   				// Launch the device computation threads!
-				DecimVerticalKernel<<< Vgrid, Vthreads, 0, *jobStream->Stream()>>>
+				DecimVerticalKernel<<< Vgrid, Vthreads, (nrows+16)*sizeof(complexf), *jobStream->Stream()>>>
 					//((complexf*)jobStream->StdOutBuffer().elements,
 					//(complexf*)jobStream->StdInBuffer().elements,
 					((complexf*)jobStream->StdInBuffer().elements,
@@ -291,7 +334,7 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 			dim3 Vgrid(crosswindow*2 + 1, 1);
 
   			// Launch the device computation threads!
-			CrossFilterVerticalKernel<<< Vgrid, Vthreads, 0, *jobStream->Stream()>>>
+			CrossFilterVerticalKernel<<< Vgrid, Vthreads, (nrd+2)*sizeof(complexf), *jobStream->Stream()>>>
 				((complexf*)jobStream->StdInBuffer().elements,
 				ncd, nrd, crosswindow, ncd);
 
@@ -300,7 +343,7 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 			dim3 Hgrid(1, crosswindow*2 + 1);
 
   			// Launch the device computation threads!
-			CrossFilterHorizontalKernel<<< Hgrid, Hthreads, 0, *jobStream->Stream()>>>
+			CrossFilterHorizontalKernel<<< Hgrid, Hthreads, (ncd+2)*sizeof(complexf), *jobStream->Stream()>>>
 				((complexf*)jobStream->StdInBuffer().elements,
 				ncd, nrd, crosswindow, ncd);
 		}

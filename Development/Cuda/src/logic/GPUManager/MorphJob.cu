@@ -5,16 +5,10 @@
 #include <math.h>
 #include "GPUManager.h"
 #include "GPUStream.h"
-//#include "../MosaicDataModel/MorphJob.h"
 
 // includes, project
 #include <cutil.h>
 #include <cufft.h>
-
-//typedef struct {
-//   float r;
-//   float i;
-//} complexf;
 
 __constant__ double coeffs[3][3];
 //__constant__ float acurve[256];

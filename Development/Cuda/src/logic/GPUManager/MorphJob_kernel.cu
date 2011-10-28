@@ -8,8 +8,6 @@
 #include <stdio.h>
 
 #define TILE_WIDTH 16
-#define MAX_ROW_SIZE 2000 // max shared memory is 0x4000 bytes
-#define MAX_COL_SIZE 2000 // max shared memory is 0x4000 bytes
 
 
 __global__ void ImageMorphKernel(unsigned char* dA, unsigned char* dB, unsigned int iInSpan, unsigned int iInHeight,

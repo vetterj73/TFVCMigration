@@ -1,6 +1,5 @@
 #include "JobManager.h"
 #include "JobThread.h"
-//#include "GPUManager.h"
 namespace CyberJob
 {
 	const unsigned int cMaxNameSize = 36;
