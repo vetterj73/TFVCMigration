@@ -349,6 +349,18 @@ bool RobustSolver::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int i
 			pdRowBegin += _iMatrixWidth;
 			_iCurrentRow++;
 		}
+		else
+		{
+			//* 14 M6 = 0
+			pdRowBegin[iFOVPos+6] = 2e7;
+			pdRowBegin += _iMatrixWidth;
+			_iCurrentRow++;
+
+			//* 15 M7 = 0;
+			pdRowBegin[iFOVPos+7] = 2e7;
+			pdRowBegin += _iMatrixWidth;
+			_iCurrentRow++;
+		}
 	}
 
 	return(true);

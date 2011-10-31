@@ -46,6 +46,7 @@ namespace CyberStitchTester
             bool bOwnBuffers = false;
             bool bMaskForDiffDevices = false;
             bool bAdjustForHeight = true;
+            bool bUseProjective = false;
 
             for(int i=0; i<args.Length; i++)
             {
@@ -57,6 +58,8 @@ namespace CyberStitchTester
                     bMaskForDiffDevices = true;
                 if (args[i] == "-bayer")
                     _bBayerPattern = true;
+                if (args[i] == "-w")
+                    bUseProjective = true;
                 if (args[i] == "-nh")
                     bAdjustForHeight = false;
                 if (args[i] == "-s" && i < args.Length - 1)
@@ -96,7 +99,8 @@ namespace CyberStitchTester
                 //_aligner.LogOverlaps(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
-                //_aligner.UseProjectiveTransform(true);
+                if(bUseProjective)
+                    _aligner.UseProjectiveTransform(true);
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
