@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Threading;
@@ -117,7 +118,7 @@ namespace CyberStitchFidTester
                 bImageOnly = true;
             if (!bImageOnly && File.Exists(panelFile))
             {
-                _processingPanel = LoadProductionFile(panelFile);
+                _processingPanel = LoadProductionFile(panelFile, cPixelSizeInMeters);
                 if (_processingPanel == null)
                 {
                     Terminate();
@@ -134,7 +135,7 @@ namespace CyberStitchFidTester
 
             if (File.Exists(fidPanelFile))
             {
-                _fidPanel = LoadProductionFile(fidPanelFile);
+                _fidPanel = LoadProductionFile(fidPanelFile, cPixelSizeInMeters);
                 if (_fidPanel == null)
                 {
                     Terminate();
@@ -153,8 +154,29 @@ namespace CyberStitchFidTester
             {
                 // This allows images to directly be sent in instead of using CyberStitch to create them
                 CyberBitmapData cbd = new CyberBitmapData();
-                cbd.Lock(imagePath);
-                RunFiducialCompare(cbd.Scan0, writer);
+
+
+                Bitmap bmp = new Bitmap(imagePath);
+
+                double pixelSize = cPixelSizeInMeters;
+                if (_fidPanel.GetNumPixelsInY() != bmp.Width)
+                {
+                    pixelSize = _fidPanel.PanelSizeY / bmp.Width;
+                }
+
+                _fidPanel = new CPanel(0, 0, pixelSize, pixelSize);
+                _fidPanel = LoadProductionFile(fidPanelFile, pixelSize);
+                cbd.Lock(bmp);
+                RunFiducialCompare(cbd.Scan0, cbd.Stride, writer);
+                if (bSaveStitchedResultsImage)
+                {
+                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareImage" + ".bmp",
+                                         cbd.Scan0, cbd.Stride,
+                                          _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
+                                          _fidPanel.GetCADBuffer(),_fidPanel.GetNumPixelsInY(),
+                                          _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());          
+                }
+                cbd.Unlock();
                 Terminate();
                 return;
             }
@@ -266,7 +288,7 @@ namespace CyberStitchFidTester
                     }
 
                     if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), writer);
+                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -359,7 +381,7 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
-        private static void RunFiducialCompare (IntPtr data, StreamWriter writer)
+        private static void RunFiducialCompare (IntPtr data, int stride, StreamWriter writer)
         {
             int iFidNums = _fidPanel.NumberOfFiducials;
             ManagedFeatureLocationCheck fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
@@ -374,8 +396,7 @@ namespace CyberStitchFidTester
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
-            int iSpan = _fidPanel.GetNumPixelsInY();
-            fidChecker.CheckFeatureLocation(data, iSpan, dResults);
+            fidChecker.CheckFeatureLocation(data, stride, dResults);
 
             for (int i = 0; i < iFidNums; i++)
             {
@@ -535,7 +556,7 @@ namespace CyberStitchFidTester
             return true;
         }
 
-        private static CPanel LoadProductionFile(string panelFile)
+        private static CPanel LoadProductionFile(string panelFile, double pixelSize)
         {
             CPanel panel = null;
             if (!string.IsNullOrEmpty(panelFile))
@@ -544,13 +565,13 @@ namespace CyberStitchFidTester
                 {
                     if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        panel = SRFToPanel.parseSRF(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        panel = SRFToPanel.parseSRF(panelFile, pixelSize, pixelSize);
                         if (panel == null)
                             throw new ApplicationException("Could not parse the SRF panel file");
                     }
                     else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, pixelSize, pixelSize);
                         if (panel == null)
                             throw new ApplicationException("Could not convert xml panel file");
                     }
