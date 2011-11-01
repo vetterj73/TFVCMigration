@@ -26,6 +26,8 @@ namespace CyberStitchFidTester
     /// </summary>
     class Program
     {
+        private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
+
         private const double cPixelSizeInMeters = 1.70e-5;
         private static ManagedMosaicSet _mosaicSetSim = null;
         private static ManagedMosaicSet _mosaicSetIllum = null;
@@ -132,6 +134,7 @@ namespace CyberStitchFidTester
                 Console.WriteLine("Not exist Panel File: " + panelFile);
                 return;
             }
+            int ifidsNum = 0;
 
             if (File.Exists(fidPanelFile))
             {
@@ -141,6 +144,25 @@ namespace CyberStitchFidTester
                     Terminate();
                     Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
                     return;
+                }
+                ifidsNum = _fidPanel.NumberOfFiducials;
+                _dXDiffSum = new double[ifidsNum];
+                _dYDiffSum = new double[ifidsNum];
+                _dXAbsDiffSum = new double[ifidsNum];
+                _dYAbsDiffSum = new double[ifidsNum];
+                _dXDiffSqrSum = new double[ifidsNum];
+                _dYDiffSqrSum = new double[ifidsNum];
+                _icycleCount = new int[ifidsNum];
+
+                for (int i = 0; i < ifidsNum; i++)
+                {
+                    _dXDiffSum[i] = 0;
+                    _dYDiffSum[i] = 0;
+                    _dXAbsDiffSum[i] = 0;
+                    _dYAbsDiffSum[i] = 0;
+                    _dXDiffSqrSum[i] = 0;
+                    _dYDiffSqrSum[i] = 0;
+                    _icycleCount[i] = 0;
                 }
             }
             else
@@ -167,6 +189,7 @@ namespace CyberStitchFidTester
                 _fidPanel = new CPanel(0, 0, pixelSize, pixelSize);
                 _fidPanel = LoadProductionFile(fidPanelFile, pixelSize);
                 cbd.Lock(bmp);
+                writer.WriteLine(headerLine);
                 RunFiducialCompare(cbd.Scan0, cbd.Stride, writer);
                 if (bSaveStitchedResultsImage)
                 {
@@ -217,26 +240,6 @@ namespace CyberStitchFidTester
 
             bool bDone = false;
 
-            int ifidsNum = _fidPanel.NumberOfFiducials;
-            _dXDiffSum = new double[ifidsNum];
-            _dYDiffSum = new double[ifidsNum];
-            _dXAbsDiffSum = new double[ifidsNum];
-            _dYAbsDiffSum = new double[ifidsNum];
-            _dXDiffSqrSum = new double[ifidsNum];
-            _dYDiffSqrSum = new double[ifidsNum];
-            _icycleCount = new int[ifidsNum];            
-
-            for (int i = 0; i < ifidsNum; i++)
-            {
-                _dXDiffSum[i] = 0;
-                _dYDiffSum[i] = 0;
-                _dXAbsDiffSum[i] = 0;
-                _dYAbsDiffSum[i] = 0;
-                _dXDiffSqrSum[i] = 0;
-                _dYDiffSqrSum[i] = 0;
-                _icycleCount[i] = 0;
-            }
-
             while (!bDone)
             {
                 numAcqsComplete = 0;
@@ -283,8 +286,7 @@ namespace CyberStitchFidTester
                     {
                         writer.WriteLine("Units: Microns");
                         //outline is the output file column names
-                        string outLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
-                        writer.WriteLine(outLine);
+                        writer.WriteLine(headerLine);
                     }
 
                     if (_fidPanel != null)
