@@ -105,7 +105,7 @@ bool VsfinderAlign(
 	VsFinderCorrelation::Instance().Find(
 		iTemplateID,		// map ID of template  and finder
 		pImg->GetBuffer(),	// buffer containing the image
-		pImg->Columns(),	// width of the image in pixels
+		pImg->PixelRowStride(),	// width of the image in pixels
 		pImg->Rows(),		// height of the image in pixels
 		x,					// returned x location of the center of the template from the origin
 		y,					// returned x location of the center of the template from the origin
