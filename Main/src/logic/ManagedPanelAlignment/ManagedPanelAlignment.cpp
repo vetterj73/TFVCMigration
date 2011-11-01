@@ -188,4 +188,23 @@ namespace PanelAlignM {
 		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
 		return bSaved;
 	}
+
+	bool ManagedPanelAlignment::Save3ChannelImage(System::String^ imagePath,
+		System::IntPtr pChannel1, int iSpan1, 
+		System::IntPtr pChannel2, int iSpan2,
+		System::IntPtr pChannel3, int iSpan3,
+		int numRows, int numColumns)
+	{
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath);
+		std::string nativeImagePath = (char*)stringPtr.ToPointer();			
+
+		bool bSaved = _pAligner->Save3ChannelImage(nativeImagePath, 
+			(unsigned char*)(void*)pChannel1, iSpan1,
+			(unsigned char*)(void*)pChannel2, iSpan2,
+			(unsigned char*)(void*)pChannel3, iSpan3,
+			numRows, numColumns);
+
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
+		return bSaved;
+	}
 }

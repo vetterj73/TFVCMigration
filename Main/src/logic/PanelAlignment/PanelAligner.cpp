@@ -523,6 +523,30 @@ bool PanelAligner::Save3ChannelImage(string filePath,
 	return true;
 }
 
+bool PanelAligner::Save3ChannelImage(string filePath,
+	unsigned char *pChannel1, int iSpan1,
+	unsigned char* pChannel2, int iSpan2,
+	unsigned char* pChannel3, int iSpan3,
+	int numColumns, int numRows)
+{
+	Bitmap *rbg = Bitmap::New3ChannelBitmap( 
+		numRows, 
+		numColumns, 
+		pChannel1,
+		pChannel2,
+		pChannel3,
+		iSpan1,
+		iSpan2,
+		iSpan3);
+
+	if(rbg == NULL)
+		return false;
+
+	rbg->write(filePath);
+	delete rbg;
+	return true;
+}
+
 // Check fiducial alignment based on SIM calibration
 int PanelAligner::FiducialAlignmentCheckOnCalibration()
 {

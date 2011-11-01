@@ -10,7 +10,7 @@ namespace PanelAlignM {
 		public:
 			ManagedFeatureLocationCheck(CPanel^ panel);
 
-			bool CheckFeatureLocation(System::IntPtr pData, array<double>^ pdResults);
+			bool CheckFeatureLocation(System::IntPtr pData, int iSpan, array<double>^ pdResults);
 
 		private:
 			FeatureLocationCheck* _pChecker;

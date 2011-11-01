@@ -253,9 +253,9 @@ namespace CyberStitchFidTester
 
                     if (bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                               _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
-                                               _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
-                                               _fidPanel.GetCADBuffer(),
+                                               _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
                     {
@@ -374,7 +374,8 @@ namespace CyberStitchFidTester
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
-            fidChecker.CheckFeatureLocation(data, dResults);
+            int iSpan = _fidPanel.GetNumPixelsInY();
+            fidChecker.CheckFeatureLocation(data, iSpan, dResults);
 
             for (int i = 0; i < iFidNums; i++)
             {

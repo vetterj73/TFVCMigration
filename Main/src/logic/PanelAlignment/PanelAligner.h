@@ -34,8 +34,16 @@ public:
 	/// for diagnostics.  The images are expected to be all of the same width, height and stride
 	/// 
 	bool Save3ChannelImage(
-		string filePath, unsigned char *pChannel1, unsigned char* pChannel2, unsigned char* pChannel3, 
+		string filePath, 
+		unsigned char *pChannel1, unsigned char* pChannel2, unsigned char* pChannel3, 
 		int numRows, int numColumns);
+
+	bool Save3ChannelImage(
+		string filePath,
+		unsigned char *pChannel1, int iSpan1,
+		unsigned char* pChannel2, int iSpan2,
+		unsigned char* pChannel3, int iSpan3,
+		int numColumns, int numRows);
 
 	void LogFiducialOverlaps(bool bLog);
 	void LogOverlaps(bool bLog);

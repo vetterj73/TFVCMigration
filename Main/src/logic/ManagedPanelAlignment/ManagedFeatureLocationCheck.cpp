@@ -10,7 +10,7 @@ namespace PanelAlignM {
 		_pChecker = new FeatureLocationCheck(_pPanel);
 	}
 
-	bool ManagedFeatureLocationCheck::CheckFeatureLocation(System::IntPtr pData, array<double>^ pdResults)
+	bool ManagedFeatureLocationCheck::CheckFeatureLocation(System::IntPtr pData, int iSpan, array<double>^ pdResults)
 	{
 		// Create image for process
 		ImgTransform inputTransform;
@@ -20,7 +20,7 @@ namespace PanelAlignM {
 		Image image
 			(_pPanel->GetNumPixelsInY(),	// Columns
 			_pPanel->GetNumPixelsInX(),		// Rows	
-			_pPanel->GetNumPixelsInY(),		// In pixels
+			iSpan,							// In pixels
 			1,								// Bytes per pixel
 			inputTransform,					
 			inputTransform,		

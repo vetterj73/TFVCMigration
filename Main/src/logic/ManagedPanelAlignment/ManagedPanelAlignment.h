@@ -102,6 +102,12 @@ namespace PanelAlignM {
 			System::IntPtr pChannel1, System::IntPtr pChannel2,	System::IntPtr pChannel3, 
 			int numRows, int numColumns);
 
+		bool Save3ChannelImage(System::String^ imagePath,
+			System::IntPtr pChannel1, int iSpan1, 
+			System::IntPtr pChannel2, int iSpan2,
+			System::IntPtr pChannel3, int iSpan3,
+			int numRows, int numColumns);
+
 		void NumThreads(unsigned int numThreads);
 		void LogFiducialOverlaps(bool bLog);
 		void LogOverlaps(bool bLog);
