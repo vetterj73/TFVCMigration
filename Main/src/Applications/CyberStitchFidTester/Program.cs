@@ -23,6 +23,9 @@ namespace CyberStitchFidTester
     /// compared to known locations.
     /// 3)  Extra Credit:  This runs as part of the nightly build.  Each night, we can compare a magic number (the total distance offset)
     /// to the last magic number.  If the Magic Number is increasing, we should be nervous because something we changed is causing problems.
+    /// NOTE:  I added the ability to bypass CyberStitch by sending in an image file directly.  This causes some headaches because the image
+    /// file may be built with other tools (2dSPI for instance) and therefore may have a different pixel size and stride.  This muddied the 
+    /// water, but it should be handled correctly.
     /// </summary>
     class Program
     {
@@ -32,8 +35,8 @@ namespace CyberStitchFidTester
         private static ManagedMosaicSet _mosaicSetSim = null;
         private static ManagedMosaicSet _mosaicSetIllum = null;
         private static ManagedMosaicSet _mosaicSetProcessing = null;
-        private static CPanel _processingPanel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
-        private static CPanel _fidPanel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
+        private static CPanel _processingPanel = null;
+        private static CPanel _fidPanel = null;
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
@@ -65,10 +68,6 @@ namespace CyberStitchFidTester
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            // Start the logger
-            logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
-            logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
-
             // Gather input data.
             string simulationFile = "";
             string panelFile = "";
@@ -77,6 +76,7 @@ namespace CyberStitchFidTester
             bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
             string unitTestFolder="";
+            ManagedFeatureLocationCheck fidChecker;
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
@@ -109,12 +109,17 @@ namespace CyberStitchFidTester
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
-                    logger.Kill();
                     return;
                 }
             }
 
+            // Start the logger
+            logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
+            logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
+
+            // Open output text file.
             writer = new StreamWriter(outputTextPath);
+
             bool bImageOnly = false;
             if (File.Exists(imagePath))
                 bImageOnly = true;
@@ -127,24 +132,35 @@ namespace CyberStitchFidTester
                     Console.WriteLine("Could not load Panel File: " + panelFile);
                     return;
                 }
-            }
-            else if (!bImageOnly)
+            } else if (!bImageOnly) // Panel file must exist...
             {
                 Terminate();
-                Console.WriteLine("Not exist Panel File: " + panelFile);
+                Console.WriteLine("The panel file does not exist..: " + panelFile);
                 return;
             }
-            int ifidsNum = 0;
 
+            Bitmap inputBmp = null;
+            if(bImageOnly)
+                inputBmp = new Bitmap(imagePath);
+
+
+            int ifidsNum = 0;
+            double pixelSize = cPixelSizeInMeters;
             if (File.Exists(fidPanelFile))
             {
                 _fidPanel = LoadProductionFile(fidPanelFile, cPixelSizeInMeters);
+                if (bImageOnly && _fidPanel.GetNumPixelsInY() != inputBmp.Width)
+                {
+                    pixelSize = _fidPanel.PanelSizeY/inputBmp.Width;
+                    _fidPanel = LoadProductionFile(fidPanelFile, pixelSize);
+                }
                 if (_fidPanel == null)
                 {
                     Terminate();
                     Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
                     return;
                 }
+                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
                 ifidsNum = _fidPanel.NumberOfFiducials;
                 _dXDiffSum = new double[ifidsNum];
                 _dYDiffSum = new double[ifidsNum];
@@ -172,28 +188,18 @@ namespace CyberStitchFidTester
                 return;
             }
 
-            if (File.Exists(imagePath))
+            if (bImageOnly)
             {
                 // This allows images to directly be sent in instead of using CyberStitch to create them
                 CyberBitmapData cbd = new CyberBitmapData();
 
-
-                Bitmap bmp = new Bitmap(imagePath);
-
-                double pixelSize = cPixelSizeInMeters;
-                if (_fidPanel.GetNumPixelsInY() != bmp.Width)
-                {
-                    pixelSize = _fidPanel.PanelSizeY / bmp.Width;
-                }
-
-                _fidPanel = new CPanel(0, 0, pixelSize, pixelSize);
-                _fidPanel = LoadProductionFile(fidPanelFile, pixelSize);
-                cbd.Lock(bmp);
+                cbd.Lock(inputBmp);
                 writer.WriteLine(headerLine);
-                RunFiducialCompare(cbd.Scan0, cbd.Stride, writer);
+                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
+                RunFiducialCompare(cbd.Scan0, cbd.Stride, writer, fidChecker);
                 if (bSaveStitchedResultsImage)
                 {
-                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareImage" + ".bmp",
+                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareImage.bmp",
                                          cbd.Scan0, cbd.Stride,
                                           _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
                                           _fidPanel.GetCADBuffer(),_fidPanel.GetNumPixelsInY(),
@@ -290,7 +296,7 @@ namespace CyberStitchFidTester
                     }
 
                     if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer);
+                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -383,10 +389,9 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
-        private static void RunFiducialCompare (IntPtr data, int stride, StreamWriter writer)
+        private static void RunFiducialCompare (IntPtr data, int stride, StreamWriter writer, ManagedFeatureLocationCheck fidChecker)
         {
             int iFidNums = _fidPanel.NumberOfFiducials;
-            ManagedFeatureLocationCheck fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
 
             // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
             int iItems = 6;
