@@ -43,6 +43,10 @@ namespace CyberStitchFidTester
         private static LoggingThread logger = new LoggingThread(null);
         private static int _cycleCount = 0;
         private static double _allPanelFidDifference = 0.0;
+        private static double _dXDiffSqrSumTol = 0.0;//used for the total Xoffset square sum
+        private static double _dYDiffSqrSumTol = 0.0;
+        private static double _dXRMS = 0.0;//used for the xoffset RMS
+        private static double _dYRMS = 0.0;
 
         // For debug
         private static int _iBufCount = 0;
@@ -329,8 +333,11 @@ namespace CyberStitchFidTester
                         dAbsMeanX, dAbsMeanY, dAbsSdvX, dAbsSdvY, 
                         _icycleCount[i]));
                 }
+                
             }
-            writer.WriteLine(string.Format("MagicNumber: {0}", _allPanelFidDifference));
+            _dXRMS = Math.Sqrt(_dXDiffSqrSumTol/(_cycleCount*_fidPanel.NumberOfFiducials));
+            _dYRMS = Math.Sqrt(_dYDiffSqrSumTol/(_cycleCount*_fidPanel.NumberOfFiducials));
+            writer.WriteLine(string.Format("MagicNumber: {0}, Average Offset: {1}, Xoffset RMS:{2}, Yoffset RMS:{3}", _allPanelFidDifference, _allPanelFidDifference / (_cycleCount * _fidPanel.NumberOfFiducials), _dXRMS, _dYRMS));
 
             if (File.Exists(lastOutputTextPath))
             {
@@ -436,6 +443,8 @@ namespace CyberStitchFidTester
                         dResults[i * iItems] * iUnitCoverter, dResults[i * iItems + 1] * iUnitCoverter, 
                         xDifference, yDifference,
                         dResults[i * iItems + 4], dResults[i * iItems + 5]));
+                    _dXDiffSqrSumTol += _dXDiffSqrSum[i];
+                    _dYDiffSqrSumTol += _dYDiffSqrSum[i];
                 }
             }
 

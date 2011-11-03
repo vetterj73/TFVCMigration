@@ -2,8 +2,8 @@ REM - VARIABLES
 set OUTPUTDIR=C:\CyberStitchRegressionResults
 set OUTPUTBACKUP=C:\CyberStitchRegressionResultsBackup
 set APP=.\src\Applications\CyberStitchFidTester\bin\x64\Release\CyberStitchFidTester.exe
-set SIMDATA=\\msp\dfs\archive\colorSimBoards\RegressionTest2
-set CADDIR=\\msp\dfs\archive\colorSimBoards\PPM
+set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2Data(1micronPerCycle)
+set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2CAD
 
 REM		Remove old results (prior to the last run)
 if exist %OUTPUTBACKUP% rmdir /q /s %OUTPUTBACKUP%
@@ -22,7 +22,7 @@ REM     RUN All collected panels
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\3FidsProjective.txt -l %OUTPUTBACKUP%\3FidsProjective.txt -u .\Results\UnitTest\ -n 6
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsProjective.txt -l %OUTPUTBACKUP%\4FidsProjective.txt -u .\Results\UnitTest\ -n 6
 
-set SIMDATA=\\msp\dfs\archive\colorSimBoards\PPM-PrecisionStation40MicronPerCycle
+set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2Data(40micronPerCycle)
 
 REM     RUN All collected panels
 %APP% -b -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\2Fids40microns.txt -l %OUTPUTBACKUP%\2Fids40microns.txt -u .\Results\UnitTest\ -n 10
