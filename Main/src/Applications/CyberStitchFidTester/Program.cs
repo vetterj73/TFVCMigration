@@ -21,7 +21,7 @@ namespace CyberStitchFidTester
     /// 1)  Input a SIM Simulation set, a panel file with a small number of fids and a test file with a large number of fids.
     /// 2)  Output a text file that gives you an indication of how far off the fiducials are in the stitched image 
     /// compared to known locations.
-    /// 3)  Extra Credit:  This runs as part of the nightly build.  Each night, we can compare a magic number (the total distance offset)
+    /// 3)  Extra Credit:  This runs as part of the nightly build.  Each night, we can compare a magic number (the average distance offset)
     /// to the last magic number.  If the Magic Number is increasing, we should be nervous because something we changed is causing problems.
     /// NOTE:  I added the ability to bypass CyberStitch by sending in an image file directly.  This causes some headaches because the image
     /// file may be built with other tools (2dSPI for instance) and therefore may have a different pixel size and stride.  This muddied the 
@@ -63,6 +63,7 @@ namespace CyberStitchFidTester
         private static double[] _dXDiffSqrSum;
         private static double[] _dYDiffSqrSum;        
         private static int[] _icycleCount;
+        private static int _iTotalCount = 0;
 
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
@@ -233,7 +234,7 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
-                //_aligner.LogFiducialOverlaps(true);
+                _aligner.LogFiducialOverlaps(true);
                 if (bUseProjective)
                     _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
@@ -333,23 +334,26 @@ namespace CyberStitchFidTester
                         dAbsMeanX, dAbsMeanY, dAbsSdvX, dAbsSdvY, 
                         _icycleCount[i]));
                 }
-                
+                _iTotalCount += _icycleCount[i];
+
             }
-            _dXRMS = Math.Sqrt(_dXDiffSqrSumTol/(_cycleCount*_fidPanel.NumberOfFiducials));
-            _dYRMS = Math.Sqrt(_dYDiffSqrSumTol/(_cycleCount*_fidPanel.NumberOfFiducials));
-            writer.WriteLine(string.Format("MagicNumber: {0}, Average Offset: {1}, Xoffset RMS:{2}, Yoffset RMS:{3}", _allPanelFidDifference, _allPanelFidDifference / (_cycleCount * _fidPanel.NumberOfFiducials), _dXRMS, _dYRMS));
+            _dXRMS = Math.Sqrt(_dXDiffSqrSumTol / (_iTotalCount));
+            _dYRMS = Math.Sqrt(_dYDiffSqrSumTol / (_iTotalCount));
+
+            writer.WriteLine(string.Format("MagicNumber: {0}, Xoffset RMS:{1}, Yoffset RMS:{2}", _allPanelFidDifference, _dXRMS, _dYRMS));
+            writer.WriteLine(string.Format("Average Offset: {0}", _allPanelFidDifference / _iTotalCount));
 
             if (File.Exists(lastOutputTextPath))
             {
                 string[] lines = File.ReadAllLines(lastOutputTextPath);
                 string lastLine = lines[lines.Length - 1];
                 string[] parts = lastLine.Split(':');
-                double lastMagic = 0;
+                double lastAverage = 0;
                 bool bGood = false;
-                if (parts.Length > 1 && double.TryParse(parts[1], out lastMagic))
+                if (parts.Length > 1 && double.TryParse(parts[1], out lastAverage))
                 {
                     // Check that we are at least as good as last time (to the nearest micron)
-                    if (Math.Round(_allPanelFidDifference) <= Math.Round(lastMagic))
+                    if (Math.Round(_allPanelFidDifference / _iTotalCount) <= Math.Round(lastAverage))
                         bGood = true;
                 }
 
@@ -358,7 +362,7 @@ namespace CyberStitchFidTester
                 if (Directory.Exists(unitTestFolder))
                 {
                     string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
-                    NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "MagicNumber", bGood);
+                    NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "AverageOffset", bGood);
                 }
             }
 
