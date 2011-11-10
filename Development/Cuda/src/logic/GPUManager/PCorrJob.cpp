@@ -1,5 +1,7 @@
 #include "PCorrJob.h"
 
+//#define __RUN_PCORR_ONCE
+
 //static bool bCSInitialized = false;
 //static 	::CRITICAL_SECTION _cs;
 

@@ -267,6 +267,18 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 				//	ncols, nrows, ncols, ncd, decimx, decimx_mask/*2*decimx + decimx/2*/ ); // 2*decimx + decimx/2; // 2->5, 4->10
 			}
 
+			if (decimate)
+			{
+				dim3 Tthreads(TILE_DIM, TILE_DIM);
+				dim3 Tgrid(((ncd - 1) / Tthreads.x) + 1, ((nrows - 1) / Tthreads.y) + 1);
+
+  				// Launch the device computation threads!
+				TransposeMatrix<<< Tgrid, Tthreads, 0, *jobStream->Stream()>>>
+					((complexf*)jobStream->StdInBuffer().elements,
+					(complexf*)jobStream->StdOutBuffer().elements,
+					ncd, nrows );
+			}
+
 			decimate = true;
 			switch (decimy)
 			{
@@ -290,37 +302,16 @@ CyberGPU::CGPUJob::GPUJobStatus GPUPCorr( CyberGPU::GPUStream *jobStream,
 
   				// Launch the device computation threads!
 				DecimVerticalKernel<<< Vgrid, Vthreads, (nrows+16)*sizeof(complexf), *jobStream->Stream()>>>
-					//((complexf*)jobStream->StdOutBuffer().elements,
-					//(complexf*)jobStream->StdInBuffer().elements,
-					((complexf*)jobStream->StdInBuffer().elements,
-					(complexf*)jobStream->StdOutBuffer().elements,
+					((complexf*)jobStream->StdOutBuffer().elements,
+					(complexf*)jobStream->StdInBuffer().elements,
+					//((complexf*)jobStream->StdInBuffer().elements,
+					//(complexf*)jobStream->StdOutBuffer().elements,
 					//nrows, ncols, ncols, decimy, 2*decimy + decimy/2 ); // 2*decimx + decimx/2; // 2->5, 4->10
-					nrows, ncd, ncd, decimy, 2*decimy + decimy/2 ); // 2*decimx + decimx/2; // 2->5, 4->10
+					nrows, /*ncd*/nrows, ncd, decimy, 2*decimy + decimy/2 ); // 2*decimx + decimx/2; // 2->5, 4->10
 			}
 		}
 
-		//if (ncd == 256 && nrd == 256 )
-		//{
-		//	cudaError_t err = cudaGetLastError();
-		//}
-
-		//if (ncols == 1024 && nrows == 768 && ncd == 256 && nrd == 192 )
-		//{
-		//	cudaError_t err = cudaGetLastError();
-		//}
-		//{
-		//complexf *buffer = (complexf*)malloc(256*192*sizeof(complexf));
-		//for (int i=0; i<256*192; ++i)
-		//{
-		//	buffer[i].r = 1.0;
-		//	buffer[i].i = 1.0;
-		//}
-
-		//cudaMemcpy(jobStream->StdOutBuffer().elements, buffer,
-		//		256*192*sizeof(complexf), cudaMemcpyHostToDevice/*, *jobStream->Stream()*/);
-		//}
-
-		results = cufftExecC2C( plan, (cufftComplex*)jobStream->StdOutBuffer().elements,
+		results = cufftExecC2C( plan, (cufftComplex*)jobStream->StdInBuffer().elements,
 			(cufftComplex*)jobStream->StdInBuffer().elements, CUFFT_FORWARD);
 		if (results != CUFFT_SUCCESS)
 		{
