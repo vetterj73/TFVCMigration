@@ -65,6 +65,10 @@ namespace CyberStitchFidTester
         private static int[] _icycleCount;
         private static int _iTotalCount = 0;
 
+        //For time stamp
+        private static DateTime _dtStartTime;
+        private static TimeSpan _tsTotalRunTime = TimeSpan.Zero;
+
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
         /// 1)  All images are obtained prior to running through CyberStitch.
@@ -254,7 +258,7 @@ namespace CyberStitchFidTester
             while (!bDone)
             {
                 numAcqsComplete = 0;
-
+                _dtStartTime = DateTime.Now;
                 _aligner.ResetForNextPanel();
                 _mosaicSetSim.ClearAllImages();
                 _mosaicSetIllum.ClearAllImages();
@@ -340,6 +344,7 @@ namespace CyberStitchFidTester
             _dXRMS = Math.Sqrt(_dXDiffSqrSumTol / (_iTotalCount));
             _dYRMS = Math.Sqrt(_dYDiffSqrSumTol / (_iTotalCount));
 
+            writer.WriteLine(String.Format("Average Panel Process Running time(Unites:Minutes): {0}", _tsTotalRunTime.TotalMinutes / _cycleCount));
             writer.WriteLine(string.Format("MagicNumber: {0}, Xoffset RMS:{1}, Yoffset RMS:{2}", _allPanelFidDifference, _dXRMS, _dYRMS));
             writer.WriteLine(string.Format("Average Offset: {0}", _allPanelFidDifference / _iTotalCount));
 
@@ -415,6 +420,9 @@ namespace CyberStitchFidTester
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, stride, dResults);
+            //Record the processing time
+            DateTime dtEndTime = DateTime.Now;
+            TimeSpan tsRunTime = dtEndTime - _dtStartTime;
 
             for (int i = 0; i < iFidNums; i++)
             {
@@ -454,6 +462,8 @@ namespace CyberStitchFidTester
 
             writer.WriteLine("Total Difference for this Panel: " + fidDifference);
             _allPanelFidDifference += fidDifference;
+            writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime,dtEndTime,tsRunTime));
+            _tsTotalRunTime += tsRunTime;
         }
 
         private static void RunStitch()
