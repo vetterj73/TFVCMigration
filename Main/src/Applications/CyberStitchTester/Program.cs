@@ -156,13 +156,20 @@ namespace CyberStitchTester
                             double dHeightRes = _panel.GetHeightResolution();
                             double dPupilDistance = 0.3702;
                             if (_mosaicSet.SaveAllStitchedImagesWithHeightToDirectory("c:\\temp\\"+(_cycleCount-1), heightBuf, dHeightRes, dPupilDistance) == false)
-                                Output("Could not save mosaic images");                                 
+                                Output("Could not save mosaic images");    
                         }
                         else
                         {
                             if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\"+(_cycleCount-1)) == false)
                                 Output("Could not save mosaic images");
                         }
+
+                        // for debug 
+                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
+                            _mosaicSet.GetLayer(2).GetGreyStitchedBuffer(),
+                            _mosaicSet.GetLayer(3).GetGreyStitchedBuffer(),
+                            _panel.GetCADBuffer(), //heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                     }
                     else // for gray scale
                     {

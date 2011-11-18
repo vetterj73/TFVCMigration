@@ -24,6 +24,9 @@ namespace MosaicDM
 
 		_piStitchGridRows = NULL;
 		_piStitchGridCols = NULL;
+
+		// For debug 
+		_pGreyStitchedImage = NULL;
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -40,6 +43,10 @@ namespace MosaicDM
 
 		if(_piStitchGridCols != NULL)
 			delete [] _piStitchGridCols;
+
+		// For debug
+		if(_pGreyStitchedImage != NULL)
+			delete _pGreyStitchedImage;
 	}
 
 	unsigned int MosaicLayer::Index()
@@ -194,15 +201,19 @@ namespace MosaicDM
 			return;
 
 		// Create height image
-		Image heightImage;
-		heightImage.Configure(
-			_pStitchedImage->Columns(),
-			_pStitchedImage->Rows(),
-			_pStitchedImage->PixelRowStride(),
-			_pStitchedImage->GetTransform(),
-			_pStitchedImage->GetTransform(),
-			false,
-			pHeighBuf);
+		Image* pHeightImage = NULL;
+		if(pHeighBuf!=0)
+		{
+			pHeightImage = new Image();
+			pHeightImage->Configure(
+				_pStitchedImage->Columns(),
+				_pStitchedImage->Rows(),
+				_pStitchedImage->PixelRowStride(),
+				_pStitchedImage->GetTransform(),
+				_pStitchedImage->GetTransform(),
+				false,
+				pHeighBuf);
+		}
 
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
@@ -223,7 +234,7 @@ namespace MosaicDM
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
 					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),
-					&heightImage, dHeightResolution, dPupilDistance);
+					pHeightImage, dHeightResolution, dPupilDistance);
 				jm.AddAJob((Job*)pJob);
 				morphJobs.push_back(pJob);
 			}
@@ -237,6 +248,9 @@ namespace MosaicDM
 		for(unsigned int i=0; i<morphJobs.size(); i++)
 			delete morphJobs[i];
 		morphJobs.clear();
+
+		if(pHeightImage != NULL)
+			delete pHeightImage;
 
 		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
 	}
@@ -352,5 +366,31 @@ namespace MosaicDM
 
 		unsigned int iPos = iTrigIndex* GetNumberOfCameras() + iCamIndex;
 		return(&_maskImages[iPos]);
+	}
+
+
+	// for debug
+	Image* MosaicLayer::GetGreyStitchedImage(
+		unsigned char* pHeighBuf, 
+		double dHeightResolution, 
+		double dPupilDistance,
+		bool bRecreate)
+	{
+		Image* pTempImg = GetStitchedImage(
+			pHeighBuf, 
+			dHeightResolution, 
+			dPupilDistance,
+			bRecreate);
+
+		if(pTempImg->GetBytesPerPixel()==1)
+			return(pTempImg);
+		else
+		{
+			_pGreyStitchedImage = new Image();		
+
+			((ColorImage*)pTempImg)->Color2Luminance(_pGreyStitchedImage);
+
+			return(_pGreyStitchedImage);
+		}
 	}
 }

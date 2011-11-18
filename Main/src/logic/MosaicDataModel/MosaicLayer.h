@@ -90,6 +90,13 @@ namespace MosaicDM
 				double dPupilDistance=0,
 				bool bRecreate = false);
 
+			// For debug
+			Image* GetGreyStitchedImage(
+				unsigned char* pHeighBuf, 
+				double dHeightResolution, 
+				double dPupilDistance,
+				bool bRecreate = false);
+
 			void SetStitchedBuffer(unsigned char *pBuffer);
 	
 		protected:
@@ -135,5 +142,8 @@ namespace MosaicDM
 			int* _piStitchGridCols; 
 	
 			Image *_pStitchedImage;
+
+		// for Debug
+			Image *_pGreyStitchedImage;
 	};
 }

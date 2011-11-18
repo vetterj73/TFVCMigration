@@ -189,4 +189,27 @@ bool ColorImage::DemosiacFrom(unsigned char* pBayerBuf, int iCols, int iRows, in
 	return(true);
 }
 
+// Convert Color image into greyscal image, 
+// greyscale image will be configurated and its buffer will be allocated 
+bool ColorImage::Color2Luminance(Image* pGreyImg)
+{
+	// Configure and allocate buffer for greyscale image
+	pGreyImg->Configure(_columns, _rows, _columns, _nominalTrans, _thisToWorld, true);
+
+	unsigned char* pColorLine = _buffer;
+	unsigned char* pGreyLine = pGreyImg->GetBuffer();
+	for(unsigned int iy=0; iy<_rows; iy++) 
+	{
+		for(unsigned int ix=0; ix<_columns; ix++)
+		{
+			unsigned char Y = (pColorLine[ix*_bytesPerPixel] + pColorLine[ix*_bytesPerPixel+1]*2 + pColorLine[ix*_bytesPerPixel+2])>>2;	// Y	
+			pGreyLine[ix] = Y;
+		}
+		pColorLine += ByteRowStride();		
+		pGreyLine += pGreyImg->ByteRowStride();
+	}
+
+	return(true);
+}
+
 

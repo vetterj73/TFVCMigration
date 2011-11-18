@@ -19,6 +19,8 @@ public:
 
 	bool IsChannelStoredSeperate() {return _bChannelStoredSeperate;};
 
+	bool Color2Luminance(Image* pGreyImg);
+
 private:
 	COLORSTYLE _colorStyle;
 };

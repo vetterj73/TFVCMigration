@@ -68,6 +68,21 @@ namespace MMosaicDM
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
+			// For debug
+			System::IntPtr GetGreyStitchedBuffer()
+			{
+				Image* stitchedImage = _pMosaicLayer->GetGreyStitchedImage(0,0,0,false);
+				return (System::IntPtr)stitchedImage->GetBuffer();
+			}
+
+			System::IntPtr GetGreyStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance)
+			{
+				Image* stitchedImage = _pMosaicLayer->GetGreyStitchedImage(
+					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance,
+					false);
+				return (System::IntPtr)stitchedImage->GetBuffer();
+			}
+
 			// Valid only after stitched image is created
 			bool GetStitchGrid(array<int>^ pCols, array<int>^ pRows)
 			{
