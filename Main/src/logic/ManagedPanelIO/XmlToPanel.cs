@@ -57,7 +57,7 @@ namespace MPanelIO
             try
             {
                 // Make sure even the construsctor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[9];
+                System.Type[] PanelContainedClassTypes = new Type[10];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
@@ -66,7 +66,8 @@ namespace MPanelIO
                 PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
                 PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCheckerPattern), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 9);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextReader PanelFileReader = new StreamReader(xmlFilename);
@@ -101,7 +102,7 @@ namespace MPanelIO
             try
             {
                 // Make sure even the constructor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[9];
+                System.Type[] PanelContainedClassTypes = new Type[10];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
@@ -110,7 +111,8 @@ namespace MPanelIO
                 PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
                 PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCheckerPattern), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 9);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextWriter PanelFileWriter = new StreamWriter(xmlFilename);
@@ -221,6 +223,17 @@ namespace MPanelIO
                                     ToCSIMPanelUnits(t.PositionX), ToCSIMPanelUnits(t.PositionY),
                                     (float)t.Rotation, ToCSIMPanelUnits(t.SizeX), ToCSIMPanelUnits(t.SizeY), ToCSIMPanelUnits(t.OffsetX));
                                 simPanel.Fiducials.Add(triangle);
+                                break;
+                            }
+
+
+                        case CFeature.ShapeType.CheckerPattern:
+                            {
+                                CCheckerPattern t = (CCheckerPattern)fid;
+                                CSIMCheckerPattern checkerP = new CSIMCheckerPattern(t.ReferenceID,
+                                    ToCSIMPanelUnits(t.PositionX), ToCSIMPanelUnits(t.PositionY),
+                                    (float)t.Rotation, ToCSIMPanelUnits(t.SizeX), ToCSIMPanelUnits(t.SizeY));
+                                simPanel.Fiducials.Add(checkerP);
                                 break;
                             }
 
@@ -422,6 +435,16 @@ namespace MPanelIO
                                         ToCPanelUnits(simTri.PositionX), ToCPanelUnits(simTri.PositionY), simTri.Rotation,
                                         ToCPanelUnits(simTri.SizeX), ToCPanelUnits(simTri.SizeY),ToCPanelUnits(simTri.Offset));
                                     panel.AddFiducial(tri);
+                                    break;
+                                }
+
+                            case t_FeatureType.e_CheckerPattern:
+                                {
+                                    CSIMCheckerPattern simCheckerP = (CSIMCheckerPattern)simFid;
+                                    CCheckerPattern checkerP = new CCheckerPattern(simCheckerP.ReferenceID,
+                                        ToCPanelUnits(simCheckerP.PositionX), ToCPanelUnits(simCheckerP.PositionY), simCheckerP.Rotation,
+                                        ToCPanelUnits(simCheckerP.SizeX), ToCPanelUnits(simCheckerP.SizeY));
+                                    panel.AddFiducial(checkerP);
                                     break;
                                 }
                             default:

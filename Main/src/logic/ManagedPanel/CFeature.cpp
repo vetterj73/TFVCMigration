@@ -79,6 +79,13 @@ namespace Cyber
 											sizeX, sizeY, offsetX);
 		}
 
+		CCheckerPattern::CCheckerPattern(int referenceID, double positionX, double positionY, double rotation,
+			double sizeX, double sizeY ) 
+		{
+			_pFeature = new CheckerPatternFeature(referenceID, positionX, positionY, rotation,
+											sizeX, sizeY);
+		}
+
 		CCyberSegment::CCyberSegment(bool line, bool penDown, bool clockwiseArc, double positionX,
 					double positionY, double arcX, double arcY)
 		{

@@ -43,7 +43,9 @@ namespace MPanelIO
 		e_Donut = 3,
 		e_Rectangle = 4,
 		e_Triangle = 5,
-		e_CyberShape = 6
+        e_CheckerPattern = 6,
+		e_CyberShape = 7
+
 	}
 	//////////////////////////////////////////////////////////////////////////////
 	/// <summary>
@@ -60,6 +62,7 @@ namespace MPanelIO
     [System.Xml.Serialization.XmlInclude(typeof(CSIMDiamond))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMDonut))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMTriangle))]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMCheckerPattern))]
 
 	public class CSIMFeature : ISerializable
 	{
@@ -540,6 +543,74 @@ namespace MPanelIO
         }
         #endregion
     }
+
+    [Serializable]
+    public class CSIMCheckerPattern : CSIMFeature
+    {
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMCheckerPatytern
+        /// Description: Constructor
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMCheckerPattern(int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSizeX, float theSizeY)
+            : base(theReferenceID, thePositionX, thePositionY, theRotation)
+        {
+            m_Type = t_FeatureType.e_CheckerPattern;
+            m_SizeX = theSizeX;
+            m_SizeY = theSizeY;
+        }
+        private float m_SizeX;
+        private float m_SizeY;
+        public float SizeX { get { return m_SizeX; } set { m_SizeX = value; } }
+        public float SizeY { get { return m_SizeY; } set { m_SizeY = value; } }
+
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetOutlineRect
+        /// Description: Get outline (bounding) rectangle of Feature
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        protected override RectangleF GetOutLineRect()
+        {
+            return new RectangleF(PositionX, PositionY, m_SizeX, m_SizeY);
+        }
+        public CSIMCheckerPattern() { }
+
+        #region ISerializable Members
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMCheckerPattern 
+        /// Description: Deserialization constructor.
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMCheckerPattern(SerializationInfo theInfo, StreamingContext theStreamingContext)
+            : base(theInfo, theStreamingContext)
+        {
+            //Get the values from info and assign them to the appropriate properties
+            SizeX = (float)theInfo.GetValue("SizeX", typeof(float));
+            SizeY = (float)theInfo.GetValue("SizeY", typeof(float));
+        }
+
+        //Serialization function.
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetObjectData 
+        /// Description: Serialization function
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public override void GetObjectData(SerializationInfo theInfo, StreamingContext theStreamingContext)
+        {
+            base.GetObjectData(theInfo, theStreamingContext);
+            theInfo.AddValue("SizeX", SizeX);
+            theInfo.AddValue("SizeY", SizeY);
+        }
+        #endregion
+    }
+
+
+
+
 
 	[Serializable]
 	public class CSIMSegment : ISerializable

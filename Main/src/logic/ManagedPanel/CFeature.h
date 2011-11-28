@@ -51,6 +51,7 @@ namespace Cyber
 				Donut,
 				Rectangle,
 				Triangle,
+				CheckerPattern,
 				CyberShape
 			};
 
@@ -473,6 +474,61 @@ namespace Cyber
 		};
 
 
+		/// \brief
+		/// The \b CCheckerPattern class defines the two dimensional geometry of a CCheckerPattern shape. 
+		// CAD polygon points in CW order (two squares with the same size)
+		//		    *-------* 		--------------
+		//          |		|               h
+		//          |       |               e
+		//          *-------*-------*       i
+		//					|       |       g
+		//					|		|       h
+		//				    *-------* ------t------
+		//			|  size			|
+		/// It is used to define a feature or a fiducial.
+		///
+		/// \remarks The constructor parameters referenceID, X, Y and rotation 
+		/// initialize the base class \b CFeature. 
+		/// Specification for a graphical representation of the CheckerPattern shape and its properties.
+		public ref class CCheckerPattern : public CFeature
+		{
+		public:
+
+			#pragma region Constructor(s)
+
+			/// \b CCheckerPattern Constructor
+			/// 
+			/// \param referenceID The unique reference ID for this feature.
+			/// \param positionX The position in X from the panel origin.
+			/// \param positionY The position in Y from the panel origin.
+			/// \param rotation The rotation about the feature origin.
+			/// \param sizeX The width of the base of the CheckerPattern shape (the "size" shows in the figure) .
+			/// \param sizeY The height of the CheckerPattern shape.
+			CCheckerPattern(int referenceID, double positionX, double positionY, double rotation,
+				double sizeX, double sizeY );
+
+			/// \internal
+			/// Needed for constructing Managed class from Unmanaged pointer
+			CCheckerPattern(Feature *pFeature) : CFeature(pFeature) {} ;
+
+			#pragma endregion
+
+			#pragma region Properties
+			///
+			/// The width of the base of the CheckerPattern.
+			property double SizeX
+			{
+				double get() { return ((CheckerPatternFeature*)_pFeature)->GetSizeX(); }
+			}
+
+			///
+			/// The height of the CheckerPattern.
+			property double SizeY
+			{
+				double get() { return ((CheckerPatternFeature*)_pFeature)->GetSizeY(); }
+			}
+			#pragma endregion
+		};
 
 		/// \brief
 		/// The \b CSegment class defines one segment of a list of segments used to define the two 
