@@ -57,12 +57,16 @@ namespace MPanelIO
             try
             {
                 // Make sure even the construsctor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[5];
+                System.Type[] PanelContainedClassTypes = new Type[9];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
                 PanelContainedClassTypes.SetValue(typeof(CSIMRectangle), 3);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
+                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 8);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextReader PanelFileReader = new StreamReader(xmlFilename);
@@ -97,12 +101,16 @@ namespace MPanelIO
             try
             {
                 // Make sure even the constructor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[5];
+                System.Type[] PanelContainedClassTypes = new Type[9];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
                 PanelContainedClassTypes.SetValue(typeof(CSIMRectangle), 3);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
+                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 8);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextWriter PanelFileWriter = new StreamWriter(xmlFilename);
@@ -177,18 +185,46 @@ namespace MPanelIO
                                 break;
                             }
                         case CFeature.ShapeType.Cross:
-                        case CFeature.ShapeType.Diamond:
-                        case CFeature.ShapeType.Donut:
-                        case CFeature.ShapeType.Triangle:
                             {
-                                CFeature f = (CFeature) fid;
-                                CSIMFeature fiducial = new CSIMFeature(f.ReferenceID, 
-                                    ToCSIMPanelUnits(f.PositionX), ToCSIMPanelUnits(f.PositionY),
-                                    (float) f.Rotation);
-                                simPanel.Fiducials.Add(fiducial);
+                                CCross c = (CCross)fid;
+                                CSIMCross cross = new CSIMCross(c.ReferenceID,
+                                    ToCSIMPanelUnits(c.PositionX), ToCSIMPanelUnits(c.PositionY),
+                                    (float)c.Rotation, ToCSIMPanelUnits(c.SizeX), ToCSIMPanelUnits(c.SizeY), ToCSIMPanelUnits(c.LegSizeX), ToCSIMPanelUnits(c.LegSizeY));
+                                simPanel.Fiducials.Add(cross);
                                 break;
                             }
-                        case CFeature.ShapeType.Undefined:
+
+                        case CFeature.ShapeType.Diamond:
+                            {
+                                CDiamond di = (CDiamond)fid;
+                                CSIMDiamond diamond = new CSIMDiamond(di.ReferenceID,
+                                    ToCSIMPanelUnits(di.PositionX), ToCSIMPanelUnits(di.PositionY),
+                                    (float)di.Rotation, ToCSIMPanelUnits(di.SizeX), ToCSIMPanelUnits(di.SizeY));
+                                simPanel.Fiducials.Add(diamond);
+                                break;
+                            }
+
+                        case CFeature.ShapeType.Donut:
+                            {
+                                CDonut t = (CDonut)fid;
+                                CSIMDonut donut = new CSIMDonut(t.ReferenceID,
+                                    ToCSIMPanelUnits(t.PositionX), ToCSIMPanelUnits(t.PositionY),
+                                    (float)t.Rotation, ToCSIMPanelUnits(t.DiameterInside), ToCSIMPanelUnits(t.DiameterOutside));
+                                simPanel.Fiducials.Add(donut);
+                                break;
+                            }
+
+                        case CFeature.ShapeType.Triangle:
+                            {
+                                CTriangle t = (CTriangle) fid;
+                                CSIMTriangle triangle = new CSIMTriangle(t.ReferenceID, 
+                                    ToCSIMPanelUnits(t.PositionX), ToCSIMPanelUnits(t.PositionY),
+                                    (float)t.Rotation, ToCSIMPanelUnits(t.SizeX), ToCSIMPanelUnits(t.SizeY), ToCSIMPanelUnits(t.OffsetX));
+                                simPanel.Fiducials.Add(triangle);
+                                break;
+                            }
+
+                       case CFeature.ShapeType.Undefined:
                         default:
                             {
                                 break;
@@ -349,10 +385,45 @@ namespace MPanelIO
                                     panel.AddFiducial(rect);
                                     break;
                                 }
+
+
                             case t_FeatureType.e_Cross:
+                                {
+                                    CSIMCross simCro = (CSIMCross)simFid;
+                                    CCross cro = new CCross(simCro.ReferenceID,
+                                        ToCPanelUnits(simCro.PositionX), ToCPanelUnits(simCro.PositionY), simCro.Rotation,
+                                        ToCPanelUnits(simCro.SizeX), ToCPanelUnits(simCro.SizeY), ToCPanelUnits(simCro.LegSizeX), ToCPanelUnits(simCro.LegSizeY));
+                                    panel.AddFiducial(cro);
+                                    break;
+                                }
+
                             case t_FeatureType.e_Diamond:
+                                {
+                                    CSIMDiamond simDia = (CSIMDiamond)simFid;
+                                    CRectangle dia = new CRectangle(simDia.ReferenceID,
+                                        ToCPanelUnits(simDia.PositionX), ToCPanelUnits(simDia.PositionY), simDia.Rotation,
+                                        ToCPanelUnits(simDia.SizeX), ToCPanelUnits(simDia.SizeY));
+                                    panel.AddFiducial(dia);
+                                    break;
+                                }
                             case t_FeatureType.e_Donut:
+                                {
+                                    CSIMDonut simDon = (CSIMDonut)simFid;
+                                    CDonut don = new CDonut(simDon.ReferenceID,
+                                        ToCPanelUnits(simDon.PositionX), ToCPanelUnits(simDon.PositionY),
+                                        ToCPanelUnits(simDon.DiameterInside), ToCPanelUnits(simDon.DiameterOutside));
+                                    panel.AddFiducial(don);
+                                    break;
+                                }
                             case t_FeatureType.e_Triangle:
+                                {
+                                    CSIMTriangle simTri = (CSIMTriangle)simFid;
+                                    CTriangle tri = new CTriangle(simTri.ReferenceID,
+                                        ToCPanelUnits(simTri.PositionX), ToCPanelUnits(simTri.PositionY), simTri.Rotation,
+                                        ToCPanelUnits(simTri.SizeX), ToCPanelUnits(simTri.SizeY),ToCPanelUnits(simTri.Offset));
+                                    panel.AddFiducial(tri);
+                                    break;
+                                }
                             default:
                                 {
                                     break;
