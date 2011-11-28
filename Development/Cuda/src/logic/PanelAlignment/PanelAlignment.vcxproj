@@ -178,9 +178,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="RobustSolver.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\GPUManager\GPUManager.vcxproj">
-      <Project>{f0882d7f-b769-42d1-a057-ed2476c59b8b}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
       <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
     </ProjectReference>

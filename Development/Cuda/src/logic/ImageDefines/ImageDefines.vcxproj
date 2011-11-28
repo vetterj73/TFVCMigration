@@ -106,10 +106,10 @@ copy *.h ..\..\..\pub\include</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;cudart.lib;cutil64D.lib;npp.lib;cufft.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -158,7 +158,7 @@ copy *.h ..\..\..\pub\include</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;Bitmap.lib;cudart.lib;cutil64D.lib;npp.lib;cufft.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib</AdditionalDependencies>
     </Lib>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;$(CUDA_PATH)/lib/$(Platform);$(CUDA_DATA)/shared/lib/$(Platform);$(CUDA_DATA)/C/common/lib/$(Platform)</AdditionalLibraryDirectories>
