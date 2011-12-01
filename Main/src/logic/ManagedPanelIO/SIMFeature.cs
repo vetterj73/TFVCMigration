@@ -39,12 +39,15 @@ namespace MPanelIO
 	{
 		e_Cross = 0,
 		e_Diamond = 1,
-		e_Disc = 2,
-		e_Donut = 3,
-		e_Rectangle = 4,
-		e_Triangle = 5,
-        e_CheckerPattern = 6,
-		e_CyberShape = 7
+        e_DiamondFrame = 2,
+		e_Disc = 3,
+		e_Donut = 4,
+		e_Rectangle = 5,
+        e_RectangleFrame =6,
+		e_Triangle = 7,
+        e_EquilateralTriangleFrame = 8,
+        e_CheckerPattern = 9,
+		e_CyberShape = 10
 
 	}
 	//////////////////////////////////////////////////////////////////////////////
@@ -56,12 +59,15 @@ namespace MPanelIO
 	//////////////////////////////////////////////////////////////////////////////
 	[Serializable]
 	[System.Xml.Serialization.XmlInclude( typeof( CSIMShape ) )]
-	[System.Xml.Serialization.XmlInclude( typeof( CSIMDisc ) )]
-	[System.Xml.Serialization.XmlInclude( typeof( CSIMRectangle ) )]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMDisc))]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMRectangle))]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMRectangleFrame))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMCross))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMDiamond))]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMDiamondFrame))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMDonut))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMTriangle))]
+    [System.Xml.Serialization.XmlInclude(typeof(CSIMEquilateralTriangleFrame))]
     [System.Xml.Serialization.XmlInclude(typeof(CSIMCheckerPattern))]
 
 	public class CSIMFeature : ISerializable
@@ -273,6 +279,76 @@ namespace MPanelIO
 		#endregion
 	}
 
+
+    [Serializable]
+    public class CSIMRectangleFrame : CSIMFeature
+    {
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMRectangleFrame 
+        /// Description: Constructor
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMRectangleFrame(int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSizeX, float theSizeY, float theThickness)
+            : base(theReferenceID, thePositionX, thePositionY, theRotation)
+        {
+            m_Type = t_FeatureType.e_RectangleFrame;
+            m_SizeX = theSizeX;
+            m_SizeY = theSizeY;
+            m_Thickness = theThickness;
+        }
+        private float m_SizeX;
+        private float m_SizeY;
+        private float m_Thickness;
+        public float SizeX { get { return m_SizeX; } set { m_SizeX = value; } }
+        public float SizeY { get { return m_SizeY; } set { m_SizeY = value; } }
+        public float Thickness { get { return m_Thickness; } set { m_Thickness = value; } }
+
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetOutlineRect
+        /// Description: Get outline (bounding) rectangle of Feature
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        protected override RectangleF GetOutLineRect()
+        {
+            return new RectangleF(PositionX, PositionY, m_SizeX, m_SizeY);
+        }
+        public CSIMRectangleFrame() { }
+
+        #region ISerializable Members
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMRectangleFrame 
+        /// Description: Deserialization constructor.
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMRectangleFrame(SerializationInfo theInfo, StreamingContext theStreamingContext)
+            : base(theInfo, theStreamingContext)
+        {
+            //Get the values from info and assign them to the appropriate properties
+            SizeX = (float)theInfo.GetValue("SizeX", typeof(float));
+            SizeY = (float)theInfo.GetValue("SizeY", typeof(float));
+            Thickness = (float)theInfo.GetValue("Thickness", typeof(float));
+        }
+
+        //Serialization function.
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetObjectData 
+        /// Description: Serialization function
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public override void GetObjectData(SerializationInfo theInfo, StreamingContext theStreamingContext)
+        {
+            base.GetObjectData(theInfo, theStreamingContext);
+            theInfo.AddValue("SizeX", SizeX);
+            theInfo.AddValue("SizeY", SizeY);
+            theInfo.AddValue("Thickness", Thickness);
+        }
+        #endregion
+    }
+
     [Serializable]
     public class CSIMCross : CSIMFeature
     {
@@ -412,6 +488,75 @@ namespace MPanelIO
     }
 
     [Serializable]
+    public class CSIMDiamondFrame : CSIMFeature
+    {
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMDiamondFrame 
+        /// Description: Constructor
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMDiamondFrame(int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSizeX, float theSizeY,float theThickness)
+            : base(theReferenceID, thePositionX, thePositionY, theRotation)
+        {
+            m_Type = t_FeatureType.e_DiamondFrame;
+            m_SizeX = theSizeX;
+            m_SizeY = theSizeY;
+            m_Thickness = theThickness;
+        }
+        private float m_SizeX;
+        private float m_SizeY;
+        private float m_Thickness;
+        public float SizeX { get { return m_SizeX; } set { m_SizeX = value; } }
+        public float SizeY { get { return m_SizeY; } set { m_SizeY = value; } }
+        public float Thickness { get { return m_Thickness; } set {m_Thickness = value; } }
+
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetOutlineRect
+        /// Description: Get outline (bounding) rectangle of Feature
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        protected override RectangleF GetOutLineRect()
+        {
+            return new RectangleF(PositionX, PositionY, m_SizeX, m_SizeY);
+        }
+        public CSIMDiamondFrame() { }
+
+        #region ISerializable Members
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMDiamond 
+        /// Description: Deserialization constructor.
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMDiamondFrame(SerializationInfo theInfo, StreamingContext theStreamingContext)
+            : base(theInfo, theStreamingContext)
+        {
+            //Get the values from info and assign them to the appropriate properties
+            SizeX = (float)theInfo.GetValue("SizeX", typeof(float));
+            SizeY = (float)theInfo.GetValue("SizeY", typeof(float));
+            Thickness = (float)theInfo.GetValue("Thickness", typeof(float));
+        }
+
+        //Serialization function.
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetObjectData 
+        /// Description: Serialization function
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public override void GetObjectData(SerializationInfo theInfo, StreamingContext theStreamingContext)
+        {
+            base.GetObjectData(theInfo, theStreamingContext);
+            theInfo.AddValue("SizeX", SizeX);
+            theInfo.AddValue("SizeY", SizeY);
+            theInfo.AddValue("Thickness", Thickness);
+        }
+        #endregion
+    }
+
+    [Serializable]
     public class CSIMDonut : CSIMFeature
     {
         //////////////////////////////////////////////////////////////////////////////
@@ -540,6 +685,71 @@ namespace MPanelIO
             theInfo.AddValue("SizeX", SizeX);
             theInfo.AddValue("SizeY", SizeY);
             theInfo.AddValue("Offset", Offset);
+        }
+        #endregion
+    }
+
+    [Serializable]
+    public class CSIMEquilateralTriangleFrame : CSIMTriangle
+    {
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMEquilateralTriangleFrame
+        /// Description: Constructor
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMEquilateralTriangleFrame(int theReferenceID, float thePositionX, float thePositionY, float theRotation, float theSize, float theThickness)
+            : base(theReferenceID, thePositionX, thePositionY, theRotation, theSize, (float)(theSize*Math.Sqrt(3)/2.0), (float)(theSize / 2.0))
+        {
+            m_Type = t_FeatureType.e_EquilateralTriangleFrame;
+            m_Size = theSize;
+            m_Thickness = theThickness;
+        }
+
+        private float m_Thickness;
+        private float m_Size;
+        public float Size { get { return m_Size; } set { m_Size = value; } }
+        public float Thickness { get { return m_Thickness; } set { m_Thickness = value; } }
+
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetOutlineRect
+        /// Description: Get outline (bounding) rectangle of Feature
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        protected override RectangleF GetOutLineRect()
+        {
+            return new RectangleF(PositionX, PositionY, SizeX, SizeY);
+        }
+        public CSIMEquilateralTriangleFrame() { }
+
+        #region ISerializable Members
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: CSIMEquilateralTriangleFrame 
+        /// Description: Deserialization constructor.
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public CSIMEquilateralTriangleFrame(SerializationInfo theInfo, StreamingContext theStreamingContext)
+            : base(theInfo, theStreamingContext)
+        {
+            //Get the values from info and assign them to the appropriate properties
+            Size = (float)theInfo.GetValue("Size", typeof(float));
+            Thickness = (float)theInfo.GetValue("Thickness", typeof(float));
+        }
+
+        //Serialization function.
+        //////////////////////////////////////////////////////////////////////////////
+        /// <summary>
+        /// Name: GetObjectData 
+        /// Description: Serialization function
+        /// </summary>
+        //////////////////////////////////////////////////////////////////////////////
+        public override void GetObjectData(SerializationInfo theInfo, StreamingContext theStreamingContext)
+        {
+            base.GetObjectData(theInfo, theStreamingContext);
+            theInfo.AddValue("Size", Size);
+            theInfo.AddValue("Thickness", Thickness);
         }
         #endregion
     }

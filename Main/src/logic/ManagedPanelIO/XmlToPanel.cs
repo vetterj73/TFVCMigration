@@ -57,17 +57,20 @@ namespace MPanelIO
             try
             {
                 // Make sure even the construsctor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[10];
+                System.Type[] PanelContainedClassTypes = new Type[13];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
                 PanelContainedClassTypes.SetValue(typeof(CSIMRectangle), 3);
-                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 4);
-                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
-                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
-                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
-                PanelContainedClassTypes.SetValue(typeof(CSIMCheckerPattern), 8);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 9);
+                PanelContainedClassTypes.SetValue(typeof(CSIMRectangleFrame), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 5);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 6);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamondFrame), 7);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 9);
+                PanelContainedClassTypes.SetValue(typeof(CSIMEquilateralTriangleFrame), 10);
+                PanelContainedClassTypes.SetValue(typeof (CSIMCheckerPattern), 11);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 12);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextReader PanelFileReader = new StreamReader(xmlFilename);
@@ -102,17 +105,20 @@ namespace MPanelIO
             try
             {
                 // Make sure even the constructor runs inside a try-catch block
-                System.Type[] PanelContainedClassTypes = new Type[10];
+                System.Type[] PanelContainedClassTypes = new Type[13];
                 PanelContainedClassTypes.SetValue(typeof(CSIMFeature), 0);
                 PanelContainedClassTypes.SetValue(typeof(CSIMShape), 1);
                 PanelContainedClassTypes.SetValue(typeof(CSIMDisc), 2);
                 PanelContainedClassTypes.SetValue(typeof(CSIMRectangle), 3);
-                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 4);
-                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 5);
-                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 6);
-                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 7);
-                PanelContainedClassTypes.SetValue(typeof(CSIMCheckerPattern), 8);
-                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 9);
+                PanelContainedClassTypes.SetValue(typeof(CSIMRectangleFrame), 4);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCross), 5);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamond), 6);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDiamondFrame), 7);
+                PanelContainedClassTypes.SetValue(typeof(CSIMDonut), 8);
+                PanelContainedClassTypes.SetValue(typeof(CSIMTriangle), 9);
+                PanelContainedClassTypes.SetValue(typeof(CSIMEquilateralTriangleFrame), 10);
+                PanelContainedClassTypes.SetValue(typeof(CSIMCheckerPattern), 11);
+                PanelContainedClassTypes.SetValue(typeof(CSIMSegment), 12);
                 XmlSerializer PanelSerializer = new XmlSerializer(typeof(CSIMPanel), PanelContainedClassTypes);
 
                 TextWriter PanelFileWriter = new StreamWriter(xmlFilename);
@@ -186,6 +192,15 @@ namespace MPanelIO
                                 simPanel.Fiducials.Add(rectangle);
                                 break;
                             }
+                        case CFeature.ShapeType.RectangleFrame:
+                            {
+                                CRectangleFrame rf = (CRectangleFrame)fid;
+                                CSIMRectangleFrame rectanglef = new CSIMRectangleFrame(rf.ReferenceID,
+                                    ToCSIMPanelUnits(rf.PositionX), ToCSIMPanelUnits(rf.PositionY),
+                                    (float)rf.Rotation, ToCSIMPanelUnits(rf.SizeX), ToCSIMPanelUnits(rf.SizeY),ToCSIMPanelUnits(rf.Thickness));
+                                simPanel.Fiducials.Add(rectanglef);
+                                break;
+                            }
                         case CFeature.ShapeType.Cross:
                             {
                                 CCross c = (CCross)fid;
@@ -205,6 +220,17 @@ namespace MPanelIO
                                 simPanel.Fiducials.Add(diamond);
                                 break;
                             }
+
+                        case CFeature.ShapeType.DiamondFrame:
+                            {
+                                CDiamondFrame dif = (CDiamondFrame)fid;
+                                CSIMDiamondFrame diamondF = new CSIMDiamondFrame(dif.ReferenceID,
+                                    ToCSIMPanelUnits(dif.PositionX), ToCSIMPanelUnits(dif.PositionY),
+                                    (float)dif.Rotation, ToCSIMPanelUnits(dif.SizeX), ToCSIMPanelUnits(dif.SizeY), ToCSIMPanelUnits(dif.Thickness));
+                                simPanel.Fiducials.Add(diamondF);
+                                break;
+                            }
+
 
                         case CFeature.ShapeType.Donut:
                             {
@@ -226,6 +252,15 @@ namespace MPanelIO
                                 break;
                             }
 
+                        case CFeature.ShapeType.EquilateralTriangleFrame:
+                            {
+                                CEquilateralTriangleFrame tf = (CEquilateralTriangleFrame)fid;
+                                CSIMEquilateralTriangleFrame triFrame = new CSIMEquilateralTriangleFrame(tf.ReferenceID,
+                                    ToCSIMPanelUnits(tf.PositionX), ToCSIMPanelUnits(tf.PositionY),
+                                    (float)tf.Rotation, ToCSIMPanelUnits(tf.Size), ToCSIMPanelUnits(tf.Thickness));
+                                simPanel.Fiducials.Add(triFrame);
+                                break;
+                            }
 
                         case CFeature.ShapeType.CheckerPattern:
                             {
@@ -399,6 +434,16 @@ namespace MPanelIO
                                     break;
                                 }
 
+                            case t_FeatureType.e_RectangleFrame:
+                                {
+                                    CSIMRectangleFrame simRectF = (CSIMRectangleFrame)simFid;
+                                    CRectangleFrame rectf = new CRectangleFrame(simRectF.ReferenceID,
+                                        ToCPanelUnits(simRectF.PositionX), ToCPanelUnits(simRectF.PositionY), simRectF.Rotation,
+                                        ToCPanelUnits(simRectF.SizeX), ToCPanelUnits(simRectF.SizeY),ToCPanelUnits(simRectF.Thickness));
+                                    panel.AddFiducial(rectf);
+                                    break;
+                                }
+
 
                             case t_FeatureType.e_Cross:
                                 {
@@ -413,12 +458,23 @@ namespace MPanelIO
                             case t_FeatureType.e_Diamond:
                                 {
                                     CSIMDiamond simDia = (CSIMDiamond)simFid;
-                                    CRectangle dia = new CRectangle(simDia.ReferenceID,
+                                    CDiamond dia = new CDiamond(simDia.ReferenceID,
                                         ToCPanelUnits(simDia.PositionX), ToCPanelUnits(simDia.PositionY), simDia.Rotation,
                                         ToCPanelUnits(simDia.SizeX), ToCPanelUnits(simDia.SizeY));
                                     panel.AddFiducial(dia);
                                     break;
                                 }
+
+                            case t_FeatureType.e_DiamondFrame:
+                                {
+                                    CSIMDiamondFrame simDiaf = (CSIMDiamondFrame)simFid;
+                                    CDiamondFrame diaf = new CDiamondFrame(simDiaf.ReferenceID,
+                                        ToCPanelUnits(simDiaf.PositionX), ToCPanelUnits(simDiaf.PositionY), simDiaf.Rotation,
+                                        ToCPanelUnits(simDiaf.SizeX), ToCPanelUnits(simDiaf.SizeY), ToCPanelUnits(simDiaf.Thickness));
+                                    panel.AddFiducial(diaf);
+                                    break;
+                                }
+
                             case t_FeatureType.e_Donut:
                                 {
                                     CSIMDonut simDon = (CSIMDonut)simFid;
@@ -437,6 +493,17 @@ namespace MPanelIO
                                     panel.AddFiducial(tri);
                                     break;
                                 }
+
+                            case t_FeatureType.e_EquilateralTriangleFrame:
+                                {
+                                    CSIMEquilateralTriangleFrame simTriF = (CSIMEquilateralTriangleFrame)simFid;
+                                    CEquilateralTriangleFrame triF = new CEquilateralTriangleFrame(simTriF.ReferenceID,
+                                        ToCPanelUnits(simTriF.PositionX), ToCPanelUnits(simTriF.PositionY), simTriF.Rotation,
+                                        ToCPanelUnits(simTriF.Size), ToCPanelUnits(simTriF.Thickness));
+                                    panel.AddFiducial(triF);
+                                    break;
+                                }
+
 
                             case t_FeatureType.e_CheckerPattern:
                                 {

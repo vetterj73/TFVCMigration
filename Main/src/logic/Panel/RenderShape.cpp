@@ -670,6 +670,7 @@ void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, uns
 	Point originPoint;
 	CreateImagePatchForFeature(image, diamondFrame, &diamondHole, &originPoint);
 
+
 	polygonPoints.clear();
 	polygonPoints = diamondFrame->GetInnerPointList();
 	RenderPolygon(diamondHole, (Feature*) diamondFrame, &polygonPoints, 1, grayValue, antiAlias);
@@ -678,14 +679,15 @@ void RenderDiamondFrame(IMAGETYPE& image, DiamondFrameFeature* diamondFrame, uns
 	if(image.GetBytesPerPixel() == 1)
 	{
 		ClipSub(
-			(unsigned char*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned char*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned char*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
 			diamondHole.Columns(), diamondHole.Rows());
 	}
+
 	else
 	{
 		ClipSub(
-			(unsigned short*)image.GetBuffer(), image.PixelRowStride(), 
+			(unsigned short*)image.GetBuffer()+image.PixelRowStride()*(int)(originPoint.y+0.1)+(int)(originPoint.x+0.1), image.PixelRowStride(), 
 			(unsigned short*)diamondHole.GetBuffer(), diamondHole.PixelRowStride(), 
 			diamondHole.Columns(), diamondHole.Rows());
 	}

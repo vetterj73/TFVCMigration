@@ -47,10 +47,13 @@ namespace Cyber
 				Undefined=-1,
 				Cross,
 				Diamond,
+				DiamondFrame,
 				Disc,
 				Donut,
 				Rectangle,
+				RectangleFrame,
 				Triangle,
+				EquilateralTriangleFrame,
 				CheckerPattern,
 				CyberShape
 			};
@@ -276,13 +279,66 @@ namespace Cyber
 			#pragma endregion
 		};
 
+		/// \brief
+		/// The \b CDiamondFrame class defines the two dimensional geometry of a diamond frame shape. 
+		/// It is used to define a feature or a fiducial.
+		///
+		/// \remarks The constructor parameters referenceID, X, Y, rotation and thickness of the frame
+		/// initialize the base class \b CFeature. See the SMEMA SRFF 
+		/// Specification for a graphical representation of the diamond frame and its properties.
+		public ref class CDiamondFrame : public CFeature
+		{
+		public:
 
+			#pragma region Constructor(s)
+
+			/// \b CDiamondFrame Constructor
+			/// 
+			/// \param referenceID The unique reference ID for this feature.
+			/// \param positionX The position in X from the panel origin.
+			/// \param positionY The position in Y from the panel origin.
+			/// \param rotation The rotation about the feature origin.
+			/// \param sizeX The width of the base of the diamond.
+			/// \param sizeY The height of the diamond.
+			CDiamondFrame(int referenceID, double positionX, double positionY, double rotation,
+				double sizeX, double sizeY, double thickness );
+
+			/// \internal
+			/// Needed for constructing Managed class from Unmanaged pointer
+			CDiamondFrame(Feature *pFeature) : CFeature(pFeature) {} ;
+
+			#pragma endregion
+
+			#pragma region Properties
+			///
+			/// The width of the base of the diamond frame.
+			property double SizeX
+			{
+				double get() { return ((DiamondFrameFeature*)_pFeature)->GetSizeX(); }
+			}
+
+			///
+			/// The height of the diamond frame.
+			property double SizeY
+			{
+				double get() { return ((DiamondFrameFeature*)_pFeature)->GetSizeY(); }
+			}
+
+			///
+			/// The thickness of the diamond frame.
+			property double Thickness
+			{
+				double get() { return ((DiamondFrameFeature*)_pFeature)->GetThickness(); }
+			}
+
+			#pragma endregion
+		};
 
 		/// \brief
 		/// The \b CDisc class defines the two dimensional geometry of a disc shape. 
 		/// It is used to define a feature or a fiducial.
 		///
-		/// \remarks The constructor parameters referenceID, X, Y and rotation 
+		/// \remarks The constructor parameters referenceID, X, Y  and diameter
 		/// initialize the base class \b CFeature. See the SMEMA SRFF 
 		/// Specification for a graphical representation of the disc and its properties.
 		public ref class CDisc : public CFeature
@@ -321,7 +377,7 @@ namespace Cyber
 		/// The \b CDonut class defines the two dimensional geometry of a donut shape. 
 		/// It is used to define a feature or a fiducial.
 		///
-		/// \remarks The constructor parameters referenceID, X, Y and rotation 
+		/// \remarks The constructor parameters referenceID, X, Y , the inner diameter and the outer diameter
 		/// initialize the base class \b CFeature. See the SMEMA SRFF 
 		/// Specification for a graphical representation of the donut and its properties.
 		public ref class CDonut : public CFeature
@@ -415,13 +471,68 @@ namespace Cyber
 			#pragma endregion
 		};
 
+		/// \brief
+		/// The \b CRectangleFrame class defines the two dimensional geometry of a rectangle frame shape. 
+        /// It is used to define a feature or a fiducial.
+		///
+		/// \remarks The constructor parameters referenceID, X, Y ,rotation and the thickness of the rectangle
+		/// initialize the base class \b CFeature.
+		/// Specification for a graphical representation of the rectangle frame and its properties.
+		public ref class CRectangleFrame : public CFeature
+		{
+		public:
 
+			#pragma region Constructor(s)
+
+			/// \b CRectangle Constructor
+			/// 
+			/// \param referenceID The unique reference ID for this feature.
+			/// \param positionX The position in X from the panel origin.
+			/// \param positionY The position in Y from the panel origin.
+			/// \param rotation The rotation about the feature origin.
+			/// \param sizeX The width of the base of the rectangle.
+			/// \param sizeY The length of the rectangle.
+			/// \param thickness The height of the rectangle.
+			CRectangleFrame(int referenceID, double positionX, double positionY, double rotation,
+				double sizeX, double sizeY, double thickness);
+
+			/// \internal
+			/// Needed for constructing Managed class from Unmanaged pointer
+			CRectangleFrame(Feature *pFeature) : CFeature(pFeature) {} ;
+
+			#pragma endregion
+
+			#pragma region Properties
+			///
+			/// The width of the base of the rectangle.
+			property double SizeX
+			{
+				double get() { return ((RectangularFrameFeature*)_pFeature)->GetSizeX(); }
+			}
+
+			///
+			/// The height of the rectangle.
+			property double SizeY
+			{
+				double get() { return ((RectangularFrameFeature*)_pFeature)->GetSizeY(); }
+			}
+
+			///
+			/// The thickness of the rectangle.
+			property double Thickness
+			{
+				double get() { return ((RectangularFrameFeature*)_pFeature)->GetThickness(); }
+			}
+
+
+			#pragma endregion
+		};
 
 		/// \brief
 		/// The \b CTriangle class defines the two dimensional geometry of a triangle shape. 
 		/// It is used to define a feature or a fiducial.
 		///
-		/// \remarks The constructor parameters referenceID, X, Y and rotation 
+		/// \remarks The constructor parameters referenceID, X, Y ,rotation and offset of X
 		/// initialize the base class \b CFeature. See the SMEMA SRFF 
 		/// Specification for a graphical representation of the triangle and its properties.
 		public ref class CTriangle : public CFeature
@@ -445,6 +556,8 @@ namespace Cyber
 			/// \internal
 			/// Needed for constructing Managed class from Unmanaged pointer
 			CTriangle(Feature *pFeature) : CFeature(pFeature) {} ;
+
+			CTriangle(){};
 
 			#pragma endregion
 
@@ -473,6 +586,52 @@ namespace Cyber
 			#pragma endregion
 		};
 
+		/// \brief
+		/// The \b CTriangle class defines the two dimensional geometry of a triangle shape. 
+		/// It is used to define a feature or a fiducial.
+		///
+		/// \remarks The constructor parameters referenceID, X, Y, rotation, offset of X and the thicknesss
+		/// initialize the base class \b CFeature. See the SMEMA SRFF 
+		/// Specification for a graphical representation of the triangle and its properties.
+		public ref class CEquilateralTriangleFrame : public CTriangle
+		{
+		public:
+
+			#pragma region Constructor(s)
+
+			/// \b CEquilateralTriangleFrame Constructor
+			/// 
+			/// \param referenceID The unique reference ID for this feature.
+			/// \param positionX The position in X from the panel origin.
+			/// \param positionY The position in Y from the panel origin.
+			/// \param rotation The rotation about the feature origin.
+			/// \param sizeX The width of the base of the triangle.
+			/// \param sizeY The height of the triangle.
+			/// \param offsetX The distance along the X-axis from the left of the base of the triangle to the tip.
+			/// \param Thickness the thickness of the triangle frame.
+			CEquilateralTriangleFrame(int referenceID, double positionX, double positionY, double rotation,
+				double size, double thickness );
+
+			/// \internal
+			/// Needed for constructing Managed class from Unmanaged pointer
+			CEquilateralTriangleFrame(Feature *pFeature) : CTriangle(pFeature) {} ;
+
+			#pragma endregion
+
+			#pragma region Properties
+
+			property double Size
+			{
+				double get() { return ((EquilateralTriangleFrameFeature*)_pFeature)->GetSizeX(); }
+			}
+			
+			property double Thickness
+			{
+				double get() { return ((EquilateralTriangleFrameFeature*)_pFeature)->GetThickness(); }
+			}
+
+			#pragma endregion
+		};
 
 		/// \brief
 		/// The \b CCheckerPattern class defines the two dimensional geometry of a CCheckerPattern shape. 

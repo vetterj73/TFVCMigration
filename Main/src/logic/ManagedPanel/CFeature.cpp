@@ -46,6 +46,13 @@ namespace Cyber
 										sizeX, sizeY);
 		}
 
+		CDiamondFrame::CDiamondFrame(int referenceID, double positionX, double positionY, double rotation,
+			double sizeX, double sizeY, double thickness ) 
+		{
+			_pFeature = new DiamondFrameFeature(referenceID, positionX, positionY, rotation,
+										sizeX, sizeY, thickness);
+		}
+
 		CDisc::CDisc(int referenceID, double positionX, double positionY,
 			double diameter ) 
 		{
@@ -72,11 +79,25 @@ namespace Cyber
 											sizeX, sizeY);
 		}
 
+		CRectangleFrame::CRectangleFrame(int referenceID, double positionX, double positionY, double rotation,
+			double sizeX, double sizeY, double thickness ) 
+		{
+			_pFeature = new RectangularFrameFeature(referenceID, positionX, positionY, rotation,
+											sizeX, sizeY, thickness);
+		}
+
 		CTriangle::CTriangle(int referenceID, double positionX, double positionY, double rotation,
 			double sizeX, double sizeY, double offsetX ) 
 		{
 			_pFeature = new TriangleFeature(referenceID, positionX, positionY, rotation,
 											sizeX, sizeY, offsetX);
+		}
+
+		CEquilateralTriangleFrame::CEquilateralTriangleFrame(int referenceID, double positionX, double positionY, double rotation,
+			double size, double thickness )
+		{
+			_pFeature = new EquilateralTriangleFrameFeature(referenceID, positionX, positionY, rotation,
+											size, thickness);
 		}
 
 		CCheckerPattern::CCheckerPattern(int referenceID, double positionX, double positionY, double rotation,
