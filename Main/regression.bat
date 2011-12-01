@@ -31,3 +31,25 @@ REM     RUN All collected panels
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes2Fids(diagonal).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\2FidsProjective40microns.txt -l %OUTPUTBACKUP%\2Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes3Fids(triangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\3FidsProjective40microns.txt -l %OUTPUTBACKUP%\3Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsProjective40microns.txt -l %OUTPUTBACKUP%\4Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
+
+
+
+set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest4\PPM(colorSim)\RegressionTest4Data(40micronPerCycle)
+set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest4\PPM(colorSim)\RegressionTest4CAD
+
+REM     RUN All collected panels
+%APP% -b -s "%SIMDATA%\NoInsertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoInsertion4Fids40microns.txt -l %OUTPUTBACKUP%\NoInsertion4Fids40microns.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\1Insertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\1Insertion4Fids40microns.txt -l %OUTPUTBACKUP%\1Insertion4Fids40microns.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\2Insertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\2Insertion4Fids40microns.txt -l %OUTPUTBACKUP%\2Insertion4Fids40microns.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -w -s "%SIMDATA%\NoInsertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoInsertion4FidsProjective40microns.txt -l %OUTPUTBACKUP%\NoInsertion4Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -w -s "%SIMDATA%\1Insertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml"  -o  %OUTPUTDIR%\1Insertion4FidsProjective40microns.txt -l %OUTPUTBACKUP%\1Insertion4Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -w -s "%SIMDATA%\2Insertion\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\2Insertion4FidsProjective40microns.txt -l %OUTPUTBACKUP%\2Insertion4Fids40micronsProjective.txt -u .\Results\UnitTest\ -n 10
+ 
+
+
+set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest5\PPM(colorSim)\RegressionTest5Data(Z-4mmPerCycle)
+set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest5\PPM(colorSim)\RegressionTest5CAD
+
+REM     RUN All collected panels
+%APP% -b -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mms.txt -l %OUTPUTBACKUP%\4FidsZ-4mms.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mmsProjective.txt -l %OUTPUTBACKUP%\4FidsZ-4mmsProjective.txt -u .\Results\UnitTest\ -n 10
