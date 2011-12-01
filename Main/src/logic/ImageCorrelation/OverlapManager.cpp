@@ -186,6 +186,12 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pFidImages != NULL)
 		delete [] _pFidImages;
+
+	if(_pCadImg != NULL)
+		delete [] _pCadImg;
+
+	if(_pPanelMaskImg != NULL)
+		delete [] _pPanelMaskImg;
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
