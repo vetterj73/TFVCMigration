@@ -164,12 +164,13 @@ namespace CyberStitchTester
                                 Output("Could not save mosaic images");
                         }
 
-                        // for debug 
+                        /* for debug 
                         _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                             _mosaicSet.GetLayer(2).GetGreyStitchedBuffer(),
                             _mosaicSet.GetLayer(3).GetGreyStitchedBuffer(),
                             _panel.GetCADBuffer(), //heightBuf,
                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                        //*/
                     }
                     else // for gray scale
                     {
