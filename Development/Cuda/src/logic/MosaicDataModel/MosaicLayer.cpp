@@ -3,10 +3,13 @@
 #include "MosaicSet.h"
 #include "MosaicTile.h"
 #include "MorphJob.h"
+#include "GPUMorphJob.h"
 #include "JobManager.h"
 #include "GPUManager.h"
 #include <sys/timeb.h>
 #include <time.h>
+
+#define GPU_IMAGE_MORPH
 
 using namespace CyberGPU;
 
@@ -150,46 +153,96 @@ namespace MosaicDM
 		}
 		piRectCols[iNumCams] = _pStitchedImage->Columns();
 
-		char buf[20];
-		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		vector<MorphJob*> morphJobs;
-
 		deltaBatch = 0;
 		startBatch = clock();//Obtain current tick
 
+#ifdef GPU_IMAGE_MORPH
+
+		vector<GPUMorphJob*> morphJobs;
+
+		//CyberGPU::CudaBufferRegister(_pStitchedImage->GetBuffer(),  _pStitchedImage->BufferSizeInBytes());
+
+		HANDLE handles[100];
+
 		// Morph each Fov to create stitched panel image
 		unsigned int index = 100;
-		MorphJob *pJob;
+		GPUMorphJob *pJob;
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
 		{
 			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 			{
 				Image* pFOV = GetImage(iCam, iTrig);
 
-				pJob = new MorphJob(_pStitchedImage, pFOV,
+				pJob = new GPUMorphJob(_pStitchedImage, pFOV,
 					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
 					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1), index);
+
+#ifndef PRELOCK_MORPH_INPUT
 				CyberGPU::GPUManager::RunJobAsynch((CGPUJob*)pJob/*, SESSIONHANDLE hSession=NULL*/);
+#endif
 				//jm.AddAJob((GPUJob*)pJob);
+
 				morphJobs.push_back(pJob);
+				handles[index-100] = pJob->DoneEvent();
 				++index;
 			}
 		}
 
-		WaitForSingleObject(pJob->DoneEvent(), INFINITE);
-
-		// Wait until it is complete...
-		//jm.MarkAsFinished();
-		//while(jm.TotalJobs() > 0)
-		//	Sleep(1);
-
+#ifdef PRELOCK_MORPH_INPUT
 		deltaBatch += clock() - startBatch;//calculate the difference in ticks
 
-		printf_s("BatchMorph: ticks - %ld\n", deltaBatch);
+		printf_s("SetupMorph: ticks - %ld\n", deltaBatch);
+
+		deltaBatch = 0;
+		startBatch = clock();//Obtain current tick
+
+		for(unsigned int i=0; i<morphJobs.size(); i++)
+		{
+			CyberGPU::GPUManager::RunJobAsynch((CGPUJob*)morphJobs[i]/*, SESSIONHANDLE hSession=NULL*/);
+		}
+#endif
+
+		WaitForMultipleObjects(index-100, handles, true, INFINITE);
+		//WaitForSingleObject(pJob->DoneEvent(), INFINITE);
+
+#else
+
+		char buf[20];
+		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
+		CyberJob::JobManager jm(buf, 8);
+		vector<MorphJob*> morphJobs;
+
+		// Morph each Fov to create stitched panel image
+		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)
+		{
+			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
+			{
+				Image* pFOV = GetImage(iCam, iTrig);
+
+				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
+					(unsigned int)piRectCols[iCam], (unsigned int)piRectRows[iTrig+1], 
+					(unsigned int)(piRectCols[iCam+1]-1), (unsigned int)(piRectRows[iTrig]-1));
+				jm.AddAJob((CyberJob::Job*)pJob);
+
+				morphJobs.push_back(pJob);
+			}
+		}
+
+		// Wait until it is complete...
+		jm.MarkAsFinished();
+		while(jm.TotalJobs() > 0)
+			Sleep(10);
+
+#endif
 
 		for(unsigned int i=0; i<morphJobs.size(); i++)
 			delete morphJobs[i];
 		morphJobs.clear();
+
+		deltaBatch += clock() - startBatch;//calculate the difference in ticks
+
+		printf_s("ProcessMorph: ticks - %ld\n", deltaBatch);
+
 		delete [] pdCenX;
 		delete [] pdCenY;
 		delete [] piRectRows;

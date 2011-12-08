@@ -81,7 +81,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\GPUManager;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\..\..\GPUManager\include;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,7 +101,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\GPUManager;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\..\..\GPUManager\include;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,7 +123,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\GPUManager;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\..\..\GPUManager\include;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,7 +147,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\GPUManager;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\..\..\GPUManager\include;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
