@@ -25,6 +25,10 @@ namespace MosaicDM
 		_piStitchGridRows = NULL;
 		_piStitchGridCols = NULL;
 
+		_bGridBoundaryValid = false;
+		_pdGridXBoundary = NULL;
+		_pdGridYBoundary = NULL;
+		
 		// For debug 
 		_pGreyStitchedImage = NULL;
 	}
@@ -43,6 +47,12 @@ namespace MosaicDM
 
 		if(_piStitchGridCols != NULL)
 			delete [] _piStitchGridCols;
+
+		if(_pdGridXBoundary != NULL)
+			delete [] _pdGridXBoundary;
+
+		if(_pdGridYBoundary != NULL)
+			delete [] _pdGridYBoundary;
 
 		// For debug
 		if(_pGreyStitchedImage != NULL)
@@ -86,6 +96,9 @@ namespace MosaicDM
 
 		_piStitchGridRows = new int[_numTriggers+1];
 		_piStitchGridCols = new int[_numCameras+1]; 
+
+		_pdGridXBoundary = new double[_numTriggers*2];
+		_pdGridYBoundary = new double[_numCameras*2];
 
 		for(unsigned int i=0; i<numTiles; i++)
 		{
@@ -173,6 +186,10 @@ namespace MosaicDM
 		return(true);
 	}
 
+	// pHeighBuf: input, height image buffer
+	// dHeightResolution: gray level resolution of height image
+	// PupilDistance: Pupil distance in meter
+	// bCreate: true, force to calcaucate stitched image event it exists
 	Image *MosaicLayer::GetStitchedImage(
 		unsigned char* pHeighBuf, 
 		double dHeightResolution, 
@@ -255,6 +272,522 @@ namespace MosaicDM
 		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
 	}
 
+	// Calculate grid boundarys
+	// Fovs are organize into grid group 
+	bool MosaicLayer::CalculateGridBoundary()
+	{
+		if(_bGridBoundaryValid) return(true);
+
+		// Boundary for each inverse trigger (x in world)
+		for(int iInvTrig=0; iInvTrig<(int)_numTriggers; iInvTrig++)
+		{
+			double dTopBound, dBottomBound;
+			for(int iCam=0; iCam<(int)_numCameras; iCam++)
+			{
+				DRect rect = GetImage(iCam, _numTriggers-1-iInvTrig)->GetBoundBoxInWorld();
+				if(iCam==0)
+				{
+					dTopBound = rect.xMin;
+					dBottomBound = rect.xMax;
+				}
+				else
+				{
+					// Max of all FOV Mins
+					if(dTopBound < rect.xMin) dTopBound = rect.xMin;
+					// Min of all Fov Maxs
+					if(dBottomBound > rect.xMax) dBottomBound = rect.xMax;
+				}
+			}
+			// top value < bottom value
+			_pdGridXBoundary[iInvTrig*2] = dTopBound;
+			_pdGridXBoundary[iInvTrig*2+1] = dBottomBound;
+		}
+
+		// Boundary for each camera (y in world)
+		for(int iCam=0; iCam<(int)_numCameras; iCam++)
+		{
+			double dLeftBound, dRightBound;
+			for(int iTrig=0; iTrig<(int)_numTriggers; iTrig++)
+			{
+				DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
+				if(iTrig==0)
+				{
+					dLeftBound = rect.yMin;
+					dRightBound = rect.yMax;
+				}
+				else
+				{
+					// Max of all FOV Mins
+					if(dLeftBound < rect.yMin) dLeftBound = rect.yMin;
+					// Min of all Fov Maxs
+					if(dRightBound > rect.yMax) dRightBound = rect.yMax;
+				}
+			}
+			_pdGridYBoundary[iCam*2] = dLeftBound;
+			_pdGridYBoundary[iCam*2+1] = dRightBound;
+		}
+
+		_bGridBoundaryValid = true;
+		return(true);
+	}
+
+	// Get a morphed image patch
+	// pBuf: inout, the buffer hold the patch, memeory is allocated before pass in
+	// iPixelSpan: buffer's span in pixel
+	// iStartCol, iWidth, iStartRow and iHeight: Roi in pixel
+	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
+	// pHeighImgBuf and iHeightImgSpan: input, height image buf and its span 
+	// The buffer point to (0, 0) of Height image, 
+	// It's origin needs not be the origin of pBuf in the world space
+	// dHeightResolution: gray level resolution of height image
+	// PupilDistance: Pupil distance in meter
+	bool MosaicLayer::GetImagePatch(
+		unsigned char* pBuf,
+		unsigned int iPixelSpan,
+		unsigned int iStartCol,
+		unsigned int iWidth,
+		unsigned int iStartRow,
+		unsigned int iHeight,
+		FOVPreferSelected* pPreferSelectedFov,
+		unsigned char* pHeightImgBuf, 
+		unsigned int iHeightImgSpan,
+		double dHeightResolution, 
+		double dPupilDistance)
+	{
+		// Create image
+		Image* pImage;
+		if(GetMosaicSet()->IsBayerPattern())
+		{
+			pImage = new ColorImage(BGR, false);
+		}
+		else
+		{
+			pImage = new Image();
+		}
+
+		double dRes = GetMosaicSet()->GetNominalPixelSizeX();
+		ImgTransform inputTransform;
+		inputTransform.Config(dRes, dRes, 0, dRes*iStartRow, dRes*iStartCol);	
+		pImage->Configure(iWidth, iHeight, iPixelSpan, inputTransform, inputTransform, false, pBuf);
+
+				// Create height image
+		Image* pHeightImage = NULL;
+		if(pHeightImgBuf != 0)
+		{
+			pHeightImage = new Image();
+			pHeightImage->Configure(
+				iWidth,
+				iHeight,
+				iHeightImgSpan,
+				inputTransform,
+				inputTransform,
+				false,
+				pHeightImgBuf + iHeightImgSpan*iStartRow + iStartCol);
+		}
+
+		bool bFlag = GetImagePatch(
+			pImage, 
+			0,
+			iWidth-1,
+			0,
+			iHeight-1,
+			pPreferSelectedFov,
+			pHeightImage, 
+			dHeightResolution, 
+			dPupilDistance);
+
+		delete pImage;
+		if(pHeightImage !=NULL)
+			delete pHeightImage; 
+			
+		return(bFlag);
+	}
+
+	// Get a morphed image patch
+	// pImage: inout, the image hold the patch, memeory is allocated before pass in
+	// iLeft, iRight, iTop and iBottom: Roi in pixel
+	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
+	// pHeighImage: input, height image (it's origin should match pImage's origin)
+	// dHeightResolution: gray level resolution of height image
+	// PupilDistance: Pupil distance in meter
+	bool MosaicLayer::GetImagePatch(
+		Image* pImage, 
+		unsigned int iLeft,
+		unsigned int iRight,
+		unsigned int iTop,
+		unsigned int iBottom,
+		FOVPreferSelected* pPreferSelectedFov,
+		const Image* pHeightImage, 
+		double dHeightResolution, 
+		double dPupilDistance)
+	{
+		// valication check
+		if(pImage == NULL) 
+			return(false);
+
+		if(iLeft>iRight || iTop>iBottom)
+			return(false);
+
+		int iChannels = pImage->GetBytesPerPixel();
+		if(!GetMosaicSet()->IsBayerPattern())
+		{
+			if(iChannels != 1)
+				return(false);
+		}
+		else
+		{
+			if(iChannels != 3)
+				return(false);
+		}
+
+	// Calculate trig range and camera range for morph
+		// ROI in world
+		DRect worldRoi;
+		pImage->ImageToWorld(iTop, iLeft, &worldRoi.xMin, &worldRoi.yMin);
+		pImage->ImageToWorld(iBottom, iRight, &worldRoi.xMax, &worldRoi.yMax);
+
+		// Fovs are organized into grid group to simplity the logic
+		// However, the panel rotation need to be small for this approach
+		// The grid boundarys are calculated if it is necessary
+		if(!_bGridBoundaryValid)
+			CalculateGridBoundary();
+
+		int iStartInvTrig=-1, iEndInvTrig=-1;
+		for(int iInvTrig = 0; iInvTrig < (int)_numTriggers; iInvTrig++)
+		{ 
+			if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMin && 
+				worldRoi.xMin<_pdGridXBoundary[2*iInvTrig+1])
+			{
+				iStartInvTrig = iInvTrig;
+				break;
+			}
+		}
+		for(int iInvTrig = _numTriggers-1; iInvTrig >= 0; iInvTrig--)
+		{
+			if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMax && 
+				worldRoi.xMax<_pdGridXBoundary[2*iInvTrig+1])
+			{
+				iEndInvTrig = iInvTrig;
+				break;
+			}
+		}
+		
+		int iStartCam=-1, iEndCam=-1;
+		for(int iCam = 0; iCam < (int)_numCameras; iCam++)
+		{
+			if(_pdGridYBoundary[2*iCam]<worldRoi.yMin && 
+				worldRoi.yMin<_pdGridYBoundary[2*iCam+1])
+			{
+				iStartCam = iCam;
+				break;
+			}
+		}
+		for(int iCam = _numCameras-1; iCam >= 0; iCam--)
+		{
+			if(_pdGridYBoundary[2*iCam]<worldRoi.yMax && 
+				worldRoi.yMax<_pdGridYBoundary[2*iCam+1])
+			{
+				iEndCam = iCam;
+				break;
+			}
+		}
+		
+	// Calcuatle ROI of output image for each FOV that may be used 
+		int iInvTrigCount = iEndInvTrig - iStartInvTrig + 1;
+		int iCamCount = iEndCam - iStartCam + 1;
+
+		int* piPixelRowBoundary = new int[iInvTrigCount+1]; // Contain start Rows
+		int* piPixelColBoundary = new int[iCamCount+1];		// contain start Cols
+
+		// If more than 2 triggers are covered
+		if(iInvTrigCount > 2)
+		{
+			// No FOV preferance is used
+			pPreferSelectedFov->selectedTB = NOPREFERTB;
+			
+			piPixelRowBoundary[0]= iTop;
+			for(int iInvTrig = iStartInvTrig+1; iInvTrig<=iEndInvTrig; iInvTrig++)
+			{
+				double dStartRow, dEndRow, dTemp;
+				if(iInvTrig == iStartInvTrig+1)
+				{
+					pImage->WorldToImage(_pdGridXBoundary[2*iInvTrig], 0, &dStartRow, &dTemp);
+					int iStartRow = (int)dStartRow+1; // +1 to compensate the clip error 
+					if(iStartRow < (int)iTop) iStartRow = iTop;
+					if(iStartRow > (int)iBottom+1) iStartRow = iBottom+1;
+					piPixelRowBoundary[1]= iStartRow;
+				}
+				pImage->WorldToImage(_pdGridXBoundary[2*iInvTrig+1], 0, &dEndRow, &dTemp);
+				int iStartRow = (int)dEndRow+1;	// +1 to next startRow
+				if(iStartRow < (int)iTop) iStartRow = iTop;
+				if(iStartRow > (int)iBottom+1) iStartRow = iBottom+1;
+				piPixelRowBoundary[(iInvTrig-iStartInvTrig)+1]= iStartRow;
+			}
+		}
+
+		// if 2 triggers are convered, need consider Fov preferance
+		if(iInvTrigCount == 2)
+		{
+			piPixelRowBoundary[0] = iTop;
+			piPixelRowBoundary[2] = iBottom+1;
+			// if no Fov preferance
+			if(pPreferSelectedFov->preferTB == NOPREFERTB)
+			{	
+				int iStartRow;
+				if(fabs(_pdGridXBoundary[iStartInvTrig*2]-worldRoi.xMin) <
+					fabs(_pdGridXBoundary[iEndInvTrig*2+1]-worldRoi.xMax))
+				{
+					// Roi near start inverse trigger
+					pPreferSelectedFov->selectedTB = TOPFOV;
+					double dEndRow, dTemp;
+					pImage->WorldToImage(_pdGridXBoundary[2*iStartInvTrig+1], 0, &dEndRow, &dTemp);
+					iStartRow = (int)dEndRow + 1;
+				}
+				else
+				{	// roi near end inverse trigger
+					pPreferSelectedFov->selectedTB = BOTTOMFOV;
+					double dStartRow, dTemp;
+					pImage->WorldToImage(_pdGridXBoundary[2*iEndInvTrig], 0, &dStartRow, &dTemp);
+					iStartRow = (int)dStartRow+1;
+				}
+				if(iStartRow < (int)iTop) iStartRow = iTop;
+				if(iStartRow > (int)iBottom+1) iStartRow = iBottom+1;
+				piPixelRowBoundary[1]= iStartRow;
+			}
+			// Prefer top Fov
+			if(pPreferSelectedFov->preferTB == TOPFOV)
+			{
+				if(_pdGridXBoundary[iStartInvTrig*2] < worldRoi.xMin &&
+					worldRoi.xMax < _pdGridXBoundary[iStartInvTrig*2+1])
+				{
+					// Roi is totally inside x grid of prefered Fov  
+					pPreferSelectedFov->selectedTB = pPreferSelectedFov->preferTB;
+					piPixelRowBoundary[1] = iBottom+1;
+				}
+				else
+				{
+					// Roi is not totally inside x grid of prefered Fov
+					if(_pdGridXBoundary[iEndInvTrig*2] < worldRoi.xMin &&
+						worldRoi.xMax < _pdGridXBoundary[iEndInvTrig*2+1])
+					{	
+						// However Roi is totally inside x grid of none prefered Fov
+						// the no prefered one will be selected
+						pPreferSelectedFov->selectedTB = BOTTOMFOV;
+						piPixelRowBoundary[1] = iTop;
+					}
+					else
+					{	// Roi is not totally inside both x grid
+						// Choice the prefered one as much as possible
+						pPreferSelectedFov->selectedTB = pPreferSelectedFov->preferTB;
+						double dEndRow, dTemp;
+						pImage->WorldToImage(_pdGridXBoundary[2*iStartInvTrig+1], 0, &dEndRow, &dTemp);
+						int iStartRow = (int)dEndRow + 1;
+						if(iStartRow < (int)iTop) iStartRow = iTop;
+						if(iStartRow > (int)iBottom+1) iStartRow = iBottom+1;
+						piPixelRowBoundary[1]= iStartRow;
+					}
+				}
+			}
+			// Prefer bottom Fov 
+			if(pPreferSelectedFov->preferTB == BOTTOMFOV)
+			{
+				if(_pdGridXBoundary[iEndInvTrig*2] < worldRoi.xMin &&
+					worldRoi.xMax < _pdGridXBoundary[iEndInvTrig*2+1])
+				{
+					// Roi is totally inside x grid of prefered Fov  
+					pPreferSelectedFov->selectedTB = pPreferSelectedFov->preferTB;
+					piPixelRowBoundary[1] = iTop;
+				}
+				else
+				{
+					// Roi is not totally inside x grid of prefered Fov
+					if(_pdGridXBoundary[iStartInvTrig*2] < worldRoi.xMin &&
+						worldRoi.xMax < _pdGridXBoundary[iStartInvTrig*2+1])
+					{	
+						// However Roi is totally inside x grid of none prefered Fov
+						// the no prefered one will be selected
+						pPreferSelectedFov->selectedTB = TOPFOV;
+						piPixelRowBoundary[1] = iBottom+1;
+					}
+					else
+					{	// Roi is not totally inside both x grid
+						// Choice the prefered one as much as possible
+						pPreferSelectedFov->selectedTB = pPreferSelectedFov->preferTB;
+						double dStartRow, dTemp;
+						pImage->WorldToImage(_pdGridXBoundary[2*iEndInvTrig], 0, &dStartRow, &dTemp);
+						int iStartRow = (int)dStartRow + 1;
+						if(iStartRow < (int)iTop) iStartRow = iTop;
+						if(iStartRow > (int)iBottom+1) iStartRow = iBottom+1;
+						piPixelRowBoundary[1]= iStartRow;
+					}
+				}
+			}
+		}
+		// If only covered by one trigger
+		if(iInvTrigCount == 1)
+		{
+			pPreferSelectedFov->selectedTB = NOPREFERTB;
+			piPixelRowBoundary[0] = iTop;
+			piPixelRowBoundary[1] = iBottom+1;
+		}
+
+//***********************************************************************
+		// If more than 2 cameras are covered
+		if(iCamCount > 2)
+		{
+			// No FOV preferance is used
+			pPreferSelectedFov->selectedLR = NOPREFERLR;
+			
+			piPixelColBoundary[0]= iLeft;
+			for(int iCam = iStartCam+1; iCam<=iEndCam; iCam++)
+			{
+				double dStartCol, dEndCol, dTemp;
+				if(iCam == iStartCam+1)
+				{
+					pImage->WorldToImage(0, _pdGridYBoundary[2*iCam], &dTemp, &dStartCol);
+					int iStartCol = (int)dStartCol+1; // +1 to compensate the clip error 
+					if(iStartCol < (int)iLeft) iStartCol = iLeft;
+					if(iStartCol > (int)iRight+1) iStartCol = iRight+1;
+					piPixelColBoundary[1]= iStartCol;
+				}
+				pImage->WorldToImage(0, _pdGridYBoundary[2*iCam+1], &dTemp, &dEndCol);
+				int iStartCol = (int)dEndCol+1;	// +1 to next startCol
+				if(iStartCol < (int)iLeft) iStartCol = iLeft;
+				if(iStartCol > (int)iRight+1) iStartCol = iRight+1;
+				piPixelColBoundary[(iCam-iStartCam)+1]= iStartCol;
+			}
+		}
+
+		// if 2 cameras are convered, need consider Fov preferance
+		if(iCamCount == 2)
+		{
+			piPixelColBoundary[0] = iLeft;
+			piPixelColBoundary[2] = iRight+1;
+			// if no Fov preferance
+			if(pPreferSelectedFov->preferLR == NOPREFERLR)
+			{	
+				int iStartCol;
+				if(fabs(_pdGridYBoundary[iStartCam*2]-worldRoi.yMin) <
+					fabs(_pdGridYBoundary[iEndCam*2+1]-worldRoi.yMax))
+				{
+					// Roi near start camera
+					pPreferSelectedFov->selectedLR = LEFTFOV;
+					double dEndCol, dTemp;
+					pImage->WorldToImage(0, _pdGridYBoundary[2*iStartCam+1], &dTemp, &dEndCol);
+					iStartCol = (int)dEndCol + 1;
+				}
+				else
+				{	// roi near end camera
+					pPreferSelectedFov->selectedLR = RIGHTFOV;
+					double dStartCol, dTemp;
+					pImage->WorldToImage(0, _pdGridYBoundary[2*iEndCam], &dTemp, &dStartCol);
+					iStartCol = (int)dStartCol+1;
+				}
+				if(iStartCol < (int)iLeft) iStartCol = iLeft;
+				if(iStartCol > (int)iRight+1) iStartCol = iRight+1;
+				piPixelColBoundary[1]= iStartCol;
+			}
+			// Prefer left Fov
+			if(pPreferSelectedFov->preferLR == LEFTFOV)
+			{
+				if(_pdGridYBoundary[iStartCam*2] < worldRoi.yMin &&
+					worldRoi.yMax < _pdGridYBoundary[iStartCam*2+1])
+				{
+					// Roi is totally inside y grid of prefered Fov  
+					pPreferSelectedFov->selectedLR = pPreferSelectedFov->preferLR;
+					piPixelColBoundary[1] = iRight+1;
+				}
+				else
+				{
+					// Roi is not totally inside y grid of prefered Fov
+					if(_pdGridYBoundary[iEndCam*2] < worldRoi.yMin &&
+						worldRoi.yMax < _pdGridYBoundary[iEndCam*2+1])
+					{	
+						// However Roi is totally inside y grid of none prefered Fov
+						// the no prefered one will be selected
+						pPreferSelectedFov->selectedLR = RIGHTFOV;
+						piPixelColBoundary[1] = iLeft;
+					}
+					else
+					{	// Roi is not totally inside both y grid
+						// Choice the prefered one as much as possible
+						pPreferSelectedFov->selectedLR = pPreferSelectedFov->preferLR;
+						double dEndCol, dTemp;
+						pImage->WorldToImage(0, _pdGridYBoundary[2*iStartCam+1], &dTemp, &dEndCol);
+						int iStartCol = (int)dEndCol + 1;
+						if(iStartCol < (int)iLeft) iStartCol = iLeft;
+						if(iStartCol > (int)iRight+1) iStartCol = iRight+1;
+						piPixelColBoundary[1]= iStartCol;
+					}
+				}
+			}
+			// Prefer right Fov 
+			if(pPreferSelectedFov->preferLR == RIGHTFOV)
+			{
+				if(_pdGridYBoundary[iEndCam*2] < worldRoi.yMin &&
+					worldRoi.yMax < _pdGridYBoundary[iEndCam*2+1])
+				{
+					// Roi is totally inside y grid of prefered Fov  
+					pPreferSelectedFov->selectedLR = pPreferSelectedFov->preferLR;
+					piPixelColBoundary[1] = iLeft;
+				}
+				else
+				{
+					// Roi is not totally inside y grid of prefered Fov
+					if(_pdGridYBoundary[iStartCam*2] < worldRoi.yMin &&
+						worldRoi.yMax < _pdGridYBoundary[iStartCam*2+1])
+					{	
+						// However Roi is totally inside x grid of none prefered Fov
+						// the no prefered one will be selected
+						pPreferSelectedFov->selectedLR = LEFTFOV;
+						piPixelColBoundary[1] = iRight+1;
+					}
+					else
+					{	// Roi is not totally inside both y grid
+						// Choice the prefered one as much as possible
+						pPreferSelectedFov->selectedLR = pPreferSelectedFov->preferLR;
+						double dStartCol, dTemp;
+						pImage->WorldToImage(0, _pdGridYBoundary[2*iEndCam], &dTemp, &dStartCol);
+						int iStartCol = (int)dStartCol + 1;
+						if(iStartCol < (int)iLeft) iStartCol = iLeft;
+						if(iStartCol > (int)iRight+1) iStartCol = iRight+1;
+						piPixelColBoundary[1]= iStartCol;
+					}
+				}
+			}
+		}
+		// If only covered by one camera
+		if(iCamCount == 1)
+		{
+			pPreferSelectedFov->selectedLR = NOPREFERLR;
+			piPixelColBoundary[0] = iLeft;
+			piPixelColBoundary[1] = iRight+1;
+		}
+
+		// Morph to create image patch
+		for(int iInvTrig= iStartInvTrig; iInvTrig<= iEndInvTrig; iInvTrig++)
+		{
+			for(int iCam = iStartCam; iCam<=iEndCam; iCam++)
+			{
+				UIRect roi;
+				roi.FirstRow = piPixelRowBoundary[iInvTrig-iStartInvTrig];
+				roi.LastRow = piPixelRowBoundary[iInvTrig-iStartInvTrig+1]-1;
+				roi.FirstColumn = piPixelColBoundary[iCam-iStartCam];
+				roi.LastColumn = piPixelColBoundary[iCam-iStartCam+1]-1;
+				if(roi.LastRow < roi.FirstRow  || roi.LastColumn < roi.FirstColumn)
+					continue;
+
+				Image* pFovImg = GetImage(iCam, _numTriggers-1-iInvTrig);
+				pImage->MorphFrom(pFovImg, roi, pHeightImage, dHeightResolution, dPupilDistance);
+			}
+		}
+
+		delete [] piPixelRowBoundary;
+		delete [] piPixelColBoundary;
+
+		return(true);
+	}
+
 	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())
@@ -299,6 +832,7 @@ namespace MosaicDM
 		}	
 		_bIsMaskImgValid = false;
 		_stitchedImageValid = false;
+		_bGridBoundaryValid = false;
 	}
 
 	bool MosaicLayer::AddImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)

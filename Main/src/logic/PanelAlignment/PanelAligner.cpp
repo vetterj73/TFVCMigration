@@ -4,6 +4,7 @@
 #include "MosaicTile.h"
 #include "MorphJob.h"
 #include "Panel.h"
+#include "ColorImage.h"
 #include <direct.h> //_mkdir
 
 void ImageAdded(int layerIndex, int cameraIndex, int triggerIndex, void* context)
@@ -54,6 +55,8 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 
 	_pSet = pSet;
 	_pSet->RegisterImageAddedCallback(ImageAdded, this);
+
+	_pPanel = pPanel;
 
 	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
 		
@@ -353,6 +356,9 @@ bool PanelAligner::CreateTransforms()
 
 	_bResultsReady = true;
 
+	// for debug
+	//TestGetImagePatch();
+
 	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
@@ -647,6 +653,121 @@ void PanelAligner::DisturbFiducialAlignment()
 				}
 			}
 		}
+	}
+}
+
+void PanelAligner::TestGetImagePatch()
+{
+	int iLayerIndex = 2;
+	double dRes = _pSet->GetNominalPixelSizeX();
+
+	MosaicDM::FOVPreferSelected setFov;
+	//setFov.preferLR = MosaicDM::MosaicLayer::RIGHTFOV;
+	setFov.preferTB = MosaicDM::BOTTOMFOV;
+
+	// Modify color for different FOV for debug purpose
+	if(_pSet->IsBayerPattern())
+	{
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		int iNumCam = pLayer->GetNumberOfCameras();
+		int iNumTrig = pLayer->GetNumberOfTriggers();
+		for(int iTrig = 0; iTrig < iNumTrig; iTrig++)
+		{
+			for(int iCam = 0; iCam < iNumCam; iCam++) 
+			{
+				Image* pImg = pLayer->GetImage(iCam, iTrig);
+				int iStride = pImg->PixelRowStride();
+				int iRows = pImg->Rows();
+				if(iTrig%2==0 && iCam%2==0)
+					continue;
+				if(iTrig%2==0 && iCam%2==1)
+				{
+					memset(pImg->GetBuffer()+iStride*iRows, 200, iStride*iRows); // set Cr 200-128
+				}
+				if(iTrig%2==1 && iCam%2==0)
+				{
+					memset(pImg->GetBuffer()+iStride*iRows, 50, iStride*iRows); // set Cr 50-128
+				}
+				if(iTrig%2==1 && iCam%2==1)
+				{
+					memset(pImg->GetBuffer()+iStride*iRows, 128, iStride*iRows); // set Cr 128-128
+				}
+			}
+		}
+	}
+
+	// Create a whole stitched image with patches
+	Image* pStitchedImage;
+	if(_pSet->IsBayerPattern())
+	{
+		pStitchedImage = new ColorImage(BGR, false);
+	}
+	else
+	{
+		pStitchedImage = new Image();		
+	}
+
+	ImgTransform inputTransform;
+	inputTransform.Config(dRes, dRes, 0, 0, 0);	
+	unsigned int iNumRows = _pSet->GetObjectWidthInPixels();
+	unsigned int iNumCols = _pSet->GetObjectLengthInPixels();
+	pStitchedImage->Configure(iNumCols, iNumRows, iNumCols, inputTransform, inputTransform, true);
+	pStitchedImage->ZeroBuffer();
+
+	for(FeatureListIterator i=_pPanel->beginFeatures(); i!=_pPanel->endFeatures(); i++)
+	{
+		Box box = i->second->GetBoundingBox();
+		_pSet->GetLayer(iLayerIndex)->GetImagePatch(
+			pStitchedImage,
+			(box.p1.y - box.Height()*0.3)/dRes,
+			(box.p2.y + box.Height()*0.3)/dRes,
+			(box.p1.x - box.Width()*0.3)/dRes,
+			(box.p2.x + box.Width()*0.3)/dRes,
+			&setFov);
+	}
+
+	//pStitchedImage->Save("C:\\Temp\\patchImage.bmp");
+	delete pStitchedImage;
+
+	// Create individual patch image only
+	int iCount = 0;
+	for(FeatureListIterator i=_pPanel->beginFeatures(); i!=_pPanel->endFeatures(); i++)
+	{
+		Box box = i->second->GetBoundingBox();
+		
+		// Image patch locatioin and size on the stitched image
+		int iStartCol = (box.p1.y - box.Height()*0.3)/dRes;
+		int iStartRow = (box.p1.x - box.Width()*0.3)/dRes;
+		int iWidth = box.Height()*1.6/dRes;
+		int iHeight = box.Width()*1.6/dRes;
+
+		Image* pImg;
+		int iBytePerPIxel = 1;
+		if(_pSet->IsBayerPattern())
+		{
+			pImg = new ColorImage(BGR, false);
+		}
+		else
+		{
+			pImg = new Image();
+		}
+
+		// The image that will hold the image patch 
+		// Its transform need not match patch information
+		ImgTransform trans;
+		pImg->Configure(iWidth, iHeight, iWidth, trans, trans, true);
+		_pSet->GetLayer(iLayerIndex)->GetImagePatch(
+			pImg->GetBuffer(), iWidth, iStartCol, iWidth, iStartRow, iHeight,
+			&setFov);
+
+		string s;
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "C:\\Temp\\Temp\\ID%d.bmp", iCount);
+		s.append(cTemp);
+		pImg->Save(s);
+		delete pImg;
+
+		iCount++;
 	}
 }
 

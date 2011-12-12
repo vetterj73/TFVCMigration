@@ -6,6 +6,23 @@
 
 namespace MMosaicDM 
 {
+	struct ManagedFOVPreferSelected
+	{
+	public:
+		MosaicDM::FOVLRPOS preferLR;
+		MosaicDM::FOVTBPOS preferTB;
+		MosaicDM::FOVLRPOS selectedLR;
+		MosaicDM::FOVTBPOS selectedTB;
+			
+		ManagedFOVPreferSelected()
+		{
+			preferLR = MosaicDM::NOPREFERLR;
+			preferTB = MosaicDM::NOPREFERTB;
+			selectedLR = MosaicDM::NOPREFERLR;
+			selectedTB = MosaicDM::NOPREFERTB;
+		}
+	};
+
 	///
 	///	Simple Wrapper around unmanaged MosaicLayer.  Only exposes what is necessary.
 	///
@@ -82,6 +99,15 @@ namespace MMosaicDM
 					false);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
+
+			bool GetImagePatch(
+				System::IntPtr pBuf,
+				unsigned int iPixelSpan,
+				unsigned int iStartCol,
+				unsigned int iWidth,
+				unsigned int iStartRow,
+				unsigned int iHeight,
+				ManagedFOVPreferSelected pPreferSelected);
 
 			// Valid only after stitched image is created
 			bool GetStitchGrid(array<int>^ pCols, array<int>^ pRows)

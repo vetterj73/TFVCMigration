@@ -78,6 +78,7 @@ protected:
 
 	// For debug
 	void DisturbFiducialAlignment();
+	void TestGetImagePatch();
 
 private:
 	FidFovOverlapList _lastProcessedFids;
@@ -86,6 +87,7 @@ private:
 
 	// Inputs
 	MosaicSet* _pSet;		
+	Panel* _pPanel;
 	OverlapManager* _pOverlapManager;
 	int _iMaskCreationStage;
 	RobustSolver* _pSolver;

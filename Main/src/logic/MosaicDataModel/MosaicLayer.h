@@ -7,6 +7,36 @@ namespace MosaicDM
 	class MosaicSet;
 	class MosaicTile;
 
+	enum FOVLRPOS
+	{
+		NOPREFERLR,
+		LEFTFOV,
+		RIGHTFOV,
+	};
+
+	enum FOVTBPOS
+	{
+		NOPREFERTB,
+		TOPFOV,
+		BOTTOMFOV
+	};
+
+	struct FOVPreferSelected
+	{
+		FOVLRPOS preferLR;
+		FOVTBPOS preferTB;
+		FOVLRPOS selectedLR;
+		FOVTBPOS selectedTB;
+			
+		FOVPreferSelected()
+		{
+			preferLR = NOPREFERLR;
+			preferTB = NOPREFERTB;
+			selectedLR = NOPREFERLR;
+			selectedTB = NOPREFERTB;
+		}
+	};
+
 	///
 	///	MosaicLayer is one layer of an MosaicSet.  In the case of SIM (one of the clients), a layer would be
 	/// one illumination (one capture spec's worth of images).
@@ -90,6 +120,30 @@ namespace MosaicDM
 				double dPupilDistance=0,
 				bool bRecreate = false);
 
+			bool GetImagePatch(
+				unsigned char* pBuf,
+				unsigned int iPixelSpan,
+				unsigned int iStartCol,
+				unsigned int iWidth,
+				unsigned int iStartRow,
+				unsigned int iHeight,
+				FOVPreferSelected* pPreferSelectedFov,
+				unsigned char* pHeightImgBuf = 0, 
+				unsigned int iHeightImgSpan = 0,
+				double dHeightResolution = 0, 
+				double dPupilDistance = 0);
+
+			bool GetImagePatch(
+				Image* pImage, 
+				unsigned int iLeft,
+				unsigned int iRight,
+				unsigned int iTop,
+				unsigned int iBottom,
+				FOVPreferSelected* pPreferSelectedFov,
+				const Image* pHeightImage = NULL, 
+				double dHeightResolution = 0, 
+				double dPupilDistance = 0);
+
 			// For debug
 			Image* GetGreyStitchedImage(
 				unsigned char* pHeighBuf, 
@@ -118,6 +172,8 @@ namespace MosaicDM
 			void AllocateStitchedImageIfNecessary();
 			bool CalculateStitchGrids();
 
+			bool CalculateGridBoundary();
+
 			///
 			///	Adds an image...
 			///
@@ -142,6 +198,12 @@ namespace MosaicDM
 			int* _piStitchGridCols; 
 	
 			Image *_pStitchedImage;
+
+			// Image patch morph
+			bool _bGridBoundaryValid;
+				// Grid boundary x and y in world
+			double* _pdGridXBoundary;	// organized with inverse trigger index (et. _pdGridXBoundary[0] and[1] for the last trigger)
+			double* _pdGridYBoundary;
 
 		// for Debug
 			Image *_pGreyStitchedImage;
