@@ -200,35 +200,6 @@ namespace MosaicDM
 		return true;
 	}
 
-	bool MosaicSet::SaveAllStitchedImagesWithHeightToDirectory(
-		string directoryName,
-		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
-	{
-		string fullDir = directoryName;
-		//if(directoryName[directoryName.size()-1] != '/' &&
-		//   directoryName[directoryName.size()-1] != '\\')
-		//   fullDir += "\\";
-
-		for(unsigned int i=0; i<GetNumMosaicLayers(); i++)
-		{
-			MosaicLayer *pLayer = GetLayer(i);
-			Image *pImage = pLayer->GetStitchedImage(pHeighBuf, dHeightResolution, dPupilDistance);
-			if(pImage == NULL)
-				return false;
-
-			char buffer[20];
-			sprintf(buffer, "layer%d.bmp", i);
-			string file = fullDir + buffer;
-
-			if(_bBayerPattern)
-				((ColorImage*)pImage)->Save(file);
-			else
-				pImage->Save(file);
-		}
-
-		return true;
-	}
-
 	bool MosaicSet::LoadAllStitchedImagesFromDirectory(string directoryName)
 	{
 		string fullDir = directoryName;

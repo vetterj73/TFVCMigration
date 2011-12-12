@@ -190,22 +190,17 @@ namespace MosaicDM
 	// dHeightResolution: gray level resolution of height image
 	// PupilDistance: Pupil distance in meter
 	// bCreate: true, force to calcaucate stitched image event it exists
-	Image *MosaicLayer::GetStitchedImage(
-		unsigned char* pHeighBuf, 
-		double dHeightResolution, 
-		double dPupilDistance,
-		bool bRecreate)
+	Image *MosaicLayer::GetStitchedImage(bool bRecreate)
 	{
 		if(bRecreate) 
 			_stitchedImageValid = false;
 
-		CreateStitchedImageIfNecessary(pHeighBuf, dHeightResolution, dPupilDistance);
+		CreateStitchedImageIfNecessary();
 
 		return _pStitchedImage;
 	}
 
-	void MosaicLayer::CreateStitchedImageIfNecessary(
-		unsigned char* pHeighBuf, double dHeightResolution, double dPupilDistance)
+	void MosaicLayer::CreateStitchedImageIfNecessary()
 	{
 		if(_stitchedImageValid)
 			return;
@@ -219,7 +214,9 @@ namespace MosaicDM
 
 		// Create height image
 		Image* pHeightImage = NULL;
-		if(pHeighBuf!=0)
+		ComponentHeightInfo*  pInfo = GetMosaicSet()->GetComponentHeightInfo();
+		double dHeightResolution=0, dPupilDistance=0;
+		if(pInfo != 0)
 		{
 			pHeightImage = new Image();
 			pHeightImage->Configure(
@@ -229,13 +226,16 @@ namespace MosaicDM
 				_pStitchedImage->GetTransform(),
 				_pStitchedImage->GetTransform(),
 				false,
-				pHeighBuf);
+				pInfo->pHeightBuf);
+
+			dHeightResolution = pInfo->dHeightResolution;
+			dPupilDistance = pInfo->dPupilDistance;
 		}
 
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image %s", _layerIndex, pInfo==NULL?"":"With Height"); 
 		
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
@@ -269,7 +269,7 @@ namespace MosaicDM
 		if(pHeightImage != NULL)
 			delete pHeightImage;
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pHeighBuf==NULL?"":"With Height"); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pInfo==NULL?"":"With Height"); 
 	}
 
 	// Calculate grid boundarys
@@ -907,17 +907,9 @@ namespace MosaicDM
 
 
 	// for debug
-	Image* MosaicLayer::GetGreyStitchedImage(
-		unsigned char* pHeighBuf, 
-		double dHeightResolution, 
-		double dPupilDistance,
-		bool bRecreate)
+	Image* MosaicLayer::GetGreyStitchedImage(bool bRecreate)
 	{
-		Image* pTempImg = GetStitchedImage(
-			pHeighBuf, 
-			dHeightResolution, 
-			dPupilDistance,
-			bRecreate);
+		Image* pTempImg = GetStitchedImage(bRecreate);
 
 		if(pTempImg->GetBytesPerPixel()==1)
 			return(pTempImg);

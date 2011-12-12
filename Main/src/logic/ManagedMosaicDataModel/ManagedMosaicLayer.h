@@ -68,35 +68,14 @@ namespace MMosaicDM
 
 			System::IntPtr GetStitchedBuffer(bool bRecreate)
 			{
-				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(0,0,0,bRecreate);
-				return (System::IntPtr)stitchedImage->GetBuffer();
-			}
-
-			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance)
-			{
-				return GetStitchedBufferWithHeight(pHeighBuf, dHeightResolution, dPupilDistance, false);
-			}
-
-			System::IntPtr GetStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance, bool bRecreate)
-			{
-				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(
-					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance,
-					bRecreate);
+				Image* stitchedImage = _pMosaicLayer->GetStitchedImage(bRecreate);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 
 			// For debug
 			System::IntPtr GetGreyStitchedBuffer()
 			{
-				Image* stitchedImage = _pMosaicLayer->GetGreyStitchedImage(0,0,0,false);
-				return (System::IntPtr)stitchedImage->GetBuffer();
-			}
-
-			System::IntPtr GetGreyStitchedBufferWithHeight(System::IntPtr pHeighBuf, double dHeightResolution, double dPupilDistance)
-			{
-				Image* stitchedImage = _pMosaicLayer->GetGreyStitchedImage(
-					(unsigned char*)(void*)pHeighBuf, dHeightResolution, dPupilDistance,
-					false);
+				Image* stitchedImage = _pMosaicLayer->GetGreyStitchedImage(false);
 				return (System::IntPtr)stitchedImage->GetBuffer();
 			}
 

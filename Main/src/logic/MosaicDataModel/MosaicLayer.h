@@ -114,11 +114,7 @@ namespace MosaicDM
 			///
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
 			///
-			Image *GetStitchedImage(
-				unsigned char* pHeighBuf=0, 
-				double dHeightResolution=0, 
-				double dPupilDistance=0,
-				bool bRecreate = false);
+			Image *GetStitchedImage(bool bRecreate = false);
 
 			bool GetImagePatch(
 				unsigned char* pBuf,
@@ -140,11 +136,7 @@ namespace MosaicDM
 				unsigned int iStartColInCad);
 
 			// For debug
-			Image* GetGreyStitchedImage(
-				unsigned char* pHeighBuf, 
-				double dHeightResolution, 
-				double dPupilDistance,
-				bool bRecreate = false);
+			Image* GetGreyStitchedImage(bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
 	
@@ -160,10 +152,7 @@ namespace MosaicDM
 				unsigned int layerIndex,
 				unsigned int deviceIndex);
 
-			void CreateStitchedImageIfNecessary(
-				unsigned char* pHeighBuf=0, 
-				double dHeightResolution=0, 
-				double dPupilDistance=0);
+			void CreateStitchedImageIfNecessary();
 			void AllocateStitchedImageIfNecessary();
 			bool CalculateStitchGrids();
 
