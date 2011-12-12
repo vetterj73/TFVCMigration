@@ -36,6 +36,8 @@ namespace MosaicDM
 		_iBayerType = iBayerType;
 		if(_bBayerPattern)
 			_ownBuffers = true;
+
+		_pHeightInfo = NULL;
 	}
 
 	MosaicSet::~MosaicSet()
@@ -53,6 +55,9 @@ namespace MosaicDM
 		
 		_layerList.clear();
 		_correlationFlagsMap.clear();
+
+		if(_pHeightInfo != NULL)
+			delete _pHeightInfo;
 	}
 
 	bool MosaicSet::CopyTransforms(MosaicSet *pMosaicSet)
@@ -294,5 +299,25 @@ namespace MosaicDM
 	unsigned int MosaicSet::GetObjectLengthInPixels()
 	{
 		return GetNumPixels(GetObjectLengthInMeters(), GetNominalPixelSizeY());
+	}
+
+	void MosaicSet::SetComponentHeightInfo(				
+		unsigned char* pHeightBuf,		// Component height image buf
+		unsigned int iHeightSpan,		// Component height image span
+		double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+		double dPupilDistance)			// SIM pupil distance (meter))
+	{
+		if(_pHeightInfo == NULL)
+			_pHeightInfo = new ComponentHeightInfo();
+
+		_pHeightInfo->pHeightBuf = pHeightBuf;
+		_pHeightInfo->iHeightSpan = iHeightSpan;
+		_pHeightInfo->dHeightResolution = dHeightResolution;
+		_pHeightInfo->dPupilDistance = dPupilDistance;
+	}
+
+	ComponentHeightInfo* MosaicSet::GetComponentHeightInfo()
+	{
+		return(_pHeightInfo);
 	}
 }

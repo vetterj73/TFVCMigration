@@ -357,7 +357,7 @@ bool PanelAligner::CreateTransforms()
 	_bResultsReady = true;
 
 	// for debug
-	//TestGetImagePatch();
+	// TestGetImagePatch();
 
 	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
@@ -723,10 +723,10 @@ void PanelAligner::TestGetImagePatch()
 			(box.p2.y + box.Height()*0.3)/dRes,
 			(box.p1.x - box.Width()*0.3)/dRes,
 			(box.p2.x + box.Width()*0.3)/dRes,
-			&setFov);
+			&setFov, 0, 0);
 	}
 
-	//pStitchedImage->Save("C:\\Temp\\patchImage.bmp");
+	pStitchedImage->Save("C:\\Temp\\patchImage.bmp");
 	delete pStitchedImage;
 
 	// Create individual patch image only
@@ -738,8 +738,8 @@ void PanelAligner::TestGetImagePatch()
 		// Image patch locatioin and size on the stitched image
 		int iStartCol = (box.p1.y - box.Height()*0.3)/dRes;
 		int iStartRow = (box.p1.x - box.Width()*0.3)/dRes;
-		int iWidth = box.Height()*1.6/dRes;
-		int iHeight = box.Width()*1.6/dRes;
+		int iCols = box.Height()*1.6/dRes;
+		int iRows = box.Width()*1.6/dRes;
 
 		Image* pImg;
 		int iBytePerPIxel = 1;
@@ -755,9 +755,9 @@ void PanelAligner::TestGetImagePatch()
 		// The image that will hold the image patch 
 		// Its transform need not match patch information
 		ImgTransform trans;
-		pImg->Configure(iWidth, iHeight, iWidth, trans, trans, true);
+		pImg->Configure(iCols, iRows, iCols, trans, trans, true);
 		_pSet->GetLayer(iLayerIndex)->GetImagePatch(
-			pImg->GetBuffer(), iWidth, iStartCol, iWidth, iStartRow, iHeight,
+			pImg->GetBuffer(), iCols, iStartRow, iStartCol, iRows, iCols,
 			&setFov);
 
 		string s;

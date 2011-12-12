@@ -7,10 +7,10 @@ namespace MMosaicDM
 	bool ManagedMosaicLayer::GetImagePatch(
 		System::IntPtr pBuf,
 		unsigned int iPixelSpan,
-		unsigned int iStartCol,
-		unsigned int iWidth,
-		unsigned int iStartRow,
-		unsigned int iHeight,
+		unsigned int iStartRowInCad,
+		unsigned int iStartColInCad,
+		unsigned int iRows,
+		unsigned int iCols,
 		ManagedFOVPreferSelected preferSelectedM)
 	{
 		MosaicDM::FOVPreferSelected preferSelectedFov;
@@ -20,10 +20,10 @@ namespace MMosaicDM
 		bool bFlag = _pMosaicLayer->GetImagePatch(
 			(unsigned char*)(void*) pBuf,
 			iPixelSpan,
-			iStartCol,
-			iWidth,
-			iStartRow,
-			iHeight,
+			iStartRowInCad,
+			iStartColInCad,
+			iRows,
+			iCols,
 			&preferSelectedFov);
 
 		preferSelectedM.selectedLR = preferSelectedFov.selectedLR;
@@ -31,7 +31,4 @@ namespace MMosaicDM
 
 		return(bFlag);
 	}
-
 }
-
-

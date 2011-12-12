@@ -20,6 +20,15 @@ namespace MosaicDM
 
 	typedef void (*IMAGEADDED_CALLBACK)(int layerIndex, int cameraIndex, int triggerIndex, void* context);
 
+	struct ComponentHeightInfo
+	{
+	public:
+		unsigned char* pHeightBuf;		// Component height image buf
+		unsigned int iHeightSpan;		// Component height image span
+		double dHeightResolution;		// Height resolution in grey level (meter/grey level)
+		double dPupilDistance;			// SIM pupil distance (meter))
+	};
+
 	///
 	///	MosaicSet is the top level object for Mosaic Data Model.  
 	/// MosaicSet has 1 to N MosaicLayers.
@@ -132,6 +141,14 @@ namespace MosaicDM
 			/// Copies transforms from an existing mosaic set.
 			bool CopyBuffers(MosaicSet *pMosaicSet);
 
+			void SetComponentHeightInfo(				
+				unsigned char* pHeightBuf,		// Component height image buf
+				unsigned int iHeightSpan,		// Component height image span
+				double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+				double dPupilDistance);			// SIM pupil distance (meter))
+
+			ComponentHeightInfo* GetComponentHeightInfo();
+
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;
@@ -149,5 +166,7 @@ namespace MosaicDM
 			bool _bBayerPattern;
 			int _iBayerType;
 
+			// store the component heightinformation
+			ComponentHeightInfo* _pHeightInfo;	
 	};
 }

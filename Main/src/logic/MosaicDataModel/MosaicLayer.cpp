@@ -344,15 +344,11 @@ namespace MosaicDM
 	bool MosaicLayer::GetImagePatch(
 		unsigned char* pBuf,
 		unsigned int iPixelSpan,
-		unsigned int iStartCol,
-		unsigned int iWidth,
-		unsigned int iStartRow,
-		unsigned int iHeight,
-		FOVPreferSelected* pPreferSelectedFov,
-		unsigned char* pHeightImgBuf, 
-		unsigned int iHeightImgSpan,
-		double dHeightResolution, 
-		double dPupilDistance)
+		unsigned int iStartRowInCad,
+		unsigned int iStartColInCad,
+		unsigned int iRows,
+		unsigned int iCols,
+		FOVPreferSelected* pPreferSelectedFov)
 	{
 		// Create image
 		Image* pImage;
@@ -367,39 +363,20 @@ namespace MosaicDM
 
 		double dRes = GetMosaicSet()->GetNominalPixelSizeX();
 		ImgTransform inputTransform;
-		inputTransform.Config(dRes, dRes, 0, dRes*iStartRow, dRes*iStartCol);	
-		pImage->Configure(iWidth, iHeight, iPixelSpan, inputTransform, inputTransform, false, pBuf);
-
-				// Create height image
-		Image* pHeightImage = NULL;
-		if(pHeightImgBuf != 0)
-		{
-			pHeightImage = new Image();
-			pHeightImage->Configure(
-				iWidth,
-				iHeight,
-				iHeightImgSpan,
-				inputTransform,
-				inputTransform,
-				false,
-				pHeightImgBuf + iHeightImgSpan*iStartRow + iStartCol);
-		}
+		inputTransform.Config(dRes, dRes, 0, dRes*iStartRowInCad, dRes*iStartColInCad);	
+		pImage->Configure(iCols, iRows, iPixelSpan, inputTransform, inputTransform, false, pBuf);
 
 		bool bFlag = GetImagePatch(
 			pImage, 
 			0,
-			iWidth-1,
+			iCols-1,
 			0,
-			iHeight-1,
+			iRows-1,
 			pPreferSelectedFov,
-			pHeightImage, 
-			dHeightResolution, 
-			dPupilDistance);
+			iStartRowInCad,
+			iStartColInCad);
 
 		delete pImage;
-		if(pHeightImage !=NULL)
-			delete pHeightImage; 
-			
 		return(bFlag);
 	}
 
@@ -417,9 +394,8 @@ namespace MosaicDM
 		unsigned int iTop,
 		unsigned int iBottom,
 		FOVPreferSelected* pPreferSelectedFov,
-		const Image* pHeightImage, 
-		double dHeightResolution, 
-		double dPupilDistance)
+		unsigned int iStartRowInCad,
+		unsigned int iStartColInCad)
 	{
 		// valication check
 		if(pImage == NULL) 
@@ -764,6 +740,30 @@ namespace MosaicDM
 			piPixelColBoundary[1] = iRight+1;
 		}
 
+		// Create height image
+		Image* pHeightImage = NULL;
+		ComponentHeightInfo*  pInfo = GetMosaicSet()->GetComponentHeightInfo();
+		double dHeightResolution=0, dPupilDistance=0;
+		if(pInfo != 0)
+		{
+			double dRes = GetMosaicSet()->GetNominalPixelSizeX();
+			ImgTransform inputTransform;
+			inputTransform.Config(dRes, dRes, 0, dRes*iStartRowInCad, dRes*iStartColInCad);
+
+			pHeightImage = new Image();
+			pHeightImage->Configure(
+				iRight-iLeft+1,
+				iBottom-iTop+1,
+				pInfo->iHeightSpan,
+				inputTransform,
+				inputTransform,
+				false,
+				pInfo->pHeightBuf + pInfo->iHeightSpan*iStartRowInCad + iStartColInCad);
+
+			dHeightResolution = pInfo->dHeightResolution;
+			dPupilDistance = pInfo->dPupilDistance;
+		}
+
 		// Morph to create image patch
 		for(int iInvTrig= iStartInvTrig; iInvTrig<= iEndInvTrig; iInvTrig++)
 		{
@@ -784,6 +784,9 @@ namespace MosaicDM
 
 		delete [] piPixelRowBoundary;
 		delete [] piPixelColBoundary;
+
+		if(pHeightImage !=NULL)
+			delete pHeightImage; 
 
 		return(true);
 	}

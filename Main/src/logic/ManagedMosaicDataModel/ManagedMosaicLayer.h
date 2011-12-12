@@ -101,13 +101,13 @@ namespace MMosaicDM
 			}
 
 			bool GetImagePatch(
-				System::IntPtr pBuf,
-				unsigned int iPixelSpan,
-				unsigned int iStartCol,
-				unsigned int iWidth,
-				unsigned int iStartRow,
-				unsigned int iHeight,
-				ManagedFOVPreferSelected pPreferSelected);
+				System::IntPtr pBuf,			// Inout, allocated buf to hold image patch
+				unsigned int iPixelSpan,		// Pixel span of buffer	
+				unsigned int iStartRowInCad,	// Location of patch in stitched image
+				unsigned int iStartColInCad,
+				unsigned int iRows,
+				unsigned int iCols,
+				ManagedFOVPreferSelected preferSelectedM);	// FOV preferance
 
 			// Valid only after stitched image is created
 			bool GetStitchGrid(array<int>^ pCols, array<int>^ pRows)

@@ -123,15 +123,11 @@ namespace MosaicDM
 			bool GetImagePatch(
 				unsigned char* pBuf,
 				unsigned int iPixelSpan,
-				unsigned int iStartCol,
-				unsigned int iWidth,
-				unsigned int iStartRow,
-				unsigned int iHeight,
-				FOVPreferSelected* pPreferSelectedFov,
-				unsigned char* pHeightImgBuf = 0, 
-				unsigned int iHeightImgSpan = 0,
-				double dHeightResolution = 0, 
-				double dPupilDistance = 0);
+				unsigned int iStartRowInCad,
+				unsigned int iStartColInCad,
+				unsigned int iRows,
+				unsigned int iCols,
+				FOVPreferSelected* pPreferSelectedFov);
 
 			bool GetImagePatch(
 				Image* pImage, 
@@ -140,9 +136,8 @@ namespace MosaicDM
 				unsigned int iTop,
 				unsigned int iBottom,
 				FOVPreferSelected* pPreferSelectedFov,
-				const Image* pHeightImage = NULL, 
-				double dHeightResolution = 0, 
-				double dPupilDistance = 0);
+				unsigned int iStartRowInCad,
+				unsigned int iStartColInCad);
 
 			// For debug
 			Image* GetGreyStitchedImage(
