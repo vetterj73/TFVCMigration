@@ -504,9 +504,8 @@ namespace MosaicDM
 				piPixelRowBoundary[(iInvTrig-iStartInvTrig)+1]= iStartRow;
 			}
 		}
-
 		// if 2 triggers are convered, need consider Fov preferance
-		if(iInvTrigCount == 2)
+		else if(iInvTrigCount == 2)
 		{
 			piPixelRowBoundary[0] = iTop;
 			piPixelRowBoundary[2] = iBottom+1;
@@ -535,7 +534,7 @@ namespace MosaicDM
 				piPixelRowBoundary[1]= iStartRow;
 			}
 			// Prefer top Fov
-			if(pPreferSelectedFov->preferTB == TOPFOV)
+			else if(pPreferSelectedFov->preferTB == TOPFOV)
 			{
 				if(_pdGridXBoundary[iStartInvTrig*2] < worldRoi.xMin &&
 					worldRoi.xMax < _pdGridXBoundary[iStartInvTrig*2+1])
@@ -569,7 +568,7 @@ namespace MosaicDM
 				}
 			}
 			// Prefer bottom Fov 
-			if(pPreferSelectedFov->preferTB == BOTTOMFOV)
+			else if(pPreferSelectedFov->preferTB == BOTTOMFOV)
 			{
 				if(_pdGridXBoundary[iEndInvTrig*2] < worldRoi.xMin &&
 					worldRoi.xMax < _pdGridXBoundary[iEndInvTrig*2+1])
@@ -604,7 +603,7 @@ namespace MosaicDM
 			}
 		}
 		// If only covered by one trigger
-		if(iInvTrigCount == 1)
+		else if(iInvTrigCount == 1)
 		{
 			pPreferSelectedFov->selectedTB = NOPREFERTB;
 			piPixelRowBoundary[0] = iTop;
@@ -637,9 +636,8 @@ namespace MosaicDM
 				piPixelColBoundary[(iCam-iStartCam)+1]= iStartCol;
 			}
 		}
-
 		// if 2 cameras are convered, need consider Fov preferance
-		if(iCamCount == 2)
+		else if(iCamCount == 2)
 		{
 			piPixelColBoundary[0] = iLeft;
 			piPixelColBoundary[2] = iRight+1;
@@ -668,7 +666,7 @@ namespace MosaicDM
 				piPixelColBoundary[1]= iStartCol;
 			}
 			// Prefer left Fov
-			if(pPreferSelectedFov->preferLR == LEFTFOV)
+			else if(pPreferSelectedFov->preferLR == LEFTFOV)
 			{
 				if(_pdGridYBoundary[iStartCam*2] < worldRoi.yMin &&
 					worldRoi.yMax < _pdGridYBoundary[iStartCam*2+1])
@@ -702,7 +700,7 @@ namespace MosaicDM
 				}
 			}
 			// Prefer right Fov 
-			if(pPreferSelectedFov->preferLR == RIGHTFOV)
+			else if(pPreferSelectedFov->preferLR == RIGHTFOV)
 			{
 				if(_pdGridYBoundary[iEndCam*2] < worldRoi.yMin &&
 					worldRoi.yMax < _pdGridYBoundary[iEndCam*2+1])
@@ -737,7 +735,7 @@ namespace MosaicDM
 			}
 		}
 		// If only covered by one camera
-		if(iCamCount == 1)
+		else if(iCamCount == 1)
 		{
 			pPreferSelectedFov->selectedLR = NOPREFERLR;
 			piPixelColBoundary[0] = iLeft;
