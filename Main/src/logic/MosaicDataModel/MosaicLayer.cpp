@@ -28,6 +28,8 @@ namespace MosaicDM
 		_bGridBoundaryValid = false;
 		_pdGridXBoundary = NULL;
 		_pdGridYBoundary = NULL;
+
+		_pHeightInfo = NULL;
 		
 		// For debug 
 		_pGreyStitchedImage = NULL;
@@ -53,6 +55,9 @@ namespace MosaicDM
 
 		if(_pdGridYBoundary != NULL)
 			delete [] _pdGridYBoundary;
+
+		if(_pHeightInfo != NULL)
+			delete _pHeightInfo;
 
 		// For debug
 		if(_pGreyStitchedImage != NULL)
@@ -214,9 +219,8 @@ namespace MosaicDM
 
 		// Create height image
 		Image* pHeightImage = NULL;
-		ComponentHeightInfo*  pInfo = GetMosaicSet()->GetComponentHeightInfo();
 		double dHeightResolution=0, dPupilDistance=0;
-		if(pInfo != 0)
+		if(_pHeightInfo != 0)
 		{
 			pHeightImage = new Image();
 			pHeightImage->Configure(
@@ -226,16 +230,16 @@ namespace MosaicDM
 				_pStitchedImage->GetTransform(),
 				_pStitchedImage->GetTransform(),
 				false,
-				pInfo->pHeightBuf);
+				_pHeightInfo->pHeightBuf);
 
-			dHeightResolution = pInfo->dHeightResolution;
-			dPupilDistance = pInfo->dPupilDistance;
+			dHeightResolution = _pHeightInfo->dHeightResolution;
+			dPupilDistance = _pHeightInfo->dPupilDistance;
 		}
 
 		unsigned int iNumTrigs = GetNumberOfTriggers();
 		unsigned int iNumCams = GetNumberOfCameras();
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image %s", _layerIndex, pInfo==NULL?"":"With Height"); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: Begin Creating stitched image %s", _layerIndex, _pHeightInfo==NULL?"":"With Height"); 
 		
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
@@ -269,7 +273,7 @@ namespace MosaicDM
 		if(pHeightImage != NULL)
 			delete pHeightImage;
 
-		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, pInfo==NULL?"":"With Height"); 
+		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, _pHeightInfo==NULL?"":"With Height"); 
 	}
 
 	// Calculate grid boundarys
@@ -742,9 +746,8 @@ namespace MosaicDM
 
 		// Create height image
 		Image* pHeightImage = NULL;
-		ComponentHeightInfo*  pInfo = GetMosaicSet()->GetComponentHeightInfo();
 		double dHeightResolution=0, dPupilDistance=0;
-		if(pInfo != 0)
+		if(_pHeightInfo != 0)
 		{
 			double dRes = GetMosaicSet()->GetNominalPixelSizeX();
 			ImgTransform inputTransform;
@@ -754,14 +757,14 @@ namespace MosaicDM
 			pHeightImage->Configure(
 				iRight-iLeft+1,
 				iBottom-iTop+1,
-				pInfo->iHeightSpan,
+				_pHeightInfo->iHeightSpan,
 				inputTransform,
 				inputTransform,
 				false,
-				pInfo->pHeightBuf + pInfo->iHeightSpan*iStartRowInCad + iStartColInCad);
+				_pHeightInfo->pHeightBuf + _pHeightInfo->iHeightSpan*iStartRowInCad + iStartColInCad);
 
-			dHeightResolution = pInfo->dHeightResolution;
-			dPupilDistance = pInfo->dPupilDistance;
+			dHeightResolution = _pHeightInfo->dHeightResolution;
+			dPupilDistance = _pHeightInfo->dPupilDistance;
 		}
 
 		// Morph to create image patch
@@ -905,6 +908,21 @@ namespace MosaicDM
 		return(&_maskImages[iPos]);
 	}
 
+	// Set information for component height
+	void MosaicLayer::SetComponentHeightInfo(				
+		unsigned char* pHeightBuf,		// Component height image buf
+		unsigned int iHeightSpan,		// Component height image span
+		double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+		double dPupilDistance)			// SIM pupil distance (meter))
+	{
+		if(_pHeightInfo == NULL)
+			_pHeightInfo = new ComponentHeightInfo();
+
+		_pHeightInfo->pHeightBuf = pHeightBuf;
+		_pHeightInfo->iHeightSpan = iHeightSpan;
+		_pHeightInfo->dHeightResolution = dHeightResolution;
+		_pHeightInfo->dPupilDistance = dPupilDistance;
+	}
 
 	// for debug
 	Image* MosaicLayer::GetGreyStitchedImage(bool bRecreate)

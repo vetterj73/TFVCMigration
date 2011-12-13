@@ -37,6 +37,15 @@ namespace MosaicDM
 		}
 	};
 
+	struct ComponentHeightInfo
+	{
+	public:
+		unsigned char* pHeightBuf;		// Component height image buf
+		unsigned int iHeightSpan;		// Component height image span
+		double dHeightResolution;		// Height resolution in grey level (meter/grey level)
+		double dPupilDistance;			// SIM pupil distance (meter))
+	};
+
 	///
 	///	MosaicLayer is one layer of an MosaicSet.  In the case of SIM (one of the clients), a layer would be
 	/// one illumination (one capture spec's worth of images).
@@ -139,6 +148,12 @@ namespace MosaicDM
 			Image* GetGreyStitchedImage(bool bRecreate = false);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
+
+			void SetComponentHeightInfo(				
+				unsigned char* pHeightBuf,		// Component height image buf
+				unsigned int iHeightSpan,		// Component height image span
+				double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+				double dPupilDistance);			// SIM pupil distance (meter))
 	
 		protected:
 			/// Called from MosaicSet when a layer is added.
@@ -188,6 +203,9 @@ namespace MosaicDM
 				// Grid boundary x and y in world
 			double* _pdGridXBoundary;	// organized with inverse trigger index (et. _pdGridXBoundary[0] and[1] for the last trigger)
 			double* _pdGridYBoundary;
+
+			// store the component heightinformation
+			ComponentHeightInfo* _pHeightInfo;	
 
 		// for Debug
 			Image *_pGreyStitchedImage;

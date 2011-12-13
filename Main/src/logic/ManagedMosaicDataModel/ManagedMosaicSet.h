@@ -172,15 +172,6 @@ namespace MMosaicDM
 			///
 			bool CopyBuffers(ManagedMosaicSet ^pSet);
 
-			///
-			/// Input component height information 
-			///
-			void SetComponentHeightInfo(				
-				System::IntPtr pHeightBuf,		// Component height image buf
-				unsigned int iHeightSpan,		// Component height image span
-				double dHeightResolution,		// Height resolution in grey level (meter/grey level)
-				double dPupilDistance);			// SIM pupil distance (meter))
-
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		

@@ -109,6 +109,19 @@ namespace MMosaicDM
 				return(true);
 			}
 
+			void SetComponentHeightInfo(				
+				System::IntPtr pHeightBuf,		// Component height image buf
+				unsigned int iHeightSpan,		// Component height image span
+				double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+				double dPupilDistance)			// SIM pupil distance (meter))
+			{
+				_pMosaicLayer->SetComponentHeightInfo(				
+				(unsigned char*)(void*)pHeightBuf,		
+				iHeightSpan,
+				dHeightResolution,	
+				dPupilDistance);
+			}
+
 		private:
 			MosaicDM::MosaicLayer *_pMosaicLayer;
 	};

@@ -176,7 +176,9 @@ namespace CyberStitchTester
                         uint iSpan = (uint)_panel.GetNumPixelsInX();
                         double dHeightRes = _panel.GetHeightResolution();
                         double dPupilDistance = 0.3702;
-                        _mosaicSet.SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+                        // Need modified based on layers that have component 
+                        _mosaicSet.GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+                        _mosaicSet.GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
                     }
 
                     if (_bBayerPattern) // for bayer pattern
