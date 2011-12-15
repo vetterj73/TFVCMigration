@@ -172,7 +172,7 @@ void DumpImg(
 FeatureLocationCheck::FeatureLocationCheck(Panel* pPanel)
 {
 	// Setttings
-	_dSearchExpansion = 5e-3; // 5 mm
+	_dSearchExpansion = 2e-3; // 2 mm, if more is needed, something bad happened.
 
 	_pPanel = pPanel;
 	int iNum = _pPanel->NumberOfFiducials();

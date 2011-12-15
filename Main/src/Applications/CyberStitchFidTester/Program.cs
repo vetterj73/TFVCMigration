@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
@@ -90,7 +92,7 @@ namespace CyberStitchFidTester
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
             string lastOutputTextPath = @".\lastFidsCompareResults.csv";
-            string imagePath = "";
+            string imagePathPattern = "";
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-b")
@@ -98,7 +100,7 @@ namespace CyberStitchFidTester
                 else if (args[i] == "-f" && i < args.Length - 1)
                     fidPanelFile = args[i + 1];
                 else if (args[i] == "-i" && i < args.Length - 1)
-                    imagePath = args[i + 1];
+                    imagePathPattern = args[i + 1];
                 else if (args[i] == "-l" && i < args.Length - 1)
                     lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-n" && i < args.Length - 1)
@@ -129,9 +131,11 @@ namespace CyberStitchFidTester
             // Open output text file.
             writer = new StreamWriter(outputTextPath);
 
+            string[] imagePath = ExpandFilePaths(imagePathPattern);
             bool bImageOnly = false;
-            if (File.Exists(imagePath))
+            if(imagePath.Length > 0)
                 bImageOnly = true;
+
             if (!bImageOnly && File.Exists(panelFile))
             {
                 _processingPanel = LoadProductionFile(panelFile, cPixelSizeInMeters);
@@ -150,7 +154,7 @@ namespace CyberStitchFidTester
 
             Bitmap inputBmp = null;
             if(bImageOnly)
-                inputBmp = new Bitmap(imagePath);
+                inputBmp = new Bitmap(imagePath[0]);  // should be safe, as bImageOnly == (imagePath.Length > 0)
 
 
             int ifidsNum = 0;
@@ -199,119 +203,137 @@ namespace CyberStitchFidTester
 
             if (bImageOnly)
             {
-                // This allows images to directly be sent in instead of using CyberStitch to create them
-                CyberBitmapData cbd = new CyberBitmapData();
+                int cycleId = 0; // Image already loaded.
 
-                cbd.Lock(inputBmp);
                 writer.WriteLine(headerLine);
-                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
-                RunFiducialCompare(cbd.Scan0, cbd.Stride, writer, fidChecker);
-                if (bSaveStitchedResultsImage)
+
+                while (inputBmp != null)
                 {
-                    _aligner.Save3ChannelImage("c:\\Temp\\FidCompareImage.bmp",
-                                         cbd.Scan0, cbd.Stride,
-                                          _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
-                                          _fidPanel.GetCADBuffer(),_fidPanel.GetNumPixelsInY(),
-                                          _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());          
-                }
-                cbd.Unlock();
-                Terminate();
-                return;
-            }
+                    Console.WriteLine("Comparing fiducials on {0}...", imagePath[cycleId]);
 
+                    // This allows images to directly be sent in instead of using CyberStitch to create them
+                    CyberBitmapData cbd = new CyberBitmapData();
 
-            // Initialize the SIM CoreAPI
-            if (!InitializeSimCoreAPI(simulationFile))
-            {
-                Terminate();
-                Console.WriteLine("Could not initialize Core API");
-                return;
-            }
-
-            // Set up mosaic set
-            SetupMosaic(true, false);
-
-            try
-            {
-                Output("Aligner ChangeProduction");
-                // Setup Aligner...
-                _aligner.OnLogEntry += OnLogEntryFromClient;
-                _aligner.SetAllLogTypes(true);
-                _aligner.NumThreads(8);
-                _aligner.LogFiducialOverlaps(true);
-                if (bUseProjective)
-                    _aligner.UseProjectiveTransform(true);
-                if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
-                {
-                    throw new ApplicationException("Aligner failed to change production ");
-                }
-            }
-            catch (Exception except)
-            {
-                Output("Error Changing Production: " + except.Message);
-                Terminate();
-                return;
-            }
-
-            bool bDone = false;
-
-            while (!bDone)
-            {
-                numAcqsComplete = 0;
-                _dtStartTime = DateTime.Now;
-                _aligner.ResetForNextPanel();
-                _mosaicSetSim.ClearAllImages();
-                _mosaicSetIllum.ClearAllImages();
-                _mosaicSetProcessing.ClearAllImages();
-                if (!GatherImages())
-                {
-                    Output("Issue with StartAcquisition");
-                    bDone = true;
-                }
-                else
-                {
-                    Output("Waiting for Images...");
-                    mDoneEvent.WaitOne();
-                }
-
-                // Verify that mosaic is filled in...
-                if (!_mosaicSetSim.HasAllImages())
-                    Output("The mosaic does not contain all images!");
-                else
-                {
-                    _cycleCount++;
-                    CreateIllumImages();
-                    RunStitch();
-
-                    //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
-                    // for fiducials(used for stitch) location check
-                    //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
-                    //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
-                    //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
-                    //                          _processingPanel.GetCADBuffer(),
-                    //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
-
+                    cbd.Lock(inputBmp);
+                    fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
+                    RunFiducialCompare(cbd.Scan0, cbd.Stride, writer, fidChecker);
                     if (bSaveStitchedResultsImage)
-                        _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                               _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                               _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                               _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
-                                               _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-                    if (_cycleCount == 1)
                     {
-                        writer.WriteLine("Units: Microns");
-                        //outline is the output file column names
-                        writer.WriteLine(headerLine);
+                        string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
+                        _aligner.Save3ChannelImage(imageFilename,
+                                             cbd.Scan0, cbd.Stride,
+                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
+                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
+                                              _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
+                    }
+                    cbd.Unlock();
+
+                    //
+                    // Increment cycle and get bitmap, if available
+                    cycleId++;
+
+                    if (cycleId < imagePath.Length)
+                        inputBmp = new Bitmap(imagePath[cycleId]);
+                    else
+                        inputBmp = null;
+                }
+            } // End Stitched Image Inspection Mode
+            else
+            {
+                // Initialize the SIM CoreAPI
+                if (!InitializeSimCoreAPI(simulationFile))
+                {
+                    Terminate();
+                    Console.WriteLine("Could not initialize Core API");
+                    return;
+                }
+
+                // Set up mosaic set
+                SetupMosaic(true, false);
+
+                try
+                {
+                    Output("Aligner ChangeProduction");
+                    // Setup Aligner...
+                    _aligner.OnLogEntry += OnLogEntryFromClient;
+                    _aligner.SetAllLogTypes(true);
+                    _aligner.NumThreads(8);
+                    _aligner.LogFiducialOverlaps(true);
+                    if (bUseProjective)
+                        _aligner.UseProjectiveTransform(true);
+                    if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
+                    {
+                        throw new ApplicationException("Aligner failed to change production ");
+                    }
+                }
+                catch (Exception except)
+                {
+                    Output("Error Changing Production: " + except.Message);
+                    Terminate();
+                    return;
+                }
+
+                bool bDone = false;
+
+                while (!bDone)
+                {
+                    numAcqsComplete = 0;
+                    _dtStartTime = DateTime.Now;
+                    _aligner.ResetForNextPanel();
+                    _mosaicSetSim.ClearAllImages();
+                    _mosaicSetIllum.ClearAllImages();
+                    _mosaicSetProcessing.ClearAllImages();
+                    if (!GatherImages())
+                    {
+                        Output("Issue with StartAcquisition");
+                        bDone = true;
+                    }
+                    else
+                    {
+                        Output("Waiting for Images...");
+                        mDoneEvent.WaitOne();
                     }
 
-                    if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
+                    // Verify that mosaic is filled in...
+                    if (!_mosaicSetSim.HasAllImages())
+                        Output("The mosaic does not contain all images!");
+                    else
+                    {
+                        _cycleCount++;
+                        CreateIllumImages();
+                        RunStitch();
+
+                        //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
+                        // for fiducials(used for stitch) location check
+                        //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
+                        //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
+                        //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
+                        //                          _processingPanel.GetCADBuffer(),
+                        //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
+
+                        if (bSaveStitchedResultsImage)
+                            _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
+                                                   _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                                   _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                                   _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
+                                                   _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
+                        if (_cycleCount == 1)
+                        {
+                            writer.WriteLine("Units: Microns");
+                            //outline is the output file column names
+                            writer.WriteLine(headerLine);
+                        }
+
+                        if (_fidPanel != null)
+                            RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
+                    }
+                    if (_cycleCount >= numberToRun)
+                        bDone = true;
+                    else
+                        mDoneEvent.Reset();
                 }
-                if (_cycleCount >= numberToRun)
-                    bDone = true;
-                else
-                    mDoneEvent.Reset();
-            }
+            } // End Simulation Mode
+
 
             writer.WriteLine(" Fid#, XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev, Absolute XOffset Mean, Absolute YOffset Mean, Absolute XOffset Stdev, Absolute YOffset Stdev, Number of cycle ");
             for (int i = 0; i < ifidsNum; i++)
@@ -373,7 +395,9 @@ namespace CyberStitchFidTester
 
             Output("Processing Complete");
             Terminate();
-            ManagedCoreAPI.TerminateAPI();
+
+            if(!bImageOnly)
+                ManagedCoreAPI.TerminateAPI();
         }
 
         private static void Terminate()
@@ -405,7 +429,28 @@ namespace CyberStitchFidTester
             logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
-        private static void RunFiducialCompare (IntPtr data, int stride, StreamWriter writer, ManagedFeatureLocationCheck fidChecker)
+        static string[] ExpandFilePaths(string filePathPattern)
+        {
+            List<string> fileList = new List<string>();
+
+            if (filePathPattern.Length > 0)
+            {
+                string substitutedFilePathPattern = System.Environment.ExpandEnvironmentVariables(filePathPattern);
+
+                string directory = Path.GetDirectoryName(substitutedFilePathPattern);
+                if (directory.Length == 0)
+                    directory = ".";
+
+                string filePattern = Path.GetFileName(substitutedFilePathPattern);
+
+                foreach (string filePath in Directory.GetFiles(directory, filePattern))
+                    fileList.Add(filePath);
+            }
+
+            return fileList.ToArray();
+        }
+
+        private static void RunFiducialCompare(IntPtr data, int stride, StreamWriter writer, ManagedFeatureLocationCheck fidChecker)
         {
             int iFidNums = _fidPanel.NumberOfFiducials;
 
