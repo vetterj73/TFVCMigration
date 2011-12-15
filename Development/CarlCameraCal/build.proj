@@ -1,9 +1,9 @@
 <Project InitialTargets="Publish" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!--Common stuff-->
-  <Import Project="..\..\CyberBuild/CyberBuildTasks/pub/commontasks.proj"/>
-  <Import Project="..\..\CyberBuild/CyberBuildTasks/pub/commonproperties.proj"/>
-  <Import Project="..\..\CyberBuild/CyberBuildTasks/pub/commontargets.proj"/>
+  <Import Project="..\..\..\CyberBuild/CyberBuildTasks/pub/commontasks.proj"/>
+  <Import Project="..\..\..\CyberBuild/CyberBuildTasks/pub/commonproperties.proj"/>
+  <Import Project="..\..\..\CyberBuild/CyberBuildTasks/pub/commontargets.proj"/>
 
   <!--Properties that may be set by this build-->
   <PropertyGroup>

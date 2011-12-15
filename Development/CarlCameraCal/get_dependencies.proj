@@ -1,10 +1,10 @@
 <Project InitialTargets="GetDeps" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--Needed for Setting environment variables...-->
-  <UsingTask AssemblyFile="../../CyberBuild/CyberBuildTasks/pub/CyberBuildTasks.dll" TaskName="CyberBuildTasks.ImportManifestDependencies" />
+  <UsingTask AssemblyFile="../../../CyberBuild/CyberBuildTasks/pub/CyberBuildTasks.dll" TaskName="CyberBuildTasks.ImportManifestDependencies" />
 
   <PropertyGroup>
     <REPOSITORYROOT>\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\</REPOSITORYROOT>
-    <CYBERBUILDTASKSROOT>..\..\CyberBuild\CyberBuildTasks\pub\</CYBERBUILDTASKSROOT>
+    <CYBERBUILDTASKSROOT>..\..\..\CyberBuild\CyberBuildTasks\pub\</CYBERBUILDTASKSROOT>
     <CYBERBUILDTASKSDLL>$(CYBERBUILDTASKSROOT)cyberbuildtasks.dll</CYBERBUILDTASKSDLL>
   </PropertyGroup>
 
