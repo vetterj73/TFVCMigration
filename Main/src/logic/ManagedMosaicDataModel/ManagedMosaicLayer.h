@@ -6,7 +6,7 @@
 
 namespace MMosaicDM 
 {
-	public: struct ManagedFOVPreferSelected
+	public struct ManagedFOVPreferSelected
 	{
 	public:
 		MosaicDM::FOVLRPOS preferLR;
