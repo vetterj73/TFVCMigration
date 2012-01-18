@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{472145E5-F493-4DD4-AC4B-05AE3189245F}</ProjectGuid>
     <RootNamespace>Panel</RootNamespace>
-    <SccProjectName>$/CyberStitch/Main/src/logic/Panel</SccProjectName>
+    <SccProjectName>$/CyberStitch/Development/CarlCameraCal/src/logic/Panel</SccProjectName>
     <SccAuxPath>http://tfs.cyberoptics.com:8080/tfs/tpc1</SccAuxPath>
     <SccLocalPath>.</SccLocalPath>
     <SccProvider>{4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}</SccProvider>

@@ -54,7 +54,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	CleanUp();
 
 	_pSet = pSet;
-	_pSet->RegisterImageAddedCallback(ImageAdded, this);
+	_pSet->RegisterImageAddedCallback(ImageAdded, this) ;
 
 	_pPanel = pPanel;
 
@@ -62,12 +62,26 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		
 	// Create solver for all illuminations
 	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
+	bool bUseCameraModelStitch = CorrelationParametersInst.bUseCameraModelStitch;
 	CreateImageOrderInSolver(&_solverMap);	
-	unsigned int iMaxNumCorrelation =  _pOverlapManager->MaxCorrelations();  
-	_pSolver = new RobustSolver(	
-		&_solverMap, 
-		iMaxNumCorrelation, 
-		bProjectiveTrans);
+	unsigned int iMaxNumCorrelations =  _pOverlapManager->MaxCorrelations();  
+	//unsigned int iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
+	if (bUseCameraModelStitch)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch True, %d", bUseCameraModelStitch);
+		_pSolver = new RobustSolverCM(	
+						&_solverMap, 
+						iMaxNumCorrelations,
+						_pSet);  // TODO Is it wise to send _pSet to solver??????????????????????????????????????
+	}
+	else
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch False, %d", bUseCameraModelStitch);
+		_pSolver = new RobustSolverFOV(	
+						&_solverMap, 
+						iMaxNumCorrelations, 
+						bProjectiveTrans);
+	}
 
 	// Creat solver for mask creation if it is necessary
 	_pMaskSolver = NULL;
@@ -81,11 +95,21 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		}
 		CreateImageOrderInSolver(piIllumIndices, _iMaskCreationStage, &_maskMap);
 		delete [] piIllumIndices;
-		iMaxNumCorrelation =  _pOverlapManager->MaxMaskCorrelations();
-		_pMaskSolver = new RobustSolver(
-			&_maskMap, 
-			iMaxNumCorrelation, 
-			bProjectiveTrans);
+		iMaxNumCorrelations =  _pOverlapManager->MaxMaskCorrelations();
+		// ************************* TODO TODO **************************
+		// CHANGE TO RobustSolverCM()   ?!?!?!?!?
+		if (bUseCameraModelStitch)
+		{
+			_pMaskSolver = new RobustSolverCM(	
+							&_maskMap, 
+							iMaxNumCorrelations,
+							_pSet);  
+		}
+		else
+			_pMaskSolver = new RobustSolverFOV(
+				&_maskMap, 
+				iMaxNumCorrelations, 
+				bProjectiveTrans);
 	}
 
 	_bMasksCreated = false;
@@ -101,6 +125,12 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
+	if( CorrelationParametersInst.bUseCameraModelStitch )
+	{
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+	}
+
 	if(_pMaskSolver != NULL)
 		_pMaskSolver->Reset();
 
@@ -155,6 +185,13 @@ void PanelAligner::UseProjectiveTransform(bool bValue)
 		CorrelationParametersInst.bFiducialAlignCheck = false;
 	}
 }
+
+void PanelAligner::UseCameraModelStitch(bool bValue)
+{
+	// set some useful value.....
+	CorrelationParametersInst.bUseCameraModelStitch = bValue;
+}
+
 
 // Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(
@@ -231,7 +268,10 @@ bool PanelAligner::CreateMasks()
 	}
 
 	// Solve transforms
-	_pMaskSolver->SolveXAlgHB();
+	_pMaskSolver->SolveXAlgH();
+	//if camera model, must flatten fiducials
+	_pMaskSolver->FlattenFiducials( GetFidResultsSetPoint() );
+
 
 	// Create job manager for mask morpho
 	CyberJob::JobManager jm("MaskMorpho", CorrelationParametersInst.NumThreads);
@@ -334,8 +374,11 @@ bool PanelAligner::CreateTransforms()
 	}
 
 	// Solve transforms
-	_pSolver->SolveXAlgHB();
+	_pSolver->SolveXAlgH();
+	//if camera model, must flatten fiducials
+	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
 
+	// TODO populate CM version of gettransfrom
 	// For each mosaic image
 	for(int i=0; i<iNumIllums; i++)
 	{
@@ -444,7 +487,7 @@ bool PanelAligner::CreateImageOrderInSolver(
 	unsigned int i, iTrig;
 	FovList fovList;
 	FovList::iterator j;
-
+	unsigned int SolverTrigIndex(0);
 	// Build trigger offset pair list, 
 	for(i=0; i<iNumIllums; i++) // for each illuminaiton 
 	{
@@ -482,8 +525,11 @@ bool PanelAligner::CreateImageOrderInSolver(
 		{
 			FovIndex index(iIllumIndex, iTrigIndex, i);
 			(*pOrderMap)[index] = iCount;
-			iCount++;
+			if( !CorrelationParametersInst.bUseCameraModelStitch ) 
+				iCount++;
 		}
+		if( CorrelationParametersInst.bUseCameraModelStitch ) 
+			iCount++;
 	}
 		
 	return(true);
@@ -565,7 +611,7 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 	}
 
 	// Solve transforms without fiducial information
-	_pSolver->SolveXAlgHB();
+	_pSolver->SolveXAlgH();
 
 	// Get the fiducial information
 	PanelFiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
@@ -719,10 +765,10 @@ void PanelAligner::TestGetImagePatch()
 		Box box = i->second->GetBoundingBox();
 		_pSet->GetLayer(iLayerIndex)->GetImagePatch(
 			pStitchedImage,
-			(box.p1.y - box.Height()*0.3)/dRes,
-			(box.p2.y + box.Height()*0.3)/dRes,
-			(box.p1.x - box.Width()*0.3)/dRes,
-			(box.p2.x + box.Width()*0.3)/dRes,
+			(unsigned int)( (box.p1.y - box.Height()*0.3)/dRes ),
+			(unsigned int)( (box.p2.y + box.Height()*0.3)/dRes ),
+			(unsigned int)( (box.p1.x - box.Width()*0.3)/dRes ),
+			(unsigned int)( (box.p2.x + box.Width()*0.3)/dRes ),
 			&setFov, 0, 0);
 	}
 
@@ -735,11 +781,11 @@ void PanelAligner::TestGetImagePatch()
 	{
 		Box box = i->second->GetBoundingBox();
 		
-		// Image patch locatioin and size on the stitched image
-		int iStartCol = (box.p1.y - box.Height()*0.3)/dRes;
-		int iStartRow = (box.p1.x - box.Width()*0.3)/dRes;
-		int iCols = box.Height()*1.6/dRes;
-		int iRows = box.Width()*1.6/dRes;
+		// Image patch location and size on the stitched image
+		int iStartCol = (int)( (box.p1.y - box.Height()*0.3)/dRes );
+		int iStartRow = (int)( (box.p1.x - box.Width()*0.3)/dRes );
+		int iCols = (int)( box.Height()*1.6/dRes );
+		int iRows = (int)( box.Width()*1.6/dRes );
 
 		Image* pImg;
 		int iBytePerPIxel = 1;
@@ -771,3 +817,279 @@ void PanelAligner::TestGetImagePatch()
 	}
 }
 
+///////////////////////////////////////////////////////
+//	FiducialResultCheck Class
+// Check the validation of fiducial alignment results
+///////////////////////////////////////////////////////
+FiducialResultCheck::FiducialResultCheck(PanelFiducialResultsSet* pFidSet, RobustSolver* pSolver)
+{
+	_pFidSet = pFidSet;
+	_pSolver = pSolver;
+}
+
+// Check the alignment of fiducial, mark out any outlier, 
+// Only works well when outliers are minority
+// return	 1	: success
+//			-1	: marked out Outliers only
+//			-2	: not marked out exceptions only
+//			-3	: Both Oulier and exception
+//			-4	: All fiducial distance are out of scale range
+
+
+int FiducialResultCheck::CheckFiducialResults()
+{
+	list<FiducialDistance> fidDisList;
+
+	// Calculate all valid distances of all alignment pairs for different physical fiducials 
+	int iNumPhyFid = _pFidSet->Size();
+	for(int i=0; i<iNumPhyFid; i++)
+	{
+		for(int j=i+1; j<iNumPhyFid; j++) // j should be bigger than i
+		{
+			// Alignment results for two different physical fiducials 
+			list<FidFovOverlap*>* pResults1 = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
+			list<FidFovOverlap*>* pResults2 = _pFidSet->GetPanelFiducialResultsPtr(j)->GetFidOverlapListPtr();
+
+			// Calculate distance of two alignments for different physical fiducial based on transforms
+			for(list<FidFovOverlap*>::iterator m = pResults1->begin(); m != pResults1->end(); m++)
+			{
+				for(list<FidFovOverlap*>::iterator n = pResults2->begin(); n != pResults2->end(); n++)
+				{
+					ImgTransform trans1 = _pSolver->GetResultTransform(
+						(*m)->GetMosaicImage()->Index(), (*m)->GetTriggerIndex(), (*m)->GetCameraIndex());
+					ImgTransform trans2 = _pSolver->GetResultTransform(
+						(*n)->GetMosaicImage()->Index(), (*n)->GetTriggerIndex(), (*n)->GetCameraIndex());
+					FiducialDistance fidDis(*m, trans1, *n, trans2);
+					if(fidDis._bValid)
+						fidDisList.push_back(fidDis);
+				}
+			}
+		}
+	}
+
+	// Calculate normal scale = stitched panle image/CAD image
+	// When only 3 distances (3 fiducials with 1 alignments each) 
+	// or 4 distances (2 fiducials with 2 alignments each) available
+	// one alignement outlier will lead to 2 wrong distnsce
+	// Therefore, it makes the normal scale go wrong
+	bool bNormlized = false;		
+	int iCount = 0;
+	if(fidDisList.size() > 4)
+	{
+		// Calcualte mean and variance
+		double dSum = 0;
+		double dSumSquare = 0;
+		for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
+		{
+			if(i->_bValid)
+			{
+				double dScale = i->CalTranScale();
+				if(fabs(dScale-1) < CorrelationParametersInst.dMaxPanelCadScaleDiff) // Ignore outliers
+				{
+					dSum += dScale;
+					dSumSquare += dScale*dScale;
+					iCount++;
+				}
+			}
+		}
+
+		if(fidDisList.size()-iCount > 0)
+			LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): %d out of %d fiducial distance(s) on panel/CAD Scale is out of range", 
+				fidDisList.size()-iCount, fidDisList.size()); 
+
+		// Calculate normal scale
+		double dNormScale = 1;
+		if(iCount==0)					// Failed
+			return(-4);
+		else if(iCount==1 || iCount==2)	// 1 or 2 values available
+			 dNormScale = dSum/iCount;
+		else							// 3 or more values available
+		{	// refine
+			dSum /= iCount;
+			dSumSquare /= iCount;
+			double dVar = sqrt(dSumSquare - dSum*dSum);
+			iCount = 0;
+			double dSum2 = 0;
+			for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
+			{
+				if(i->_bValid)
+				{
+					double dScale = i->CalTranScale();
+					if(fabs(dScale-dSum) <= dVar)
+					{
+						dSum2 += dScale;
+						iCount++;
+					}
+				}
+			}
+			dNormScale = dSum2/iCount;
+		}
+
+		// Adjust distance base on transform
+		for(list<FiducialDistance>::iterator i = fidDisList.begin(); i != fidDisList.end(); i++)
+		{
+			if(i->_bValid)
+			{
+				i->NormalizeTransDis(dNormScale);
+			}
+		}
+
+		bNormlized = true;
+	}
+
+	// Mark alignment outlier out based on distance/scale check
+	double dMaxScale = CorrelationParametersInst.dMaxFidDisScaleDiff;
+	if(!bNormlized) 
+		dMaxScale += CorrelationParametersInst.dMaxPanelCadScaleDiff;
+
+	int iOutlierCount = 0;
+	for(int i=0; i<iNumPhyFid; i++) // for each physical fiducial
+	{
+		list<FidFovOverlap*>* pResults = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
+		for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++) // For each alignment
+		{
+			// Outlier check
+			int iCount1=0, iCount2=0;
+			for(list<FiducialDistance>::iterator m = fidDisList.begin(); m != fidDisList.end(); m++)
+			{
+				if(m->_bValid && !m->_bFromOutlier && m->IsWithOverlap(*j))
+				{
+					iCount1++;
+					double dScale = m->CalTranScale();
+					if(fabs(1-dScale) > dMaxScale)
+					{ 
+						iCount2++;
+					}
+				}	
+			}
+
+			// If it is an alignment outlier
+			if(iCount2 >=2 && (double)iCount2/(double)iCount1>0.5)
+			{
+				LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): FidOverlap (Layer=%d, Trig=%d, Cam=%d) is outlier base on consistent check, %d out %d scale are out of rang", 
+					(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex(),
+					iCount2, iCount1);
+
+				// Mark all distances related to the aligmment outlier out
+				for(list<FiducialDistance>::iterator m = fidDisList.begin(); m != fidDisList.end(); m++)
+				{
+					if(m->_bValid && !m->_bFromOutlier &&m->IsWithOverlap(*j))
+					{
+						m->_bFromOutlier = true;
+					}
+				}
+
+				// The alignment outlier should not be used for solver
+				(*j)->SetIsGoodForSolver(false);
+
+				iOutlierCount++;
+			}
+		}
+	}
+
+	// Exception that is not marked as outlier
+	int iExceptCount = 0;
+	for(list<FiducialDistance>::iterator m = fidDisList.begin(); m != fidDisList.end(); m++)
+	{
+		if(m->_bValid && !m->_bFromOutlier && fabs(1-m->CalTranScale())>dMaxScale)
+			iExceptCount++;
+	}
+	if(iExceptCount>0)
+		LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): There are %d exception distances not from marked outlier(s)", iExceptCount);
+
+	// Check consistent of alignments for each physical fiducial
+	// Assumption: at most one outlier exists for each physical fiducial
+	for(int i=0; i<iNumPhyFid; i++)
+	{
+		list<FidFovOverlap*>* pResults = _pFidSet->GetPanelFiducialResultsPtr(i)->GetFidOverlapListPtr();
+		if(pResults->size() == 1) // No consistent check can be done
+			continue;
+
+		iCount = 0;
+		double dSumX=0, dSumY=0;
+		double dSumXSq=0, dSumYSq=0;
+		for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++)
+		{
+			if((*j)->IsProcessed() && (*j)->IsGoodForSolver() && (*j)->GetWeightForSolver()>0)
+			{
+				// Calcualte the fiducail location based on alignment
+				ImgTransform trans = _pSolver->GetResultTransform(
+					(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
+				double x, y;
+				(*j)->CalFidCenterBasedOnTransform(trans, &x, &y);
+
+				dSumX += x;
+				dSumY += y;
+				dSumXSq += x*x;
+				dSumYSq += y*y;
+				iCount++;
+			}
+		}
+		if(iCount<=1) // No consistent check can be done
+			continue;
+
+		dSumX /= iCount;
+		dSumY /= iCount;
+		dSumXSq /= iCount;
+		dSumYSq /= iCount;
+		double dVarX= sqrt(dSumXSq-dSumX*dSumX);
+		double dVarY= sqrt(dSumYSq-dSumY*dSumY);
+		
+		// If there is only one outlier and all other alignments are on the same physical location 
+		// The outlier's physical position away from all other alignment = dAdjustScale*variance
+		double dAdjustScale = (double)iCount/sqrt((double)iCount-1);
+		double dAdjustDisX = dVarX*dAdjustScale;
+		double dAdjustDisY = dVarY*dAdjustScale;
+
+		// If count==2, only exceptions can be checked, no outlier can be identified
+		if(iCount==2)
+		{
+			if(dAdjustDisX > CorrelationParametersInst.dMaxSameFidInConsist ||
+				dAdjustDisY > CorrelationParametersInst.dMaxSameFidInConsist)
+			{
+				iExceptCount++;
+				LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): Two alignments for fiducial #%d are inconsistent ", i);
+			}
+		}
+
+		// Count >=3, mark outlier out if there is some
+		if(iCount>=3)
+		{
+			// If there is outlier 
+			if(dAdjustDisX > CorrelationParametersInst.dMaxSameFidInConsist ||
+				dAdjustDisY > CorrelationParametersInst.dMaxSameFidInConsist)
+			{
+				for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++)
+				{
+					if((*j)->IsProcessed() && (*j)->IsGoodForSolver() && (*j)->GetWeightForSolver()>0)
+					{
+						// Calcualte the fiducail location based on alignment
+						ImgTransform trans = _pSolver->GetResultTransform(
+							(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
+						double x, y;
+						(*j)->CalFidCenterBasedOnTransform(trans, &x, &y);
+
+						// If it is outlier based on consistent check
+						if((dAdjustDisX>CorrelationParametersInst.dMaxSameFidInConsist && fabs(x-dSumX)>dVarX) || 
+							(dAdjustDisY>CorrelationParametersInst.dMaxSameFidInConsist && fabs(y-dSumY)>dVarY))
+						{
+							(*j)->SetIsGoodForSolver(false);
+							iOutlierCount++;
+							LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): FidOverlap (Layer=%d, Trig=%d, Cam=%d) is outlier base on consistent check", 
+								(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex()); 
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(iOutlierCount>0 && iExceptCount==0)
+		return(-1);
+	else if(iOutlierCount==0 && iExceptCount>0)
+		return(-2);
+	else if(iOutlierCount>0 && iExceptCount>0)
+		return(-3);
+	else
+		return(1);
+}

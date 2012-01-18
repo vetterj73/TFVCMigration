@@ -116,6 +116,7 @@ namespace PanelAlignM {
 		void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
 		void UseCyberNgc4Fiducial();
 		void UseProjectiveTransform(bool bValue);
+		void UseCameraModelStitch(bool bValue);
 		int GetNumberOfFidsProcessed();
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 

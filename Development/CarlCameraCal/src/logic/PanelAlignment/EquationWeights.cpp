@@ -31,6 +31,16 @@ EquationWeights::EquationWeights(void)
 	wPM89 = 1e12;		// M8 = 0 and M9 = 0
 	wPMNext = 2e11;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
 
+	// For Camera Model
+	wZConstrain = 10;   // lightly constrain Z model to flat
+	wZConstrainZero = 1e6;  // strongly constrain unused Z model terms to flat
+	wXIndex = 0.01;		// constrain xTrig, yTrig, thetaTrig to match expected values
+	wFidFlatBoardScale   = 1e3;
+	wFidFlatBoardRotation = 1e2;
+	wFidFlatFiducialLateralShift = 1e3;
+	wFidFlatFlattenFiducial = 1e5;
+
+
 	// Parameters of weight for Fov and Fov overlap
 	_dWeightFovFov = 2e5;
 	_dMinFovFovLimit = 0.01;

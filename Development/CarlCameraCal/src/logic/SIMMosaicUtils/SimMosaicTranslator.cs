@@ -85,10 +85,28 @@ namespace SIMMosaicUtils
                         mmt.SetTransformParameters(camera.Pixelsize.X, camera.Pixelsize.Y,
                             camera.Rotation,
                             xOffset, yOffset);
+                        // TODO 
+                        // modify to load u,v limits, m, dmdz, calc inverse
+                        // Load the Camera Model calibration into the mosaic tile's _tCamCalibration object
+                        mmt.ResetTransformCamCalibration();
+                        mmt.ResetTransformCamModel();
+                        mmt.SetTransformCamCalibrationUMax( camera.Columns());
+                        mmt.SetTransformCamCalibrationVMax( camera.Rows());
+                        for (uint m = 0; m < 16; m++)
+                        {
+                            mmt.SetTransformCamCalibrationS(m,      (float)camera.get_HorizontalDistortion(m));
+                            mmt.SetTransformCamCalibrationS(m + 16, (float)camera.get_VerticalDistortion(m)  );
+                            mmt.SetTransformCamCalibrationdSdz(m,      (float)camera.get_HorizontalSensitivity(m));
+                            mmt.SetTransformCamCalibrationdSdz(m + 16, (float)camera.get_VerticalSensitivity(m)  );
+                        }
+                        // TODO  *** inverse not yet used, is it really needed?
+                        // calc Inverse // make sure that this works...
                     }
                 }
             }
         }
+
+        //private void 
 
         private static void SetDefaultCorrelationFlags(ManagedMosaicSet set, bool bMaskForDiffDevices)
         {

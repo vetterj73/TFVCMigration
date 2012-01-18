@@ -1,5 +1,6 @@
 #pragma once
 #include "MosaicTile.h"
+#include "ImgTransformCamModel.h"
 
 namespace MMosaicDM 
 {
@@ -41,6 +42,34 @@ namespace MMosaicDM
 				_pMosaicTile->SetTransformParameters(pixelSizeXInMeters, pixelSizeYInMeters,
 					rotation,
 					centerOffsetXInMeters, centerOffsetYInMeters);
+			}
+			///
+			/// Set camera calibration parameters
+			///
+			//void	SetTransformCamCalibration(TransformCamModel t);
+			void	SetTransformCamCalibrationS(unsigned int i, float val)
+			{
+				_pMosaicTile->SetTransformCamCalibrationS(i, val);
+			}
+			void	SetTransformCamCalibrationdSdz(unsigned int i, float val)
+			{
+				_pMosaicTile->SetTransformCamCalibrationdSdz(i, val);
+			}
+			void	SetTransformCamCalibrationUMax(double val)
+			{
+				_pMosaicTile->SetTransformCamCalibrationUMax(val);
+			}
+			void	SetTransformCamCalibrationVMax(double val)
+			{
+				_pMosaicTile->SetTransformCamCalibrationVMax(val);
+			}
+			void	ResetTransformCamCalibration()
+			{
+				_pMosaicTile->ResetTransformCamCalibration();
+			}
+			void	ResetTransformCamModel()
+			{
+				_pMosaicTile->ResetTransformCamModel();
 			}
 
 		private:

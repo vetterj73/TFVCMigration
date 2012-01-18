@@ -37,6 +37,16 @@ public:
 	double wPM89;		// M8 = 0 and M9 = 0
 	double wPMNext;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
 
+	// For Camera Model
+	double wZConstrain;
+	double wZConstrainZero;
+	double wXIndex;
+	double wFidFlatBoardScale;
+	double wFidFlatBoardRotation;
+	double wFidFlatFiducialLateralShift;
+	double wFidFlatFlattenFiducial;
+
+
 private:
 	// Parameters of weight for Fov and Fov overlap
 	double _dWeightFovFov;

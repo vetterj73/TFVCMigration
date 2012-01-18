@@ -135,6 +135,16 @@ namespace MosaicDM
 		return pML;
 	}
 
+	unsigned int MosaicSet::GetMosaicTotalNumberOfTriggers()
+	{
+		// total up all of the triggers in each layer
+		unsigned int totalTrigs(0);
+		for(unsigned int i=0; i<_layerList.size(); i++)
+			totalTrigs += GetLayer(i)->GetNumberOfTriggers();
+		return totalTrigs;
+	}
+
+
 	CorrelationFlags* MosaicSet::GetCorrelationFlags(unsigned int layerX, unsigned int layerY)
 	{
 		if(layerX > _layerList.size()-1 || layerY > _layerList.size()-1 ||

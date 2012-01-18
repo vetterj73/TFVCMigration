@@ -41,6 +41,17 @@ namespace MosaicDM
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
 				double rotation, double centerOffsetXInMeters, double centerOffsetYInMeters);
 
+			///
+			/// Set camera calibration parameters
+			///
+			void	SetTransformCamCalibration(TransformCamModel t);
+			void	SetTransformCamCalibrationS(unsigned int i, float val);
+			void	SetTransformCamCalibrationdSdz(unsigned int i, float val);
+			void	SetTransformCamCalibrationUMax(double val);
+			void	SetTransformCamCalibrationVMax(double val);
+			void	ResetTransformCamCalibration();
+			void	ResetTransformCamModel();
+
 			Image* GetImagPtr() {return _pImage;};
 
 			bool Bayer2Lum(int iBayerTypeIndex);

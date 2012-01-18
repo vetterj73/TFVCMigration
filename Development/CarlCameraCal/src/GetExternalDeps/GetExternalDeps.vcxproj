@@ -110,7 +110,8 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,7 +141,8 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

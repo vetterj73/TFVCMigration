@@ -64,6 +64,7 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// Whether use projective transform
 	bUseProjectiveTransform = false;
+	bUseCameraModelStitch = false;
 
 	// Support Bayer(color image)
 	//bGrayScale = true;					// Grey scale image in default
@@ -77,7 +78,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// debug flags
 	bSaveFiducialOverlaps = false;
 	bSaveOverlaps = false;
-	bSaveTransformVectors = false;
+	bSaveTransformVectors = true;
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";
 }

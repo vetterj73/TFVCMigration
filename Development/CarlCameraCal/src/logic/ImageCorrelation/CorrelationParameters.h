@@ -77,6 +77,9 @@ public:
 	// Whether use projective transform
 	bool bUseProjectiveTransform;
 	
+	// Whether use camera model image stitching
+	bool bUseCameraModelStitch;
+	
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 
