@@ -238,7 +238,7 @@ namespace CyberStitchFidTester
                 _aligner.OnLogEntry += OnLogEntryFromClient;
                 _aligner.SetAllLogTypes(true);
                 _aligner.NumThreads(8);
-                _aligner.LogFiducialOverlaps(true);
+                //_aligner.LogFiducialOverlaps(true);
                 if (bUseProjective)
                     _aligner.UseProjectiveTransform(true);
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
