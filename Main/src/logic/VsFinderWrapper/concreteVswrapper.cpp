@@ -579,24 +579,56 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	double mask_region)				// creates masked region that vsfind ignores. No effect if <=0
 
 {
+	// 2012Jan8 - DGB
+	//
+	// This is a strange routine.  The image used for training has large impact on 
+	// runtime speed of vsFind.
+	//
+	// Huh??
+	//
+	// Yup.
+	//
+	// Tread carefully.
+
+
+	// Get the maximum dimensions of the fiducials to draw
+	double twidth = 0.0;
+	double theight = 0.0;
+	for(int i=0;i<num_fid_data;i++)
+	{
+		twidth=max(twidth, fid_data[i].twidth);
+		theight=max(theight, fid_data[i].theight);
+	}
+
+	// Expand for search area
+	double fid_expand_factor = 1.4;
+	double search_width = twidth * fid_expand_factor;
+	double search_height = twidth * fid_expand_factor;
+
+
+#if 1  // New Doug way, seems to work alright.
 	// Decide the size of training image and create it
 	int im_width = 0;
 	int im_height = 0;
 
-	if(diff_size>0 && diff_size<=8)
-	{	// reduce the training image size to speed up the training
-		// assume all diffential fiducail has the similar size
-		im_width = (int)(diff_list[0].twidth * 4) + 20;
-		im_height = (int)(diff_list[0].theight * 4) +20;
-	}
-	else
+	// The image will be 3 rows of fids.  The fid to train alone 
+	// in the center, and the differential fids on the top and
+	// bottom.  Leave enough room in between the fids for the search.
+	int half_diff_size=(int)((diff_size/2.0)+.5);
+	im_width = (int)(search_width * half_diff_size); 
+	im_height = (int)(search_height * 4); // 3 rows, but allow space above & below
+#else // Old way, slows down training.
+	int half_diff_size=(int)((diff_size/2.0)+.5);
+
+	// Decide the size of training image and create it
+	int im_width = 0;
+	int im_height = 0;
+	for(int i = 0; i < diff_size; i++)
 	{
-		for(int i = 0; i < diff_size; i++)
-		{
-			im_width += (int)(diff_list[i].twidth * 2);
-			im_height += (int)(diff_list[i].theight * 2);
-		}
+		im_width += (int)(diff_list[i].twidth * 2);
+		im_height += (int)(diff_list[i].theight * 2);
 	}
+#endif
 
 	int width = 1;
 	int height = 1;
@@ -641,17 +673,11 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 
 	double start=clock();
 
-	double twidth = 0.0;
-	double theight = 0.0;
-
 	for(int i=0;i<num_fid_data&&!ecfail(ret);i++)
 	{
 		fore_ground=fill_colors[!!fid_data[i].dark_to_light].fore_ground;
 		back_ground=fill_colors[!!fid_data[i].dark_to_light].back_ground;
 		hollow=fill_colors[!!fid_data[i].dark_to_light].hollow;
-
-		twidth=max(twidth, fid_data[i].twidth);
-		theight=max(theight, fid_data[i].theight);
 
 		if(vsDrawFiducial(cam_image, fid_data[i].fid, tool.dCenter,
 			fid_data[i].twidth, fid_data[i].theight, fid_data[i].hwidth, fore_ground,
@@ -665,7 +691,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	}
 	start=print_delta(1, "draw", start);
 
-	if(!num_fid_data)
+	if(!num_fid_data) // Triangle or other polygons
 	{
 		twidth=poly_data->width;
 		theight=poly_data->height;
@@ -741,8 +767,8 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 	}
 	else
 	{
-		tool.dWidth	= twidth  * 1.4; // add a little background to the template.
-		tool.dHeight = theight * 1.4; // This is a must.
+		tool.dWidth	= search_width; // add a little background to the template.
+		tool.dHeight = search_height; // This is a must.
 	}
 
 	if(ecfail(ret))
@@ -770,7 +796,7 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		ptFTemplate->iCorrelationType = 1; /* gain and offset */
 		ptFTemplate->dGainFactor = 40.0;
 		ptFTemplate->iOffsetValue = 255; /* ignored if gain only */
-		ptFTemplate->yAllowNegatives = bAllowNegativeMatch? TRUE:FALSE; /* enable inverse match*/
+		ptFTemplate->yAllowNegatives = bAllowNegativeMatch; /* enable inverse match*/  // TRUE is faster than FALSE, really??
 		ptFTemplate->yAllowPyramidTypeChange = 0;
 		ptFTemplate->yAllowCorrelationTypeChange = FALSE ;
 		ptFTemplate->iMinimumPyramidDepth = 1;
@@ -784,20 +810,51 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 		tool.dHeight = height;
 		tool.dAngle	= 0;
 
-		int half_diff=(int)((diff_size/2.0)+.5);
+#if 0  // Doug's new way, doesn't seem to work.
+		double diff_center[2]={0, 0};
+		for(int diff=0;diff<diff_size;diff++)
+		{
+			// Differential fiducial location
+			if(diff<half_diff_size)
+			{
+				diff_center[0] = (search_width / 2) + (diff * (search_width));
+				diff_center[1] = search_height / 2;
+			}
+			else
+			{
+				diff_center[0] = (search_width / 2) + ((diff - half_diff_size) * search_width);
+				diff_center[1] = height - 1 - (search_height / 2);
+			}
 
-		double diff_center[2]={5, 0};
+
+			if(diff_center[1]-diff_list[diff].theight/2<=0)
+				continue;
+			if(diff_center[1]+diff_list[diff].theight/2>=height)
+				continue;
+
+			if(fiducial_intersect(diff_center, diff_list[diff].twidth, diff_list[diff].theight,
+				tool.dCenter, twidth, theight))
+					diff_center[0]=tool.dCenter[0]+twidth+diff_list[diff].twidth/2;
+
+			if(diff_center[0]+diff_list[diff].twidth/2.>=width)
+				continue;
+
+			if(vsDrawFiducial(cam_image, diff_list[diff].fid, diff_center,
+				diff_list[diff].twidth, diff_list[diff].theight, diff_list[diff].hwidth, fore_ground,
+					back_ground, back_ground, 0, 1)==-1)
+						ret= "666 Failed to draw difference shape";
+		}
+#else  // Old way.  Works better..  Hmm.........
+		int half_diff=(int)((diff_size/2.0)+.5);
+		double quarter_height=height/4.0;
+
+		double diff_center[2]={5,quarter_height};
 		int the_one=0;
 		for(int diff=0;diff<diff_size;diff++)
 		{
-			// Differential fiducial Y location
-			if(diff<half_diff)
-				diff_center[1] = 5 + diff_list[the_one].theight/2;
-			else
-				diff_center[1] = height-1-5-diff_list[the_one].theight/2;
-
 			if(diff==half_diff)
 			{
+				diff_center[1]=quarter_height*3;
 				diff_center[0]=5;
 			}
 
@@ -823,28 +880,14 @@ const char *concreteVsWrapper::CreateVsFinderTemplate(
 			diff_center[0]+=diff_list[the_one].twidth/2+30;
 			the_one++;
 		}
-		/*
-		static int i=5;
-		VsStFileIOControl tFileControl;
-		tFileControl.eFileType = VS_FFORMAT_GIF;
-		char cImageName[255];
-		sprintf(cImageName,"%s_%d.gif", "C:\\Temp\\fiducialImag.gif", i++);
-		tFileControl.pcFileName = cImageName;
-		vsSaveImageData(cam_image, &tFileControl);
-		//*/
-
-#ifdef __DEBUG_TEMPLATE
-// used for debug to save the image out to a file
-// ajrajr
-		VsStCamImageInfo tData;
-		vsInqCamImageInfo(cam_image, &tData);
-#ifdef WIN32
-		write_JPEG_file ("afid.jpg", 100, tData.pbBuf, height, width);
-#else
-		write_image(tData.pbBuf, width, height, 0, 0, "afid.ccf", 0, 0, 0, 1, 1, "help me");
-#endif // WIN32
-
 #endif
+		//static int i=0;
+		//VsStFileIOControl tFileControl;
+		//tFileControl.eFileType = VS_FFORMAT_GIF;
+		//char cImageName[255];
+		//sprintf(cImageName,"%s_%d.gif", "C:\\Temp\\fiducialImag.gif", i++);
+		//tFileControl.pcFileName = cImageName;
+		//vsSaveImageData(cam_image, &tFileControl);
 
 		if (vsCreateFinder(cam_image, &tool, 1, ptFTemplates, ptFinder) == -1)
 			ret= lookup_finder_error(ptFinder->iResultFlags);
