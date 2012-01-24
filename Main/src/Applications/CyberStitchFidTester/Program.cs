@@ -56,6 +56,8 @@ namespace CyberStitchFidTester
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
         private static StreamWriter writer = null;
+        private static StreamWriter finalCompWriter = null;
+
 
         // For output analysis
         private static double[] _dXDiffSum;
@@ -69,7 +71,10 @@ namespace CyberStitchFidTester
 
         //For time stamp
         private static DateTime _dtStartTime;
+        private static DateTime _dtEndTime;
+        private static TimeSpan _tsRunTime = TimeSpan.Zero; 
         private static TimeSpan _tsTotalRunTime = TimeSpan.Zero;
+       
 
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
@@ -88,6 +93,7 @@ namespace CyberStitchFidTester
             int numberToRun = 1;
             string unitTestFolder="";
             ManagedFeatureLocationCheck fidChecker;
+         
 
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
@@ -278,7 +284,6 @@ namespace CyberStitchFidTester
                 while (!bDone)
                 {
                     numAcqsComplete = 0;
-                    _dtStartTime = DateTime.Now;
                     _aligner.ResetForNextPanel();
                     _mosaicSetSim.ClearAllImages();
                     _mosaicSetIllum.ClearAllImages();
@@ -301,7 +306,11 @@ namespace CyberStitchFidTester
                     {
                         _cycleCount++;
                         CreateIllumImages();
+                        _dtStartTime = DateTime.Now;
                         RunStitch();
+                        _dtEndTime = DateTime.Now;
+                         _tsRunTime = _dtEndTime - _dtStartTime;
+                        _tsTotalRunTime += _tsRunTime;
 
                         //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
                         // for fiducials(used for stitch) location check
@@ -374,18 +383,41 @@ namespace CyberStitchFidTester
             {
                 string[] lines = File.ReadAllLines(lastOutputTextPath);
                 string lastLine = lines[lines.Length - 1];
-                string[] parts = lastLine.Split(':');
+                string timeRecordLine = lines[lines.Length - 3];
+                string[] averageParts = lastLine.Split(':');
+                string[] timeParts = timeRecordLine.Split(':');
                 double lastAverage = 0;
+                double lastTimeRecord = 0;
                 bool bGood = false;
-                if (parts.Length > 1 && double.TryParse(parts[1], out lastAverage))
+                bool bGoodAver = false;
+                bool bGoodTime = false;
+                bool bHeadLine = true;
+                const string headLine = "Test, Previous Average Offset(Microns),  Current Average Offset(Microns),Previous Average Panel Process Running time(Minutes),Current Average Panel Process Running time(Minutes), Test Result";
+                string finalCompCSVPath = Path.Combine(Path.GetDirectoryName(outputTextPath), "FinalCompareResults.csv");
+                string testName = Path.GetFileNameWithoutExtension(outputTextPath);
+                string testResult;
+                if (File.Exists(finalCompCSVPath))
+                    bHeadLine = false;
+                finalCompWriter = new StreamWriter(finalCompCSVPath, true);
+                if (averageParts.Length > 1 && double.TryParse(averageParts[1], out lastAverage))
                 {
                     // Check that we are at least as good as last time (to the nearest micron)
                     if (Math.Round(_allPanelFidDifference / _iTotalCount) <= Math.Round(lastAverage))
-                        bGood = true;
+                        bGoodAver = true;
                 }
-
+                if (timeParts.Length > 1 && double.TryParse(timeParts[2], out lastTimeRecord))
+                {
+                    // Check that we are at least as good as last time(in 20% range)
+                    if (_tsTotalRunTime.TotalMinutes / _cycleCount <= lastTimeRecord * 1.2)
+                        bGoodTime = true;
+                }
+                bGood = bGoodAver && bGoodTime;
+                testResult = (bGood ? "Passed" : "Failed");
                 Console.WriteLine("Are we as good as last time: " + (bGood?"Yes!":"No!"));
-
+                if (bHeadLine) finalCompWriter.WriteLine(headLine);
+                finalCompWriter.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", testName, lastAverage, _allPanelFidDifference / _iTotalCount, lastTimeRecord, _tsTotalRunTime.TotalMinutes / _cycleCount, testResult));
+                if (finalCompWriter != null)
+                    finalCompWriter.Close();
                 if (Directory.Exists(unitTestFolder))
                 {
                     string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
@@ -466,8 +498,8 @@ namespace CyberStitchFidTester
             // Find fiducial on the board
             fidChecker.CheckFeatureLocation(data, stride, dResults);
             //Record the processing time
-            DateTime dtEndTime = DateTime.Now;
-            TimeSpan tsRunTime = dtEndTime - _dtStartTime;
+            //DateTime dtEndTime = DateTime.Now;
+            //TimeSpan tsRunTime = dtEndTime - _dtStartTime;
 
             for (int i = 0; i < iFidNums; i++)
             {
@@ -507,8 +539,8 @@ namespace CyberStitchFidTester
 
             writer.WriteLine("Total Difference for this Panel: " + fidDifference);
             _allPanelFidDifference += fidDifference;
-            writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime,dtEndTime,tsRunTime));
-            _tsTotalRunTime += tsRunTime;
+            writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime,_dtEndTime,_tsRunTime));
+           // _tsTotalRunTime += tsRunTime;
         }
 
         private static void RunStitch()
@@ -700,7 +732,6 @@ namespace CyberStitchFidTester
             // launch next device in simulation case
             if (_bSimulating && numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
             {
-                Thread.Sleep(10000);
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(numAcqsComplete);
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return;
