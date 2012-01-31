@@ -652,6 +652,7 @@ bool operator<(const LeftIndex& a, const LeftIndex& b)
 // piEmptyRows: output, number of empty equations in Matrix A
 unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows)
 {
+	/*
 	// Save Matrix A
 	ofstream of("C:\\Temp\\MatrixA.csv");
 	
@@ -695,7 +696,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 			of << _pcNotes[k] << std::endl;
 		}
 		of.close();
-	}
+	}  */
 	
 	//Get map for reorder
 	list<LeftIndex> leftIndexList;
@@ -793,7 +794,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 	for(unsigned int k=0; k<_iMatrixHeight; k++)
 		_dVectorB[k] = dCopyB[k];
 
- // for debug
+ /*/ for debug
 	// Save transposed Matrix A 
 	of.open("C:\\Temp\\MatrixA_t.csv");		
 	of << std::scientific;
@@ -848,7 +849,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		of <<  piCounts[k] << std::endl;
 	}
 	of.close();
-//
+/*/
 
 	delete [] workspace;
 	delete [] dCopyB;
