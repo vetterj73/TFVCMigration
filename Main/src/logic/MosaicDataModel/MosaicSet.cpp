@@ -219,6 +219,18 @@ namespace MosaicDM
 			   bmp.height() != GetObjectWidthInPixels())
 				return false;
 
+			// Check gray/color match
+			if(IsBayerPattern())
+			{
+				if(bmp.bytesPerPixel() != 3)
+					return(false);
+			}
+			else
+			{		
+				if(bmp.bytesPerPixel() != 1)
+					return(false);
+			}
+
 			pLayer->SetStitchedBuffer(bmp.GetBuffer());
 		}
 

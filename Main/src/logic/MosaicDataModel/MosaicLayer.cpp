@@ -120,7 +120,10 @@ namespace MosaicDM
 	void MosaicLayer::SetStitchedBuffer(unsigned char *pBuffer)
 	{
 		AllocateStitchedImageIfNecessary();
-		memcpy(_pStitchedImage->GetBuffer(), pBuffer, _pMosaicSet->GetObjectWidthInPixels()*_pMosaicSet->GetObjectLengthInPixels());
+		int iSize = _pMosaicSet->GetObjectWidthInPixels()*_pMosaicSet->GetObjectLengthInPixels();
+		if (GetMosaicSet()->IsBayerPattern())
+			iSize *= 3;
+		memcpy(_pStitchedImage->GetBuffer(), pBuffer, iSize);
 		_stitchedImageValid = true;
 	}
 
