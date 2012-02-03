@@ -652,51 +652,54 @@ bool operator<(const LeftIndex& a, const LeftIndex& b)
 // piEmptyRows: output, number of empty equations in Matrix A
 unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows)
 {
-	/*
-	// Save Matrix A
-	ofstream of("C:\\Temp\\MatrixA.csv");
+	bool bSaveMatrixCSV = false;
+	if (bSaveMatrixCSV) 
+	{
+		// Save Matrix A
+		ofstream of("C:\\Temp\\MatrixA.csv");
 	
-	for(unsigned int k=0; k<_iMatrixHeight; k++)
-	{ 
-		for(unsigned int j=0; j<_iMatrixWidth; j++)
+		for(unsigned int k=0; k<_iMatrixHeight; k++)
+		{ 
+			for(unsigned int j=0; j<_iMatrixWidth; j++)
+			{
+				of << _dMatrixA[j+k*_iMatrixWidth];
+				if(j != _iMatrixWidth-1)
+					of <<",";
+			}
+			of << std::endl;
+		}
+		of.close();
+
+		// Save Matrix B
+		of.open("C:\\Temp\\VectorB.csv");
+		for(unsigned int k=0; k<_iMatrixHeight; k++)
+		{ 
+			of << _dVectorB[k] << std::endl;
+		}
+		of.close();
+
+		// Save weights
+		if (_pdWeights !=NULL)
 		{
-			of << _dMatrixA[j+k*_iMatrixWidth];
-			if(j != _iMatrixWidth-1)
-				of <<",";
+			of.open("C:\\Temp\\Weights.csv");
+			for(unsigned int k=0; k<_iMatrixHeight; k++)
+			{ 
+				of << _pdWeights[k] << std::endl;
+			}
+			of.close();
 		}
-		of << std::endl;
-	}
-	of.close();
 
-	// Save Matrix B
-	of.open("C:\\Temp\\VectorB.csv");
-	for(unsigned int k=0; k<_iMatrixHeight; k++)
-	{ 
-		of << _dVectorB[k] << std::endl;
+		// Save Notes
+		if (_pcNotes!=NULL)
+		{
+			of.open("C:\\Temp\\Notes.csv");
+			for(unsigned int k=0; k<_iMatrixHeight; k++)
+			{ 
+				of << _pcNotes[k] << std::endl;
+			}
+			of.close();
+		}  
 	}
-	of.close();
-
-	// Save weights
-	if (_pdWeights !=NULL)
-	{
-		of.open("C:\\Temp\\Weights.csv");
-		for(unsigned int k=0; k<_iMatrixHeight; k++)
-		{ 
-			of << _pdWeights[k] << std::endl;
-		}
-		of.close();
-	}
-
-	// Save Notes
-	if (_pcNotes!=NULL)
-	{
-		of.open("C:\\Temp\\Notes.csv");
-		for(unsigned int k=0; k<_iMatrixHeight; k++)
-		{ 
-			of << _pcNotes[k] << std::endl;
-		}
-		of.close();
-	}  */
 	
 	//Get map for reorder
 	list<LeftIndex> leftIndexList;
@@ -794,62 +797,65 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 	for(unsigned int k=0; k<_iMatrixHeight; k++)
 		_dVectorB[k] = dCopyB[k];
 
- /*/ for debug
-	// Save transposed Matrix A 
-	of.open("C:\\Temp\\MatrixA_t.csv");		
-	of << std::scientific;
-
-	unsigned int ilines = _iMatrixHeight;
-	if(bRemoveEmptyRows)
-		ilines = _iMatrixHeight-*piEmptyRows;
-
-	for(unsigned int j=0; j<_iMatrixWidth; j++)
+	// for debug
+	if (bSaveMatrixCSV) 
 	{
-		for(unsigned int k=0; k<ilines; k++)
-		{ 
-	
-			of << _dMatrixA[j*ilines+k];
-			if(j != ilines-1)
-				of <<",";
-		}
-		of << std::endl;
-	}
+		// Save transposed Matrix A 
+		ofstream of("C:\\Temp\\MatrixA_t.csv");		
+		of << std::scientific;
 
-	of.close();
+		unsigned int ilines = _iMatrixHeight;
+		if(bRemoveEmptyRows)
+			ilines = _iMatrixHeight-*piEmptyRows;
 
-	// Save Matrix A
-	of.open("C:\\Temp\\MatrixAOrdered.csv");		
-	for(unsigned int k=0; k<ilines; k++)
-	{ 
 		for(unsigned int j=0; j<_iMatrixWidth; j++)
 		{
-			of << _dMatrixA[j*ilines+k];
-			if(j != _iMatrixWidth-1)
-				of <<",";
+			for(unsigned int k=0; k<ilines; k++)
+			{ 
+	
+				of << _dMatrixA[j*ilines+k];
+				if(j != ilines-1)
+					of <<",";
+			}
+			of << std::endl;
 		}
-		of << std::endl;
-	}
-	of.close();
 
-	// Save Matrix B
-	of.open("C:\\Temp\\VectorBOrdered.csv");
-	for(unsigned int k=0; k<ilines; k++)
-	{ 
-		of << _dVectorB[k] << std::endl;
-	}
-	of.close();
+		of.close();
 
-	// Save blocklength
-	of.open("C:\\Temp\\BlockLength.csv");
-	of << _iMatrixWidth << std::endl;
-	of << ilines <<std::endl;
-	of << iMaxLength <<std::endl;
-	for(unsigned int k=0; k<_iMatrixWidth; k++)
-	{ 
-		of <<  piCounts[k] << std::endl;
+		// Save Matrix A
+		of.open("C:\\Temp\\MatrixAOrdered.csv");		
+		for(unsigned int k=0; k<ilines; k++)
+		{ 
+			for(unsigned int j=0; j<_iMatrixWidth; j++)
+			{
+				of << _dMatrixA[j*ilines+k];
+				if(j != _iMatrixWidth-1)
+					of <<",";
+			}
+			of << std::endl;
+		}
+		of.close();
+
+		// Save Matrix B
+		of.open("C:\\Temp\\VectorBOrdered.csv");
+		for(unsigned int k=0; k<ilines; k++)
+		{ 
+			of << _dVectorB[k] << std::endl;
+		}
+		of.close();
+
+		// Save blocklength
+		of.open("C:\\Temp\\BlockLength.csv");
+		of << _iMatrixWidth << std::endl;
+		of << ilines <<std::endl;
+		of << iMaxLength <<std::endl;
+		for(unsigned int k=0; k<_iMatrixWidth; k++)
+		{ 
+			of <<  piCounts[k] << std::endl;
+		}
+		of.close();
 	}
-	of.close();
-/*/
+
 
 	delete [] workspace;
 	delete [] dCopyB;
@@ -1442,7 +1448,6 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			colImgA, rowImgA, colImgB, rowImgB, xSensorA, ySensorA, xSensorB, ySensorB);
 		_pdWeights[_iCurrentRow] = w;
 	
-		// TODO add logging of weights and notes
 		_iCurrentRow++;
 		pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 		
@@ -1481,8 +1486,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 {
 	// Validation check for overlap
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
-	// TODO track total fiducial coumt?????????????????
-
+	
 	// Fov's information
 	unsigned int iMosicIndexA= pOverlap->GetMosaicImage()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetTriggerIndex();
@@ -1515,7 +1519,8 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	// Get offset
 	double offsetRows = result.RowOffset;
 	double offsetCols = result.ColOffset;
-
+	rowImgA -= offsetRows;
+	colImgA -= offsetCols;
 	// Add a equataions 
 	TransformCamModel camCalA = 
 				_pSet->GetLayer(iMosicIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
@@ -1568,7 +1573,8 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	pdRow[iFOVPosA+2] += -ySensorA * w;
 	for (unsigned int j(0); j < _iNumZTerms; j++)
 			pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * dxSensordzA * w;
-	_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
+	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
+	_dVectorB[_iCurrentRow] = w * (dFidRoiCenX - xSensorA);
 	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
 		pOverlap->GetMosaicImage()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
@@ -1581,7 +1587,8 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	pdRow[iFOVPosA+2] += +xSensorA * w;
 	for (unsigned int j(0); j < _iNumZTerms; j++)
 			pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * dySensordzA * w;
-	_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
+	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
+	_dVectorB[_iCurrentRow] = w * (dFidRoiCenY - ySensorA);
 	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.2e,%.4e,%.4e", 
 		pOverlap->GetMosaicImage()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
@@ -1599,7 +1606,6 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	unsigned int iTriggerIndex,
 	unsigned int iCameraIndex)  
 {
-	// TODO TODO
 	// Fov transform parameter begin position in column
 	FovIndex fovIndex(iIlluminationIndex, iTriggerIndex, iCameraIndex); 
 	unsigned int index = (*_pFovOrderMap)[fovIndex] *_iNumParamsPerIndex;
@@ -1658,7 +1664,6 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	unsigned int iTriggerIndex,
 	unsigned int iCameraIndex, double dTrans[3][3]) 
 {
-	// TODO TODO
 	FovIndex fovIndex(iIlluminationIndex, iTriggerIndex, iCameraIndex); 
 	unsigned int iImageCols = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
 	unsigned int iImageRows = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
@@ -1713,7 +1718,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	}
 	double RMS, dRcond;
 	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
-	/*LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
+	LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
 	LOG.FireLogEntry(LogTypeSystem, "MatchProj p %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
 		p[0].i, p[0].r, p[1].i, p[1].r, p[2].i, p[2].r);
 	LOG.FireLogEntry(LogTypeSystem, "MatchProj q %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
@@ -1721,7 +1726,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	LOG.FireLogEntry(LogTypeSystem, "dTrans \n %.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e",
 		dTrans[0][0], dTrans[0][1], dTrans[0][2],
 		dTrans[1][0], dTrans[1][1], dTrans[1][2],
-		dTrans[2][0], dTrans[2][1], dTrans[2][2]);*/
+		dTrans[2][0], dTrans[2][1], dTrans[2][2]);
 	// NOTE: resid = q - fitValue = distorted pt - proj fit pt
 	
 	if(iFlag != 0)
@@ -1756,7 +1761,7 @@ void RobustSolverCM::SolveXAlgH()
 	double scaleparm = 0;
 	double cond = 0;
 
-	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():BEGIN ALG_HB");
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolverCM::SolveXAlgH():BEGIN ALG_H");
 
 	int algHRetVal = 
 		alg_h(                // Robust regression by Huber's "Algorithm H".
@@ -1795,10 +1800,10 @@ void RobustSolverCM::SolveXAlgH()
 	of.close();
 
 	if( algHRetVal<0 )
-		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_hb returned value of %d", algHRetVal);
+		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_h returned value of %d", algHRetVal);
 
 	//LOG.FireLogEntry(LogTypeSystem, "RobustSolverCM::SolveXAlgH():FINISHED ALG_H");
-	LOG.FireLogEntry(LogTypeSystem, "RobustSolverCM::SolveXAlgH():alg_hb nIterations=%d, scaleparm=%f, cond=%f", algHRetVal, scaleparm, cond);
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolverCM::SolveXAlgH():alg_h nIterations=%d, scaleparm=%f, cond=%f", algHRetVal, scaleparm, cond);
 
 	delete [] resid;
 
@@ -1916,8 +1921,14 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 			if (fidOK)
 			{
 				// add CAD locations
-				fidCAD2D [nGoodFids].x = (*j)->GetFiducialXPos();
-				fidCAD2D [nGoodFids].y = (*j)->GetFiducialYPos();
+				double rowImgB = ((*j)->GetCoarsePair()->GetSecondRoi().FirstRow + (*j)->GetCoarsePair()->GetSecondRoi().LastRow)/ 2.0;
+				double colImgB = ((*j)->GetCoarsePair()->GetSecondRoi().FirstColumn + (*j)->GetCoarsePair()->GetSecondRoi().LastColumn)/ 2.0;
+				double dFidRoiCenX, dFidRoiCenY; // ROI center of fiducial image (not fiducail center or image center) in world space
+				(*j)->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidRoiCenX, &dFidRoiCenY);
+				fidCAD2D [nGoodFids].x = dFidRoiCenX;
+				fidCAD2D [nGoodFids].y = dFidRoiCenY;
+				//fidCAD2D [nGoodFids].x = (*j)->GetFiducialXPos();
+				//fidCAD2D [nGoodFids].y = (*j)->GetFiducialYPos();
 
 				// now find board locations
 				// given pixel location and S, dSdz find xySensor (assume Z = 0 to begin with)
@@ -1932,9 +1943,9 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 				//double colImg = (overlap._firstOverlap.FirstColumn  + overlap._firstOverlap.LastColumn)  / 2.0 + dCenOffsetX;
 				//double rowImg = (overlap._firstOverlap.FirstRow     + overlap._firstOverlap.LastRow)     / 2.0 + dCenOffsetY;
 				double colImg = ( (*j)->GetCoarsePair()->GetFirstRoi().FirstColumn + 
-					(*j)->GetCoarsePair()->GetFirstRoi().LastColumn )/2.0  + dCenOffsetX;
+					(*j)->GetCoarsePair()->GetFirstRoi().LastColumn )/2.0;//  + dCenOffsetX;
 				double rowImg = ( (*j)->GetCoarsePair()->GetFirstRoi().FirstRow +
-					(*j)->GetCoarsePair()->GetFirstRoi().LastRow )/2.0  + dCenOffsetY;
+					(*j)->GetCoarsePair()->GetFirstRoi().LastRow )/2.0; //  + dCenOffsetY;
 				double regoffCol = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
 				double regoffRow = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
 				double rowPeak( rowImg - regoffRow );
@@ -2026,17 +2037,17 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// ('bad' fids are already removed from the list)
 	// As the number of fids is small each one one will have a great deal of leverage
 	// therefore it's hard to de-weight poorer fits
-	/*{
+	{
 		for (unsigned int row(0); row < FidFitRows; row++)
 			LOG.FireLogEntry(LogTypeSystem, "%d, %.6e, %.6e, %.6e, %.6e, %.6e, %.6e,       \t %.6e,        ",row, 
 				FidFitA[row*6], FidFitA[row*6+1], FidFitA[row*6+2], FidFitA[row*6+3], 
 				FidFitA[row*6+4], FidFitA[row*6+5], FidFitb[row] );
-	}*/
+	}
 	// equations are done, now solve
 
 	LstSqFit(FidFitA, FidFitRows, FidFitCols, FidFitb, FidFitX, resid);
-	//for(unsigned int row(0); row<FidFitRows; ++row)
-	//	LOG.FireLogEntry(LogTypeSystem, "Resids %d, %.4f",row, resid[row]);
+	for(unsigned int row(0); row<FidFitRows; ++row)
+		LOG.FireLogEntry(LogTypeSystem, "Resids %d, %.4f",row, resid[row]);
 	double newBoard2CAD[3][3] = {{ FidFitX[0], FidFitX[1], FidFitX[2]}, {FidFitX[3], FidFitX[4], FidFitX[5]}, {0,0,1}};
 	_Board2CAD.SetMatrix(newBoard2CAD);
 	
@@ -2049,8 +2060,8 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// log results for debug
 	
 
-	//LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
-	//	_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
+	LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
+		_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
 		
 	delete [] fidFlat2D;
 	delete [] fidCAD2D;

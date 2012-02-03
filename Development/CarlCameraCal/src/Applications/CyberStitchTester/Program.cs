@@ -48,6 +48,7 @@ namespace CyberStitchTester
             bool bAdjustForHeight = true;
             bool bUseProjective = false;
             bool bUseCameraModel = false;
+            int numberToRun = 1;
 
             for(int i=0; i<args.Length; i++)
             {
@@ -55,6 +56,8 @@ namespace CyberStitchTester
                     bOwnBuffers = true;
                 if (args[i] == "-c")
                     bContinuous = true;
+                else if (args[i] == "-n" && i < args.Length - 1)
+                    numberToRun = Convert.ToInt16(args[i + 1]);
                 if (args[i] == "-m")
                     bMaskForDiffDevices = true;
                 if (args[i] == "-bayer")
@@ -105,7 +108,10 @@ namespace CyberStitchTester
                 if(bUseProjective)
                     _aligner.UseProjectiveTransform(true);
                 if (bUseCameraModel)
+                {
                     _aligner.UseCameraModelStitch(true);
+                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                }
 
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
@@ -248,7 +254,7 @@ namespace CyberStitchTester
                 }
 
                 // should we do another cycle?
-                if (!bContinuous)
+                if (!bContinuous && _cycleCount >= numberToRun)
                     bDone = true;
                 else
                     mDoneEvent.Reset();

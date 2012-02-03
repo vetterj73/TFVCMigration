@@ -52,7 +52,7 @@ EquationWeights::EquationWeights(void)
 	_dMaxCadFovAmbig = 0.9;
 
 	// Parameters of weight for Fiducial and Fov overlap
-	_dWeightFidFov = 2e6;
+	_dWeightFidFov = 2e3;
 	_dMinFidFovLimit = 0.03;
 	_dMaxFidFovAmbig = 0.8;
 }

@@ -82,6 +82,7 @@ namespace CyberStitchFidTester
             string panelFile = "";
             string fidPanelFile = "";
             bool bUseProjective = false;
+            bool bUseCameraModel = false;
             bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
             string unitTestFolder="";
@@ -115,6 +116,8 @@ namespace CyberStitchFidTester
                     unitTestFolder = args[i + 1];
                 else if (args[i] == "-w")
                     bUseProjective = true;
+                else if (args[i] == "-cammod")
+                    bUseCameraModel = true;
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -241,6 +244,11 @@ namespace CyberStitchFidTester
                 //_aligner.LogFiducialOverlaps(true);
                 if (bUseProjective)
                     _aligner.UseProjectiveTransform(true);
+                if (bUseCameraModel)
+                {
+                    _aligner.UseCameraModelStitch(true);
+                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                } 
                 if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
