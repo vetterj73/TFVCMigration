@@ -1503,7 +1503,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	bool bFlag = pPair->GetCorrelationResult(&result);
 	if(!bFlag) 
 		return(false);
-	double w = Weights.CalWeight(pPair);
+	double w = Weights.CalWeight(pPair) * Weights.RelativeFidFovCamModWeight;
 	if(w <= 0) 
 		return(false);
 

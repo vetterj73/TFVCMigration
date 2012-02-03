@@ -359,23 +359,26 @@ namespace CyberStitchFidTester
             if (File.Exists(lastOutputTextPath))
             {
                 string[] lines = File.ReadAllLines(lastOutputTextPath);
-                string lastLine = lines[lines.Length - 1];
-                string[] parts = lastLine.Split(':');
-                double lastAverage = 0;
-                bool bGood = false;
-                if (parts.Length > 1 && double.TryParse(parts[1], out lastAverage))
+                if (lines.Length >= 1)
                 {
-                    // Check that we are at least as good as last time (to the nearest micron)
-                    if (Math.Round(_allPanelFidDifference / _iTotalCount) <= Math.Round(lastAverage))
-                        bGood = true;
-                }
+                    string lastLine = lines[lines.Length - 1];
+                    string[] parts = lastLine.Split(':');
+                    double lastAverage = 0;
+                    bool bGood = false;
+                    if (parts.Length > 1 && double.TryParse(parts[1], out lastAverage))
+                    {
+                        // Check that we are at least as good as last time (to the nearest micron)
+                        if (Math.Round(_allPanelFidDifference / _iTotalCount) <= Math.Round(lastAverage))
+                            bGood = true;
+                    }
 
-                Console.WriteLine("Are we as good as last time: " + (bGood?"Yes!":"No!"));
+                    Console.WriteLine("Are we as good as last time: " + (bGood ? "Yes!" : "No!"));
 
-                if (Directory.Exists(unitTestFolder))
-                {
-                    string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
-                    NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "AverageOffset", bGood);
+                    if (Directory.Exists(unitTestFolder))
+                    {
+                        string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
+                        NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "AverageOffset", bGood);
+                    }
                 }
             }
 

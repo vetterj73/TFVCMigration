@@ -39,6 +39,7 @@ EquationWeights::EquationWeights(void)
 	wFidFlatBoardRotation = 1e2;
 	wFidFlatFiducialLateralShift = 1e3;
 	wFidFlatFlattenFiducial = 1e5;
+	RelativeFidFovCamModWeight = 1e-3;
 
 
 	// Parameters of weight for Fov and Fov overlap
@@ -52,7 +53,8 @@ EquationWeights::EquationWeights(void)
 	_dMaxCadFovAmbig = 0.9;
 
 	// Parameters of weight for Fiducial and Fov overlap
-	_dWeightFidFov = 2e3;
+	//_dWeightFidFov = 2e3;
+	_dWeightFidFov = 2e6;
 	_dMinFidFovLimit = 0.03;
 	_dMaxFidFovAmbig = 0.8;
 }

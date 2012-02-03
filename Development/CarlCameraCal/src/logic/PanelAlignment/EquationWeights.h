@@ -45,6 +45,8 @@ public:
 	double wFidFlatBoardRotation;
 	double wFidFlatFiducialLateralShift;
 	double wFidFlatFlattenFiducial;
+	double RelativeFidFovCamModWeight; // there must be a better way to do this....
+	// this is a relative deweighting value for the _dWeightFidFov, expect to be 1e-3
 
 
 private:
