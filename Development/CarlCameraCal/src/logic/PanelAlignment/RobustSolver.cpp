@@ -74,6 +74,7 @@ RobustSolver::RobustSolver(
 {
 	_pFovOrderMap = pFovOrderMap;
 	_bSaveMatrixCSV=false;
+	_bVerboseLogging = false;
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	
 }
@@ -1718,17 +1719,19 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	}
 	double RMS, dRcond;
 	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
-	LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
-	LOG.FireLogEntry(LogTypeSystem, "MatchProj p %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
-		p[0].i, p[0].r, p[1].i, p[1].r, p[2].i, p[2].r);
-	LOG.FireLogEntry(LogTypeSystem, "MatchProj q %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
-		q[0].i, q[0].r, q[1].i, q[1].r, q[2].i, q[2].r);
-	LOG.FireLogEntry(LogTypeSystem, "dTrans \n %.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e",
-		dTrans[0][0], dTrans[0][1], dTrans[0][2],
-		dTrans[1][0], dTrans[1][1], dTrans[1][2],
-		dTrans[2][0], dTrans[2][1], dTrans[2][2]);
-	// NOTE: resid = q - fitValue = distorted pt - proj fit pt
-	
+	if (_bVerboseLogging)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
+		LOG.FireLogEntry(LogTypeSystem, "MatchProj p %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
+			p[0].i, p[0].r, p[1].i, p[1].r, p[2].i, p[2].r);
+		LOG.FireLogEntry(LogTypeSystem, "MatchProj q %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
+			q[0].i, q[0].r, q[1].i, q[1].r, q[2].i, q[2].r);
+		LOG.FireLogEntry(LogTypeSystem, "dTrans \n %.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e, \n%.4e, %.4e,%.4e",
+			dTrans[0][0], dTrans[0][1], dTrans[0][2],
+			dTrans[1][0], dTrans[1][1], dTrans[1][2],
+			dTrans[2][0], dTrans[2][1], dTrans[2][2]);
+		// NOTE: resid = q - fitValue = distorted pt - proj fit pt
+	}
 	if(iFlag != 0)
 	{
 		LOG.FireLogEntry(LogTypeError, "Failed to create matching projective transform");
@@ -2040,6 +2043,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// ('bad' fids are already removed from the list)
 	// As the number of fids is small each one one will have a great deal of leverage
 	// therefore it's hard to de-weight poorer fits
+	if (_bVerboseLogging)
 	{
 		for (unsigned int row(0); row < FidFitRows; row++)
 			LOG.FireLogEntry(LogTypeSystem, "%d, %.6e, %.6e, %.6e, %.6e, %.6e, %.6e,       \t %.6e,        ",row, 
@@ -2049,8 +2053,9 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// equations are done, now solve
 
 	LstSqFit(FidFitA, FidFitRows, FidFitCols, FidFitb, FidFitX, resid);
-	for(unsigned int row(0); row<FidFitRows; ++row)
-		LOG.FireLogEntry(LogTypeSystem, "Resids %d, %.4f",row, resid[row]);
+	if (_bVerboseLogging)
+		for(unsigned int row(0); row<FidFitRows; ++row)
+			LOG.FireLogEntry(LogTypeSystem, "Resids %d, %.4f",row, resid[row]);
 	double newBoard2CAD[3][3] = {{ FidFitX[0], FidFitX[1], FidFitX[2]}, {FidFitX[3], FidFitX[4], FidFitX[5]}, {0,0,1}};
 	_Board2CAD.SetMatrix(newBoard2CAD);
 	
@@ -2063,8 +2068,9 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// log results for debug
 	
 
-	LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
-		_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
+	if (_bVerboseLogging)
+		LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
+			_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
 		
 	delete [] fidFlat2D;
 	delete [] fidCAD2D;

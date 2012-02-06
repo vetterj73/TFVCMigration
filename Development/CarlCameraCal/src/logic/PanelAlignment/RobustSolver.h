@@ -96,6 +96,7 @@ protected:
 	char**				_pcNotes;
 
 	bool			_bSaveMatrixCSV;
+	bool			_bVerboseLogging;
 };
 
 
