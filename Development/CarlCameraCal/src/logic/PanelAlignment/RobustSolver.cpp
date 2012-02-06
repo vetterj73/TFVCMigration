@@ -798,7 +798,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		_dVectorB[k] = dCopyB[k];
 
 	// for debug
-	if (bSaveMatrixCSV) 
+	if (_bSaveMatrixCSV) 
 	{
 		// Save transposed Matrix A 
 		ofstream of("C:\\Temp\\MatrixA_t.csv");		
