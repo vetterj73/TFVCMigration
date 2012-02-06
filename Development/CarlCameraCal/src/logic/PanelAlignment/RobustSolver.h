@@ -94,6 +94,8 @@ protected:
 	double*			_dVectorX;
 	double*				_pdWeights;  // debug notes
 	char**				_pcNotes;
+
+	bool			_bSaveMatrixCSV;
 };
 
 

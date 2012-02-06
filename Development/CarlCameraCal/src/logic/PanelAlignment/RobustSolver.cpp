@@ -73,7 +73,7 @@ RobustSolver::RobustSolver(
 	map<FovIndex, unsigned int>* pFovOrderMap)
 {
 	_pFovOrderMap = pFovOrderMap;
-	
+	_bSaveMatrixCSV=false;
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	
 }
@@ -653,8 +653,7 @@ bool operator<(const LeftIndex& a, const LeftIndex& b)
 // piEmptyRows: output, number of empty equations in Matrix A
 unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows)
 {
-	bool bSaveMatrixCSV = false;
-	if (bSaveMatrixCSV) 
+	if (_bSaveMatrixCSV) 
 	{
 		// Save Matrix A
 		ofstream of("C:\\Temp\\MatrixA.csv");
@@ -1793,12 +1792,15 @@ void RobustSolverCM::SolveXAlgH()
 				  );
 
 	// Save resid
-	ofstream of("C:\\Temp\\Resid.csv");
-	for(unsigned int k=0; k<_iMatrixHeight; k++)
-	{ 
-		of << resid[k] << std::endl;
+	if (_bSaveMatrixCSV) 
+	{
+		ofstream of("C:\\Temp\\Resid.csv");
+		for(unsigned int k=0; k<_iMatrixHeight; k++)
+		{ 
+			of << resid[k] << std::endl;
+		}
+		of.close();
 	}
-	of.close();
 
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_h returned value of %d", algHRetVal);
