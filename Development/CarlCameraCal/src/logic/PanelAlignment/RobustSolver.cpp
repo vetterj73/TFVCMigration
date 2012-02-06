@@ -82,6 +82,7 @@ RobustSolverFOV::RobustSolverFOV(
 	unsigned int iMaxNumCorrelations, 
 	bool bProjectiveTrans): 	RobustSolver( pFovOrderMap)
 {	
+	_bProjectiveTrans = bProjectiveTrans;
 	if(_bProjectiveTrans)	// For projective transform
 	{		
 		_iNumParamsPerFov = 12;			// parameters per Fov
