@@ -173,7 +173,7 @@ namespace CyberStitchTester
                     {
                         bool bSmooth = true;
                         IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
-                        uint iSpan = (uint)_panel.GetNumPixelsInX();
+                        uint iSpan = (uint)_panel.GetNumPixelsInY();
                         double dHeightRes = _panel.GetHeightResolution();
                         double dPupilDistance = 0.3702;
                         // Need modified based on layers that have component 
