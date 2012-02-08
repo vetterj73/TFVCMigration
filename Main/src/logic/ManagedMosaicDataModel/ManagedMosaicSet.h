@@ -130,6 +130,11 @@ namespace MMosaicDM
 				return _pMosaicSet->AddRawImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
 			}
 
+			bool AddYCrCbImage(System::IntPtr pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
+			{
+				return _pMosaicSet->AddYCrCbImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
+			}
+
 			void ClearAllImages()
 			{
 				_pMosaicSet->ClearAllImages();
