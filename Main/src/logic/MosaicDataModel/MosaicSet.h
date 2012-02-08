@@ -111,7 +111,10 @@ namespace MosaicDM
 			///
 			///	Adds an image to the mosaic...
 			///
+			// Input buffer need to be Bayer or grayscale
 			bool AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
+			// Input buffer need to be YCrCb
+			bool AddYCrCbImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 
 			///
 			///	Clears all images from all layers in the mosaic.

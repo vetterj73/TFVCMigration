@@ -46,6 +46,7 @@ namespace MosaicDM
 			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->HasOwnBuffers(), NULL);
 	}
 
+	// Input buffer need to be Bayer or grayscale
 	bool MosaicTile::SetRawImageBuffer(unsigned char* pImageBuffer)
 	{
 		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern()) // For bayer/color image
@@ -78,6 +79,22 @@ namespace MosaicDM
 			{
 				_pImage->SetBuffer(pImageBuffer);
 			}
+		}
+
+		_containsImage = true;
+		return true;
+	}
+
+	// Input buffer need to be YCrCb
+	bool MosaicTile::SetYCrCbImageBuffer(unsigned char* pImageBuffer)
+	{
+		if(_pMosaicLayer->GetMosaicSet()->HasOwnBuffers())
+		{
+			memcpy(_pImage->GetBuffer(), pImageBuffer, _pImage->BufferSizeInBytes());	
+		} 
+		else
+		{
+			_pImage->SetBuffer(pImageBuffer);
 		}
 
 		_containsImage = true;

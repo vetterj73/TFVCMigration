@@ -247,6 +247,7 @@ namespace MosaicDM
 		_pCallbackContext = NULL;
 	}
 
+	// Input buffer need to be Bayer or grayscale
 	bool MosaicSet::AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		MosaicLayer *pLayer = GetLayer(layerIndex);
@@ -254,6 +255,21 @@ namespace MosaicDM
 			return false;
 
 		if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
+			return false;
+
+		FireImageAdded(layerIndex, cameraIndex, triggerIndex);
+
+		return true;
+	}
+
+	// Input buffer need to be YCrCb
+	bool MosaicSet::AddYCrCbImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
+	{
+		MosaicLayer *pLayer = GetLayer(layerIndex);
+		if(pLayer == NULL)
+			return false;
+
+		if(!pLayer->AddYCrCbImage(pBuffer, cameraIndex, triggerIndex))
 			return false;
 
 		FireImageAdded(layerIndex, cameraIndex, triggerIndex);

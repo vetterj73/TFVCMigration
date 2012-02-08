@@ -851,6 +851,15 @@ namespace MosaicDM
 		return pTile->SetRawImageBuffer(pBuffer);
 	}
 
+	bool MosaicLayer::AddYCrCbImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
+	{
+		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
+		if(pTile == NULL)
+			return false;
+
+		return pTile->SetYCrCbImageBuffer(pBuffer);
+	}
+
 	// Camera centers in Y of world space
 	void MosaicLayer::CameraCentersInY(double* pdCenY)
 	{
