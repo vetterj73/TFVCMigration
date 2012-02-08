@@ -34,8 +34,6 @@ namespace MosaicDM
 		
 		_bBayerPattern = bBayerPattern;
 		_iBayerType = iBayerType;
-		if(_bBayerPattern)
-			_ownBuffers = true;
 	}
 
 	MosaicSet::~MosaicSet()
@@ -249,13 +247,13 @@ namespace MosaicDM
 		_pCallbackContext = NULL;
 	}
 
-	bool MosaicSet::AddImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
+	bool MosaicSet::AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		MosaicLayer *pLayer = GetLayer(layerIndex);
 		if(pLayer == NULL)
 			return false;
 
-		if(!pLayer->AddImage(pBuffer, cameraIndex, triggerIndex))
+		if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
 			return false;
 
 		FireImageAdded(layerIndex, cameraIndex, triggerIndex);

@@ -554,7 +554,7 @@ namespace CyberStitchFidTester
                 {
                     for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
                     {
-                        _mosaicSetProcessing.AddImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                        _mosaicSetProcessing.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
                     }
                 }
             }
@@ -575,7 +575,7 @@ namespace CyberStitchFidTester
                             // Convert Bayer to luminance
                             pLayer.GetTile(j, k).Bayer2Lum(_iBayerType);
 
-                            _mosaicSetIllum.AddImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                            _mosaicSetIllum.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
                         }
                     }
                 }
@@ -747,7 +747,7 @@ namespace CyberStitchFidTester
             _iBufCount++; // for debug
             uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSetSim.AddImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+            _mosaicSetSim.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
                                 (uint)pframe.TriggerIndex());
         }
 

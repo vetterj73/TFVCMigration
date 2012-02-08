@@ -340,7 +340,7 @@ namespace SIMCalibrator
             if (_mosaicSet == null)
                 return;
 
-            _mosaicSet.AddImage(pframe.BufferPtr(), 0,
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), 0,
                                 (uint) pframe.CameraIndex(), (uint) pframe.TriggerIndex());
         }
 

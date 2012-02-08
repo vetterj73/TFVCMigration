@@ -125,9 +125,9 @@ namespace MMosaicDM
 				return _pMosaicSet->HasAllImages();
 			}
 			
-			bool AddImage(System::IntPtr pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
+			bool AddRawImage(System::IntPtr pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 			{
-				return _pMosaicSet->AddImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
+				return _pMosaicSet->AddRawImage((unsigned char*)(void*)pBuffer, layerIndex, cameraIndex, triggerIndex);
 			}
 
 			void ClearAllImages()

@@ -51,7 +51,9 @@ namespace MosaicDM
 				_containsImage = false;
 			}
 
-			bool SetImageBuffer(unsigned char* pImageBuffer);
+			bool SetRawImageBuffer(unsigned char* pImageBuffer);
+
+			bool SetColorImageBuffer(unsigned char* pImageBuffer);
 
 		private:
 			MosaicLayer *_pMosaicLayer;

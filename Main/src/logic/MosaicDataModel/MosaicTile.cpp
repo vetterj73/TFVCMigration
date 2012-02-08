@@ -43,13 +43,21 @@ namespace MosaicDM
 			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
-			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->GetOwnBuffers(), NULL);
+			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->HasOwnBuffers(), NULL);
 	}
 
-	bool MosaicTile::SetImageBuffer(unsigned char* pImageBuffer)
+	bool MosaicTile::SetRawImageBuffer(unsigned char* pImageBuffer)
 	{
 		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern()) // For bayer/color image
 		{
+			// for Bayer pattern input, mosaicSet must have its own buffer
+			_pMosaicLayer->GetMosaicSet()->SetOwnBuffers(true);
+
+			if(!_pImage->HasOwnBuffer())
+			{
+				_pImage->CreateOwnBuffer();
+			}	
+
 			((ColorImage*)_pImage)->DemosiacFrom(pImageBuffer, 
 				_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
 				(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
@@ -62,7 +70,7 @@ namespace MosaicDM
 		}
 		else // For gray image 
 		{
-			if(_pMosaicLayer->GetMosaicSet()->GetOwnBuffers())
+			if(_pMosaicLayer->GetMosaicSet()->HasOwnBuffers())
 			{
 				memcpy(_pImage->GetBuffer(), pImageBuffer, _pImage->BufferSizeInBytes());	
 			} 

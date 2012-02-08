@@ -176,7 +176,7 @@ namespace MosaicDM
 			///
 			///	Adds an image...
 			///
-			bool AddImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex);
+			bool AddRawImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex);
 
 		private:
 			bool _stitchedImageValid;

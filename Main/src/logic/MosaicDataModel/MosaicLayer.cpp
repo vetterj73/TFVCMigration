@@ -842,13 +842,13 @@ namespace MosaicDM
 		_bGridBoundaryValid = false;
 	}
 
-	bool MosaicLayer::AddImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
+	bool MosaicLayer::AddRawImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
 		if(pTile == NULL)
 			return false;
 
-		return pTile->SetImageBuffer(pBuffer);
+		return pTile->SetRawImageBuffer(pBuffer);
 	}
 
 	// Camera centers in Y of world space

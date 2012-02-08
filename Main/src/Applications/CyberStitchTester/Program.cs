@@ -412,7 +412,7 @@ namespace CyberStitchTester
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSet.AddImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
                                 (uint)pframe.TriggerIndex());
         }
 

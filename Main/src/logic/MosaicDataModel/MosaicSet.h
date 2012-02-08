@@ -93,7 +93,8 @@ namespace MosaicDM
 			double GetObjectLengthInMeters(){return _objectLengthInMeters;};
 			unsigned int GetObjectWidthInPixels();
 			unsigned int GetObjectLengthInPixels();
-			bool GetOwnBuffers(){return _ownBuffers;}
+			bool HasOwnBuffers(){return _ownBuffers;}
+			void SetOwnBuffers(bool bValue) { _ownBuffers = bValue;};
 			bool IsBayerPattern(){return _bBayerPattern;}; 
 			int GetBayerType(){return _iBayerType;};
 
@@ -110,7 +111,7 @@ namespace MosaicDM
 			///
 			///	Adds an image to the mosaic...
 			///
-			bool AddImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
+			bool AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex);
 
 			///
 			///	Clears all images from all layers in the mosaic.
