@@ -159,6 +159,11 @@ namespace PanelAlignM {
 		_pAligner->UseCyberNgc4Fiducial();
 	}
 
+	void ManagedPanelAlignment::UseCameraModelStitch(bool bValue)
+	{
+		_pAligner->UseCameraModelStitch(bValue);
+	}
+
 	void ManagedPanelAlignment::UseProjectiveTransform(bool bValue)
 	{
 		_pAligner->UseProjectiveTransform(bValue);

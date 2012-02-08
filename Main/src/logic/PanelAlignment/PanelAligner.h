@@ -53,6 +53,7 @@ public:
 	void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
 	void UseCyberNgc4Fiducial();
 	void UseProjectiveTransform(bool bValue);
+	void UseCameraModelStitch(bool bValue);
 
 	FidFovOverlapList* GetLastProcessedFids();
 	
@@ -96,5 +97,20 @@ private:
 	map<FovIndex, unsigned int> _maskMap;
 	bool _bMasksCreated;
 	bool _bResultsReady;
+};
+// moved here because RobustSolver needs to use the PanelFiducialResultsSet class 
+// (moved to avoid circular references)
+// Check the validation of fiducial results
+class FiducialResultCheck
+{
+public:
+	FiducialResultCheck(PanelFiducialResultsSet* pFidSet, RobustSolver* pSolver);
+
+	int CheckFiducialResults();
+private:
+	PanelFiducialResultsSet* _pFidSet;
+	RobustSolver* _pSolver;
+
+	list<FiducialDistance> _fidDisList;
 };
 

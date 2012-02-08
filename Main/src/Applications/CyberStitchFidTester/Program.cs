@@ -89,6 +89,7 @@ namespace CyberStitchFidTester
             string panelFile = "";
             string fidPanelFile = "";
             bool bUseProjective = false;
+            bool bUseCameraModel = false;
             bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
             string unitTestFolder="";
@@ -123,6 +124,8 @@ namespace CyberStitchFidTester
                     unitTestFolder = args[i + 1];
                 else if (args[i] == "-w")
                     bUseProjective = true;
+                else if (args[i] == "-cammod")
+                    bUseCameraModel = true;
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -267,6 +270,12 @@ namespace CyberStitchFidTester
                     _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
                         _aligner.UseProjectiveTransform(true);
+                if (bUseCameraModel)
+                {
+                    _aligner.UseCameraModelStitch(true);
+                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                } 
+
                     if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                     {
                         throw new ApplicationException("Aligner failed to change production ");
@@ -382,46 +391,54 @@ namespace CyberStitchFidTester
             if (File.Exists(lastOutputTextPath))
             {
                 string[] lines = File.ReadAllLines(lastOutputTextPath);
-                string lastLine = lines[lines.Length - 1];
-                string timeRecordLine = lines[lines.Length - 3];
-                string[] averageParts = lastLine.Split(':');
-                string[] timeParts = timeRecordLine.Split(':');
-                double lastAverage = 0;
-                double lastTimeRecord = 0;
-                bool bGood = false;
-                bool bGoodAver = false;
-                bool bGoodTime = false;
-                bool bHeadLine = true;
-                const string headLine = "Test, Previous Average Offset(Microns),  Current Average Offset(Microns),Previous Average Panel Process Running time(Minutes),Current Average Panel Process Running time(Minutes), Test Result";
-                string finalCompCSVPath = Path.Combine(Path.GetDirectoryName(outputTextPath), "FinalCompareResults.csv");
-                string testName = Path.GetFileNameWithoutExtension(outputTextPath);
-                string testResult;
-                if (File.Exists(finalCompCSVPath))
-                    bHeadLine = false;
-                finalCompWriter = new StreamWriter(finalCompCSVPath, true);
-                if (averageParts.Length > 1 && double.TryParse(averageParts[1], out lastAverage))
+                if (lines.Length >= 1)
                 {
-                    // Check that we are at least as good as last time (to the nearest micron)
-                    if (Math.Round(_allPanelFidDifference / _iTotalCount) <= Math.Round(lastAverage))
-                        bGoodAver = true;
-                }
-                if (timeParts.Length > 1 && double.TryParse(timeParts[2], out lastTimeRecord))
-                {
-                    // Check that we are at least as good as last time(in 20% range)
-                    if (_tsTotalRunTime.TotalMinutes / _cycleCount <= lastTimeRecord * 1.2)
-                        bGoodTime = true;
-                }
-                bGood = bGoodAver && bGoodTime;
-                testResult = (bGood ? "Passed" : "Failed");
-                Console.WriteLine("Are we as good as last time: " + (bGood?"Yes!":"No!"));
-                if (bHeadLine) finalCompWriter.WriteLine(headLine);
-                finalCompWriter.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", testName, lastAverage, _allPanelFidDifference / _iTotalCount, lastTimeRecord, _tsTotalRunTime.TotalMinutes / _cycleCount, testResult));
-                if (finalCompWriter != null)
-                    finalCompWriter.Close();
-                if (Directory.Exists(unitTestFolder))
-                {
-                    string file = Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
-                    NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "AverageOffset", bGood);
+                    string lastLine = lines[lines.Length - 1];
+                    string timeRecordLine = lines[lines.Length - 3];
+                    string[] averageParts = lastLine.Split(':');
+                    string[] timeParts = timeRecordLine.Split(':');
+                    double lastAverage = 0;
+                    double lastTimeRecord = 0;
+                    bool bGood = false;
+                    bool bGoodAver = false;
+                    bool bGoodTime = false;
+                    bool bHeadLine = true;
+                    const string headLine =
+                        "Test, Previous Average Offset(Microns),  Current Average Offset(Microns),Previous Average Panel Process Running time(Minutes),Current Average Panel Process Running time(Minutes), Test Result";
+                    string finalCompCSVPath = Path.Combine(Path.GetDirectoryName(outputTextPath),
+                                                           "FinalCompareResults.csv");
+                    string testName = Path.GetFileNameWithoutExtension(outputTextPath);
+                    string testResult;
+                    if (File.Exists(finalCompCSVPath))
+                        bHeadLine = false;
+                    finalCompWriter = new StreamWriter(finalCompCSVPath, true);
+                    if (averageParts.Length > 1 && double.TryParse(averageParts[1], out lastAverage))
+                    {
+                        // Check that we are at least as good as last time (to the nearest micron)
+                        if (Math.Round(_allPanelFidDifference/_iTotalCount) <= Math.Round(lastAverage))
+                            bGoodAver = true;
+                    }
+                    if (timeParts.Length > 1 && double.TryParse(timeParts[2], out lastTimeRecord))
+                    {
+                        // Check that we are at least as good as last time(in 20% range)
+                        if (_tsTotalRunTime.TotalMinutes/_cycleCount <= lastTimeRecord*1.2)
+                            bGoodTime = true;
+                    }
+                    bGood = bGoodAver && bGoodTime;
+                    testResult = (bGood ? "Passed" : "Failed");
+                    Console.WriteLine("Are we as good as last time: " + (bGood ? "Yes!" : "No!"));
+                    if (bHeadLine) finalCompWriter.WriteLine(headLine);
+                    finalCompWriter.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", testName, lastAverage,
+                                                            _allPanelFidDifference/_iTotalCount, lastTimeRecord,
+                                                            _tsTotalRunTime.TotalMinutes/_cycleCount, testResult));
+                    if (finalCompWriter != null)
+                        finalCompWriter.Close();
+                    if (Directory.Exists(unitTestFolder))
+                    {
+                        string file =
+                            Path.Combine(unitTestFolder + Path.GetFileNameWithoutExtension(lastOutputTextPath)) + ".xml";
+                        NUnitXmlWriter.WriteResult(file, "CyberStitchFidTester", "AverageOffset", bGood);
+                    }
                 }
             }
 

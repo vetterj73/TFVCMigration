@@ -42,6 +42,9 @@
     <ClInclude Include="ColorImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ImgTransformCamModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utilities.cpp">
@@ -66,6 +69,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ColorImage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImgTransformCamModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

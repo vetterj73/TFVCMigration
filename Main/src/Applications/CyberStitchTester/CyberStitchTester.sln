@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{83A6E92A
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\build.proj = ..\..\..\build.proj
 		..\..\..\license.rtf = ..\..\..\license.rtf
-		..\..\..\ProjectManifest.xml = ..\..\..\ProjectManifest.xml
 		..\..\..\regression.bat = ..\..\..\regression.bat
 		..\..\..\release_notes.htm = ..\..\..\release_notes.htm
 	EndProjectSection
@@ -39,6 +38,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataModel", "DataModel", "{E71E9608-6EDD-4A4D-A173-BF6B337549A3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{46C64A91-C1B1-48D2-89B0-B102895144B7}"
+	ProjectSection(SolutionItems) = preProject
+		..\CyberStitchFidTester\Program.cs = ..\CyberStitchFidTester\Program.cs
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PanelAlignment", "..\..\logic\PanelAlignment\PanelAlignment.vcxproj", "{C71CA433-5C57-43DB-BA7E-1F4CBB229951}"
 	ProjectSection(ProjectDependencies) = postProject

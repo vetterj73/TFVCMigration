@@ -166,6 +166,7 @@ copy *.h ..\..\..\pub\include</Command>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\..\Rudd\Main\include\morph.h" />
     <ClInclude Include="EquationWeights.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="PanelAligner.h" />

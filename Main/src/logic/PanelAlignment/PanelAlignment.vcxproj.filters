@@ -27,6 +27,9 @@
     <ClInclude Include="RobustSolver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\..\..\Rudd\Main\include\morph.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PanelAligner.cpp">

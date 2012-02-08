@@ -1,6 +1,7 @@
 #pragma once
 #include "STL.h"
 #include "ImgTransform.h"
+#include "ImgTransformCamModel.h"
 #include "UIRect.h"
 #include "Utilities.h"
 typedef unsigned char Byte;
@@ -56,6 +57,17 @@ public:
 	void				SetTransform(const ImgTransform t) {_thisToWorld = t;};
 	ImgTransform		GetNominalTransform() const {return _nominalTrans;};
 	void				SetNorminalTransform(const ImgTransform t) {_nominalTrans = t;};
+	TransformCamModel	GetTransformCamModel() {return _tCamModelToWorld;};
+	void				SetTransformCamModel(const TransformCamModel t) {_tCamModelToWorld = t;};
+	TransformCamModel	GetTransformCamCalibration() {return _tCamCalibration;};
+	void				SetTransformCamCalibration(const TransformCamModel t) {_tCamCalibration= t;};
+	void				SetTransformCamCalibrationS(unsigned int i, float val);
+	void				SetTransformCamCalibrationdSdz(unsigned int i, float val);
+	void				SetTransformCamCalibrationUMax(double val){	_tCamCalibration.uMax = val;};
+	void				SetTransformCamCalibrationVMax(double val){	_tCamCalibration.vMax = val;};
+	void				ResetTransformCamCalibration(){ _tCamCalibration.Reset();};
+	void				ResetTransformCamModel(){ _tCamModelToWorld.Reset();};
+	
 
 	unsigned char*		GetBuffer() const {return _buffer;};	
 	unsigned char*		GetBuffer(unsigned col, unsigned int row) const;
@@ -122,4 +134,6 @@ protected:
 	
 	ImgTransform		_thisToWorld;		// Calculated transform after stitching is done
 	ImgTransform		_nominalTrans;		// Nominal transform used for overlap calculation before stitching is done
+	TransformCamModel	_tCamModelToWorld;	// image to world camera model transform
+	TransformCamModel	_tCamCalibration;	// Camera calibration expressed as cam model
 };

@@ -82,7 +82,7 @@ namespace MosaicDM
 			///
 			///	Getters for all basic Attributes
 			///
-			unsigned int GetNumMosaicLayers(){return (unsigned int)_layerList.size();}		
+			unsigned int GetNumMosaicLayers(){return (unsigned int)_layerList.size();}
 			unsigned int GetImageWidthInPixels(){return _imageWidth;}
 			unsigned int GetImageHeightInPixels(){return _imageHeight;}
 			unsigned int GetImageStrideInPixels(){return _imageStride;}
@@ -97,6 +97,12 @@ namespace MosaicDM
 			void SetOwnBuffers(bool bValue) { _ownBuffers = bValue;};
 			bool IsBayerPattern(){return _bBayerPattern;}; 
 			int GetBayerType(){return _iBayerType;};
+
+			///
+			/// Calculate the total number of triggers in the MosaicSet
+			///
+			unsigned int GetMosaicTotalNumberOfTriggers();
+			
 
 			///
 			///	Get the correlation flags associated with the certain layers

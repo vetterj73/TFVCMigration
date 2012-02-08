@@ -44,9 +44,45 @@ namespace MosaicDM
 			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
 			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->HasOwnBuffers(), NULL);
+
 	}
 
-	// Input buffer need to be Bayer or grayscale
+	///
+	/// TODO 
+	/// Set camera calibration parameters
+	///
+	void MosaicTile::SetTransformCamCalibration(TransformCamModel t)
+	{
+		_pImage->SetTransformCamCalibration(t);
+	}
+
+	void	MosaicTile::SetTransformCamCalibrationS(unsigned int i, float val)
+	{
+		_pImage->SetTransformCamCalibrationS(i, val);
+	}
+	void	MosaicTile::SetTransformCamCalibrationdSdz(unsigned int i, float val)
+	{
+		_pImage->SetTransformCamCalibrationdSdz(i, val);
+	}
+	void	MosaicTile::SetTransformCamCalibrationUMax(double val)
+	{
+		_pImage->SetTransformCamCalibrationUMax(val);
+	}
+	void	MosaicTile::SetTransformCamCalibrationVMax(double val)
+	{
+		_pImage->SetTransformCamCalibrationVMax(val);
+	}
+	void	MosaicTile::ResetTransformCamCalibration()
+	{
+		_pImage->ResetTransformCamCalibration();
+	}
+	void	MosaicTile::ResetTransformCamModel()
+	{
+		_pImage->ResetTransformCamModel();
+	}
+
+
+
 	bool MosaicTile::SetRawImageBuffer(unsigned char* pImageBuffer)
 	{
 		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern()) // For bayer/color image

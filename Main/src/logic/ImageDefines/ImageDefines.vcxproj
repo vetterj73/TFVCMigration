@@ -170,6 +170,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="Image.h" />
     <ClInclude Include="Image16.h" />
     <ClInclude Include="ImgTransform.h" />
+    <ClInclude Include="ImgTransformCamModel.h" />
     <ClInclude Include="JobManager.h" />
     <ClInclude Include="JobThread.h" />
     <ClInclude Include="STL.h" />
@@ -181,6 +182,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Image16.cpp" />
     <ClCompile Include="ImgTransform.cpp" />
+    <ClCompile Include="ImgTransformCamModel.cpp" />
     <ClCompile Include="JobManager.cpp" />
     <ClCompile Include="JobThread.cpp" />
     <ClCompile Include="UIRect.cpp" />

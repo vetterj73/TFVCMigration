@@ -2,7 +2,7 @@
 
 #include "panel.h" // include "Fearure.h" will lead confusion
 #include "OverlapDefines.h"
-#include "RobustSolver.h"
+//#include "RobustSolver.h"
 #include <list>
 using std::list;
 
@@ -76,7 +76,7 @@ public:
 	bool _bNormalized;
 };
 
-// Check the validation of fiducial results
+/*// Check the validation of fiducial results
 class FiducialResultCheck
 {
 public:
@@ -88,7 +88,7 @@ private:
 	RobustSolver* _pSolver;
 
 	list<FiducialDistance> _fidDisList;
-};
+};*/
 
 
 
