@@ -6,7 +6,7 @@
       <dependency project_name="Bitmap" version="1.2010.9.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Bitmap" target=".\Bitmap\" />
       <dependency project_name="CyberCommon" version="1.1.56.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\CyberCommon\Managed" target=".\CyberCommon\" />
       <dependency project_name="DirectXSDK" version="10.0.0.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\DirectXSDK" target=".\DirectXSDK\" />
-      <dependency project_name="Rudd" version="2.0.138.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Rudd" target=".\RuddLib\" />
+      <dependency project_name="Rudd" version="2.0.142.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\Rudd" target=".\RuddLib\" />
       <dependency project_name="SensorVision" version="3.0.2.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\SensorVision" target=".\SensorVision\" />
       <dependency project_name="SIMCoreAPI" version="1.1.58.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\SIMCoreAPI" target=".\SIMCoreAPI\" />
       <dependency project_name="LoggableObject" version="1.0.4.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\LoggableObject" target=".\LoggableObject\" />

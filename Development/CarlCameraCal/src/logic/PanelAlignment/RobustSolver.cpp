@@ -1706,7 +1706,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 			pix.v = p[i].r;
 			Pix2Board(pix, fovIndex, &xyBoard);
 			//xyBoard to CAD
-			POINT2D temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
+			POINT2D temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
 								(double*)_zCoef, xyBoard, LAB_TO_CAD);
 			// Now have position on flattened board,
 			// need to transform to CAD postion using board2CAD
@@ -1804,7 +1804,7 @@ void RobustSolverCM::SolveXAlgH()
 		}
 		of.close();
 	}
-
+	
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_h returned value of %d", algHRetVal);
 
@@ -1965,7 +1965,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 					
 				// brdFlat from warpxy
 				POINT2D temp;
-				temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
+				temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
 									(double*)_zCoef, xyBoard, LAB_TO_CAD);
 				fidFlat2D[nGoodFids].x = temp.x;
 				fidFlat2D[nGoodFids].y = temp.y;
