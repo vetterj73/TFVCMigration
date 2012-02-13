@@ -435,43 +435,91 @@ namespace MosaicDM
 		if(!_bGridBoundaryValid)
 			CalculateGridBoundary();
 
+		// Calculate start and end inverse triggers
 		int iStartInvTrig=-1, iEndInvTrig=-1;
-		for(int iInvTrig = 0; iInvTrig < (int)_numTriggers; iInvTrig++)
-		{ 
-			if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMin && 
-				worldRoi.xMin<_pdGridXBoundary[2*iInvTrig+1])
-			{
-				iStartInvTrig = iInvTrig;
-				break;
-			}
-		}
-		for(int iInvTrig = _numTriggers-1; iInvTrig >= 0; iInvTrig--)
+		if(worldRoi.xMin <= _pdGridXBoundary[0])
 		{
-			if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMax && 
-				worldRoi.xMax<_pdGridXBoundary[2*iInvTrig+1])
-			{
-				iEndInvTrig = iInvTrig;
-				break;
+			iStartInvTrig = 0;
+		}
+		else if(worldRoi.xMin >= _pdGridXBoundary[2*_numTriggers-1])
+		{
+			iStartInvTrig = _numTriggers-1;
+		}
+		else
+		{
+			for(int iInvTrig = 0; iInvTrig < (int)_numTriggers; iInvTrig++)
+			{ 
+				if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMin && 
+					worldRoi.xMin<_pdGridXBoundary[2*iInvTrig+1])
+				{
+					iStartInvTrig = iInvTrig;
+					break;
+				}
 			}
 		}
 		
-		int iStartCam=-1, iEndCam=-1;
-		for(int iCam = 0; iCam < (int)_numCameras; iCam++)
+		if(worldRoi.xMax <= _pdGridXBoundary[0])
 		{
-			if(_pdGridYBoundary[2*iCam]<worldRoi.yMin && 
-				worldRoi.yMin<_pdGridYBoundary[2*iCam+1])
+			iEndInvTrig = 0;
+		}
+		else if(worldRoi.xMax >= _pdGridXBoundary[2*_numTriggers-1])
+		{
+			iEndInvTrig = _numTriggers-1;
+		}
+		else
+		{
+			for(int iInvTrig = _numTriggers-1; iInvTrig >= 0; iInvTrig--)
 			{
-				iStartCam = iCam;
-				break;
+				if(_pdGridXBoundary[2*iInvTrig]<worldRoi.xMax && 
+					worldRoi.xMax<_pdGridXBoundary[2*iInvTrig+1])
+				{
+					iEndInvTrig = iInvTrig;
+					break;
+				}
 			}
 		}
-		for(int iCam = _numCameras-1; iCam >= 0; iCam--)
+		
+		// Calculate start and end cameras
+		int iStartCam=-1, iEndCam=-1;
+		if(worldRoi.yMin <= _pdGridYBoundary[0])
 		{
-			if(_pdGridYBoundary[2*iCam]<worldRoi.yMax && 
-				worldRoi.yMax<_pdGridYBoundary[2*iCam+1])
+			iStartCam = 0;
+		}
+		else if (worldRoi.yMin >= _pdGridYBoundary[2*_numCameras-1])
+		{
+			iStartCam = _numCameras-1;
+		}
+		else
+		{
+			for(int iCam = 0; iCam < (int)_numCameras; iCam++)
 			{
-				iEndCam = iCam;
-				break;
+				if(_pdGridYBoundary[2*iCam]<worldRoi.yMin && 
+					worldRoi.yMin<_pdGridYBoundary[2*iCam+1])
+				{
+					iStartCam = iCam;
+					break;
+				}
+			}
+		}
+
+		if(worldRoi.yMax <= _pdGridYBoundary[0])
+		{
+			iEndCam = 0;
+		}
+		else if (worldRoi.yMax >= _pdGridYBoundary[2*_numCameras-1])
+		{
+			iEndCam = _numCameras-1;
+		}
+		else
+		{
+			for(int iCam = _numCameras-1; iCam >= 0; iCam--)
+			{
+				if(_pdGridYBoundary[2*iCam]<worldRoi.yMax && 
+					worldRoi.yMax<_pdGridYBoundary[2*iCam+1])
+				{
+					iEndCam = iCam;
+					break;
+				}
 			}
 		}
 		
