@@ -23,6 +23,7 @@ namespace SIMCalibratorTester
         private static LoggingThread logger = new LoggingThread(null);
         private static PositionCalibrator _positionCalibrator = null;
         private static ManualResetEvent _calDoneEvent = new ManualResetEvent(false);
+        private static bool isColor = false;
         
         static void Main(string[] args)
         {
@@ -51,11 +52,12 @@ namespace SIMCalibratorTester
                     WaitForKeyboardInput = true;
                 else if (args[i] == "-l")
                     LoggingActive = true;
+                else if (args[i] == "-c")
+                    isColor = true;
                 else if (args[i] == "-h")
                 {
                     ShowHelp();
                     return;
-
                 }
             }
 
@@ -90,7 +92,7 @@ namespace SIMCalibratorTester
                 bSimulating = true;
 
             _positionCalibrator = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(deviceIndex),
-                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive);
+                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive, isColor);
 
             _positionCalibrator.LogEvent += OnLogEntryFromClient;
 
@@ -218,6 +220,7 @@ namespace SIMCalibratorTester
         {
             Console.WriteLine("SIMCalibratorTester Command Line Arguments:");
             Console.WriteLine("=========================================================================");
+            Console.WriteLine("-c Used if color calibration...");
             Console.WriteLine("-d <int> optional device index. Defaults to 0");
             Console.WriteLine("-fx <double> optional X fiducial search area in meters. Defaults to .008");
             Console.WriteLine("-fy <double> optional Y fiducial search area in meters. Defaults to .008");
