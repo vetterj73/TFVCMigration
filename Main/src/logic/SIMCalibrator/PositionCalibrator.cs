@@ -65,8 +65,9 @@ namespace SIMCalibrator
         /// <param name="fiducialSearchSizeXInMeters"></param>
         /// <param name="fiducialSearchSizeYInMeters"></param>
         /// <param name="loggingOn"></param>
+        /// <param name="isColor"></param>
         public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
-            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn)
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
@@ -83,7 +84,7 @@ namespace SIMCalibrator
             SetupCaptureSpecs(bSimulating);
 
             // Sets up the mosaic from the device...
-            SetupMosaic(loggingOn);
+            SetupMosaic(loggingOn, isColor);
 
             _panelAligner = new ManagedPanelAlignment();
             _panelAligner.OnLogEntry += OnLogEntryFromAligner;
@@ -315,10 +316,10 @@ namespace SIMCalibrator
             }
         }
 
-        private void SetupMosaic(bool loggingOn)
+        private void SetupMosaic(bool loggingOn, bool isColor)
         {
             ManagedSIMCamera cam = _device.GetSIMCamera(0);
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters, false, false, 0);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters, true, isColor, 1);
             SimMosaicTranslator.AddDeviceToMosaic(_device, 0,_mosaicSet);
             SimMosaicTranslator.SetCorrelationFlagsFIDOnly(_mosaicSet);
             _mosaicSet.SetAllLogTypes(loggingOn);
@@ -342,6 +343,9 @@ namespace SIMCalibrator
 
             _mosaicSet.AddRawImage(pframe.BufferPtr(), 0,
                                 (uint) pframe.CameraIndex(), (uint) pframe.TriggerIndex());
+
+            // Immediately remove the frame buffer...
+            _device.ReleaseFrameBuffer(pframe);
         }
 
         /// <summary>
@@ -370,6 +374,7 @@ namespace SIMCalibrator
                 return;
 
             _panelAligner.Dispose();
+            _mosaicSet.Dispose();
 
             ManagedSIMDevice.OnFrameDone -= FrameDone;
             ManagedSIMDevice.OnAcquisitionDone -= AcquisitionDone;       
