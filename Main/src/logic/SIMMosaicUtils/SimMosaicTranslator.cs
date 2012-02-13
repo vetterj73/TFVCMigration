@@ -32,7 +32,7 @@ namespace SIMMosaicUtils
             /// @todo - this should be made part of the SIM Device....
             uint numCameras = 0;
             for (int i = 0; i < device.NumberOfCameras; i++)
-                if (device.GetSIMCamera(i).Status() == (CameraStatus)1)
+                if (device.GetSIMCamera(i+device.FirstCameraEnabled).Status() == (CameraStatus)1)
                     numCameras++;
 
             for (uint i = 0; i < device.NumberOfCaptureSpecs; i++)
@@ -54,14 +54,18 @@ namespace SIMMosaicUtils
                     throw new ApplicationException("AddDeviceToMosaic - Layer was null - this should never happen!");
 
                 // Use camera zero as reference
-                ManagedSIMCamera camera0 = device.GetSIMCamera(0);
+                ManagedSIMCamera camera0 = device.GetSIMCamera(0 + device.FirstCameraEnabled);
+                ManagedSIMCamera lastcamera = device.GetSIMCamera((int)numCameras + device.FirstCameraEnabled - 1);
                 // Set up the transform parameters...
                 for (uint j = 0; j < numCameras; j++)
                 {
-                    ManagedSIMCamera camera = device.GetSIMCamera((int)j);
+                    ManagedSIMCamera camera = device.GetSIMCamera((int)j + device.FirstCameraEnabled);
+
                     for (uint k = 0; k < pSpec.NumberOfTriggers; k++)
                     {
-                        ManagedMosaicTile mmt = layer.GetTile(j, k);
+                        uint trigger = (device.ConveyorRtoL) ?
+                            (uint)(pSpec.NumberOfTriggers - k - 1) : k;
+                        ManagedMosaicTile mmt = layer.GetTile(j, trigger);
 
                         if (mmt == null)
                             throw new ApplicationException("AddDeviceToMosaic - Tile was null - this should never happen");
@@ -74,6 +78,12 @@ namespace SIMMosaicUtils
                         // The camera's origin in X
                         xOffset -= (camera.Pixelsize.X * camera.Rows() / 2);
 
+                        if (device.ConveyorRtoL)
+                        {
+                            xOffset = dTrigOffset - (camera.CenterOffset.X - camera0.CenterOffset.X);
+                            xOffset += (camera0.Pixelsize.X - camera.Pixelsize.X) * camera0.Rows() / 2;
+                        }
+
                         // First camera center in Y
                         double yOffset = (-device.YOffset + camera0.Pixelsize.Y * camera0.Columns() / 2); 
                         // The camera center in Y
@@ -81,6 +91,13 @@ namespace SIMMosaicUtils
                         // The camera orign in Y
                         yOffset -= (camera.Pixelsize.Y * camera.Columns() / 2);
 
+                        if (device.FixedRearRail)
+                        {
+                            double boardedge = lastcamera.CenterOffset.Y + lastcamera.Pixelsize.Y * lastcamera.Columns() / 2;
+                            boardedge -= device.YOffset + set.GetObjectLengthInMeters();
+                            yOffset = camera.CenterOffset.Y - boardedge - (camera.Pixelsize.Y * camera.Columns() / 2);
+                        }
+                        
                         // Trigger offset is initial offset + triggerIndex * overlap...
                         mmt.SetTransformParameters(camera.Pixelsize.X, camera.Pixelsize.Y,
                             camera.Rotation,

@@ -24,6 +24,10 @@ namespace CyberStitchTester
         private static LoggingThread logger = new LoggingThread(null);
         private static uint _numThreads = 8;
         private static int _cycleCount = 0;
+
+        private static bool _bRtoL = false; // right to left conveyor direction indicator
+        private static bool _bFRR = false; // fixed rear rail indicator
+
         // For debug
         private static int _iBufCount = 0;
         private static bool _bSimulating = false;
@@ -68,6 +72,10 @@ namespace CyberStitchTester
                     bAdjustForHeight = false;
                 if (args[i] == "-cammod")
                     bUseCameraModel = true;
+                if (args[i] == "-rtol")
+                    _bRtoL = true;
+                if (args[i] == "-frr")
+                    _bFRR = true;
                 if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
                 if (args[i] == "-t" && i < args.Length - 1)
@@ -330,6 +338,14 @@ namespace CyberStitchTester
                         logger.Kill();
                         return false;
                     }
+                    if (_bRtoL)
+                    {
+                        d.ConveyorRtoL = true;
+                    }
+                    if (_bFRR)
+                    {
+                        d.FixedRearRail = true;
+                    }
 
                     ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                     if (cs1 == null)
@@ -424,8 +440,15 @@ namespace CyberStitchTester
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
-                                (uint)pframe.TriggerIndex());
+
+            uint triggers = (uint)ManagedCoreAPI.GetDevice(0).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
+
+            uint trigger = (ManagedCoreAPI.GetDevice(0).ConveyorRtoL) ?
+                triggers - (uint)pframe.TriggerIndex() - 1 : (uint)pframe.TriggerIndex();
+
+            int firstCameraEnabled = ManagedCoreAPI.GetDevice(pframe.DeviceIndex()).FirstCameraEnabled;
+
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)(pframe.CameraIndex() - firstCameraEnabled), trigger);
         }
 
         private static void Output(string str)
