@@ -135,6 +135,7 @@ namespace MultiAlignerTester
                 _aligner.ResetForNextPanel();
                
                 _mosaicSet.ClearAllImages();
+                _mosaicSetCopy.ClearAllImages();
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -145,6 +146,26 @@ namespace MultiAlignerTester
                     Output("Waiting for Images...");
                     mDoneEvent.WaitOne();
                 }
+
+                if (!_mosaicSetCopy.HasAllImages())
+                    Output("The mosaic does not contain all images!");
+                else
+                {
+                    for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+                    {
+                        ManagedMosaicLayer pLayer = _mosaicSetCopy.GetLayer(i);
+
+                        for (uint j = 0; j < pLayer.GetNumberOfCameras(); j++)
+                            for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
+                            {
+                                if (_bBayerPattern)
+                                    _mosaicSet.AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                else
+                                    _mosaicSet.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                            }
+                    }
+                }
+
 
                 // Verify that mosaic is filled in...
                 if (!_mosaicSet.HasAllImages())
@@ -193,64 +214,12 @@ namespace MultiAlignerTester
                         _mosaicSet.GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
                     }
 
-                    if (_bBayerPattern) // for bayer pattern
-                    {
-                        //if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\"+(_cycleCount-1)) == false)
-                        //    Output("Could not save mosaic images");
-
-                        //* for debug 
-                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                        //*/
-                    }
-                    else // for gray scale
-                    {
-                        // Save a 3 channel image with CAD data...
-                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), 
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                        /*
-                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(0).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(1).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(0).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(1).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                        //*/
-
-                        // Get the stitch grid 
-                        // Must after get stitched image of the same layer
-                        int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];
-                        int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
-                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
-
-                        /*/ Testing a copy of mosaic...
-                        _mosaicSetCopy.CopyBuffers(_mosaicSet);
-                        _mosaicSetCopy.CopyTransforms(_mosaicSet);
-                        _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
-                             _mosaicSetCopy.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                             _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                             _panel.GetCADBuffer(),
-                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                         */
-                    }                       
+                    //* for debug 
+                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());          
                 }
 
                 // should we do another cycle?
@@ -391,8 +360,8 @@ namespace MultiAlignerTester
             _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);
         }
 
         private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
@@ -424,7 +393,7 @@ namespace MultiAlignerTester
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+            _mosaicSetCopy.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
                                 (uint)pframe.TriggerIndex());
         }
 
