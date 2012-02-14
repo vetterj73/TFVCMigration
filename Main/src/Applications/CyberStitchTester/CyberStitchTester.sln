@@ -91,9 +91,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedPanelIOUnitTest", ".
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CyberStitchFidTester", "..\CyberStitchFidTester\CyberStitchFidTester.csproj", "{13971E81-714F-4CED-BE9A-361B52C9CD11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiAlignerTester", "..\MultiAlignerTester\MultiAlignerTester.csproj", "{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 20
+		SccNumberOfProjects = 21
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://tfs.cyberoptics.com:8080/tfs/tpc1
 		SccLocalPath0 = .
@@ -166,6 +168,10 @@ Global
 		SccProjectTopLevelParentUniqueName19 = CyberStitchTester.sln
 		SccProjectName19 = ../CyberStitchFidTester
 		SccLocalPath19 = ..\\CyberStitchFidTester
+		SccProjectUniqueName20 = ..\\MultiAlignerTester\\MultiAlignerTester.csproj
+		SccProjectTopLevelParentUniqueName20 = CyberStitchTester.sln
+		SccProjectName20 = ../MultiAlignerTester
+		SccLocalPath20 = ..\\MultiAlignerTester
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -507,6 +513,20 @@ Global
 		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x64.Build.0 = Release|x64
 		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x86.ActiveCfg = Release|x86
 		{13971E81-714F-4CED-BE9A-361B52C9CD11}.Release|x86.Build.0 = Release|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|Win32.ActiveCfg = Debug|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|x64.ActiveCfg = Debug|x64
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|x64.Build.0 = Debug|x64
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Debug|x86.ActiveCfg = Debug|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|Any CPU.ActiveCfg = Release|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|Mixed Platforms.Build.0 = Release|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|Win32.ActiveCfg = Release|x86
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|x64.ActiveCfg = Release|x64
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|x64.Build.0 = Release|x64
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48}.Release|x86.ActiveCfg = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -515,10 +535,11 @@ Global
 		{0DA7E84B-98C6-49B4-89E9-C685FA3C928D} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{889C54E2-0039-4413-9FF7-804880438C03} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{D52CAE91-2B4B-4061-BD21-1C9F39426386} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{9F21AF3E-7044-405B-AFFF-4DD68782C876} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{928F2EF7-3F5A-4B8C-A3D4-81B0AAD5CBAF} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{2F06810E-6EB2-4E94-A6A4-C129B5CCAD81} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{13971E81-714F-4CED-BE9A-361B52C9CD11} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
-		{9F21AF3E-7044-405B-AFFF-4DD68782C876} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
+		{86BCA82E-72FE-4EB3-A5C6-49381EF32E48} = {46C64A91-C1B1-48D2-89B0-B102895144B7}
 		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {83A6E92A-C9C4-4634-B1E7-357467A9340E}
 		{84C9E16A-93E3-4105-A3AF-0533131EB43D} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
 		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9} = {E71E9608-6EDD-4A4D-A173-BF6B337549A3}
