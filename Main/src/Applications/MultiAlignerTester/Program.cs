@@ -14,13 +14,14 @@ namespace MultiAlignerTester
 {
     class Program
     {
+        private const int iNumAligner = 2;
         private const double cPixelSizeInMeters = 1.70e-5;
-        private static ManagedMosaicSet _mosaicSet = null;
-        private static ManagedMosaicSet _mosaicSetCopy = null;
+        private static ManagedMosaicSet [] _mosaicSets = new ManagedMosaicSet[iNumAligner];
+        private static ManagedMosaicSet[] _mosaicSetCopys = new ManagedMosaicSet[iNumAligner];
         private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
-        private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
+        private static ManagedPanelAlignment [] _aligners = new ManagedPanelAlignment[iNumAligner];
         private static LoggingThread logger = new LoggingThread(null);
         private static uint _numThreads = 8;
         private static int _cycleCount = 0;
@@ -93,38 +94,43 @@ namespace MultiAlignerTester
             // Set up mosaic set
             SetupMosaic(bOwnBuffers, bMaskForDiffDevices);
 
-            // Set up logger for aligner
-            _aligner.OnLogEntry += OnLogEntryFromClient;
-            _aligner.SetAllLogTypes(true);
-            //_aligner.LogTransformVectors(true);
-
-            // Set up production for aligner
-            try
+            for (int i = 0; i < iNumAligner; i++)
             {
-                _aligner.NumThreads(_numThreads);
-                //_aligner.LogOverlaps(true);
-                _aligner.LogFiducialOverlaps(true);
-                //_aligner.UseCyberNgc4Fiducial();
-                if(bUseProjective)
-                    _aligner.UseProjectiveTransform(true);
-                if (bUseCameraModel)
-                {
-                    _aligner.UseCameraModelStitch(true);
-                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                }
+                _aligners[i] = new ManagedPanelAlignment();
 
-                Output("Before ChangeProduction");
-                if (!_aligner.ChangeProduction(_mosaicSet, _panel))
+                // Set up logger for aligner
+                _aligners[i].OnLogEntry += OnLogEntryFromClient;
+                _aligners[i].SetAllLogTypes(true);
+                //_aligners[i].LogTransformVectors(true);
+
+                // Set up production for aligner
+                try
                 {
-                    throw new ApplicationException("Aligner failed to change production ");
+                    _aligners[i].NumThreads(_numThreads);
+                    //_aligner.LogOverlaps(true);
+                    _aligners[i].LogFiducialOverlaps(true);
+                    //_aligner.UseCyberNgc4Fiducial();
+                    if (bUseProjective)
+                        _aligners[i].UseProjectiveTransform(true);
+                    if (bUseCameraModel)
+                    {
+                        _aligners[i].UseCameraModelStitch(true);
+                        _aligners[i].UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                    }
+
+                    Output("Before ChangeProduction");
+                    if (!_aligners[i].ChangeProduction(_mosaicSets[i], _panel))
+                    {
+                        throw new ApplicationException("Aligner failed to change production ");
+                    }
+                    Output("After ChangeProduction");
                 }
-                Output("After ChangeProduction");
-            }
-            catch (Exception except)
-            {
-                Output("Error: " + except.Message);
-                logger.Kill();
-                return;
+                catch (Exception except)
+                {
+                    Output("Error: " + except.Message);
+                    logger.Kill();
+                    return;
+                }
             }
 
             bool bDone = false;
@@ -132,10 +138,10 @@ namespace MultiAlignerTester
             {
                 numAcqsComplete = 0;
 
-                _aligner.ResetForNextPanel();
+                _aligners[0].ResetForNextPanel();
                
-                _mosaicSet.ClearAllImages();
-                _mosaicSetCopy.ClearAllImages();
+                _mosaicSets[0].ClearAllImages();
+                _mosaicSetCopys[0].ClearAllImages();
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -147,39 +153,39 @@ namespace MultiAlignerTester
                     mDoneEvent.WaitOne();
                 }
 
-                if (!_mosaicSetCopy.HasAllImages())
+                if (!_mosaicSetCopys[0].HasAllImages())
                     Output("The mosaic does not contain all images!");
                 else
                 {
-                    for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+                    for (uint i = 0; i < _mosaicSets[0].GetNumMosaicLayers(); i++)
                     {
-                        ManagedMosaicLayer pLayer = _mosaicSetCopy.GetLayer(i);
+                        ManagedMosaicLayer pLayer = _mosaicSetCopys[0].GetLayer(i);
 
                         for (uint j = 0; j < pLayer.GetNumberOfCameras(); j++)
                             for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
                             {
                                 if (_bBayerPattern)
-                                    _mosaicSet.AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                    _mosaicSets[0].AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
                                 else
-                                    _mosaicSet.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                    _mosaicSets[0].AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
                             }
                     }
                 }
 
 
                 // Verify that mosaic is filled in...
-                if (!_mosaicSet.HasAllImages())
+                if (!_mosaicSets[0].HasAllImages())
                     Output("The mosaic does not contain all images!");
                 else
                 {
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
-                    ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
+                    ManagedPanelFidResultsSet fidResultSet = _aligners[0].GetFiducialResultsSet();
                     
                     // Calculate indices
                     uint iLayerIndex1 = 0;
                     uint iLayerIndex2 = 0;
-                    switch (_mosaicSet.GetNumMosaicLayers())
+                    switch (_mosaicSets[0].GetNumMosaicLayers())
                     {
                         case 1:
                             iLayerIndex1 = 0;
@@ -210,14 +216,14 @@ namespace MultiAlignerTester
                         double dHeightRes = _panel.GetHeightResolution();
                         double dPupilDistance = 0.3702;
                         // Need modified based on layers that have component 
-                        _mosaicSet.GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
-                        _mosaicSet.GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+                        _mosaicSets[0].GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+                        _mosaicSets[0].GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
                     }
 
                     //* for debug 
-                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
-                        _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
+                    _aligners[0].Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
+                        _mosaicSets[0].GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
+                        _mosaicSets[0].GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
                         _panel.GetCADBuffer(), //heightBuf,
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());          
                 }
@@ -356,12 +362,15 @@ namespace MultiAlignerTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
-            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);
+            for(int i=0; i<iNumAligner; i++)
+            {
+                _mosaicSets[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+                _mosaicSetCopys[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+                _mosaicSets[i].OnLogEntry += OnLogEntryFromMosaic;
+                _mosaicSets[i].SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+                SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSets[i], bMaskForDiffDevices);
+                SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopys[i], bMaskForDiffDevices);
+            }
         }
 
         private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
@@ -393,7 +402,7 @@ namespace MultiAlignerTester
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSetCopy.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+            _mosaicSetCopys[0].AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
                                 (uint)pframe.TriggerIndex());
         }
 
