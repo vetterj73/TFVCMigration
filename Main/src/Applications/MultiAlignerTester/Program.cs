@@ -15,6 +15,7 @@ namespace MultiAlignerTester
     class Program
     {
         private const int iNumAligner = 2;
+        private static int _iCurAligner = 0;
         private const double cPixelSizeInMeters = 1.70e-5;
         private static ManagedMosaicSet [] _mosaicSets = new ManagedMosaicSet[iNumAligner];
         private static ManagedMosaicSet[] _mosaicSetCopys = new ManagedMosaicSet[iNumAligner];
@@ -23,7 +24,7 @@ namespace MultiAlignerTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment [] _aligners = new ManagedPanelAlignment[iNumAligner];
         private static LoggingThread logger = new LoggingThread(null);
-        private static uint _numThreads = 8;
+        private static uint _numThreads = 4;
         private static int _cycleCount = 0;
         // For debug
         private static int _iBufCount = 0;
@@ -137,11 +138,14 @@ namespace MultiAlignerTester
             while(!bDone)
             {
                 numAcqsComplete = 0;
+                _iCurAligner = 0;
 
-                _aligners[0].ResetForNextPanel();
-               
-                _mosaicSets[0].ClearAllImages();
-                _mosaicSetCopys[0].ClearAllImages();
+                for (int i = 0; i < iNumAligner; i++)
+                {
+                    _aligners[i].ResetForNextPanel();
+                    _mosaicSets[i].ClearAllImages();
+                    _mosaicSetCopys[i].ClearAllImages();
+                }
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -153,79 +157,48 @@ namespace MultiAlignerTester
                     mDoneEvent.WaitOne();
                 }
 
-                if (!_mosaicSetCopys[0].HasAllImages())
-                    Output("The mosaic does not contain all images!");
-                else
+                if (_mosaicSetCopys[0].HasAllImages() && _mosaicSetCopys[1].HasAllImages())
                 {
                     for (uint i = 0; i < _mosaicSets[0].GetNumMosaicLayers(); i++)
                     {
-                        ManagedMosaicLayer pLayer = _mosaicSetCopys[0].GetLayer(i);
+                        ManagedMosaicLayer pRefLayer = _mosaicSetCopys[0].GetLayer(i);
 
-                        for (uint j = 0; j < pLayer.GetNumberOfCameras(); j++)
-                            for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
+                        for (uint j = 0; j < pRefLayer.GetNumberOfCameras(); j++)
+                        {
+                            for (uint k = 0; k < pRefLayer.GetNumberOfTriggers(); k++)
                             {
-                                if (_bBayerPattern)
-                                    _mosaicSets[0].AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
-                                else
-                                    _mosaicSets[0].AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                for (uint iIndex = 0; iIndex < iNumAligner; iIndex++)
+                                {
+                                    ManagedMosaicLayer pLayer = _mosaicSetCopys[iIndex].GetLayer(i);
+
+                                    if (_bBayerPattern)
+                                        _mosaicSets[iIndex].AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                    else
+                                        _mosaicSets[iIndex].AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+
+                                }
                             }
+                        }
                     }
                 }
 
 
                 // Verify that mosaic is filled in...
-                if (!_mosaicSets[0].HasAllImages())
-                    Output("The mosaic does not contain all images!");
-                else
+                if (_mosaicSets[0].HasAllImages() && _mosaicSets[1].HasAllImages())
                 {
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
                     ManagedPanelFidResultsSet fidResultSet = _aligners[0].GetFiducialResultsSet();
-                    
-                    // Calculate indices
-                    uint iLayerIndex1 = 0;
-                    uint iLayerIndex2 = 0;
-                    switch (_mosaicSets[0].GetNumMosaicLayers())
+
+                    for (int i = 0; i < iNumAligner; i++)
                     {
-                        case 1:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 0;
-                            break;
-
-                        case 2:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 1;
-                            break;
-
-                        case 4:
-                            iLayerIndex1 = 2;
-                            iLayerIndex2 = 3;
-                            break;
+                        //* for debug 
+                        _aligners[i].Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + "_" + i + ".bmp",
+                            _mosaicSets[i].GetLayer(2).GetGreyStitchedBuffer(),
+                            _mosaicSets[i].GetLayer(3).GetGreyStitchedBuffer(),
+                            _panel.GetCADBuffer(), //heightBuf,
+                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                     }
-
-                    // Set component height if it exist
-                    double dMaxHeight = 0;
-                    if (bAdjustForHeight)
-                        dMaxHeight = _panel.GetMaxComponentHeight();
-
-                    if (dMaxHeight > 0)
-                    {
-                        bool bSmooth = true;
-                        IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
-                        uint iSpan = (uint)_panel.GetNumPixelsInY();
-                        double dHeightRes = _panel.GetHeightResolution();
-                        double dPupilDistance = 0.3702;
-                        // Need modified based on layers that have component 
-                        _mosaicSets[0].GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
-                        _mosaicSets[0].GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
-                    }
-
-                    //* for debug 
-                    _aligners[0].Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                        _mosaicSets[0].GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
-                        _mosaicSets[0].GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
-                        _panel.GetCADBuffer(), //heightBuf,
-                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());          
                 }
 
                 // should we do another cycle?
@@ -391,7 +364,16 @@ namespace MultiAlignerTester
                     return;
             }
             if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                mDoneEvent.Set();
+            {
+                _iCurAligner++;
+                if (_iCurAligner == iNumAligner)
+                    mDoneEvent.Set();
+                else
+                {
+                    numAcqsComplete = 0;
+                    GatherImages();
+                }
+            }
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
@@ -402,7 +384,7 @@ namespace MultiAlignerTester
 
             uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSetCopys[0].AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
+            _mosaicSetCopys[_iCurAligner].AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
                                 (uint)pframe.TriggerIndex());
         }
 
