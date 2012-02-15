@@ -14,7 +14,7 @@ namespace MultiAlignerTester
 {
     class Program
     {
-        private const int iNumAligner = 2;
+        private const int iNumAligner = 3;      // Number of aligners
         private static int _iCurAligner = 0;
         private const double cPixelSizeInMeters = 1.70e-5;
         private static ManagedMosaicSet [] _mosaicSets = new ManagedMosaicSet[iNumAligner];
@@ -138,7 +138,7 @@ namespace MultiAlignerTester
             while(!bDone)
             {
                 numAcqsComplete = 0;
-                _iCurAligner = 0;
+                _iCurAligner = 0;   // Reset current aligner
 
                 for (int i = 0; i < iNumAligner; i++)
                 {
@@ -147,9 +147,10 @@ namespace MultiAlignerTester
                     _mosaicSetCopys[i].ClearAllImages();
                 }
                 if (!GatherImages())
-                {
+                {   // When there is no more cycle
                     Output("Issue with StartAcquisition");
                     bDone = true;
+                    continue;
                 }
                 else
                 {
@@ -157,8 +158,21 @@ namespace MultiAlignerTester
                     mDoneEvent.WaitOne();
                 }
 
-                if (_mosaicSetCopys[0].HasAllImages() && _mosaicSetCopys[1].HasAllImages())
+                bool bBatchDone = true;
+                for(int i =0; i<iNumAligner; i++)
                 {
+                    if (!_mosaicSetCopys[i].HasAllImages())
+                        bBatchDone = false;
+                }
+
+                if(!bBatchDone)
+                {   // When there are not enough cycles
+                    Output("Not all mosaic set copy are ready!");
+                    bDone = true;
+                    continue;
+                }
+                else
+                {   // Copy mosaicsetCopys to mosaicsets
                     for (uint i = 0; i < _mosaicSets[0].GetNumMosaicLayers(); i++)
                     {
                         ManagedMosaicLayer pRefLayer = _mosaicSetCopys[0].GetLayer(i);
@@ -182,9 +196,20 @@ namespace MultiAlignerTester
                     }
                 }
 
+                bBatchDone = true;
+                for (int i = 0; i < iNumAligner; i++)
+                {
+                    if (!_mosaicSets[i].HasAllImages())
+                        bBatchDone = false;
+                }
 
-                // Verify that mosaic is filled in...
-                if (_mosaicSets[0].HasAllImages() && _mosaicSets[1].HasAllImages())
+                if (!bBatchDone)
+                {   // When there are not enough cycles
+                    Output("Not all mosaic set are ready!");
+                    bDone = true;
+                    continue;
+                }
+                else
                 {
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
@@ -202,7 +227,7 @@ namespace MultiAlignerTester
                 }
 
                 // should we do another cycle?
-                if (!bContinuous && _cycleCount >= numberToRun)
+                if (!bContinuous && _cycleCount * iNumAligner >= numberToRun)
                     bDone = true;
                 else
                     mDoneEvent.Reset();
@@ -367,11 +392,17 @@ namespace MultiAlignerTester
             {
                 _iCurAligner++;
                 if (_iCurAligner == iNumAligner)
+                {   // All the aligners have images
                     mDoneEvent.Set();
+                }
                 else
-                {
+                {   // Acquire for the next aligner
                     numAcqsComplete = 0;
-                    GatherImages();
+                    if (!GatherImages())
+                    {   // If there is no more cycle
+                        mDoneEvent.Set();
+                        return;
+                    }
                 }
             }
         }
