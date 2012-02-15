@@ -203,7 +203,12 @@ namespace CyberStitchTester
 
                     if (_bBayerPattern) // for bayer pattern
                     {
-                        if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\"+(_cycleCount-1)) == false)
+                        if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1)) == false)
+                        {
+                            Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1));
+                        }
+
+                        if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1) + "\\") == false)
                             Output("Could not save mosaic images");
 
                         /* for debug 
