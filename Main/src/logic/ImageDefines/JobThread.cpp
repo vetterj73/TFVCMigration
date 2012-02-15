@@ -12,13 +12,16 @@ namespace CyberJob
 	JobThread::JobThread(string uniqueName)
 	{
 		string name = uniqueName + "_QueueMutex";
-		_queueMutex = CreateMutex(0, FALSE, name.c_str());
+		//_queueMutex = CreateMutex(0, FALSE, name.c_str());
+		_queueMutex = CreateMutex(0, FALSE, NULL);
 
 		name = uniqueName + "_QueueSignal";
-		_addSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
+		//_addSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
+		_addSignal = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 		name = uniqueName + "_KillSignal";
-		_killSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
+		//_killSignal = CreateEvent(NULL, FALSE, FALSE, name.c_str());
+		_killSignal = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 		// Start the thread....
 		DWORD d(0);

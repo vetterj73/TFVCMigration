@@ -44,7 +44,8 @@ CyberNgcFiducialCorrelation::CyberNgcFiducialCorrelation(void)
 
 	_iDepth = 3; 
 
-	_entryMutex = CreateMutex(0, FALSE, "Entry Mutex"); // No initial owner
+	//_entryMutex = CreateMutex(0, FALSE, "Entry Mutex"); // No initial owner
+	_entryMutex = CreateMutex(0, FALSE, NULL); // No initial owner
 }
 
 

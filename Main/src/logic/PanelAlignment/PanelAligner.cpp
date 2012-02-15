@@ -19,7 +19,8 @@ PanelAligner::PanelAligner(void)
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
 
-	_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
+	//_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
+	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
 }
 
 PanelAligner::~PanelAligner(void)
