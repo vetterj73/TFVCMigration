@@ -5,7 +5,7 @@
 #include "MosaicSet.h"
 #include "ManagedMosaicLayer.h"
 #include "ManagedCorrelationFlags.h"
-#include "ManagedLoggableObject.h"
+using namespace System::Runtime::InteropServices;
 
 using namespace System;
 using namespace MLOGGER;
@@ -58,7 +58,7 @@ namespace MMosaicDM
 						iBayerType);
 
 				// This sets up the Logging interface from unmanaged...
-				SetLoggableObject(_pMosaicSet);
+				SetLoggableObject((System::IntPtr)_pMosaicSet);
 
 				_imageAddedDelegate = gcnew ImageAddedDelegate(this, &MMosaicDM::ManagedMosaicSet::RaiseImageAdded); 
 				_pMosaicSet->RegisterImageAddedCallback((MosaicDM::IMAGEADDED_CALLBACK)Marshal::GetFunctionPointerForDelegate(_imageAddedDelegate).ToPointer(), NULL);	

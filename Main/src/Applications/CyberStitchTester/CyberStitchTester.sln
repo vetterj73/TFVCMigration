@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{83A6E92A
 	ProjectSection(SolutionItems) = preProject
 		..\..\..\build.proj = ..\..\..\build.proj
 		..\..\..\license.rtf = ..\..\..\license.rtf
+		..\..\..\ProjectManifest.xml = ..\..\..\ProjectManifest.xml
+		..\..\..\ProjectManifest.xsl = ..\..\..\ProjectManifest.xsl
 		..\..\..\regression.bat = ..\..\..\regression.bat
 		..\..\..\release_notes.htm = ..\..\..\release_notes.htm
 	EndProjectSection

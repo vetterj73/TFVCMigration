@@ -160,6 +160,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Reference Include="MLoggableObject, Version=1.0.4429.25230, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\LoggableObject\bin\x64\release\MLoggableObject.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />

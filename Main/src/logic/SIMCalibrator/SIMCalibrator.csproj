@@ -42,6 +42,9 @@
     <Reference Include="ManagedCoreAPI">
       <HintPath>..\..\..\SIMCoreAPI\bin\ManagedCoreAPI.dll</HintPath>
     </Reference>
+    <Reference Include="MLoggableObject">
+      <HintPath>..\..\..\LoggableObject\bin\x64\release\MLoggableObject.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
