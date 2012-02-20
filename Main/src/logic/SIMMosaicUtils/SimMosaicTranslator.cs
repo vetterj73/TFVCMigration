@@ -31,7 +31,7 @@ namespace SIMMosaicUtils
 
             /// @todo - this should be made part of the SIM Device....
             uint numCameras = 0;
-            for (int i = 0; i < device.NumberOfCameras; i++)
+            for (int i = 0; i < device.NumberOfCamerasEnabled; i++)
                 if (device.GetSIMCamera(i+device.FirstCameraEnabled).Status() == (CameraStatus)1)
                     numCameras++;
 
