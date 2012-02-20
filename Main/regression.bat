@@ -1,6 +1,7 @@
 rem '-w' flag should not matter if '-cammod' flag is set
-set OUTPUTDIR=C:\CyberStitchRegressionResults
-set OUTPUTBACKUP=C:\CyberStitchRegressionResultsBackup
+set ROOTDIR=C:\CyberStitchRegression
+set OUTPUTDIR=%ROOTDIR%\Results
+set OUTPUTBACKUP=%ROOTDIR%\LastResults
 set APP=.\src\Applications\CyberStitchFidTester\bin\x64\Release\CyberStitchFidTester.exe
 set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2Data(1micronPerCycle)
 set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2CAD
@@ -90,3 +91,8 @@ set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest5\PPM(color
 REM     RUN All collected panels
 %APP% -b -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mms.txt -l %OUTPUTBACKUP%\4FidsZ-4mms.txt -u .\Results\UnitTest\ -n 10
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mmsProjective.txt -l %OUTPUTBACKUP%\4FidsZ-4mmsProjective.txt -u .\Results\UnitTest\ -n 10
+
+REM Get the current date and time in YYYY-MM-DD-HH-MM-SS format
+SET THEDATE=%date:~10,4%-%date:~4,2%-%date:~7,2%-%time:~0,2%-%time:~3,2%-%time:~6,2%
+set THEDATE=%THEDATE: =0%
+xcopy %OUTPUTDIR% %ROOTDIR%\%THEDATE%
