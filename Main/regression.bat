@@ -95,4 +95,5 @@ REM     RUN All collected panels
 REM Get the current date and time in YYYY-MM-DD-HH-MM-SS format
 SET THEDATE=%date:~10,4%-%date:~4,2%-%date:~7,2%-%time:~0,2%-%time:~3,2%-%time:~6,2%
 set THEDATE=%THEDATE: =0%
-xcopy %OUTPUTDIR% %ROOTDIR%\%THEDATE%
+mkdir %ROOTDIR%\%THEDATE%
+xcopy /S /E /Y /Q %OUTPUTDIR%\* %ROOTDIR%\%THEDATE%\
