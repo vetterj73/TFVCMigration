@@ -93,6 +93,7 @@ namespace SIMCalibrator
             _panelAligner.FiducialSearchExpansionXInMeters(fiducialSearchSizeXInMeters); // 8 mm in X
             _panelAligner.FiducialSearchExpansionYInMeters(fiducialSearchSizeYInMeters); // 8 mm in Y
             _panelAligner.LogFiducialOverlaps(loggingOn);
+            _panelAligner.EnableFiducialAlignmentCheck(false);
             _panelAligner.ChangeProduction(_mosaicSet, _panel);
         }
 

@@ -169,6 +169,11 @@ namespace PanelAlignM {
 		_pAligner->UseProjectiveTransform(bValue);
 	}
 
+	void ManagedPanelAlignment::EnableFiducialAlignmentCheck(bool bValue)
+	{
+		_pAligner->EnableFiducialAlignmentCheck(bValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{

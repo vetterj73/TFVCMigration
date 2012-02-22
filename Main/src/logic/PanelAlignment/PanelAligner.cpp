@@ -193,6 +193,10 @@ void PanelAligner::UseCameraModelStitch(bool bValue)
 	CorrelationParametersInst.bUseCameraModelStitch = bValue;
 }
 
+void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
+{
+	CorrelationParametersInst.bFiducialAlignCheck = bValue;
+}
 
 // Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(

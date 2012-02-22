@@ -54,6 +54,7 @@ public:
 	void UseCyberNgc4Fiducial();
 	void UseProjectiveTransform(bool bValue);
 	void UseCameraModelStitch(bool bValue);
+	void EnableFiducialAlignmentCheck(bool bValue);
 
 	FidFovOverlapList* GetLastProcessedFids();
 	
