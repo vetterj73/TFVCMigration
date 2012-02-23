@@ -50,6 +50,9 @@ namespace CyberStitchFidTester
         private static double _dXRMS = 0.0;//used for the xoffset RMS
         private static double _dYRMS = 0.0;
 
+        private static bool _bRtoL = false; // right to left conveyor direction indicator
+        private static bool _bFRR = false; // fixed rear rail indicator
+
         // For debug
         private static int _iBufCount = 0;
         private static bool _bSimulating = false;
@@ -126,6 +129,10 @@ namespace CyberStitchFidTester
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
+                if (args[i] == "-rtol")
+                    _bRtoL = true;
+                if (args[i] == "-frr")
+                    _bFRR = true;
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -668,6 +675,14 @@ namespace CyberStitchFidTester
                         logger.Kill();
                         return false;
                     }
+                    if (_bRtoL)
+                    {
+                        d.ConveyorRtoL = true;
+                    }
+                    if (_bFRR)
+                    {
+                        d.FixedRearRail = true;
+                    }
 
                     ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 0, .004);
                     if (cs1 == null)
@@ -760,13 +775,24 @@ namespace CyberStitchFidTester
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
             // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
-             //    pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
+            //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
-            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
+
+            int device = pframe.DeviceIndex();
+
+            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
-            _mosaicSetSim.AddRawImage(pframe.BufferPtr(), layer, (uint)pframe.CameraIndex(),
-                                (uint)pframe.TriggerIndex());
+
+            uint triggers = (uint)ManagedCoreAPI.GetDevice(device).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
+
+            uint trigger = (ManagedCoreAPI.GetDevice(device).ConveyorRtoL) ?
+                triggers - (uint)pframe.TriggerIndex() - 1 : (uint)pframe.TriggerIndex();
+
+            int firstCameraEnabled = ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
+
+            _mosaicSetSim.AddRawImage(pframe.BufferPtr(), layer, (uint)(pframe.CameraIndex() - firstCameraEnabled), trigger);
         }
+
 
         private static void Output(string str)
         {

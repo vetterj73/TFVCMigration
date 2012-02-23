@@ -443,15 +443,17 @@ namespace CyberStitchTester
            //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
 
-            uint layer = (uint)(pframe.DeviceIndex()*ManagedCoreAPI.GetDevice(0).NumberOfCaptureSpecs +
+            int device = pframe.DeviceIndex();
+
+            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
 
-            uint triggers = (uint)ManagedCoreAPI.GetDevice(0).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
+            uint triggers = (uint)ManagedCoreAPI.GetDevice(device).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
 
-            uint trigger = (ManagedCoreAPI.GetDevice(0).ConveyorRtoL) ?
+            uint trigger = (ManagedCoreAPI.GetDevice(device).ConveyorRtoL) ?
                 triggers - (uint)pframe.TriggerIndex() - 1 : (uint)pframe.TriggerIndex();
 
-            int firstCameraEnabled = ManagedCoreAPI.GetDevice(pframe.DeviceIndex()).FirstCameraEnabled;
+            int firstCameraEnabled = ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
 
             _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)(pframe.CameraIndex() - firstCameraEnabled), trigger);
         }

@@ -80,7 +80,7 @@ namespace SIMMosaicUtils
 
                         if (device.ConveyorRtoL)
                         {
-                            xOffset = dTrigOffset - (camera.CenterOffset.X - camera0.CenterOffset.X);
+                            xOffset = dTrigOffset + (camera.CenterOffset.X - camera0.CenterOffset.X);
                             xOffset += (camera0.Pixelsize.X - camera.Pixelsize.X) * camera0.Rows() / 2;
                         }
 
