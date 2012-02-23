@@ -97,3 +97,15 @@ SET THEDATE=%date:~10,4%-%date:~4,2%-%date:~7,2%-%time:~0,2%-%time:~3,2%-%time:~
 set THEDATE=%THEDATE: =0%
 mkdir %ROOTDIR%\%THEDATE%
 xcopy /S /E /Y /Q %OUTPUTDIR%\* %ROOTDIR%\%THEDATE%\
+
+
+
+set SIMDATA=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest7
+set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest7
+
+REM     RUN All collected panels
+%APP% -b -s "%SIMDATA%\PPM\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_LtoR.txt -l %OUTPUTBACKUP%\FFR_LtoR.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\PPM_FRR\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_LtoR.txt -l %OUTPUTBACKUP%\FRR_LtoR.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\PPM_RtoL\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_RtoL.txt -l %OUTPUTBACKUP%\FFR_RtoL.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\PPM_FRR_RtoL\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FRR_RtoL.txt -l %OUTPUTBACKUP%\FRR_RtoL.txt -u .\Results\UnitTest\ -n 10
+ 
