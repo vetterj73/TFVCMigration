@@ -179,5 +179,18 @@ namespace SIMMosaicUtils
                 }
             }
         }
+
+        // calculates new mosaic trigger value based on frame trigger and conveyor direction
+        public static int TranslateTrigger(ManagedSIMFrame pframe)
+        {
+            int device = pframe.DeviceIndex();
+
+            int triggers = ManagedCoreAPI.GetDevice(device).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
+
+            int trigger = (ManagedCoreAPI.GetDevice(device).ConveyorRtoL) ?
+                triggers - pframe.TriggerIndex() - 1 : pframe.TriggerIndex();
+
+            return trigger;
+        }
     }
 }

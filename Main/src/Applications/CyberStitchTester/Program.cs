@@ -444,18 +444,13 @@ namespace CyberStitchTester
             _iBufCount++; // for debug
 
             int device = pframe.DeviceIndex();
+            int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
+            int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
 
             uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
 
-            uint triggers = (uint)ManagedCoreAPI.GetDevice(device).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
-
-            uint trigger = (ManagedCoreAPI.GetDevice(device).ConveyorRtoL) ?
-                triggers - (uint)pframe.TriggerIndex() - 1 : (uint)pframe.TriggerIndex();
-
-            int firstCameraEnabled = ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
-
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)(pframe.CameraIndex() - firstCameraEnabled), trigger);
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
         }
 
         private static void Output(string str)
