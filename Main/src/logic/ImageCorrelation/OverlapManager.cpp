@@ -751,7 +751,8 @@ void OverlapManager::CreateFidFovOverlaps()
 					
 					// Add to fiducial result set
 					FidFovOverlap* pOvelap1 = &(*_fidFovOverlapLists[iLayer][iTrig][iCam].rbegin());
-					_pFidResultsSet->GetPanelFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
+					//_pFidResultsSet->GetPanelFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
+					_pFidResultsSet->GetPanelFiducialResultsPtr(iCount)->AddFidFovOvelapPoint(pOvelap1);
 
 					// Single FOV covers entire search arae
 					bSingleOvelap = true;
@@ -805,7 +806,8 @@ void OverlapManager::CreateFidFovOverlaps()
 					
 						// Add to fiducial result set
 						FidFovOverlap* pOvelap1 = &(*_fidFovOverlapLists[iLayer][iTrig][iCam].rbegin());
-						_pFidResultsSet->GetPanelFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
+						//_pFidResultsSet->GetPanelFiducialResultsPtr(iFid->second->GetId())->AddFidFovOvelapPoint(pOvelap1);
+						_pFidResultsSet->GetPanelFiducialResultsPtr(iCount)->AddFidFovOvelapPoint(pOvelap1);
 
 					} // for(iCam=0; iCam<iNumCameras; iCam++)
 				} // for(iTrig=0; iTrig<iNumTriggers; iTrig++)
