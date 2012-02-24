@@ -105,7 +105,7 @@ set CADDIR=\\msp\dfs\archive\CyberStitchRegressionData\RegressionTest7
 
 REM     RUN All collected panels
 %APP% -b -s "%SIMDATA%\PPM\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_LtoR.txt -l %OUTPUTBACKUP%\FFR_LtoR.txt -u .\Results\UnitTest\ -n 10
-%APP% -b -s "%SIMDATA%\PPM_FRR\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_LtoR.txt -l %OUTPUTBACKUP%\FRR_LtoR.txt -u .\Results\UnitTest\ -n 10
+%APP% -b -s "%SIMDATA%\PPM_FRR\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FRR_LtoR.txt -l %OUTPUTBACKUP%\FRR_LtoR.txt -u .\Results\UnitTest\ -n 10
 %APP% -b -s "%SIMDATA%\PPM_RtoL\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FFR_RtoL.txt -l %OUTPUTBACKUP%\FFR_RtoL.txt -u .\Results\UnitTest\ -n 10
 %APP% -b -s "%SIMDATA%\PPM_FRR_RtoL\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\FRR_RtoL.txt -l %OUTPUTBACKUP%\FRR_RtoL.txt -u .\Results\UnitTest\ -n 10
  
