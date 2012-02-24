@@ -1,4 +1,6 @@
 #include "PanelEdgeDetection.h"
+#include <math.h>
+
 
 PanelEdgeDetection::PanelEdgeDetection(void)
 {
@@ -23,8 +25,9 @@ bool PanelEdgeDetection::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* ptPa
 	return(bFlag);
 }*/
 
-
-
+// Find panel leading edge in a FOV image
+// pImage: input, color or grayscal FOV image
+// ptParam: inout, control parameters and results
 bool PanelEdgeDetection::FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 {
 	// validation check
@@ -93,96 +96,220 @@ bool PanelEdgeDetection::FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* p
 	cvDilate( pEdgeImg, pDilateImg, pDilateSE); 
 	//cvSaveImage("c:\\Temp\\DilatedEdge.png", pDilateImg);
 
-	IplImage* pFlipImg =  cvCreateImage(cvSize(iHeight, iWidth), IPL_DEPTH_8U, 1);
-	for(int iy = 0; iy<iHeight; iy++)
-	{
-		for(int ix=0; ix<iWidth; ix++)
-		{
-			pFlipImg->imageData[(iWidth-1-ix)*pFlipImg->widthStep+iy] = pDilateImg->imageData[iy*pDilateImg->widthStep+ix];
-		}
-	}
-	//cvSaveImage("c:\\Temp\\Flipped.png", pFlipImg);
-
 	// Hough transform
 	CvMemStorage* storage = cvCreateMemStorage(0);
 	CvSeq* lines = 0;
 	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width);
-	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_STANDARD, 1, CV_PI/180, iThresh,  1, 10);
-
+	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
+	
+	// Pick the right hough lines
 	bool bFirst = true;
 	int iSelectIndex = -1;
-	double dSelectRho = 0;
+	double dSelectY = -1;
+	double dSelectSize = -1;
+	double dMaxSlope = tan(ptParam->dAngleRange);
 	for(int i = 0; i < MIN(lines->total,100); i++ )
     {
-		float* line = (float*)cvGetSeqElem(lines,i);
-        float rho = line[0];
-        float theta = line[1];
-		if(theta < CV_PI/180*(90-ptParam->dAngleRange) && 
-			theta> CV_PI/180*(90+ptParam->dAngleRange))
+		// Get a line
+		CvPoint* line = (CvPoint*)cvGetSeqElem(lines,i);
+	
+		// Validation check
+		if(abs(line[1].x-line[0].x) < 10)
 			continue;
 
-		if(bFirst)
-		{
-			iSelectIndex = i;
-			dSelectRho = rho;
-			bFirst = false;
-		}
-		else
-		{
-		
-			if(ptParam->type == BOTTOMEDGE)
-			{	// Bottom edge case
-				if(dSelectRho < rho)
-				{
-					dSelectRho = rho;
-					iSelectIndex = i;
-				}
+		double slope = ((double)line[1].y-(double)line[0].y)/ ((double)line[1].x-(double)line[0].x);
+		if(fabs(slope)<dMaxSlope)
+			continue;
+
+		// Current line information
+		double dCurY = (line[0].y+line[1].y)/2.;
+		double dCurSize = sqrtf((double)((line[0].y-line[1].y)*(line[0].y-line[1].y)+(line[0].x-line[1].x)*(line[0].x-line[1].x)));
+
+		if(ptParam->type == BOTTOMEDGE) // For leading edge on the bottom of panel
+		{	// Y is much bigger or Y is similar but size is bigger
+			if((dCurY -dSelectY) > iDilateSize*2 ||
+				(fabs(dCurY -dSelectY) <= iDilateSize*2 && dCurSize > dSelectSize))
+			{
+				dSelectY = dCurY;
+				dSelectSize = dCurSize;
+				iSelectIndex = i;
 			}
-			else
-			{	// Top edge case
-				if(dSelectRho > rho)
-				{
-					dSelectRho = rho;
-					iSelectIndex = i;
-				}
+		}
+		else	// For leading edge on the top of panel 
+		{	// Y is much samller or Y is similar but size is bigger
+			if((dCurY -dSelectY) < iDilateSize*2 ||
+				(fabs(dCurY -dSelectY) <= iDilateSize*2 && dCurSize > dSelectSize))
+			{
+				dSelectY = dCurY;
+				dSelectSize = dCurSize;
+				iSelectIndex = i;
 			}
 		}
     }
 	
+	// No leading ede is detected
 	if(iSelectIndex == -1)
 	{
 		return(false);
 	}
 
-	float* line = (float*)cvGetSeqElem(lines,iSelectIndex);
-	ptParam->dRho = line[0]+ptParam->iTop; // not very accurate
-	ptParam->dTheta = line[1] - CV_PI/2;
+	// The selected hogh line
+	CvPoint* line = (CvPoint*)cvGetSeqElem(lines,iSelectIndex);
+	double dSlope = ((double)line[1].y-(double)line[0].y)/ ((double)line[1].x-(double)line[0].x);
+	
+	// Collect valid edge pixels
+	unsigned  char* pBuf =(unsigned char*) pEdgeImg->imageData;
+	int iStep = pEdgeImg->widthStep;
+	list<int> iSetX, iSetY;
+	for(int ix = line[0].x; ix <= line[1].x; ix++)
+	{
+		int iyLine = (int)(line[0].y+  dSlope*(ix-line[0].x) + 0.5);
+		int	iyMin = iyLine -2*iDilateSize;
+		if(iyMin < 0) iyMin = 0;
+		int iyMax = iyLine + 2*iDilateSize;
+		if(iyMax > iHeight-1) iyMax = iHeight-1;
+		for(int iy = iyMin; iy<=iyMax; iy++)
+		{
+			if(pBuf[iy*iStep+ix]>0)
+			{
+				iSetX.push_back(ix);
+				iSetY.push_back(iy);
+			}
+		}
+	}
 
-
-	// for debug
-    /*float rho = line[0];
-    float theta = line[1];
-    CvPoint pt1, pt2;
-    double a = cos(theta), b = sin(theta);
-    double x0 = a*rho, y0 = b*rho;
-    pt1.x = cvRound(x0 + (pROIImg->width-100)*(-b));
-    pt1.y = cvRound(y0 + (pROIImg->width-100)*(a));
-    pt2.x = cvRound(x0 - (pROIImg->width-100)*(-b));
-    pt2.y = cvRound(y0 - (pROIImg->width-100)*(a));
-	cvLine( pROIImg, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
-	cvNamedWindow( "Hough", 1 );
-    cvShowImage( "Hough", pROIImg );*/
-
-
+	// Robust line fit
+	double dOffset;
+	bool bFlag = RobustPixelLineFit(
+		&iSetX, &iSetY, 
+		4, 1.0, 
+		&dSlope, &dOffset);
+	
+	// Convert for image origin (top left corner)
+	ptParam->dSlope = dSlope;
+	ptParam->dStartY = dOffset - ptParam->dSlope*ptParam->iLeft +ptParam->iTop;
 
 	// clean up
 	cvReleaseStructuringElement(&pDilateSE);
-	cvReleaseImage(&pFlipImg);
+	cvReleaseMemStorage(&storage);
 	cvReleaseImage(&pDilateImg);
 	cvReleaseImage(&pSmoothImg);
 	cvReleaseImage(&pEdgeImg);
 	if(pImage->nChannels > 1) cvReleaseImage(&pGrayImg);
 	cvReleaseImageHeader(&pROIImg);
+
+	return(true);
+}
+
+// Robust fit a line (Calcualte line slop and offset)
+// pSetX and pSetY: input, pixel locations
+// iMaxIterations: maximum loop iterations
+// dMaxMeanAbsRes: return results if mean(abs(residual)) < dMaxMeanAbsRes
+// pdSlope: output, line slope and offset
+bool PanelEdgeDetection::RobustPixelLineFit(
+	const list<int>* pSetX, const list<int>* pSetY, 
+	int iMaxIterations, double dMaxMeanAbsRes, 
+	double* pdSlope, double* pdOffset)
+{
+	// Validation Check
+	if(pSetX->size() < 2 || 
+		pSetY->size()<2 || 
+		pSetX->size() != pSetY->size())
+		return(false);
+
+	list<int> setX_in, setY_in;
+	list<int> setX_out, setY_out;
+	// Input data copy
+	list<int>::const_iterator i, j;
+	for(i = pSetX->begin(), j = pSetY->begin(); i!=pSetX->end(); i++, j++)
+	{
+		setX_in.push_back(*i);
+		setY_in.push_back(*j);
+	}
+
+	for(int k=0; k<iMaxIterations; k++)
+	{	
+		// Line fit
+		double dSlope, dOffset;
+		bool bFlag = PixelLineFit(&setX_in, &setY_in, &dSlope, &dOffset);
+		if(!bFlag) return(false);
+
+		// Calcualte mean and sdv
+		int iCount = 0;
+		double dSum = 0;
+		double dSumSq = 0;
+		for(i = setX_in.begin(), j = setY_in.begin(); i!=setX_in.end(); i++, j++)
+		{
+			double dRes = fabs((*i)*dSlope+dOffset -(*j));
+			dSum += dRes;
+			dSumSq += dRes*dRes;
+			iCount++;
+		}
+		double dMean = dSum/iCount;
+		double dSdv = sqrt(dSumSq/iCount - dMean*dMean);
+		
+		// Terminate condition
+		if(dMean < dMaxMeanAbsRes ||
+			k == iMaxIterations-1)
+		{
+			*pdSlope = dSlope;
+			*pdOffset = dOffset;
+			return(true);
+		}
+
+		// Reduce pixels based on residual
+		setX_out.clear();
+		setY_out.clear();
+		for(i = setX_in.begin(), j = setY_in.begin(); i!=setX_in.end(); i++, j++)
+		{
+			double dRes = fabs((*i)*dSlope+dOffset -(*j));
+			if(dRes < 1.1*dSdv)
+			{
+				setX_out.push_back(*i);
+				setY_out.push_back(*j);
+			}
+		}
+		
+		setX_in.clear();
+		setY_in.clear();
+		for(i = setX_out.begin(), j = setY_out.begin(); i!=setX_out.end(); i++, j++)
+		{
+			setX_in.push_back(*i);
+			setY_in.push_back(*j);
+		}
+	}
+
+	// Should never reach here
+	return(false);
+}
+
+// Least square fit a line (Calcualte line slop and offset)
+// pSetX and pSetY: input, pixel locations
+// pdSlope: output, line slope and offset
+// http://easycalculation.com/statistics/learn-regression.php
+bool PanelEdgeDetection::PixelLineFit(
+	const list<int>* pSetX, const list<int>* pSetY, 
+	double* pdSlope, double* pdOffset)
+{
+	// Validation Check
+	if(pSetX->size() < 2 || 
+		pSetY->size()<2 || 
+		pSetX->size() != pSetY->size())
+		return(false);
+
+	int iNum = pSetX->size();
+	double sum_X=0, sum_Y=0, sum_XY=0, sum_X2=0;
+	list<int>::const_iterator i, j;
+	for(i = pSetX->begin(), j = pSetY->begin(); i!=pSetX->end(); i++, j++)
+	{
+		sum_X += *i;
+		sum_Y += *j;
+		sum_XY += (*i)*(*j);
+		sum_X2 += (*i)*(*i);
+	}
+
+	*pdSlope= (iNum*sum_XY-sum_X*sum_Y)/(iNum*sum_X2-sum_X*sum_X);
+	*pdOffset = (sum_Y-(*pdSlope)*sum_X)/iNum;
 
 	return(true);
 }
