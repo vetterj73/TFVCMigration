@@ -38,7 +38,7 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 		return(false);
 	}
 
-	// Draw edge on image 
+	//*/ Draw edge on image 
 	float dSlope = stParam.dSlope;
 	float dStartY = stParam.dStartY;
 	CvPoint pt1, pt2;
@@ -54,6 +54,7 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 	// Save result image
 	cvSaveImage(Name, pImage);
 	cvReleaseImage(&pImage);
+	//*/
 
 	return(bFlag);
 }
@@ -83,6 +84,8 @@ int wmain(int argc, char* argv[])
 
 	int iCount = 0;
 	int iErrorCount = 0;
+
+	int iStart = ::GetTickCount();
 
 	// Go through all test images
     HANDLE hFind = FindFirstFile(find, &ffd);
@@ -118,11 +121,16 @@ int wmain(int argc, char* argv[])
 		if(FindNextFile(hFind, &ffd)==0)
 			bDone = true;
 	}
+	int iEnd = ::GetTickCount();
+
 	FindClose(hFind);
 
 	// Log result 
-	printf("%d out of %d leading edge are missed!", iErrorCount, iCount);
-	sprintf_s(cLogBuf, "%d out of %d leading edge are missed!", iErrorCount, iCount);
+	printf("%d out of %d leading edge are missed!\n", iErrorCount, iCount);
+	printf("Took %f second\n", (iEnd-iStart)/1000.);
+	sprintf_s(cLogBuf, "%d out of %d leading edge are missed!\n", iErrorCount, iCount);
+	fprintf(fp, cLogBuf);
+	sprintf_s(cLogBuf, "Took %f second\n", (iEnd-iStart)/1000.);
 	fprintf(fp, cLogBuf);
 	printf("Done!");
 
