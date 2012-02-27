@@ -55,6 +55,10 @@ public:
 	void UseProjectiveTransform(bool bValue);
 	void UseCameraModelStitch(bool bValue);
 	void EnableFiducialAlignmentCheck(bool bValue);
+	void SetPanelEdgeDetection(
+		bool bDetectPanelEdge, 
+		bool bConveyorLeft2Right,
+		bool bConveyorFixedFrontRail);
 
 	FidFovOverlapList* GetLastProcessedFids();
 	

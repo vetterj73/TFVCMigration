@@ -66,11 +66,14 @@ CorrelationParameters::CorrelationParameters(void)
 	bUseProjectiveTransform = false;
 	bUseCameraModelStitch = false;
 
-	// Support Bayer(color image)
-	//bGrayScale = true;					// Grey scale image in default
-
 	// Adjust morph to create stitched image for component height
-	bool bAdjustMorph4ComponentHeight = true;
+	bAdjustMorph4ComponentHeight = true;
+
+	// Panel edge detection
+	bDetectPanelEdge = false;				// Detection panel edge to reduce fiducial search area
+		// Conveyor reference
+	bConveyorLeft2Right = true;				// Conveyor moving direction
+	bConveyorFixedFrontRail = true;			// conveyor fixed rail
 
 	// Number of Threads to use for processing
 	NumThreads = 8;

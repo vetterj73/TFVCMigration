@@ -25,6 +25,7 @@ namespace CyberStitchTester
         private static uint _numThreads = 8;
         private static int _cycleCount = 0;
 
+        private static bool _bDetectPanelEedge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
 
@@ -72,6 +73,8 @@ namespace CyberStitchTester
                     bAdjustForHeight = false;
                 if (args[i] == "-cammod")
                     bUseCameraModel = true;
+                if (args[i] == "-de")
+                    _bDetectPanelEedge = true;
                 if (args[i] == "-rtol")
                     _bRtoL = true;
                 if (args[i] == "-frr")
@@ -120,6 +123,10 @@ namespace CyberStitchTester
                     _aligner.UseCameraModelStitch(true);
                     _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                 }
+
+                // Must after InitializeSimCoreAPI()
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, d.FixedRearRail); 
 
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
@@ -360,6 +367,7 @@ namespace CyberStitchTester
                     }
                 }
             }
+
             return true;
         }
 

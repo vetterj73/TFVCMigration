@@ -198,6 +198,16 @@ void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
 	CorrelationParametersInst.bFiducialAlignCheck = bValue;
 }
 
+void PanelAligner::SetPanelEdgeDetection(
+	bool bDetectPanelEdge, 
+	bool bConveyorLeft2Right,
+	bool bConveyorFixedFrontRail)
+{
+	CorrelationParametersInst.bDetectPanelEdge = bDetectPanelEdge;
+	CorrelationParametersInst.bConveyorLeft2Right = bConveyorLeft2Right;
+	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
+}
+
 // Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(
 	unsigned int iLayerIndex, 
