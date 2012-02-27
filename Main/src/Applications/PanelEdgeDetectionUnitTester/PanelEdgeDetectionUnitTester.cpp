@@ -5,7 +5,7 @@
 #include <iostream>
 #include "opencv\cv.h"
 #include "opencv\highgui.h"
-#include "PanelEdgeDetection.h"
+#include "EdgeDetectUtil.h"
 
 #define MAX_PATH 200
 
@@ -27,7 +27,7 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 	stParam.type = BOTTOMEDGE;
 
 	// Edge detection
-	bool bFlag = PanelEdgeDetection::FindLeadingEdge(pImage, &stParam);
+	bool bFlag = FindLeadingEdge(pImage, &stParam);
 	char Name[MAX_PATH];
 	strncpy_s(Name, "C:\\Temp\\", MAX_PATH);
 	strncat_s(Name, fileName, MAX_PATH);
