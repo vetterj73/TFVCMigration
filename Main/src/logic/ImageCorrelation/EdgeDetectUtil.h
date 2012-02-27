@@ -16,24 +16,28 @@ enum PanelEdgeType
 	BOTTOMEDGE
 };
 
+// For panel edge detection on a FOV
 struct StPanelEdgeInImage
 {
-	int iLeft;
+	// Input
+	int iLeft;					// ROI
 	int iRight;
 	int iTop;
 	int iBottom;
-	PanelEdgeType type;
-	double dMinLineLengthRatio;
-	double dAngleRange;
-	int iFlag;	
-	double dRho;
-	double dTheta;
-	double dStartY;
+	PanelEdgeType type;			// type of edge
+	int iDecim;					// Decim, valid value = 1, 2, 4;
+	double dMinLineLengthRatio;	// Ratio of minimum length of edge
+	double dAngleRange;			// Angle range of edge
+	
+	// Output
+	int iFlag;					// rResult flag			
+	double dStartY;				// Line paramter base on original FOV image
 	double dSlope;
 
 	StPanelEdgeInImage()
 	{
-		dMinLineLengthRatio =0.5;
+		iDecim= 2;
+		dMinLineLengthRatio = 0.5;
 		dAngleRange = 3;
 		iFlag = 0;
 	}

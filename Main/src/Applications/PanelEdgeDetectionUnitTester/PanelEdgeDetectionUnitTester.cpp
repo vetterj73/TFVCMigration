@@ -25,6 +25,7 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 	stParam.dAngleRange = 2;
 	stParam.dMinLineLengthRatio = 0.3;
 	stParam.type = BOTTOMEDGE;
+	stParam.iDecim = 2;
 
 	// Edge detection
 	bool bFlag = FindLeadingEdge(pImage, &stParam);
@@ -102,7 +103,6 @@ int wmain(int argc, char* argv[])
 
 		// Front edge detection
 		bool bFlag = DetectPanelFrontEdge(filePath, ffd.cFileName);
-		if(!bFlag) iErrorCount++;
 
 		iCount++;
 		printf("#%d: %s\n", iCount, ffd.cFileName);
@@ -112,11 +112,11 @@ int wmain(int argc, char* argv[])
 		// Log failure case
 		if(!bFlag)
 		{
-			printf("Failed to detect ldeading edge\n");
-			sprintf_s(cLogBuf, "#%d: %s Failed to detect ldeading edge\n", iCount, ffd.cFileName);
+			printf("Failed to detect leading edge\n");
+			sprintf_s(cLogBuf, "#%d: %s Failed to detect leading edge\n", iCount, ffd.cFileName);
 			fprintf(fp, cLogBuf);
 			iErrorCount++;
-			cvWaitKey(0);
+			//cvWaitKey(0);
 		}
 		if(FindNextFile(hFind, &ffd)==0)
 			bDone = true;

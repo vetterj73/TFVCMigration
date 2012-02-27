@@ -31,8 +31,28 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 		return(false);
 	}
 
+	if(ptParam->iDecim != 1 && 
+		ptParam->iDecim != 2 &&
+		ptParam->iDecim != 4)
+	{
+		ptParam->iFlag = -4;
+		return(false);
+	}
+
 	int iWidth = ptParam->iRight - ptParam->iLeft + 1;
 	int iHeight = ptParam->iBottom - ptParam->iTop + 1;
+	int iProcW = iWidth, iProcH = iHeight;
+	if(ptParam->iDecim != 1)
+	{
+		iProcW = (iWidth+1)/2;
+		iProcH = (iHeight+1)/2;
+
+		if(ptParam->iDecim == 4)
+		{
+			iProcW = (iProcW+1)/2;
+			iProcH = (iProcH+1)/2;
+		}
+	}
 
 	// ROI image
 	IplImage* pROIImg =  cvCreateImageHeader(cvSize(iWidth, iHeight), IPL_DEPTH_8U, pImage->nChannels);
@@ -52,14 +72,30 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 		pGrayImg = pROIImg;
 	}
 
+	IplImage* pProcImg = pGrayImg;
+	IplImage* pDecim2 = NULL, *pDecim4 = NULL;
+	if(ptParam->iDecim != 1)
+	{
+		pDecim2 = cvCreateImage(cvSize((iWidth+1)/2, (iHeight+1)/2), IPL_DEPTH_8U, 1);
+		cvPyrDown(pGrayImg, pDecim2);
+		pProcImg = pDecim2;
+
+		if(ptParam->iDecim == 4)
+		{
+			pDecim4 = cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
+			cvPyrDown(pDecim2, pDecim4);
+			pProcImg = pDecim4;
+		}
+	}
+
 	// Smooth
-	IplImage* pSmoothImg = cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-	cvSmooth(pGrayImg, pSmoothImg, CV_BILATERAL, 9,9,50,50);
+	IplImage* pSmoothImg = cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
+	cvSmooth(pProcImg, pSmoothImg, CV_BILATERAL, 9,9,50,50);
 	//cvSaveImage("c:\\Temp\\Smooth.png", pSmoothImg);
 
 	// Edge detection
-	IplImage* pEdgeImg =  cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-	cvCanny( pSmoothImg, pEdgeImg, 20, 5);
+	IplImage* pEdgeImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
+	cvCanny( pSmoothImg, pEdgeImg, 20, 10);
 	//cvSaveImage("c:\\Temp\\edge.png", pEdgeImg);
 
 	// Edge dilation for hough
@@ -69,14 +105,14 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 		iDilateSize, iDilateSize,
         CV_SHAPE_RECT);
 	
-	IplImage* pDilateImg =  cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
+	IplImage* pDilateImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvDilate( pEdgeImg, pDilateImg, pDilateSE); 
 	//cvSaveImage("c:\\Temp\\DilatedEdge.png", pDilateImg);
 
 	// Hough transform
 	CvMemStorage* storage = cvCreateMemStorage(0);
 	CvSeq* lines = 0;
-	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width);
+	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width/ptParam->iDecim);
 	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
 	
 	// Pick the right hough lines
@@ -164,7 +200,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	
 	// Convert for image origin (top left corner)
 	ptParam->dSlope = dSlope;
-	ptParam->dStartY = dOffset - ptParam->dSlope*ptParam->iLeft +ptParam->iTop;
+	ptParam->dStartY = (dOffset - ptParam->dSlope*ptParam->iLeft)*ptParam->iDecim +ptParam->iTop;
 
 	// clean up
 	cvReleaseStructuringElement(&pDilateSE);
@@ -172,6 +208,8 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	cvReleaseImage(&pDilateImg);
 	cvReleaseImage(&pSmoothImg);
 	cvReleaseImage(&pEdgeImg);
+	if(pDecim2 != NULL) cvReleaseImage(&pDecim2);
+	if(pDecim4 != NULL) cvReleaseImage(&pDecim4);
 	if(pImage->nChannels > 1) cvReleaseImage(&pGrayImg);
 	cvReleaseImageHeader(&pROIImg);
 
@@ -240,7 +278,7 @@ bool RobustPixelLineFit(
 		for(i = setX_in.begin(), j = setY_in.begin(); i!=setX_in.end(); i++, j++)
 		{
 			double dRes = fabs((*i)*dSlope+dOffset -(*j));
-			if(dRes < 1.1*dSdv)
+			if(dRes < dMean + 0.5*dSdv)
 			{
 				setX_out.push_back(*i);
 				setY_out.push_back(*j);
