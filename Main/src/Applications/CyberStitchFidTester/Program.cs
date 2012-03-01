@@ -96,9 +96,9 @@ namespace CyberStitchFidTester
             bool bSaveStitchedResultsImage = false;
             int numberToRun = 1;
             string unitTestFolder="";
+            double dCalScale = 1.0;
             ManagedFeatureLocationCheck fidChecker;
          
-
             //output csv file shows the comparison results
             string outputTextPath = @".\fidsCompareResults.csv";
             string lastOutputTextPath = @".\lastFidsCompareResults.csv";
@@ -125,6 +125,8 @@ namespace CyberStitchFidTester
                     simulationFile = args[i + 1];
                 else if (args[i] == "-u" && i < args.Length - 1)
                     unitTestFolder = args[i + 1];
+                else if (args[i] == "-scale" && i < args.Length - 1)
+                    dCalScale = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-w")
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
@@ -277,6 +279,9 @@ namespace CyberStitchFidTester
                     _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
                         _aligner.UseProjectiveTransform(true);
+                    if (dCalScale != 1.0)
+                        _aligner.SetCalibrationWeight(dCalScale);
+
                 if (bUseCameraModel)
                 {
                     _aligner.UseCameraModelStitch(true);

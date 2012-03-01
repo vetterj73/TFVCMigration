@@ -12,7 +12,8 @@ EquationWeights& EquationWeights::Instance()
 
 EquationWeights::EquationWeights(void)
 {
-// weights for calibration related constrains
+	// weights for calibration related constrains
+	dCalScale = 1.0;	// Scale of calibration weight
 	wRxy = 5e7;			// Rotation match (m1 = -m3)
 	wMxy = 5e7;			// Magnification match (m0 = m4)
 	wRcal = 5e6;		// Rotation m1/m3 match calibration
@@ -23,13 +24,18 @@ EquationWeights::EquationWeights(void)
 	wYdelta = 1e4;		// distance between cameras in Y match calibration
 	wXdelta = 1e3;		// distance between cameras in X match calibration
 
+		// for projective transform
+	wPMEq = 1e12;		// m6 = m10 and m7 = m11
+	wPM89 = 1e12;		// M8 = 0 and M9 = 0
+	wPMNext = 2e11;	// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
+
+	// for solve without fiducial and panel edge
 	wYcentNoFid = 1e5;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
 	wXcentNoFid = 1e5;	// Fov center X position match calibration without fiducial equation (for single FOV only)
 
-	// for projective transform
-	wPMEq = 1e12;		// m6 = m10 and m7 = m11
-	wPM89 = 1e12;		// M8 = 0 and M9 = 0
-	wPMNext = 2e11;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
+	// for panel edge detection
+	wXbyEdge = wXcent*1e5;	// x offset based on edge detection
+	wRbyEdge = wRcal*1e3;	// FOV rotation based on edge detection
 
 	// For Camera Model
 	wZConstrain = 10;   // lightly constrain Z model to flat
@@ -40,7 +46,6 @@ EquationWeights::EquationWeights(void)
 	wFidFlatFiducialLateralShift = 1e3;
 	wFidFlatFlattenFiducial = 1e5;
 	RelativeFidFovCamModWeight = 1e-3;
-
 
 	// Parameters of weight for Fov and Fov overlap
 	_dWeightFovFov = 2e5;
@@ -103,6 +108,31 @@ double EquationWeights::CalWeight(CorrelationPair* pPair)
 	if(dWeight < 0) dWeight = 0;
 
 	return(dWeight);
+}
+
+
+void EquationWeights::SetCalibrationScale(double dValue)
+{
+
+	double dOldValue = dCalScale;
+	dCalScale = dValue;
+
+	double dAdjustScale = dCalScale/dOldValue;
+
+	wRxy *= dAdjustScale;		// Rotation match (m1 = -m3)
+	wMxy *= dAdjustScale;		// Magnification match (m0 = m4)
+	wRcal *= dAdjustScale;		// Rotation m1/m3 match calibration
+	wMcal *= dAdjustScale;		// Magnification m0/m4 (pixel size) match calibtation
+	wYRdelta *= dAdjustScale;	// Angle different for adjacent cameras(Y) should match calibration
+	wYcent *= dAdjustScale;		// Fov center Y position match calibration
+	wXcent *= dAdjustScale;		// Fov center X position match calibration
+	wYdelta *= dAdjustScale;	// distance between cameras in Y match calibration
+	wXdelta *= dAdjustScale;	// distance between cameras in X match calibration
+
+		// for projective transform
+	wPMEq *= dAdjustScale;		// m6 = m10 and m7 = m11
+	wPM89 *= dAdjustScale;		// M8 = 0 and M9 = 0
+	wPMNext *= dAdjustScale;	// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
 }
 
 

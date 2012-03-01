@@ -185,6 +185,11 @@ namespace PanelAlignM {
 			bConveyorFixedFrontRail);
 	}
 
+	void ManagedPanelAlignment::SetCalibrationWeight(double dValue)
+	{
+		_pAligner->SetCalibrationWeight(dValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{

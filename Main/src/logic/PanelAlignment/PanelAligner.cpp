@@ -6,6 +6,7 @@
 #include "Panel.h"
 #include "ColorImage.h"
 #include <direct.h> //_mkdir
+#include "EquationWeights.h"
 
 void ImageAdded(int layerIndex, int cameraIndex, int triggerIndex, void* context)
 {
@@ -206,6 +207,11 @@ void PanelAligner::SetPanelEdgeDetection(
 	CorrelationParametersInst.bDetectPanelEdge = bDetectPanelEdge;
 	CorrelationParametersInst.bConveyorLeft2Right = bConveyorLeft2Right;
 	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
+}
+
+void PanelAligner::SetCalibrationWeight(double dValue)
+{
+	EquationWeights::Instance().SetCalibrationScale(dValue);
 }
 
 // Add single image (single entry protected by mutex)
