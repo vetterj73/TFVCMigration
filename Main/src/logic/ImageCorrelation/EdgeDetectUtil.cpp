@@ -1,5 +1,4 @@
 #include "EdgeDetectUtil.h"
-
 #include <math.h>
 
 // Find panel leading edge in a FOV image
@@ -200,7 +199,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	
 	// Convert for image origin (top left corner)
 	ptParam->dSlope = dSlope;
-	ptParam->dStartY = (dOffset - ptParam->dSlope*ptParam->iLeft)*ptParam->iDecim +ptParam->iTop;
+	ptParam->dStartRow = (dOffset - ptParam->dSlope*ptParam->iLeft)*ptParam->iDecim +ptParam->iTop;
 
 	// clean up
 	cvReleaseStructuringElement(&pDilateSE);
@@ -213,6 +212,8 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	if(pImage->nChannels > 1) cvReleaseImage(&pGrayImg);
 	cvReleaseImageHeader(&pROIImg);
 
+
+	ptParam->iFlag = 1;
 	return(true);
 }
 
