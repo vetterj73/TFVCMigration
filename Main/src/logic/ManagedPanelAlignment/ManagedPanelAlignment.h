@@ -83,6 +83,7 @@ namespace PanelAlignM {
 		ManagedPanelAlignment();
 		!ManagedPanelAlignment();
 		~ManagedPanelAlignment();
+		void Destroy();
 
 		///
 		///	Sets up for a new "Run"
