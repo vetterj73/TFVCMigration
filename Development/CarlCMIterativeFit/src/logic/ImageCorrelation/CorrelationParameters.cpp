@@ -65,6 +65,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Whether use projective transform
 	bUseProjectiveTransform = false;
 	bUseCameraModelStitch = false;
+	bUseCameraModelStitch = false;
 
 	// Support Bayer(color image)
 	//bGrayScale = true;					// Grey scale image in default

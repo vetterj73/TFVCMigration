@@ -48,6 +48,9 @@ public:
 	double RelativeFidFovCamModWeight; // there must be a better way to do this....
 	// this is a relative deweighting value for the _dWeightFidFov, expect to be 1e-3
 
+	// additions for iterative fit camera model
+	double wCalDriftZero;
+
 
 private:
 	// Parameters of weight for Fov and Fov overlap

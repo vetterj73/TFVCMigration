@@ -64,10 +64,19 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	// Create solver for all illuminations
 	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
 	bool bUseCameraModelStitch = CorrelationParametersInst.bUseCameraModelStitch;
+	bool bUseCameraModelIterativeStitch = CorrelationParametersInst.bUseCameraModelIterativeStitch;
 	CreateImageOrderInSolver(&_solverMap);	
 	unsigned int iMaxNumCorrelations =  _pOverlapManager->MaxCorrelations();  
 	//unsigned int iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
-	if (bUseCameraModelStitch)
+	if (bUseCameraModelIterativeStitch)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch True, %d", bUseCameraModelStitch);
+		_pSolver = new RobustSolverIterative(	
+						&_solverMap, 
+						iMaxNumCorrelations,
+						_pSet);  // TODO Is it wise to send _pSet to solver??????????????????????????????????????
+	}
+	else if (bUseCameraModelStitch)
 	{
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch True, %d", bUseCameraModelStitch);
 		_pSolver = new RobustSolverCM(	
@@ -191,6 +200,11 @@ void PanelAligner::UseCameraModelStitch(bool bValue)
 {
 	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelStitch = bValue;
+}
+void PanelAligner::UseCameraModelIterativeStitch(bool bValue)
+{
+	// set some useful value.....
+	CorrelationParametersInst.bUseCameraModelIterativeStitch = bValue;
 }
 
 void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
@@ -409,16 +423,16 @@ bool PanelAligner::CreateTransforms()
 
 	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
-	if(CorrelationParametersInst.bSaveTransformVectors)
-	{
-		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
-		char cTemp[255];
-		string s;
-		sprintf_s(cTemp, 100, "%sTransformVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 
-		s.clear();
-		s.assign(cTemp);
-		_pSolver->OutputVectorXCSV(s);
-	}
+	//if(CorrelationParametersInst.bSaveTransformVectors)
+	//{
+	//_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
+	//	char cTemp[255];
+	//	string s;
+	//	sprintf_s(cTemp, 100, "%sTransformVectorX_%d.csv", CorrelationParametersInst.sDiagnosticPath.c_str(),_pSolver->iFileSaveIndex); 
+	//	s.clear();
+	//	s.assign(cTemp);
+	//	_pSolver->OutputVectorXCSV(s);
+	//}
 	return(true);
 }
 

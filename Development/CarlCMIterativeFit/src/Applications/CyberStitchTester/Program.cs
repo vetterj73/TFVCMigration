@@ -52,6 +52,8 @@ namespace CyberStitchTester
             bool bAdjustForHeight = true;
             bool bUseProjective = false;
             bool bUseCameraModel = false;
+            bool bUseIterativeCameraModel = false;
+            
             int numberToRun = 1;
 
             for(int i=0; i<args.Length; i++)
@@ -72,6 +74,8 @@ namespace CyberStitchTester
                     bAdjustForHeight = false;
                 if (args[i] == "-cammod")
                     bUseCameraModel = true;
+                if (args[i] == "-iter")
+                    bUseIterativeCameraModel = true;
                 if (args[i] == "-rtol")
                     _bRtoL = true;
                 if (args[i] == "-frr")
@@ -118,6 +122,11 @@ namespace CyberStitchTester
                 if (bUseCameraModel)
                 {
                     _aligner.UseCameraModelStitch(true);
+                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                }
+                if (bUseIterativeCameraModel)
+                {
+                    _aligner.UseCameraModelIterativeStitch(true);
                     _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                 }
 
@@ -272,6 +281,8 @@ namespace CyberStitchTester
                 else
                     mDoneEvent.Reset();
             }
+            // ??? is this the only object that needs this???????????????????????????????????
+            _aligner.Dispose();
 
             Output("Processing Complete");
             logger.Kill();

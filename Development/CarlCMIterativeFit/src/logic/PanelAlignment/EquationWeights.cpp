@@ -41,6 +41,8 @@ EquationWeights::EquationWeights(void)
 	wFidFlatFlattenFiducial = 1e5;
 	RelativeFidFovCamModWeight = 1e-3;
 
+	wCalDriftZero = 1e5;  // expect cal to drift < 100um, start weighting at 10 um
+
 
 	// Parameters of weight for Fov and Fov overlap
 	_dWeightFovFov = 2e5;

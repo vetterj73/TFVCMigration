@@ -5,6 +5,9 @@
 #include "MosaicSet.h"
 #include "Logger.h"
 #include "RobustSolver.h"
+#include "RobustSolverFOV.h"
+#include "RobustSolverCM.h"
+#include "RobustSolverIterative.h"
 #include "CorrelationParameters.h"
 #include <map>
 #include "OverlapManager.h"
@@ -54,6 +57,7 @@ public:
 	void UseCyberNgc4Fiducial();
 	void UseProjectiveTransform(bool bValue);
 	void UseCameraModelStitch(bool bValue);
+	void UseCameraModelIterativeStitch(bool bValue);
 	void EnableFiducialAlignmentCheck(bool bValue);
 
 	FidFovOverlapList* GetLastProcessedFids();

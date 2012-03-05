@@ -170,12 +170,18 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="Logger.h" />
     <ClInclude Include="PanelAligner.h" />
     <ClInclude Include="RobustSolver.h" />
+    <ClInclude Include="RobustSolverCM.h" />
+    <ClInclude Include="RobustSolverFOV.h" />
+    <ClInclude Include="RobustSolverIterative.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EquationWeights.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="PanelAligner.cpp" />
     <ClCompile Include="RobustSolver.cpp" />
+    <ClCompile Include="RobustSolverCM.cpp" />
+    <ClCompile Include="RobustSolverFOV.cpp" />
+    <ClCompile Include="RobustSolverIterative.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">

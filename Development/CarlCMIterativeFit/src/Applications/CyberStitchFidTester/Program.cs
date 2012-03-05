@@ -94,6 +94,7 @@ namespace CyberStitchFidTester
             bool bUseProjective = false;
             bool bUseCameraModel = false;
             bool bSaveStitchedResultsImage = false;
+            bool bUseIterativeCameraModel = false;
             int numberToRun = 1;
             string unitTestFolder="";
             ManagedFeatureLocationCheck fidChecker;
@@ -129,6 +130,8 @@ namespace CyberStitchFidTester
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
+                if (args[i] == "-iter")
+                    bUseIterativeCameraModel = true;
                 if (args[i] == "-rtol")
                     _bRtoL = true;
                 if (args[i] == "-frr")
@@ -277,11 +280,17 @@ namespace CyberStitchFidTester
                     _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
                         _aligner.UseProjectiveTransform(true);
-                if (bUseCameraModel)
-                {
-                    _aligner.UseCameraModelStitch(true);
-                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                } 
+                    if (bUseCameraModel)
+                    {
+                        _aligner.UseCameraModelStitch(true);
+                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                    }
+                    if (bUseIterativeCameraModel)
+                    {
+                        _aligner.UseCameraModelIterativeStitch(true);
+                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                    }
+
 
                     if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                     {
@@ -448,6 +457,8 @@ namespace CyberStitchFidTester
                     }
                 }
             }
+            // ??? is this the only object that needs this???????????????????????????????????
+            _aligner.Dispose();
 
             Output("Processing Complete");
             Terminate();
