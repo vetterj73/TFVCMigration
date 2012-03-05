@@ -105,8 +105,13 @@ PanelEdgeDetection::PanelEdgeDetection()
 
 PanelEdgeDetection::~PanelEdgeDetection(void)
 {
-	if(_pLeftFovJob != NULL) delete _pLeftFovJob;
-	if(_pRightFovJob != NULL) delete _pRightFovJob;
+	if(_pLeftFovJob != NULL) 
+		delete _pLeftFovJob;
+	if(_pRightFovJob != NULL) 
+		delete _pRightFovJob;
+
+	_pLeftFovJob = NULL;
+	_pRightFovJob = NULL;
 }
 
 

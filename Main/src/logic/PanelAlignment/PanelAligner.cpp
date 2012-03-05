@@ -444,7 +444,7 @@ bool PanelAligner::CreateTransforms()
 			// Reset solver
 			_pSolver->Reset();
 
-			// for debug
+			/* for debug
 				// Get shift 100 pixel stitched image
 			pLayer = _pSet->GetLayer(0);
 			pLayer->SetXShift(true);
@@ -455,7 +455,7 @@ bool PanelAligner::CreateTransforms()
 			::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
 				// Save debug image
 			pTempImage->Save("C:\\Temp\\edgeImage.bmp");
-			
+			//*/
 
 			// Create and Calculate fiducial overlaps for current panel
 			_pOverlapManager->DoAlignment4AllFiducial(true);

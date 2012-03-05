@@ -114,7 +114,7 @@ namespace CyberStitchTester
             {
                 _aligner.NumThreads(_numThreads);
                 //_aligner.LogOverlaps(true);
-                _aligner.LogFiducialOverlaps(true);
+                //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 if(bUseProjective)
                     _aligner.UseProjectiveTransform(true);
@@ -282,6 +282,9 @@ namespace CyberStitchTester
 
             Output("Processing Complete");
             logger.Kill();
+
+            _aligner.Dispose();
+
             ManagedCoreAPI.TerminateAPI();
         }
 

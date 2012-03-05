@@ -33,14 +33,6 @@ namespace PanelAlignM {
 		_pAligner = NULL;
 	}
 
-	void ManagedPanelAlignment::Destroy()
-	{
-		if(_pAligner!=NULL)
-			delete _pAligner;
-
-		_pAligner = NULL;
-	}
-
 	int ManagedPanelAlignment::GetNumberOfFidsProcessed()
 	{
 		return (int)_pAligner->GetLastProcessedFids()->size();
