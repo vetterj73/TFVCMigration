@@ -74,6 +74,10 @@ CorrelationParameters::CorrelationParameters(void)
 		// Conveyor reference
 	bConveyorLeft2Right = true;				// Conveyor moving direction
 	bConveyorFixedFrontRail = true;			// conveyor fixed rail
+			// Control parameters
+	dMinLeadingEdgeGap = 2e-3;				// Minimum gap between image edge and nominal panel leading edge
+	dLeadingEdgeSearchRange = 4e-3;			// Search range for panel leading edge
+	dConveyorBeltAreaSize = 4e-3;			// The size of conveyor belt area that need to be ignored in leading edge detection
 
 	// Number of Threads to use for processing
 	NumThreads = 8;

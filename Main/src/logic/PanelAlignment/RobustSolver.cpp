@@ -144,12 +144,20 @@ void RobustSolverFOV::ZeroTheSystem()
 #pragma endregion
 
 #pragma region Add equations
-// Add Constraints for one image
-bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
+// Add calibration related Constraints for one FOV
+// bPinFOV: valid when bIgnoreXOffset=false, 
+// true for giving bigger weight of equarions of X and Y center to pin FOV on CAD space
+// bIgnoreXOffset: true for ignore equation of X center/offset
+bool RobustSolverFOV::AddCalibationConstraints(
+	MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
+	bool bPinFOV, bool bIgnoreXOffset)
 {
 	// Validation check
 	if(iCamIndex>=pMosaic->GetNumberOfCameras() || iTrigIndex>=pMosaic->GetNumberOfTriggers())
 		return(false);
+
+	// If X offset is ignored, the FOV should not pin
+	if(bIgnoreXOffset) bPinFOV=false;
 
 	// Fov transform parameter begin position in column
 	// Fov's nominal center
@@ -212,17 +220,20 @@ bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned in
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 3 rotation match (M1 = cal[1]) 
-	pdRowBegin[iFOVPos+1] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
-	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(1);
-	pdRowBegin += _iMatrixWidth;
-	_iCurrentRow++;
+	if(bIgnoreXOffset)
+	{
+		//* 3 rotation match (M1 = cal[1]) 
+		pdRowBegin[iFOVPos+1] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
+		_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(1);
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
 
-	//* 4 rotate match (M3 = cal[3])
-	pdRowBegin[iFOVPos+3] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
-	_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(3);
-	pdRowBegin += _iMatrixWidth;
-	_iCurrentRow++;
+		//* 4 rotate match (M3 = cal[3])
+		pdRowBegin[iFOVPos+3] = Weights.wRcal;	// b VALUE IS NON_ZERO!!
+		_dVectorB[_iCurrentRow] = Weights.wRcal * transFov.GetItem(3);
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
+	}
 
 	//* 5 pixel size match in Y (M0 = cal[0]) 
 	pdRowBegin[iFOVPos+0] = Weights.wMcal;	// b VALUE IS NON_ZERO!!
@@ -250,7 +261,7 @@ bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned in
 	// Use FOV center instread of (0,0) is to add more constraint for projective transform
 	double dTempWeight = Weights.wYcent;
 	// If fiducial information is not used, one FOV will have high weight
-	if(!bUseFiducials && pMosaic->Index()==0 && iTrigIndex == 1 && iCamIndex == 1)
+	if(bPinFOV)
 		dTempWeight = Weights.wYcentNoFid;
 	pdRowBegin[iFOVPos+3] = dTempWeight * dPixelCenRow;
 	pdRowBegin[iFOVPos+4] = dTempWeight * dPixelCenCol;
@@ -265,24 +276,27 @@ bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned in
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	//* 9 Position of the FOV in X match Cal
-	// Use FOV center instread of (0,0) is to add more constraint for projective transform
-	dTempWeight = Weights.wXcent;
-	// If fiducial information is not used, one FOV will have high weight
-	if(!bUseFiducials && pMosaic->Index()==0 && iTrigIndex == 1 && iCamIndex == 1)
-		dTempWeight = Weights.wXcentNoFid;
-	pdRowBegin[iFOVPos+0] = dTempWeight * dPixelCenRow;
-	pdRowBegin[iFOVPos+1] = dTempWeight * dPixelCenCol;
-	pdRowBegin[iFOVPos+2] = dTempWeight;
-	if(_bProjectiveTrans)
+	if(bIgnoreXOffset)
 	{
-		pdRowBegin[iFOVPos+6] = dTempWeight * dPixelCenRow * dPixelCenRow;
-		pdRowBegin[iFOVPos+7] = dTempWeight * dPixelCenRow * dPixelCenCol;
-		pdRowBegin[iFOVPos+8] = dTempWeight * dPixelCenCol * dPixelCenCol;
+		//* 9 Position of the FOV in X match Cal
+		// Use FOV center instread of (0,0) is to add more constraint for projective transform
+		dTempWeight = Weights.wXcent;
+		// If fiducial information is not used, one FOV will have high weight
+		if(bPinFOV)
+			dTempWeight = Weights.wXcentNoFid;
+		pdRowBegin[iFOVPos+0] = dTempWeight * dPixelCenRow;
+		pdRowBegin[iFOVPos+1] = dTempWeight * dPixelCenCol;
+		pdRowBegin[iFOVPos+2] = dTempWeight;
+		if(_bProjectiveTrans)
+		{
+			pdRowBegin[iFOVPos+6] = dTempWeight * dPixelCenRow * dPixelCenRow;
+			pdRowBegin[iFOVPos+7] = dTempWeight * dPixelCenRow * dPixelCenCol;
+			pdRowBegin[iFOVPos+8] = dTempWeight * dPixelCenCol * dPixelCenCol;
+		}
+		_dVectorB[_iCurrentRow] = dTempWeight  * dFovCalCenX;
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
 	}
-	_dVectorB[_iCurrentRow] = dTempWeight  * dFovCalCenX;
-	pdRowBegin += _iMatrixWidth;
-	_iCurrentRow++;
 
 	//* 10 distance between cameras in Y
 	if(iNextCamFovPos > 0) // Next camera exists
@@ -384,6 +398,41 @@ bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned in
 			_iCurrentRow++;
 		}
 	}
+
+	return(true);
+}
+
+// Add constraint base on panel edge
+bool RobustSolverFOV::AddPanelEdgeContraints(
+	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
+	double dXOffset, double dSlope)
+{
+	// Position of equation in Matirix
+	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
+	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
+	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+	
+	ImgTransform trans = pLayer->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
+	double dNorminalPixelSize = trans.GetItem(0);
+
+	// Position X constraint
+	pdRowBegin[iFOVPos+2] = Weights.wXbyEdge; // M[2]
+	_dVectorB[_iCurrentRow] = Weights.wXbyEdge * dXOffset;
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// Angle constraint
+	// dNorminalPixelSize * (-dSlope) = M[1];
+	pdRowBegin[iFOVPos+1] = Weights.wRbyEdge; 
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * (-dSlope);
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// dNorminalPixelSize * (dSlope) = M[3];
+	pdRowBegin[iFOVPos+3] = Weights.wRbyEdge; 
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * dSlope ;
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
 
 	return(true);
 }
@@ -1304,7 +1353,9 @@ void RobustSolverCM::ConstrainPerTrig()
 }
 
 
-bool RobustSolverCM::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
+bool RobustSolverCM::AddCalibationConstraints(
+	MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex,
+	bool bPinFov, bool bIgnoreXOffset)
 {
 	// there are no per FOV calib constraints in the camera model fit
 	return true;

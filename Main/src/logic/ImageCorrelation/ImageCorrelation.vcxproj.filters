@@ -45,6 +45,9 @@
     <ClInclude Include="EdgeDetectUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EdgeDetectStructDef.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OverlapDefines.cpp">

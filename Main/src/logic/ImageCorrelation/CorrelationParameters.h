@@ -91,7 +91,10 @@ public:
 		// Conveyor reference
 	bool bConveyorLeft2Right;				// Conveyor moving direction
 	bool bConveyorFixedFrontRail;			// conveyor fixed rail
-
+		// Control parameters
+	double dMinLeadingEdgeGap;				// Minimum gap between image edge and nominal panel leading edge
+	double dLeadingEdgeSearchRange;			// Search range for panel leading edge
+	double dConveyorBeltAreaSize;			// The size of conveyor belt area that need to be ignored in leading edge detection
 
 	// debug flage
 	bool bSaveFiducialOverlaps;

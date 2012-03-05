@@ -114,7 +114,7 @@ namespace CyberStitchTester
             {
                 _aligner.NumThreads(_numThreads);
                 //_aligner.LogOverlaps(true);
-                //_aligner.LogFiducialOverlaps(true);
+                _aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 if(bUseProjective)
                     _aligner.UseProjectiveTransform(true);
@@ -124,9 +124,9 @@ namespace CyberStitchTester
                     _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                 }
 
-                // Must after InitializeSimCoreAPI()
+                // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))

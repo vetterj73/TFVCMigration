@@ -169,6 +169,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="CorrelationPair.h" />
     <ClInclude Include="CorrelationParameters.h" />
     <ClInclude Include="CyberNgcFiducialCorrelation.h" />
+    <ClInclude Include="EdgeDetectStructDef.h" />
     <ClInclude Include="EdgeDetectUtil.h" />
     <ClInclude Include="FeatureLocationCheck.h" />
     <ClInclude Include="FiducialResult.h" />

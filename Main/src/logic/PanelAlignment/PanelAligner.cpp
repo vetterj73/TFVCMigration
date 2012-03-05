@@ -382,17 +382,107 @@ bool PanelAligner::CreateTransforms()
 	// For debug
 	// DisturbFiducialAlignment();
 
-	// Fiducial alignment check based on SIM calibration
-	if(CorrelationParametersInst.bFiducialAlignCheck)
-		FiducialAlignmentCheckOnCalibration();
+	// Alignment with panel leading edge and without fiducials 
+	bool bUseEdgeInfo = false;
+	if(CorrelationParametersInst.bDetectPanelEdge)
+	{
+		// Get panel leading edge information
+		double dSlope, dLeftXOffset, dRightXOffset;
+		int iLayerIndex, iTrigIndex, iLeftCamIndex, iRightCamIndex;
+		EdgeInfoType type = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(
+			&dSlope, &dLeftXOffset, &dRightXOffset,
+			&iLayerIndex, &iTrigIndex, 
+			&iLeftCamIndex, &iRightCamIndex);
+
+		if(type == INVALID || type == CONFLICTION) // If leading edge detection is failed
+		{
+			// Do nominal fiducial overlap alignment
+			bool bForCurPanel = false;
+			_pOverlapManager->DoAlignment4AllFiducial(bForCurPanel);
+		}
+		else	// If leading edge detection is success
+		{
+			bUseEdgeInfo = true;
+
+			// Create matrix and vector for solver
+			for(int i=0; i<iNumIllums; i++)
+			{
+				// Not use fiducial, not pin panel with calibration 
+				// since panel leading edge will be used
+				AddOverlapResultsForIllum(_pSolver, i, false, false);
+			}
+
+			// Add panel leading edge constraints
+			MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(iLayerIndex);
+			if(type == LEFTONLYVALID || type == BOTHVALID)
+			{
+				_pSolver->AddPanelEdgeContraints(pLayer, iLeftCamIndex, iTrigIndex, dLeftXOffset, dSlope);
+			}
+			if(type == RIGHTONLYVALID || type == BOTHVALID)
+			{
+				_pSolver->AddPanelEdgeContraints(pLayer, iRightCamIndex, iTrigIndex, dRightXOffset, dSlope);
+			}
+			// Solve transforms with panel leading edge but without fiducial information
+			_pSolver->SolveXAlgH();
+
+			// Get intermediate result transforms
+			for(int i=0; i<iNumIllums; i++)
+			{
+				// Get calculated transforms
+				pLayer = _pSet->GetLayer(i);
+				for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+				{
+					for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+					{
+						Image* img = pLayer->GetImage(iCam, iTrig);
+						ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
+						img->SetTransform(t);
+					}
+				}
+			}
+			
+			// Reset solver
+			_pSolver->Reset();
+
+			// for debug
+				// Get shift 100 pixel stitched image
+			pLayer = _pSet->GetLayer(0);
+			pLayer->SetXShift(true);
+			Image* pTempImage = pLayer->GetStitchedImage();
+			pLayer->SetXShift(false);
+				// Draw a 3-pixel width white line to represent leading edge
+			unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
+			::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
+				// Save debug image
+			pTempImage->Save("C:\\Temp\\edgeImage.bmp");
+			
+
+			// Create and Calculate fiducial overlaps for current panel
+			_pOverlapManager->DoAlignment4AllFiducial(true);
+
+			
+		}
+	}
+
+	if(!bUseEdgeInfo)
+	{
+		// Fiducial alignment check based on SIM calibration
+		if(CorrelationParametersInst.bFiducialAlignCheck)
+			FiducialAlignmentCheckOnCalibration();
+	}
 
 	PickOneAlign4EachPanelFiducial();
 
 	// Create matrix and vector for solver
 	for(int i=0; i<iNumIllums; i++)
 	{
-		AddOverlapResultsForIllum(_pSolver, i, true); // Use fiducials
+		// Use nominal fiducail overlaps if edge info is not available
+		AddOverlapResultsForIllum(_pSolver, i, !bUseEdgeInfo);
 	}
+
+	// Use current panel fiducial overlaps if edge information is available
+	if(bUseEdgeInfo)
+		AddCurPanelFidOverlapResults(_pSolver);
 
 	// Solve transforms
 	_pSolver->SolveXAlgH();
@@ -439,15 +529,25 @@ bool PanelAligner::CreateTransforms()
 }
 
 // Add overlap results for a certain illumation/mosaic image to solver
-void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials)
+void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanelWithCalibration)
 {
+	if(bUseFiducials)
+		bPinPanelWithCalibration = false;
+
 	MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
 	for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
 	{
 		for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
 		{
 			// Add calibration constraints
-			solver->AddCalibationConstraints(pMosaic, iCam, iTrig, bUseFiducials);
+			bool bPinFov = false;
+			if (bPinPanelWithCalibration &&
+				pMosaic->Index() == 0 && iTrig == 1 && iCam == 1)
+			{
+				bPinFov = true;
+			}
+
+			solver->AddCalibationConstraints(pMosaic, iCam, iTrig, bPinFov);
 
 			// Add Fov and Fov overlap results
 			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
@@ -479,6 +579,24 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 						_lastProcessedFids.push_back(*ite);
 					}
 				}
+			}
+		}
+	}
+}
+
+// Add current panel/(not nominal) fiducial overlap results
+void PanelAligner::AddCurPanelFidOverlapResults(RobustSolver* solver)
+{
+	for(int k=0; k<_pPanel->NumberOfFiducials(); k++)
+	{
+		FidFovOverlapList* pFidFovList =_pOverlapManager->GetCurPanelFidFovList4Fid(k);
+		for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+		{
+			if(ite->IsProcessed() && ite->IsGoodForSolver())
+			{
+				solver->AddFidFovOvelapResults(&(*ite));
+				// These are used to verify that the last fids actually worked...
+				_lastProcessedFids.push_back(*ite);
 			}
 		}
 	}
@@ -628,7 +746,8 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 	int iNumIllums = _pSet->GetNumMosaicLayers();
 	for(int i=0; i<iNumIllums; i++)
 	{
-		AddOverlapResultsForIllum(_pSolver, i, false); // Not use fiducials
+		// Not use fiducial but pin panel with calibration
+		AddOverlapResultsForIllum(_pSolver, i, false, true); 
 	}
 
 	// Solve transforms without fiducial information
