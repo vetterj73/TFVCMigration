@@ -11,6 +11,8 @@ public:
 
 	double CalWeight(CorrelationPair* pPair);
 
+	void SetCalibrationScale(double dValue);
+
 protected:
 	static EquationWeights* ptr;
 
@@ -18,7 +20,8 @@ protected:
 	~EquationWeights(void);
 
 public:
-// weights for calibration related constrains
+	// weights for calibration related constrains
+	double dCalScale;	// Scale of calibration weight
 	double wRxy;		// Rotation match (m1 = -m3)
 	double wMxy;		// Magnification match (m0 = m4)
 	double wRcal;		// Rotation m1/m3 match calibration
@@ -29,14 +32,19 @@ public:
 	double wYdelta;		// distance between cameras in Y match calibration
 	double wXdelta;		// distance between cameras in X match calibration
 
-	double wYcentNoFid;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
-	double wXcentNoFid;	// Fov center X position match calibration without fiducial equation (for single FOV only)
-
-	// for projective transform
+		// for projective transform
 	double wPMEq;		// m6 = m10 and m7 = m11
 	double wPM89;		// M8 = 0 and M9 = 0
 	double wPMNext;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
-
+		
+	// for solve without fiducial and panel edge
+	double wYcentNoFid;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
+	double wXcentNoFid;	// Fov center X position match calibration without fiducial equation (for single FOV only)
+	
+	// for panel edge detection
+	double wXbyEdge;	// x offset based on edge detection
+	double wRbyEdge;	// FOV rotation based on edge detection
+	
 	// For Camera Model
 	double wZConstrain;
 	double wZConstrainZero;

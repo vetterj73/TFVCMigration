@@ -59,6 +59,11 @@ public:
 	void UseCameraModelStitch(bool bValue);
 	void UseCameraModelIterativeStitch(bool bValue);
 	void EnableFiducialAlignmentCheck(bool bValue);
+	void SetPanelEdgeDetection(
+		bool bDetectPanelEdge, 
+		bool bConveyorLeft2Right,
+		bool bConveyorFixedFrontRail);
+	void SetCalibrationWeight(double dValue);
 
 	FidFovOverlapList* GetLastProcessedFids();
 	
@@ -77,7 +82,8 @@ protected:
 	bool IsReadyToCreateMasks() const;
 	bool CreateMasks();
 	bool CreateTransforms();
-	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials);
+	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanel=false);
+	void AddCurPanelFidOverlapResults(RobustSolver* solver);
 
 	int FiducialAlignmentCheckOnCalibration();
 	bool PickOneAlign4EachPanelFiducial();

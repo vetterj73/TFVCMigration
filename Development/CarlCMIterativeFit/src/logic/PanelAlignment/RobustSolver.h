@@ -53,6 +53,7 @@ public:
 	virtual ~RobustSolver(void);
 
 	virtual bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)=0;
+	virtual bool AddPanelEdgeContraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, double dXOffset, double dSlope)=0;
 	virtual bool AddFovFovOvelapResults(FovFovOverlap* pOverlap)=0;
 	virtual bool AddCadFovOvelapResults(CadFovOverlap* pOverlap)=0;
 	virtual bool AddFidFovOvelapResults(FidFovOverlap* pOverlap)=0;

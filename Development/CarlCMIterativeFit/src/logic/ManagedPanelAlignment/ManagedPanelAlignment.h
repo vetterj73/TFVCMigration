@@ -119,7 +119,14 @@ namespace PanelAlignM {
 		void UseCameraModelStitch(bool bValue);
 		void UseCameraModelIterativeStitch(bool bValue);
 		void EnableFiducialAlignmentCheck(bool bValue);
+		void SetPanelEdgeDetection(
+			bool bDetectPanelEdge, 
+			bool bConveyorLeft2Right,
+			bool bConveyorFixedFrontRail);
+		void SetCalibrationWeight(double dValue);
+		
 		int GetNumberOfFidsProcessed();
+		
 		ManagedFidInfo^ GetFidAtIndex(unsigned int index);
 
 		ManagedPanelFidResultsSet^ GetFiducialResultsSet();

@@ -41,6 +41,8 @@ Image::Image(
 
 Image::Image(const Image& b)
 {
+	_IOwnMyOwnBuffer= false;	
+	_buffer			=0;
 	*this = b;
 }
 		

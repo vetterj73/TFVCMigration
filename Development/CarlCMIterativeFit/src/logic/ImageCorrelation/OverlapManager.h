@@ -11,6 +11,7 @@
 #include "MosaicSet.h"
 #include "JobManager.h"
 #include "FiducialResult.h"
+#include "PanelEdgeDetection.h"
 
 using namespace MosaicDM;
 class Panel;
@@ -38,6 +39,8 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex);
 
+	bool DoAlignment4AllFiducial(bool bForCurPanel);
+
 	FovFovOverlapList* GetFovFovListForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
@@ -53,6 +56,9 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
 
+	FidFovOverlapList* GetCurPanelFidFovList4Fid(
+		unsigned int iFidIndex) const;
+
 	int GetMaskCreationStage() {return _iMaskCreationStage;};
 	unsigned int MaxCorrelations() const;
 	unsigned int MaxMaskCorrelations() const;
@@ -66,6 +72,8 @@ public:
 	Image* GetCadImage() {return _pCadImg;};
 	Image* GetPanelMaskImage() {return _pPanelMaskImg;};
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
+	PanelEdgeDetection* GetEdgeDetector() {return _pEdgeDetector;};
+
 	bool FinishOverlaps();
 
 	PanelFiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
@@ -78,7 +86,7 @@ protected:
 
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();
-	void CreateFidFovOverlaps();
+	void CreateFidFovOverlaps(bool bForCurPanel=false);
 	
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
 
@@ -87,13 +95,19 @@ protected:
 	unsigned int MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 	bool IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const;
 
-	void CreateFiducialImage(Image* pImage, Feature* pFeature);
+	void CreateFiducialImage(
+		Image* pImage, 
+		Feature* pFeature,
+		double dExpandX,
+		double dExpandY);
 
 	static void RenderFiducial(
 		Image* pImg, 
 		Feature* pFid, 
 		double resolution, 
-		double dScale);
+		double dScale,
+		double dExpandX,
+		double dExpandY);
 
 	int CreateNgcFidTemplate(
 		Image* pImage, 
@@ -125,6 +139,7 @@ private:
 	unsigned int _iNumTriggers;
 
 	Image* _pFidImages;
+
 	
 	// A[Mosaic Index][Row(y) Index][Column(x) Index]
 	FovFovOverlapList*** _fovFovOverlapLists;
@@ -138,5 +153,10 @@ private:
 	CyberJob::JobManager *_pJobManager;
 
 	PanelFiducialResultsSet* _pFidResultsSet;
+
+	// For Panel Edge detection
+	PanelEdgeDetection* _pEdgeDetector;	
+	FidFovOverlapList* _curPanelFidFovOverlapLists;	
+	Image* _pCurPanelFidImages;
 };
 

@@ -325,6 +325,41 @@ bool RobustSolverFOV::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned in
 	return(true);
 }
 
+// Add constraint base on panel edge
+bool RobustSolverFOV::AddPanelEdgeContraints(
+	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
+	double dXOffset, double dSlope)
+{
+	// Position of equation in Matirix
+	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
+	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
+	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+	
+	ImgTransform trans = pLayer->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
+	double dNorminalPixelSize = trans.GetItem(0);
+
+	// Position X constraint
+	pdRowBegin[iFOVPos+2] = Weights.wXbyEdge; // M[2]
+	_dVectorB[_iCurrentRow] = Weights.wXbyEdge * dXOffset;
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// Angle constraint
+	// dNorminalPixelSize * (-dSlope) = M[1];
+	pdRowBegin[iFOVPos+1] = Weights.wRbyEdge; 
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * (-dSlope);
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// dNorminalPixelSize * (dSlope) = M[3];
+	pdRowBegin[iFOVPos+3] = Weights.wRbyEdge; 
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * dSlope ;
+	pdRowBegin += _iMatrixWidth;
+	_iCurrentRow++;
+
+	return(true);
+}
+
 // Add results for one Fov and Fov overlap
 bool RobustSolverFOV::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {

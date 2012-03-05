@@ -151,21 +151,35 @@ void DumpImg(
 		+ pImg1->PixelRowStride()*iStartY1
 		+ iStartX1;
 
-	unsigned char* pcBuf2 = pImg2->GetBuffer() 
-		+ pImg2->PixelRowStride()*iStartY2
-		+ iStartX2;
+	if (pImg2 != NULL)
+	{
+		unsigned char* pcBuf2 = pImg2->GetBuffer() 
+			+ pImg2->PixelRowStride()*iStartY2
+			+ iStartX2;
 
-	Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-		iHeight, 
-		iWidth,
-		pcBuf1, 
-		pcBuf2,
-		pImg1->PixelRowStride(),
-		pImg2->PixelRowStride() );
+		Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+			iHeight, 
+			iWidth,
+			pcBuf1, 
+			pcBuf2,
+			pImg1->PixelRowStride(),
+			pImg2->PixelRowStride() );
 
-	rbg->write(sFileName);
+		rbg->write(sFileName);
+		delete rbg;
+	}
+	else
+	{
+		Bitmap* rbg = Bitmap::NewBitmapFromBuffer( 
+			iHeight, 
+			iWidth,
+			pImg1->PixelRowStride(),
+			pcBuf1,
+			pImg1->GetBitsPerPixel() );
 
-	delete rbg;
+		rbg->write(sFileName);
+		delete rbg;
+	}
 }
 
 // pPanel: the point for fidcial descrptions
@@ -267,33 +281,39 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 		dResults[iCount*iItems+4] = dScore;			// Loc x  
 		dResults[iCount*iItems+5] = dAmbig;			// Loc y
 
-		/* For debug image output
-		string sFileName;
-		char cTemp[100];
-		sprintf_s(cTemp, 100, "C:\\Temp\\Cycle%d_Fid%d.bmp", 
-			_iCycleCount, iCount);
-		sFileName.append(cTemp);
+		///* For debug image output */
+		//string sFileName;
+		//char cTemp[100];
 
-		DumpImg(
-			sFileName, (int)dSearchWidth, (int)dSearchHeight,
-			pImage, (int)(dSearchColCen-dSearchWidth/2), (int)(dSearchRowCen-dSearchHeight/2),
-			&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
+		//// for debug image output
+		//if(dScore!=0 && dAmbig!=1)
+		//{
+		//	sprintf_s(cTemp, 100, "C:\\Temp\\GoodResults_Cycle%d_Fid%d_c%dr%d_s%da%d.bmp", 
+		//		_iCycleCount, iCount, 
+		//		(int)((box.Center().y-dY)*1e6), (int)((box.Center().x-dX)*1e6),
+		//		(int)(dScore*100), (int)(dAmbig*100) );
+		//	sFileName.clear();
+		//	sFileName.append(cTemp);
 
-		// for debug image output
-		if(dScore!=0 && dAmbig!=1)
-		{
-			sprintf_s(cTemp, 100, "C:\\Temp\\Result_Cycle%d_Fid%d_c%dr%d_s%da%d.bmp", 
-				_iCycleCount, iCount, 
-				(int)((box.Center().y-dY)*1e6), (int)((box.Center().x-dX)*1e6),
-				(int)(dScore*100), (int)(dAmbig*100) );
-			sFileName.clear();
-			sFileName.append(cTemp);
+		//	DumpImg(
+		//		sFileName, (int)dSearchWidth, (int)dSearchHeight,
+		//		pImage, (int)(dCol-dSearchWidth/2), (int)(dRow-dSearchHeight/2),
+		//		NULL/*&_pFidImages[iCount]*/, (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
+		//}
+		//else
+		//{
+		//	sprintf_s(cTemp, 100, "C:\\Temp\\BadResults_Cycle%d_Fid%d_c%dr%d_s%da%d.bmp", 
+		//		_iCycleCount, iCount, 
+		//		(int)((box.Center().y/*-dY*/)*1e6), (int)((box.Center().x/*-dX*/)*1e6),
+		//		(int)(dScore*100), (int)(dAmbig*100) );
+		//	sFileName.clear();
+		//	sFileName.append(cTemp);
 
-			DumpImg(
-				sFileName, (int)dSearchWidth, (int)dSearchHeight,
-				pImage, (int)(dCol-dSearchWidth/2), (int)(dRow-dSearchHeight/2),
-				&_pFidImages[iCount], (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
-		}//*/
+		//	DumpImg(
+		//		sFileName, (int)dSearchWidth, (int)dSearchHeight,
+		//		pImage, (int)(dSearchColCen-dSearchWidth/2), (int)(dSearchRowCen-dSearchHeight/2),
+		//		NULL/*&_pFidImages[iCount]*/, (int)(_pFidImages[iCount].Columns()/2.-dSearchWidth/2) , (int)(_pFidImages[iCount].Rows()/2.-dSearchHeight/2) );
+		//}
 
 		iCount++;
 	}

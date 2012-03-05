@@ -97,6 +97,7 @@ namespace CyberStitchFidTester
             bool bUseIterativeCameraModel = false;
             int numberToRun = 1;
             string unitTestFolder="";
+            double dCalScale = 1.0;
             ManagedFeatureLocationCheck fidChecker;
          
 
@@ -126,6 +127,8 @@ namespace CyberStitchFidTester
                     simulationFile = args[i + 1];
                 else if (args[i] == "-u" && i < args.Length - 1)
                     unitTestFolder = args[i + 1];
+                else if (args[i] == "-scale" && i < args.Length - 1)
+                    dCalScale = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-w")
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
@@ -280,11 +283,15 @@ namespace CyberStitchFidTester
                     _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
                         _aligner.UseProjectiveTransform(true);
+                    if (dCalScale != 1.0)
+                        _aligner.SetCalibrationWeight(dCalScale);
+
                     if (bUseCameraModel)
                     {
                         _aligner.UseCameraModelStitch(true);
                         _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                    }
+                  	}
+
                     if (bUseIterativeCameraModel)
                     {
                         _aligner.UseCameraModelIterativeStitch(true);
@@ -790,18 +797,13 @@ namespace CyberStitchFidTester
             _iBufCount++; // for debug
 
             int device = pframe.DeviceIndex();
+            int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
+            int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
 
-            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
+            uint layer = (uint)(device * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
 
-            uint triggers = (uint)ManagedCoreAPI.GetDevice(device).GetSIMCaptureSpec(pframe.CaptureSpecIndex()).NumberOfTriggers;
-
-            uint trigger = (ManagedCoreAPI.GetDevice(device).ConveyorRtoL) ?
-                triggers - (uint)pframe.TriggerIndex() - 1 : (uint)pframe.TriggerIndex();
-
-            int firstCameraEnabled = ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
-
-            _mosaicSetSim.AddRawImage(pframe.BufferPtr(), layer, (uint)(pframe.CameraIndex() - firstCameraEnabled), trigger);
+            _mosaicSetSim.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
         }
 
 

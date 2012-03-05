@@ -1,188 +1,389 @@
 #include "PanelEdgeDetection.h"
+#include "CorrelationParameters.h"
+#include "EdgeDetectUtil.h"
 
-PanelEdgeDetection::PanelEdgeDetection(void)
+#include "ColorImage.h"
+#include <math.h>
+
+#define PI 3.14159
+
+#pragma region FovPanelEdgeDetectJob
+FovPanelEdgeDetectJob::FovPanelEdgeDetectJob(Image* pImage, StPanelEdgeInImage* ptParam)
 {
+	_pImage = pImage;
+	_ptParam = ptParam;
+}
+
+void FovPanelEdgeDetectJob::Run()
+{
+	FindLeadingEdge(_pImage, _ptParam);
+}
+
+bool FovPanelEdgeDetectJob::Reset()
+{
+	_ptParam->Reset();
+
+	return(true);
+}
+
+bool FovPanelEdgeDetectJob::IsResultValid()
+{
+	if(_ptParam->iFlag > 0)
+		return(true);
+	else
+		return(false);
+}
+
+bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* ptParam)
+{
+	Image* pProcImage = new Image(*pImage);
+	IplImage* pCvImage =NULL;
+	// If this is color image and (not YCrCb or seperatly stored channel
+	if(pImage->GetBytesPerPixel() > 1 && 
+		(!((ColorImage*)pImage)->IsChannelStoredSeperate() || ((ColorImage*)pImage)->GetColorStyle() != YCrCb ))
+	{
+		if(!pProcImage->HasOwnBuffer())
+		{
+			pProcImage->CreateOwnBuffer();
+			::memcpy(pProcImage->GetBuffer(), pImage->GetBuffer(), pImage->BufferSizeInBytes());
+		}
+		((ColorImage*)pProcImage)->SetChannelStoreSeperated(false);
+		((ColorImage*)pProcImage)->SetColorStyle(BGR);
+		pCvImage =  cvCreateImageHeader(cvSize(pProcImage->Columns(), pProcImage->Rows()), IPL_DEPTH_8U, 3);
+		pCvImage->widthStep = pProcImage->PixelRowStride()*3;
+	}
+	else
+	{
+		pCvImage =  cvCreateImageHeader(cvSize(pProcImage->Columns(), pProcImage->Rows()), IPL_DEPTH_8U, 1);
+		pCvImage->widthStep = pProcImage->PixelRowStride();
+	}
+	pCvImage->imageData = (char*)pProcImage->GetBuffer();
+
+	bool bFlag = ::FindLeadingEdge(pCvImage, ptParam);
+
+	/* For debug
+	float dSlope = ptParam->dSlope;
+	float dStartRow = ptParam->dStartRow;
+	CvPoint pt1, pt2;
+	pt1.x = 0;
+	pt1.y = dStartRow;
+	pt2.x = 2500;
+	pt2.y = pt1.y +dSlope*pt2.x;
+	cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
+	cvSaveImage("C:\\Temp\\edgeImage.png", pCvImage);
+	//*/
+	
+	cvReleaseImageHeader(&pCvImage);
+
+	delete pProcImage;
+
+	return(bFlag);
+}
+#pragma endregion
+
+#pragma region PanelEdgeDetection
+PanelEdgeDetection::PanelEdgeDetection()
+{
+	_bConveyorLeft2Right =	CorrelationParametersInst.bConveyorLeft2Right;
+	_bConveyorFixedFrontRail = CorrelationParametersInst.bConveyorFixedFrontRail;
+	_dMinLeadingEdgeGap = CorrelationParametersInst.dMinLeadingEdgeGap;				
+	_dLeadingEdgeSearchRange = CorrelationParametersInst.dLeadingEdgeSearchRange;
+	_dConveyorBeltAreaSize = CorrelationParametersInst.dConveyorBeltAreaSize;
+
+	_iLayerIndex = -1;
+	_iEdgeTrigIndex = -1;
+	_iLeftCamIndex = -1;
+	_iRightCamIndex = -1;
+
+	_pLeftFov = NULL;
+	_pRightFov = NULL;
+
+	_pLeftFovJob = NULL;
+	_pRightFovJob = NULL;
 }
 
 
 PanelEdgeDetection::~PanelEdgeDetection(void)
 {
+	if(_pLeftFovJob != NULL) 
+		delete _pLeftFovJob;
+	if(_pRightFovJob != NULL) 
+		delete _pRightFovJob;
+
+	_pLeftFovJob = NULL;
+	_pRightFovJob = NULL;
 }
 
-/*
-bool PanelEdgeDetection::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* ptParam)
+
+bool PanelEdgeDetection::Initialization(MosaicLayer *pLayer, DRect panelRoi)
 {
-	IplImage* pCvImage =  cvCreateImageHeader(cvSize(pImage->Columns(), pImage->Rows()), IPL_DEPTH_8U, 3);
-	pCvImage->widthStep = pImage->ByteRowStride();
-	pCvImage->imageData = (char*)pImage->GetBuffer();
+	_panelRoi = panelRoi;
 
-	bool bFlag = FindLeadingEdge(pCvImage, ptParam);
+	// Index of layers
+	_iLayerIndex = pLayer->Index();
 
-	cvReleaseImageHeader(&pCvImage);
-
-	return(bFlag);
-}*/
-
-
-
-bool PanelEdgeDetection::FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
-{
-	// validation check
-	if (ptParam->type != TOPEDGE && ptParam->type != BOTTOMEDGE)
-	{
-		ptParam->iFlag = -1;
-		return(false);
-	}
-
-	if(pImage == NULL || ptParam == NULL)
-	{
-		ptParam->iFlag = -2;
-		return(false);
-	}
-
-	if( ptParam->iLeft <0 ||
-		ptParam->iRight >= pImage->width ||
-		ptParam->iTop <0 ||
-		ptParam->iBottom >= pImage->height ||
-		ptParam->iLeft >= ptParam->iRight ||
-		ptParam->iTop >= ptParam->iBottom)
-	{
-		ptParam->iFlag = -3;
-		return(false);
-	}
-
-	int iWidth = ptParam->iRight - ptParam->iLeft + 1;
-	int iHeight = ptParam->iBottom - ptParam->iTop + 1;
-
-	// ROI image
-	IplImage* pROIImg =  cvCreateImageHeader(cvSize(iWidth, iHeight), IPL_DEPTH_8U, pImage->nChannels);
-	pROIImg->widthStep = pImage->widthStep;
-	pROIImg->imageData = (char*)pImage->imageData + pImage->widthStep*ptParam->iTop + ptParam->iLeft*pImage->nChannels;
-	//cvSaveImage("c:\\Temp\\RoiImg.png", pROIImg);
-
-	// GrayScale image
-	IplImage* pGrayImg = NULL;
-	if(pImage->nChannels > 1)
-	{
-		pGrayImg = cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-		cvCvtColor(pROIImg, pGrayImg , CV_BGR2GRAY );
+	if(_bConveyorLeft2Right)
+	{	
+		// conveyor moving left to right
+		_iEdgeTrigIndex = 0;
+		_leadingEdgeType = BOTTOMEDGE;
 	}
 	else
-	{
-		pGrayImg = pROIImg;
+	{	
+		// Conveyor moving right to left
+		_iEdgeTrigIndex = pLayer->GetNumberOfTriggers() - 1;
+		_leadingEdgeType = TOPEDGE;
 	}
-
-	// Smooth
-	IplImage* pSmoothImg = cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-	cvSmooth(pGrayImg, pSmoothImg, CV_BILATERAL, 9,9,50,50);
-	//cvSaveImage("c:\\Temp\\Smooth.png", pSmoothImg);
-
-	// Edge detection
-	IplImage* pEdgeImg =  cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-	cvCanny( pSmoothImg, pEdgeImg, 20, 5);
-	//cvSaveImage("c:\\Temp\\edge.png", pEdgeImg);
-
-	// Edge dilation for hough
-	int iDilateSize = 2;
-	IplConvKernel* pDilateSE = cvCreateStructuringElementEx( 
-		2*iDilateSize+1, 2*iDilateSize+1, 
-		iDilateSize, iDilateSize,
-        CV_SHAPE_RECT);
-	
-	IplImage* pDilateImg =  cvCreateImage(cvSize(iWidth, iHeight), IPL_DEPTH_8U, 1);
-	cvDilate( pEdgeImg, pDilateImg, pDilateSE); 
-	//cvSaveImage("c:\\Temp\\DilatedEdge.png", pDilateImg);
-
-	IplImage* pFlipImg =  cvCreateImage(cvSize(iHeight, iWidth), IPL_DEPTH_8U, 1);
-	for(int iy = 0; iy<iHeight; iy++)
-	{
-		for(int ix=0; ix<iWidth; ix++)
-		{
-			pFlipImg->imageData[(iWidth-1-ix)*pFlipImg->widthStep+iy] = pDilateImg->imageData[iy*pDilateImg->widthStep+ix];
-		}
-	}
-	//cvSaveImage("c:\\Temp\\Flipped.png", pFlipImg);
-
-	// Hough transform
-	CvMemStorage* storage = cvCreateMemStorage(0);
-	CvSeq* lines = 0;
-	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width);
-	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_STANDARD, 1, CV_PI/180, iThresh,  1, 10);
-
-	bool bFirst = true;
-	int iSelectIndex = -1;
-	double dSelectRho = 0;
-	for(int i = 0; i < MIN(lines->total,100); i++ )
-    {
-		float* line = (float*)cvGetSeqElem(lines,i);
-        float rho = line[0];
-        float theta = line[1];
-		if(theta < CV_PI/180*(90-ptParam->dAngleRange) && 
-			theta> CV_PI/180*(90+ptParam->dAngleRange))
-			continue;
-
-		if(bFirst)
-		{
-			iSelectIndex = i;
-			dSelectRho = rho;
-			bFirst = false;
-		}
-		else
-		{
 		
-			if(ptParam->type == BOTTOMEDGE)
-			{	// Bottom edge case
-				if(dSelectRho < rho)
-				{
-					dSelectRho = rho;
-					iSelectIndex = i;
-				}
-			}
-			else
-			{	// Top edge case
-				if(dSelectRho > rho)
-				{
-					dSelectRho = rho;
-					iSelectIndex = i;
-				}
-			}
-		}
-    }
-	
-	if(iSelectIndex == -1)
-	{
-		return(false);
+	// Validation check (enough gap between nominal panel edge and FOV edge)
+	Image* pImage = pLayer->GetImage(0, _iEdgeTrigIndex);
+	DRect fovRect = pImage->GetBoundBoxInWorld();
+	if(_bConveyorLeft2Right)
+	{	
+		// conveyor moving left to right
+		if(fovRect.xMax < panelRoi.xMax + _dMinLeadingEdgeGap)
+			return(false);
+	}
+	else
+	{	
+		// Conveyor moving right to left
+		if(fovRect.xMin > panelRoi.xMin - _dMinLeadingEdgeGap)
+			return(false);
 	}
 
-	float* line = (float*)cvGetSeqElem(lines,iSelectIndex);
-	ptParam->dRho = line[0]+ptParam->iTop; // not very accurate
-	ptParam->dTheta = line[1] - CV_PI/2;
+	int iNumCam = pLayer->GetNumberOfCameras();		
+	
+	// Panel edge nominal position for detection
+	double dPanelEdgeInX = panelRoi.xMax;
+	if(_leadingEdgeType == TOPEDGE)
+		dPanelEdgeInX = panelRoi.xMin;
 
+	// Left and right Belt edge 
+	double dLeftBeltEdge = panelRoi.yMin + _dConveyorBeltAreaSize;
+	double dRightBeltEdge = panelRoi.yMax - _dConveyorBeltAreaSize; 
+	
+	// Left FOV select and setup
+	for(int iCam=0; iCam<iNumCam; iCam++)
+	{
+		Image* pImage = pLayer->GetImage(iCam, _iEdgeTrigIndex);
+		DRect fovRect = pImage->GetBoundBoxInWorld();
 
-	// for debug
-    /*float rho = line[0];
-    float theta = line[1];
-    CvPoint pt1, pt2;
-    double a = cos(theta), b = sin(theta);
-    double x0 = a*rho, y0 = b*rho;
-    pt1.x = cvRound(x0 + (pROIImg->width-100)*(-b));
-    pt1.y = cvRound(y0 + (pROIImg->width-100)*(a));
-    pt2.x = cvRound(x0 - (pROIImg->width-100)*(-b));
-    pt2.y = cvRound(y0 - (pROIImg->width-100)*(a));
-	cvLine( pROIImg, pt1, pt2, CV_RGB(255,0,0), 3, 8 );
-	cvNamedWindow( "Hough", 1 );
-    cvShowImage( "Hough", pROIImg );*/
+		// Panel edge size suitable for detection
+		double dSize = fovRect.yMax- dLeftBeltEdge;
+		// If size is big enough 
+		if(dSize > pImage->PixelSizeX()*pImage->Columns()/2)
+		{
+			_iLeftCamIndex =  iCam;
 
+			// Edge Search range in X
+			double dMinX = dPanelEdgeInX - _dLeadingEdgeSearchRange;
+			if(dMinX < fovRect.xMin) dMinX = fovRect.xMin;
+			double dMaxX = dPanelEdgeInX + _dLeadingEdgeSearchRange;
+			if(dMaxX > fovRect.xMax) dMaxX = fovRect.xMax;
 
+			//Edge serach range in Y
+				// Bigger one of belt left edge, or fov left edge
+			double dMinY = dLeftBeltEdge > fovRect.yMin ? dLeftBeltEdge : fovRect.yMin;
+				// Smaller one of belt right edge or fov right edge 
+			double dMaxY = dRightBeltEdge < fovRect.yMax ? dRightBeltEdge : fovRect.yMax;
 
-	// clean up
-	cvReleaseStructuringElement(&pDilateSE);
-	cvReleaseImage(&pFlipImg);
-	cvReleaseImage(&pDilateImg);
-	cvReleaseImage(&pSmoothImg);
-	cvReleaseImage(&pEdgeImg);
-	if(pImage->nChannels > 1) cvReleaseImage(&pGrayImg);
-	cvReleaseImageHeader(&pROIImg);
+			// Convert (x,y) to (row, column)
+			double dTop, dBottom, dLeft, dRight;
+			pImage->WorldToImage(dMinX, dMinY, &dTop, &dLeft);
+			pImage->WorldToImage(dMaxX, dMaxY, &dBottom, &dRight);
+
+			// Create edge detection job
+			_leftFovParam.iLeft = (int)dLeft + 2;
+			_leftFovParam.iTop = (int)dTop + 2;
+			_leftFovParam.iRight = (int)dRight - 2;
+			_leftFovParam.iBottom = (int)dBottom -2;
+			_leftFovParam.type = _leadingEdgeType;
+
+			_pLeftFov = pImage;
+			_pLeftFovJob = new FovPanelEdgeDetectJob(pImage, &_leftFovParam);
+
+			break;
+		}
+	}
+
+	// Right FOV select and setup
+	for(int iCam = iNumCam-1; iCam >=0; iCam--)
+	{
+		Image* pImage = pLayer->GetImage(iCam, _iEdgeTrigIndex);
+		DRect fovRect = pImage->GetBoundBoxInWorld();
+
+		// Panel edge size suitable for detection
+		double dSize = dRightBeltEdge - fovRect.yMin;
+		// If size is big enough
+		if(dSize > pImage->PixelSizeX()*pImage->Columns()/2)
+		{
+			// If the left camera and right one are the same 
+			if(iCam <= _iLeftCamIndex)
+				break;
+
+			_iRightCamIndex =  iCam;
+		
+			// Edge Search range in X
+			double dMinX = dPanelEdgeInX - _dLeadingEdgeSearchRange;
+			if(dMinX < fovRect.xMin) dMinX = fovRect.xMin;
+			double dMaxX = dPanelEdgeInX + _dLeadingEdgeSearchRange;
+			if(dMaxX > fovRect.xMax) dMaxX = fovRect.xMax;
+
+			//Edge serach range in Y
+				// Bigger one of belt left edge, or fov left edge
+			double dMinY = dLeftBeltEdge > fovRect.yMin ? dLeftBeltEdge : fovRect.yMin;
+				// Smaller one of belt right edge or fov right edge 
+			double dMaxY = dRightBeltEdge < fovRect.yMax ? dRightBeltEdge : fovRect.yMax;
+
+			// Convert (x,y) to (row, column)
+			double dTop, dBottom, dLeft, dRight;
+			pImage->WorldToImage(dMinX, dMinY, &dTop, &dLeft);
+			pImage->WorldToImage(dMaxX, dMaxY, &dBottom, &dRight);
+
+			// Create edge detection job
+			_rightFovParam.iLeft = (int)dLeft + 2;
+			_rightFovParam.iTop = (int)dTop + 2;
+			_rightFovParam.iRight = (int)dRight - 2;
+			_rightFovParam.iBottom = (int)dBottom -2;
+			_rightFovParam.type = _leadingEdgeType;
+
+			_pRightFov = pImage;
+			_pRightFovJob = new FovPanelEdgeDetectJob(pImage, &_rightFovParam);
+
+			break;
+		}
+	}
 
 	return(true);
 }
+
+void PanelEdgeDetection::Reset()
+{
+	if(_pLeftFovJob != NULL) 
+		_pLeftFovJob->Reset();
+	if(_pRightFovJob != NULL) 
+		_pRightFovJob->Reset();
+}
+
+// Get job for certain FOV
+FovPanelEdgeDetectJob* PanelEdgeDetection::GetValidJob(int iLayer, int iTrig, int iCam)
+{
+	// If there is panel edge detection job with this FOV
+	if(iLayer == _iLayerIndex &&
+		iTrig == _iEdgeTrigIndex &&
+		(iCam == _iLeftCamIndex ||
+		iCam == _iRightCamIndex))
+	{
+		if(iCam == _iLeftCamIndex)
+			return(_pLeftFovJob);
+		else if(iCam == _iRightCamIndex)
+			return(_pRightFovJob);
+	}
+	
+	// If there is no panel edge detection job with this FOV 
+	return(NULL);
+}
+
+// Calculate location of panel leading edge
+// pdSlope: out, the slope of leading edge (delta_x/delta_Y)
+// pdLeftXOffset and pdRightXOffset: out, the x offsets of left and right FOVs
+// piLayer, piTrig, piLeftCam and piRightCam: out, the indics of left and right FOVs
+EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
+	double* pdSlope, double* pdLeftXOffset, double* pdRightXOffset,
+	int* piLayer,int* piTrig,
+	int* piLeftCam, int* piRightCam)
+{
+	// Fov indexes
+	*piLayer = _iLayerIndex;
+	*piTrig = _iEdgeTrigIndex;
+	*piLeftCam = _iLeftCamIndex; 
+	*piRightCam = _iRightCamIndex;
+
+	// Check the validataion of the results
+	bool bLeftValid = false, bRightValid = false;
+	if(_pLeftFovJob != NULL || _pLeftFovJob->IsResultValid())
+		bLeftValid= true;
+
+	if(_pRightFovJob != NULL || _pRightFovJob->IsResultValid())
+		bRightValid= true;
+
+	// Both results are not valid
+	if(!bLeftValid && !bRightValid)
+	{
+		return(INVALID);
+	}
+	
+	// Only left result is valid
+	if(bLeftValid && !bRightValid)
+	{
+		*pdSlope = _leftFovParam.dSlope;   // delta_x/delta_Y
+		double dAngle = atan(*pdSlope); 
+		*pdLeftXOffset = _leftFovParam.dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
+		if(_leadingEdgeType == BOTTOMEDGE) 
+			*pdLeftXOffset += _panelRoi.xMax;
+		return(LEFTONLYVALID);
+	}
+
+	// Only right result is valid
+	if(!bLeftValid && bRightValid)
+	{
+		*pdSlope = _rightFovParam.dSlope;   // delta_x/delta_Y
+		double dAngle = atan(*pdSlope); 
+		*pdRightXOffset = _rightFovParam.dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
+		if(_leadingEdgeType == BOTTOMEDGE) 
+			*pdRightXOffset += _panelRoi.xMax;
+		return(RIGHTONLYVALID);
+	}
+
+	// Both results are valid
+	if(bLeftValid && bRightValid)
+	{
+		// Calculat slope of panel leading edge
+		// Assume board is rigid and calibration is almost consistent
+		// So that norminal transforms can be used in the calculation
+			// Center point of edge in FOV
+		double dLeftRoiCenCols = (_leftFovParam.iLeft + _leftFovParam.iRight)/2.0;
+		double dLeftRoiCenRows = _leftFovParam.dStartRow + _leftFovParam.dSlope*dLeftRoiCenCols;
+		double dLeftCenX, dLeftCenY;
+		_pLeftFov->ImageToWorld(dLeftRoiCenRows, dLeftRoiCenCols, &dLeftCenX, &dLeftCenY); 
+
+		double dRightRoiCenCols = (_rightFovParam.iLeft + _rightFovParam.iRight)/2;
+		double dRightRoiCenRows = _rightFovParam.dStartRow + _rightFovParam.dSlope*dRightRoiCenCols;
+		double dRightCenX, dRightCenY;
+		_pRightFov->ImageToWorld(dRightRoiCenRows, dRightRoiCenCols, &dRightCenX, &dRightCenY); 
+		
+			// Panel edge slope based on both results
+		double dPanelEdgeSlope = (dRightCenX-dLeftCenX)/(dRightCenY-dLeftCenY);
+
+		// Slope Consistent check
+		if(fabs(dPanelEdgeSlope-_leftFovParam.dSlope) > tan(PI/180) ||
+			fabs(dPanelEdgeSlope-_rightFovParam.dSlope) > tan(PI/180))
+		{
+			return(CONFLICTION);
+		}
+
+		*pdSlope = dPanelEdgeSlope;	
+		double dAngle = atan(*pdSlope); 
+
+		// Left x offset
+		double dStartRow = dLeftRoiCenRows - *pdSlope*dLeftRoiCenCols; // updated dStartRow
+		*pdLeftXOffset = -dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
+		if(_leadingEdgeType == BOTTOMEDGE) 
+			*pdLeftXOffset += _panelRoi.xMax;
+		
+		// Right x offset
+		dStartRow = dRightRoiCenRows - *pdSlope*dRightRoiCenCols;
+		*pdRightXOffset = -dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
+		if(_leadingEdgeType == BOTTOMEDGE) 
+			*pdRightXOffset += _panelRoi.xMax;
+
+		return(BOTHVALID);
+	}
+
+	// Should never reach here 
+	return(INVALID);
+}
+#pragma endregion
+
+
+

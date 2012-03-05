@@ -84,11 +84,18 @@ public:
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad
 
-	// Support Bayer(color image)
-	//bool bGrayScale;						// Grey scale image or Bayer(color) image
-
 	// Adjust morph to create stitched image for component height
 	bool bAdjustMorph4ComponentHeight;
+
+	// Panel edge detection
+	bool bDetectPanelEdge;					// Detection panel edge to reduce fiducial search area
+		// Conveyor reference
+	bool bConveyorLeft2Right;				// Conveyor moving direction
+	bool bConveyorFixedFrontRail;			// conveyor fixed rail
+		// Control parameters
+	double dMinLeadingEdgeGap;				// Minimum gap between image edge and nominal panel leading edge
+	double dLeadingEdgeSearchRange;			// Search range for panel leading edge
+	double dConveyorBeltAreaSize;			// The size of conveyor belt area that need to be ignored in leading edge detection
 
 	// debug flage
 	bool bSaveFiducialOverlaps;

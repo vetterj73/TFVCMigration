@@ -144,9 +144,6 @@ namespace MosaicDM
 				unsigned int iStartRowInCad,
 				unsigned int iStartColInCad);
 
-			// For debug
-			Image* GetGreyStitchedImage(bool bRecreate = false);
-
 			void SetStitchedBuffer(unsigned char *pBuffer);
 
 			void SetComponentHeightInfo(				
@@ -154,7 +151,11 @@ namespace MosaicDM
 				unsigned int iHeightSpan,		// Component height image span
 				double dHeightResolution,		// Height resolution in grey level (meter/grey level)
 				double dPupilDistance);			// SIM pupil distance (meter))
-	
+			
+			// For debug
+			Image* GetGreyStitchedImage(bool bRecreate = false);
+			void SetXShift(bool bValue);
+
 		protected:
 			/// Called from MosaicSet when a layer is added.
 			void Initialize(MosaicSet *pMosaicSet, 
@@ -210,5 +211,6 @@ namespace MosaicDM
 
 		// for Debug
 			Image *_pGreyStitchedImage;
+			bool _bXShift;
 	};
 }

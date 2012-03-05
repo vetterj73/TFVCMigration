@@ -33,6 +33,7 @@ namespace MosaicDM
 		
 		// For debug 
 		_pGreyStitchedImage = NULL;
+		_bXShift = false;
 	}
 
 	MosaicLayer::~MosaicLayer(void)
@@ -139,8 +140,11 @@ namespace MosaicDM
 			_pStitchedImage = new Image();		
 
 		ImgTransform inputTransform;
+		double dxShift = 0;
+		if(_bXShift)
+			dxShift = +100*_pMosaicSet->GetNominalPixelSizeX();
 		inputTransform.Config(_pMosaicSet->GetNominalPixelSizeX(), 
-			_pMosaicSet->GetNominalPixelSizeY(), 0, 0, 0);
+			_pMosaicSet->GetNominalPixelSizeY(), 0, dxShift, 0);
 			
 		unsigned int iNumRows = _pMosaicSet->GetObjectWidthInPixels();
 		unsigned int iNumCols = _pMosaicSet->GetObjectLengthInPixels();
@@ -998,4 +1002,10 @@ namespace MosaicDM
 			return(_pGreyStitchedImage);
 		}
 	}
+
+	void MosaicLayer::SetXShift(bool bValue) 
+	{
+		_bXShift = bValue;
+		_stitchedImageValid = false; // next stitch image need recalcualte
+	};
 }

@@ -1,48 +1,81 @@
 #pragma once
 
-//#include "Image.h"
+#include "Image.h"
+#include "MosaicLayer.h"
+#include "JobThread.h"
 
-#include "opencv\cxcore.h"
-#include "opencv\cv.h"
-#include "opencv\highgui.h"
+using namespace MosaicDM;
+#include "EdgeDetectStructDef.h"
 
-enum PanelEdgeType
+// Wrap up job class for finding panel leading edge in a FOV
+class FovPanelEdgeDetectJob : CyberJob::Job
 {
-	LEFTEDGE,
-	RIGHTEDGE,
-	TOPEDGE,
-	BOTTOMEDGE
+public:
+	FovPanelEdgeDetectJob(Image* pImage, StPanelEdgeInImage* ptParam);
+
+	void Run();
+	bool Reset();
+
+	bool IsResultValid();
+
+protected:
+	static bool FindLeadingEdge(Image* pImage, StPanelEdgeInImage* ptParam);
+
+private:
+	Image* _pImage;
+	StPanelEdgeInImage* _ptParam;
 };
 
-struct StPanelEdgeInImage
+// Type of edge information (edge detection results)
+enum EdgeInfoType
 {
-	int iLeft;
-	int iRight;
-	int iTop;
-	int iBottom;
-	PanelEdgeType type;
-	double dMinLineLengthRatio;
-	double dAngleRange;
-	int iFlag;	
-	double dRho;
-	double dTheta;
-
-	StPanelEdgeInImage()
-	{
-		dMinLineLengthRatio =0.5;
-		dAngleRange = 3;
-		iFlag = 0;
-	}
+	INVALID,
+	CONFLICTION,
+	LEFTONLYVALID,
+	RIGHTONLYVALID,
+	BOTHVALID,
 };
 
-
+// Class for panel edge detection
 class PanelEdgeDetection
 {
 public:
-	PanelEdgeDetection(void);
+	PanelEdgeDetection();
 	~PanelEdgeDetection(void);
 
-	//static bool FindLeadingEdge(Image* pImage, StPanelEdgeInImage* ptParam);
-	static bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam);
+	bool Initialization(MosaicLayer *pLayer, DRect panelRoi);
+
+	FovPanelEdgeDetectJob* GetValidJob(int iLayer, int iTrig, int iCam);
+
+	void Reset();
+
+	EdgeInfoType CalLeadingEdgeLocation(
+		double* pdSlope, double* pdLeftXOffset, double* pdRightXOffset,
+		int* piLayer,int* piTrig,
+		int* piLeftCam, int* piRightCam);
+
+private:
+	bool _bConveyorLeft2Right;
+	bool _bConveyorFixedFrontRail;
+	double _dMinLeadingEdgeGap;				// Minimum gap between image edge and nominal panel leading edge
+	double _dLeadingEdgeSearchRange;		// Search range for panel leading edge
+	double _dConveyorBeltAreaSize;			// The size of conveyor belt area that need to be ignored in leading edge detection
+	int _iLayerIndex;
+	DRect _panelRoi;
+	
+	int _iEdgeTrigIndex;
+	int _iLeftCamIndex;
+	int _iRightCamIndex; 
+
+	PanelEdgeType _leadingEdgeType; 
+
+	Image* _pLeftFov;
+	Image* _pRightFov;
+
+	StPanelEdgeInImage _leftFovParam;
+	StPanelEdgeInImage _rightFovParam;
+
+	FovPanelEdgeDetectJob* _pLeftFovJob;
+	FovPanelEdgeDetectJob* _pRightFovJob;
 };
 

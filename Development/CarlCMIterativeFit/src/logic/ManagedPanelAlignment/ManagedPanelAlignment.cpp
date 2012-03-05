@@ -178,6 +178,22 @@ namespace PanelAlignM {
 		_pAligner->EnableFiducialAlignmentCheck(bValue);
 	}
 
+	void ManagedPanelAlignment::SetPanelEdgeDetection(
+		bool bDetectPanelEdge, 
+		bool bConveyorLeft2Right,
+		bool bConveyorFixedFrontRail)
+	{
+		_pAligner->SetPanelEdgeDetection(
+			bDetectPanelEdge, 
+			bConveyorLeft2Right,
+			bConveyorFixedFrontRail);
+	}
+
+	void ManagedPanelAlignment::SetCalibrationWeight(double dValue)
+	{
+		_pAligner->SetCalibrationWeight(dValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{
