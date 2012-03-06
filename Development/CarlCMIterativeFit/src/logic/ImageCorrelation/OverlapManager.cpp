@@ -200,13 +200,13 @@ OverlapManager::~OverlapManager(void)
 		delete [] _pFidImages;
 
 	if(_pCadImg != NULL)
-		delete [] _pCadImg;
+		delete _pCadImg;
 
 	if(_pPanelMaskImg != NULL)
-		delete [] _pPanelMaskImg;
+		delete _pPanelMaskImg;
 
 	if(_pEdgeDetector != NULL)
-		delete [] _pEdgeDetector;
+		delete _pEdgeDetector;
 
 	if(_curPanelFidFovOverlapLists != NULL)
 		delete [] _curPanelFidFovOverlapLists;

@@ -255,11 +255,11 @@ void RobustSolverIterative::FillMatrixA()
 				(dFidRoiCenY 
 				- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) 
 				- ySensorA * cos(_dThetaEst[orderedTrigIndexA]) );
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.4e,%.4e", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.4e,%.4e, %d, %d", 
 				_fitInfo[i].fovIndexA.IlluminationIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				w,
-				boardX,boardY);
+				boardX,boardY,  calDriftCol, deviceNumA);
 			_pdWeights[_iCurrentRow] = w;
 	
 			_iCurrentRow++;
@@ -285,18 +285,18 @@ void RobustSolverIterative::FillMatrixA()
 									  +ySensorB*cos(_dThetaEst[orderedTrigIndexB]) ) ;
 			
 			// drift terms
-			unsigned int calDriftCol = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
-			pdRow[calDriftCol] = w * cos(_dThetaEst[orderedTrigIndexA]);
-			pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
-			calDriftCol = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
-			pdRow[calDriftCol] -= w * cos(_dThetaEst[orderedTrigIndexB]);
-			pdRow[calDriftCol+1] -= -w * sin(_dThetaEst[orderedTrigIndexB]);
+			unsigned int calDriftColA = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
+			pdRow[calDriftColA] = w * cos(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
+			unsigned int calDriftColB = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
+			pdRow[calDriftColB] -= w * cos(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB+1] -= -w * sin(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
 				pdRow[_iMatrixWidth - _iNumZTerms + j] = w * Zpoly[j] 
 					* (  dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) - dySensordzA * sin(_dThetaEst[orderedTrigIndexA])
 					   - dxSensordzB * cos(_dThetaEst[orderedTrigIndexB]) + dySensordzB * sin(_dThetaEst[orderedTrigIndexB]));
-			_dVectorB[_iCurrentRow] = -w * 
+			_dVectorB[_iCurrentRow] = w * 
 				(- xSensorA * cos(_dThetaEst[orderedTrigIndexA]) + ySensorA * sin(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * cos(_dThetaEst[orderedTrigIndexB]) - ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
 			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
@@ -318,12 +318,12 @@ void RobustSolverIterative::FillMatrixA()
 									 -ySensorB * sin(_dThetaEst[orderedTrigIndexB]) ) ;
 
 			// drift terms
-			calDriftCol = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
-			pdRow[calDriftCol] = w * sin(_dThetaEst[orderedTrigIndexA]);
-			pdRow[calDriftCol+1] = w * cos(_dThetaEst[orderedTrigIndexA]);
-			calDriftCol = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
-			pdRow[calDriftCol] -= w * sin(_dThetaEst[orderedTrigIndexB]);
-			pdRow[calDriftCol+1] -= w * cos(_dThetaEst[orderedTrigIndexB]);
+			//calDriftColA = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
+			pdRow[calDriftColA] = w * sin(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA+1] = w * cos(_dThetaEst[orderedTrigIndexA]);
+			//calDriftCol = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
+			pdRow[calDriftColB] -= w * sin(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB+1] -= w * cos(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
 				pdRow[_iMatrixWidth - _iNumZTerms + j] =  w * Zpoly[j] 
@@ -334,13 +334,13 @@ void RobustSolverIterative::FillMatrixA()
 				(- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) - ySensorA * cos(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * sin(_dThetaEst[orderedTrigIndexB]) + ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
 			
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d,%.2e,%.4e,%.4e", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d,%.2e,%.4e,%.4e,%d,%d,%d,%d", 
 				_fitInfo[i].fovIndexA.IlluminationIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				_fitInfo[i].fovIndexB.IlluminationIndex,
 				_fitInfo[i].fovIndexB.TriggerIndex, _fitInfo[i].fovIndexB.CameraIndex,
 				w,
-				boardX,boardY);
+				boardX,boardY, calDriftColA, calDriftColB, deviceNumA, deviceNumB);
 			_pdWeights[_iCurrentRow] = w;
 	
 			_iCurrentRow++;
