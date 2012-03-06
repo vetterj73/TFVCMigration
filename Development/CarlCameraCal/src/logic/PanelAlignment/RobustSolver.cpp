@@ -73,8 +73,8 @@ RobustSolver::RobustSolver(
 	map<FovIndex, unsigned int>* pFovOrderMap)
 {
 	_pFovOrderMap = pFovOrderMap;
-	_bSaveMatrixCSV=false;
-	_bVerboseLogging = false;
+	_bSaveMatrixCSV=true;
+	_bVerboseLogging = true;
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	
 }
@@ -1918,12 +1918,15 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 		for(list<FidFovOverlap*>::iterator j = pResults->begin(); j != pResults->end(); j++)
 		{
 			bool fidOK;
-			if ( (*j)->GetFiducialSearchMethod() == FIDVSFINDER)
-				fidOK = ( (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff 
-					- (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore * 0.5 ) > 0; // MAGIC NUMBER !!!!!!!!!!!!!!!!!!
-			else  // must be regoff  //TODO make these magic numbers variable
-				fidOK = ( (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff 
-					- (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore * 0.5 ) > 0; // MAGIC NUMBER !!!!!!!!!!!!!!!!!!
+			CorrelationPair* pPair = (*j)->GetCoarsePair();
+			double w = Weights.CalWeight(pPair) * Weights.RelativeFidFovCamModWeight;
+			fidOK = (*j)->IsGoodForSolver() && (w > 0);
+			//if ( (*j)->GetFiducialSearchMethod() == FIDVSFINDER)
+			//	fidOK = ( (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff 
+			//		- (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore * 0.5 ) > 0; // MAGIC NUMBER !!!!!!!!!!!!!!!!!!
+			//else  // must be regoff  //TODO make these magic numbers variable
+			//	fidOK = ( (*j)->GetCoarsePair()->GetCorrelationResult().CorrCoeff 
+			//		- (*j)->GetCoarsePair()->GetCorrelationResult().AmbigScore * 0.5 ) > 0; // MAGIC NUMBER !!!!!!!!!!!!!!!!!!
 			if (fidOK)
 			{
 				// add CAD locations

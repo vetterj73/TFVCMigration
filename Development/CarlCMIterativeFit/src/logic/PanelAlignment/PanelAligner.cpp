@@ -136,7 +136,7 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
-	if( CorrelationParametersInst.bUseCameraModelStitch )
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
 	{
 		_pSolver->ConstrainZTerms();
 		_pSolver->ConstrainPerTrig();
@@ -678,10 +678,10 @@ bool PanelAligner::CreateImageOrderInSolver(
 		{
 			FovIndex index(iIllumIndex, iTrigIndex, i);
 			(*pOrderMap)[index] = iCount;
-			if( !CorrelationParametersInst.bUseCameraModelStitch ) 
+			if( !CorrelationParametersInst.bUseCameraModelStitch  && !CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 				iCount++;
 		}
-		if( CorrelationParametersInst.bUseCameraModelStitch ) 
+		if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 			iCount++;
 	}
 		

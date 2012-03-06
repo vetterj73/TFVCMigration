@@ -34,7 +34,7 @@ RobustSolverIterative::RobustSolverIterative(
 		unsigned int iMaxNumCorrelations,
 		MosaicSet* pSet): 	RobustSolverCM( pFovOrderMap,  iMaxNumCorrelations, pSet)
 {
-	_iMaxIterations = 3;
+	_iMaxIterations = 5;
 	_iCalDriftStartCol = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
 	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + _iNumCalDriftTerms;
 	
@@ -163,6 +163,8 @@ void RobustSolverIterative::SolveXAlgH()
 		//	_dCalDriftEst[i] += _dVectorX[_iCalDriftStartCol + i];
 		//}
 	}	
+	// spoof some later code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	_iIterationNumber++;  
 }
 
 void RobustSolverIterative::FillMatrixA()
@@ -239,8 +241,8 @@ void RobustSolverIterative::FillMatrixA()
 			_iCurrentRow++;
 			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			pdRow[iColInMatrixA+1] = w;  //Y_trig
-			pdRow[iColInMatrixA+2] = + w * (xSensorA * sin(_dThetaEst[orderedTrigIndexA]) 
-				- ySensorA * cos(_dThetaEst[orderedTrigIndexA]) );  //dtheta_trig
+			pdRow[iColInMatrixA+2] = + w * (xSensorA * cos(_dThetaEst[orderedTrigIndexA]) 
+				- ySensorA * sin(_dThetaEst[orderedTrigIndexA]) );  //dtheta_trig
 			pdRow[calDriftCol] = w * sin(_dThetaEst[orderedTrigIndexA]);
 			pdRow[calDriftCol+1] = w * cos(_dThetaEst[orderedTrigIndexA]);
 			
@@ -295,8 +297,8 @@ void RobustSolverIterative::FillMatrixA()
 					* (  dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) - dySensordzA * sin(_dThetaEst[orderedTrigIndexA])
 					   - dxSensordzB * cos(_dThetaEst[orderedTrigIndexB]) + dySensordzB * sin(_dThetaEst[orderedTrigIndexB]));
 			_dVectorB[_iCurrentRow] = -w * 
-				(  xSensorA * cos(_dThetaEst[orderedTrigIndexA]) - ySensorA * sin(_dThetaEst[orderedTrigIndexA])
-				 - xSensorB * cos(_dThetaEst[orderedTrigIndexB]) + ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
+				(- xSensorA * cos(_dThetaEst[orderedTrigIndexA]) + ySensorA * sin(_dThetaEst[orderedTrigIndexA])
+				 + xSensorB * cos(_dThetaEst[orderedTrigIndexB]) - ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
 			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
 				_fitInfo[i].fovIndexA.IlluminationIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
@@ -329,8 +331,8 @@ void RobustSolverIterative::FillMatrixA()
 					   - dxSensordzB * sin(_dThetaEst[orderedTrigIndexB]) - dySensordzB * cos(_dThetaEst[orderedTrigIndexB]));
 
 			_dVectorB[_iCurrentRow] = w * 
-				(  xSensorA * sin(_dThetaEst[orderedTrigIndexA]) + ySensorA * cos(_dThetaEst[orderedTrigIndexA])
-				 - xSensorB * sin(_dThetaEst[orderedTrigIndexB]) - ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
+				(- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) - ySensorA * cos(_dThetaEst[orderedTrigIndexA])
+				 + xSensorB * sin(_dThetaEst[orderedTrigIndexB]) + ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
 			
 			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d,%.2e,%.4e,%.4e", 
 				_fitInfo[i].fovIndexA.IlluminationIndex,
@@ -883,7 +885,7 @@ void RobustSolverIterative::OutputVectorXCSV(string filename) const
 				double d = _dVectorX[iIndexID * _iNumParamsPerIndex +j];
 				of << d;
 			}
-			of <<  std::endl;
+			of << "," << _dThetaEst[iIndexID]<<  std::endl;
 		}
 	}
 	i=0;

@@ -65,7 +65,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// Whether use projective transform
 	bUseProjectiveTransform = false;
 	bUseCameraModelStitch = false;
-	bUseCameraModelStitch = false;
+	bUseCameraModelIterativeStitch = false;
 
 	// Adjust morph to create stitched image for component height
 	bAdjustMorph4ComponentHeight = true;
