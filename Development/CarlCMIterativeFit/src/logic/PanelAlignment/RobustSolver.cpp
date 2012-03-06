@@ -70,7 +70,7 @@ RobustSolver::RobustSolver(
 {
 	_pFovOrderMap = pFovOrderMap;
 	_bSaveMatrixCSV=true;
-	_bVerboseLogging = false;
+	_bVerboseLogging = true;
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	iFileSaveIndex = 0;	
 }

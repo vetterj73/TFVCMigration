@@ -635,7 +635,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	}
 	double RMS, dRcond;
 	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
-	if (_bVerboseLogging)
+	/*if (_bVerboseLogging)
 	{
 		LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
 		LOG.FireLogEntry(LogTypeSystem, "MatchProj p %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
@@ -647,7 +647,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 			dTrans[1][0], dTrans[1][1], dTrans[1][2],
 			dTrans[2][0], dTrans[2][1], dTrans[2][2]);
 		// NOTE: resid = q - fitValue = distorted pt - proj fit pt
-	}
+	}*/
 	if(iFlag != 0)
 	{
 		LOG.FireLogEntry(LogTypeError, "Failed to create matching projective transform");

@@ -34,7 +34,7 @@ RobustSolverIterative::RobustSolverIterative(
 		unsigned int iMaxNumCorrelations,
 		MosaicSet* pSet): 	RobustSolverCM( pFovOrderMap,  iMaxNumCorrelations, pSet)
 {
-	_iMaxIterations = 5;
+	_iMaxIterations = CorrelationParametersInst.iSolverMaxIterations;
 	_iCalDriftStartCol = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
 	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + _iNumCalDriftTerms;
 	
@@ -164,7 +164,7 @@ void RobustSolverIterative::SolveXAlgH()
 		//}
 	}	
 	// spoof some later code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	_iIterationNumber++;  
+	//_iIterationNumber++;  
 }
 
 void RobustSolverIterative::FillMatrixA()
@@ -578,12 +578,12 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 					pix.u, pix.v,
 					_iNumBasisFunctions, _iNumBasisFunctions,
 					(float *)camCal.S[CAL_ARRAY_X],  _iNumBasisFunctions)
-					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex)  * 2 ];
+					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 ];
 	xySensor.i = htcorrp((int)camCal.vMax,(int)camCal.uMax,
 					pix.u, pix.v,
 					_iNumBasisFunctions, _iNumBasisFunctions,
 					(float *)camCal.S[CAL_ARRAY_Y],  _iNumBasisFunctions)
-					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex)  * 2 + 1];
+					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 + 1];
 
 	// use board transform to go to board x,y
 	if (_iIterationNumber==1)
