@@ -49,7 +49,7 @@ public:
 
 	virtual bool AddCalibationConstraints(
 		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false, bool bIgnoreXOffset = false)=0;
+		bool bPinFov=false)=0;
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope)=0;
@@ -117,7 +117,7 @@ public:
 
 	bool AddCalibationConstraints(
 		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false, bool bIgnoreXOffset = false);
+		bool bPinFov=false);
 	bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope);
@@ -158,7 +158,7 @@ public:
 
 	bool AddCalibationConstraints(
 		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false, bool bIgnoreXOffset = false);
+		bool bPinFov=false) {return true;};
 	bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope) {return true;};
