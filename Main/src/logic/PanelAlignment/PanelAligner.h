@@ -12,6 +12,8 @@ using std::map;
 
 using namespace MosaicDM;
 
+typedef void (*ALIGNMENTDONE_CALLBACK)(bool status);
+
 class PanelAligner
 {
 public:
@@ -65,6 +67,9 @@ public:
 	
 	PanelFiducialResultsSet* GetFidResultsSetPoint() {return _pOverlapManager->GetFidResultsSetPoint();};
 
+	void RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext);
+	void UnregisterAlignmentDoneCallback();
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();
@@ -92,6 +97,10 @@ private:
 	FidFovOverlapList _lastProcessedFids;
 
 	HANDLE _queueMutex;
+
+	ALIGNMENTDONE_CALLBACK _registeredAlignmentDoneCallback;
+	void * _pCallbackContext;
+	void FireAlignmentDone(bool status);
 
 	// Inputs
 	MosaicSet* _pSet;		

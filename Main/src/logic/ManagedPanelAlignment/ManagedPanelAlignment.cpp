@@ -16,6 +16,9 @@ namespace PanelAlignM {
 		_pixelSizeX=1.70e-5;
 		_pixelSizeY=1.70e-5;
 		SetLoggableObject((System::IntPtr)(void*)_pAligner->GetLogger());
+
+		_alignmentDoneDelegate = gcnew AlignmentDoneDelegate(this, &ManagedPanelAlignment::RaiseAlignmentDone); 
+		_pAligner->RegisterAlignmentDoneCallback((ALIGNMENTDONE_CALLBACK)Marshal::GetFunctionPointerForDelegate(_alignmentDoneDelegate).ToPointer(), NULL);	
 	}
 
 	ManagedPanelAlignment::!ManagedPanelAlignment()

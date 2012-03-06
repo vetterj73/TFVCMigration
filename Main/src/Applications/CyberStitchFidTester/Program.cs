@@ -39,7 +39,8 @@ namespace CyberStitchFidTester
         private static ManagedMosaicSet _mosaicSetProcessing = null;
         private static CPanel _processingPanel = null;
         private static CPanel _fidPanel = null;
-        private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
+        private readonly static ManualResetEvent mCollectedEvent = new ManualResetEvent(false);
+        private readonly static ManualResetEvent mAlignedEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
@@ -275,6 +276,7 @@ namespace CyberStitchFidTester
                     // Setup Aligner...
                     _aligner.OnLogEntry += OnLogEntryFromClient;
                     _aligner.SetAllLogTypes(true);
+                    _aligner.OnAlignmentDone += OnAlignmentDone;
                     _aligner.NumThreads(8);
                     _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
@@ -317,7 +319,7 @@ namespace CyberStitchFidTester
                     else
                     {
                         Output("Waiting for Images...");
-                        mDoneEvent.WaitOne();
+                        mCollectedEvent.WaitOne();
                     }
 
                     // Verify that mosaic is filled in...
@@ -360,7 +362,10 @@ namespace CyberStitchFidTester
                     if (_cycleCount >= numberToRun)
                         bDone = true;
                     else
-                        mDoneEvent.Reset();
+                    {
+                        mCollectedEvent.Reset();
+                        mAlignedEvent.Reset();
+                    }
                 }
             } // End Simulation Mode
 
@@ -774,7 +779,13 @@ namespace CyberStitchFidTester
                     return;
             }
             if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                mDoneEvent.Set();
+                mCollectedEvent.Set();
+        }
+
+        private static void OnAlignmentDone(bool status)
+        {
+            Output("OnAlignmentDone Called!");
+            mAlignedEvent.Set();
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)

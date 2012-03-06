@@ -14,6 +14,8 @@ using namespace System::Collections::Generic;
 
 namespace PanelAlignM {
 
+	public delegate void AlignmentDoneDelegate(bool status);
+
 	public ref class ManagedFidInfo
 	{
 		public:
@@ -84,6 +86,8 @@ namespace PanelAlignM {
 		!ManagedPanelAlignment();
 		~ManagedPanelAlignment();
 
+		event AlignmentDoneDelegate^ OnAlignmentDone;
+
 		///
 		///	Sets up for a new "Run"
 		///
@@ -135,5 +139,10 @@ namespace PanelAlignM {
 		double _pixelSizeX;
 		double _pixelSizeY;
 
+		AlignmentDoneDelegate ^_alignmentDoneDelegate;
+		void RaiseAlignmentDone(bool status)
+		{
+			OnAlignmentDone(status);
+		}
 	};
 }

@@ -20,6 +20,9 @@ PanelAligner::PanelAligner(void)
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
 
+	_registeredAlignmentDoneCallback = NULL;
+	_pCallbackContext = NULL;
+
 	//_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
 	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
 }
@@ -209,6 +212,24 @@ void PanelAligner::SetPanelEdgeDetection(
 	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
 }
 
+void PanelAligner::RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext)
+{
+	_registeredAlignmentDoneCallback = pCallback;
+	_pCallbackContext = pContext;
+}
+
+void PanelAligner::UnregisterAlignmentDoneCallback()
+{
+	_registeredAlignmentDoneCallback = NULL;
+	_pCallbackContext = NULL;
+}
+
+void PanelAligner::FireAlignmentDone(bool status)
+{
+	if(_registeredAlignmentDoneCallback != NULL)
+		_registeredAlignmentDoneCallback(status);
+}
+
 void PanelAligner::SetCalibrationWeight(double dValue)
 {
 	EquationWeights::Instance().SetCalibrationScale(dValue);
@@ -255,6 +276,8 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	if(_pSet->HasAllImages() && _pOverlapManager->FinishOverlaps())
 	{
 		CreateTransforms();
+
+		FireAlignmentDone(true);
 	}
 
 	return(true);

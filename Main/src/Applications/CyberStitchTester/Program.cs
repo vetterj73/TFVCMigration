@@ -109,6 +109,9 @@ namespace CyberStitchTester
             _aligner.SetAllLogTypes(true);
             //_aligner.LogTransformVectors(true);
 
+            // Set up aligner delegate
+            _aligner.OnAlignmentDone += OnAlignmentDone;
+
             // Set up production for aligner
             try
             {
@@ -444,8 +447,14 @@ namespace CyberStitchTester
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return;
             }
-            if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                mDoneEvent.Set();
+            //if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
+            //    mDoneEvent.Set();
+        }
+
+        private static void OnAlignmentDone(bool status)
+        {
+            Output("OnAlignmentDone Called!");
+            mDoneEvent.Set();
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
