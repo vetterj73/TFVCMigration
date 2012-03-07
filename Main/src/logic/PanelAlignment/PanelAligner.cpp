@@ -25,6 +25,9 @@ PanelAligner::PanelAligner(void)
 
 	//_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
 	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
+
+	// for debug
+	_iPanelCount = 0;
 }
 
 PanelAligner::~PanelAligner(void)
@@ -390,6 +393,9 @@ bool PanelAligner::CreateMasks()
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
+	// for debug
+	_iPanelCount++;
+
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
 	{
@@ -419,12 +425,14 @@ bool PanelAligner::CreateTransforms()
 
 		if(type == INVALID || type == CONFLICTION) // If leading edge detection is failed
 		{
+			LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed!");
 			// Do nominal fiducial overlap alignment
 			bool bForCurPanel = false;
 			_pOverlapManager->DoAlignment4AllFiducial(bForCurPanel);
 		}
 		else	// If leading edge detection is success
 		{
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Panel leading edge detection result=%d!", (int)type);
 			bUseEdgeInfo = true;
 
 			// Create matrix and vector for solver
@@ -471,19 +479,49 @@ bool PanelAligner::CreateTransforms()
 				// Get shift 100 pixel stitched image
 			pLayer = _pSet->GetLayer(0);
 			pLayer->SetXShift(true);
-			Image* pTempImage = pLayer->GetStitchedImage();
+			Image* pTempImage = pLayer->GetGreyStitchedImage();
 			pLayer->SetXShift(false);
-				// Draw a 3-pixel width white line to represent leading edge
+			// Draw a 3-pixel width white line to represent leading edge
 			unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
 			::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
-				// Save debug image
-			pTempImage->Save("C:\\Temp\\edgeImage.bmp");
+
+			unsigned int iNumRows = _pPanel->GetNumPixelsInX();
+			unsigned int iNumCols = _pPanel->GetNumPixelsInY();
+			unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
+			ImgTransform trans;
+			Image tempImage2;
+			tempImage2.Configure(iNumCols, iNumRows, iNumCols, 
+				trans, trans, true);
+			::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
+			::memcpy(tempImage2.GetBuffer(), pCadBuf, iNumCols*(iNumRows-100)); 
+						// Draw a 3-pixel width white line to represent leading edge
+			pBuf = tempImage2.GetBuffer() + tempImage2.ByteRowStride()* (tempImage2.Rows()-1-100);
+			::memset(pBuf, 255, tempImage2.ByteRowStride()*3);
+
+			Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+				iNumRows, 
+				iNumCols,
+				pTempImage->GetBuffer(), 
+				tempImage2.GetBuffer(),
+				pTempImage->PixelRowStride(),
+				tempImage2.PixelRowStride() );
+
+			string sFileName;
+			char cTemp[100];
+			sprintf_s(cTemp, 100, "C:\\Temp\\StitchedEdgeImage_%d.bmp", _iPanelCount);
+		
+			sFileName.append(cTemp);
+
+			rbg->write(sFileName);
+
+			delete rbg;
 			//*/
 
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search for edge !");
 			// Create and Calculate fiducial overlaps for current panel
-			_pOverlapManager->DoAlignment4AllFiducial(true);
+			_pOverlapManager->DoAlignment4AllFiducial(true);	
 
-			
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): after Fiducial search for edge !");
 		}
 	}
 
