@@ -167,8 +167,9 @@ public:
 		MosaicLayer*	pMosaic,
 		pair<unsigned int, unsigned int> ImgPos, // first = camera, second = trigger
 		Image* pFidImg,
-		double _dXcenter,
-		double _dYcenter,
+		double dXcenter,
+		double dYcenter,
+		unsigned int iFidIndex,
 		DRect validRect);
 
 	void SetVsFinder(unsigned int iTemplateID);
@@ -182,6 +183,8 @@ public:
 
 	double GetFiducialXPos() const {return _dFidCenterX;};
 	double GetFiducialYPos() const {return _dFidCenterY;};
+
+	int GetFiducialIndex() const {return _iFidIndex;};
 
 	bool IsReadyToProcess() const;
 	
@@ -207,6 +210,8 @@ private:
 
 	double _dFidCenterX;
 	double _dFidCenterY;
+
+	unsigned int _iFidIndex;
 
 	FiducialSearchMethod _fidSearchMethod;
 	unsigned int _iTemplateID; // for Vsfinder or CyberNgc

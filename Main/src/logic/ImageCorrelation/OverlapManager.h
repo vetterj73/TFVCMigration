@@ -77,6 +77,7 @@ public:
 	bool FinishOverlaps();
 
 	PanelFiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
+	void CreateFiducialResultSet(bool bCurPanel);
 
 	bool FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum);
 
@@ -114,6 +115,22 @@ protected:
 		Feature* pFeature,
 		bool bFidBrighterThanBackground,
 		bool bFiducialAllowNegativeMatch);
+
+	bool CreateFidOverlapForLayer(
+		MosaicLayer *pLayer, 
+		Image* pFidImage, 	
+		int iFidIndex,
+		unsigned int iTemplateID,
+		bool bSingleOverlap,
+		int iMinOvelapWidth,
+		int iMinOvelapHeight);  
+
+	void CreateFidFovOverlaps4Fid(
+		Feature* pFidFeature,		
+		int iFidIndex,
+		double dSearchExpX,
+		double dSearchExpY,
+		Image* pFidImage);
 
 	bool FovFovAlignConsistCheckForTwoIllum(
 		unsigned int iLayer1, unsigned int iLayer2,

@@ -598,6 +598,7 @@ FidFovOverlap::FidFovOverlap(
 	Image* pFidImg,
 	double dCenterX,
 	double dCenterY,
+	unsigned int iFidIndex,
 	DRect validRect)
 {
 	_pMosaic = pMosaic;
@@ -606,6 +607,8 @@ FidFovOverlap::FidFovOverlap(
 
 	_dFidCenterX = dCenterX;
 	_dFidCenterY = dCenterY;
+
+	_iFidIndex = iFidIndex;
 
 	Image* pImg1 = _pMosaic->GetImage(ImgPos.first, ImgPos.second);
 

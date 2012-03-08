@@ -213,15 +213,15 @@ namespace CyberStitchTester
 
                     if (_bBayerPattern) // for bayer pattern
                     {
-                        if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1)) == false)
+                       /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1)) == false)
                         {
                             Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1));
                         }
 
                         if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1) + "\\") == false)
                             Output("Could not save mosaic images");
-
-                        /* for debug 
+                        */
+                        //* for debug 
                         _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                             _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
                             _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),

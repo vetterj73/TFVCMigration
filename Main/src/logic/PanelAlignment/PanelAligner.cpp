@@ -532,6 +532,12 @@ bool PanelAligner::CreateTransforms()
 			FiducialAlignmentCheckOnCalibration();
 	}
 
+	// Pick the best alignment for each physical fiducial
+	bool bCurPanel = false;
+	if(bUseEdgeInfo) bCurPanel = true;
+		// After all fiducial overlaps are calculated
+	_pOverlapManager->CreateFiducialResultSet(bCurPanel);
+		// Must after CreateFiducialResultSet()
 	PickOneAlign4EachPanelFiducial();
 
 	// Create matrix and vector for solver
@@ -648,7 +654,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 // Add current panel/(not nominal) fiducial overlap results
 void PanelAligner::AddCurPanelFidOverlapResults(RobustSolver* solver)
 {
-	for(int k=0; k<_pPanel->NumberOfFiducials(); k++)
+	for(unsigned int k=0; k<_pPanel->NumberOfFiducials(); k++)
 	{
 		FidFovOverlapList* pFidFovList =_pOverlapManager->GetCurPanelFidFovList4Fid(k);
 		for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)

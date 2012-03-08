@@ -136,6 +136,8 @@ OverlapManager::OverlapManager(
 			_fidFovOverlapLists[i][j] = new list<FidFovOverlap>[_iNumCameras];
 		}
 	}
+	// Create current panel fiducial overlap list
+	_curPanelFidFovOverlapLists = new list<FidFovOverlap>[_pPanel->NumberOfFiducials()];
 
 	// Initial fiducial result set
 	_pFidResultsSet = NULL;
@@ -159,15 +161,12 @@ OverlapManager::OverlapManager(
 
 	// For panel edge detection;
 	_pEdgeDetector = NULL;
-	_curPanelFidFovOverlapLists = NULL;
 	_pCurPanelFidImages = NULL;
 	if(CorrelationParametersInst.bDetectPanelEdge)
 	{
 		_pEdgeDetector = new PanelEdgeDetection();
 		_pEdgeDetector->Initialization(_pMosaicSet->GetLayer(0), _validRect);
-		_curPanelFidFovOverlapLists = new list<FidFovOverlap>[_pPanel->NumberOfFiducials()];
 	}
-
 }
 
 OverlapManager::~OverlapManager(void)
@@ -604,7 +603,12 @@ void OverlapManager::RenderFiducial(
 			(unsigned int((1.0/resolution)*(xMaxImg-xMinImg)));	
 	unsigned int nColsImg
 			(unsigned int((1.0/resolution)*(yMaxImg-yMinImg)));	
-	
+
+	// If image size and fearure are same, a redraw is not necessary
+	// However, we only check size here but not fearue, so that it is not fully protected
+	if(nRowsImg == pImg->Rows() && nColsImg == pImg->Columns())
+		return;
+
 	// Define transform for new fiducial image
 	double t[3][3];
 	t[0][0] = resolution;
@@ -661,6 +665,176 @@ int OverlapManager::CreateNgcFidTemplate(
 	return(iId);
 }
 
+// pLayer: input, Mosaic layer for fiducial finding
+// pFidImage: input, fiducial image
+// iFidIndex: index of fiducial
+// iTemplateID: valid if vsfinder or VsNGc is used, fiducial template ID
+// bSingleOverlapOnly: Create only single overlap that covers whole search area (same size as pFidImage)
+// iMinOvelapWidth and iMinOvelapHeihgt:valid only bSingleOverlapOnly=tru,  minimum overlap size
+// When bSingleOverlapOnly = ture, return true if a valid overlap is created
+bool OverlapManager::CreateFidOverlapForLayer(
+	MosaicLayer *pLayer, 
+	Image* pFidImage, 	
+	int iFidIndex,
+	unsigned int iTemplateID,
+	bool bSingleOverlapOnly,
+	int iMinOvelapWidth,
+	int iMinOvelapHeight) 
+{
+	bool bHasSingleOvelap = false;
+	unsigned int iNumCameras = pLayer->GetNumberOfCameras();
+	unsigned int iNumTriggers = pLayer->GetNumberOfTriggers();
+	for(unsigned int iTrig=0; iTrig<iNumTriggers; iTrig++)
+	{
+		for(unsigned int iCam=0; iCam<iNumCameras; iCam++)
+		{
+			FidFovOverlap overlap(
+				pLayer,
+				pair<unsigned int, unsigned int>(iCam, iTrig),
+				pFidImage,
+				pFidImage->CenterX(),
+				pFidImage->CenterY(),
+				iFidIndex,
+				_validRect);
+
+			// Overlap validation check
+			if(!overlap.IsValid())
+				continue;
+
+			// Overlap size check
+			UIRect rectFid= overlap.GetCoarsePair()->GetSecondRoi();
+			if(bSingleOverlapOnly)
+			{
+				// If overlap doesn't cover whole search area
+				if(rectFid.Columns()+2 < pFidImage->Columns()||
+					rectFid.Rows()+2 < pFidImage->Rows())
+				{
+					continue;
+				}
+				else // cover whole search area
+				{
+					bHasSingleOvelap = true;
+				}
+			}
+			else
+			{
+				// If ovealp is less than minimum size
+				if((int)rectFid.Columns() < iMinOvelapWidth||
+					(int)rectFid.Rows() < iMinOvelapHeight)
+				{
+					continue;
+				}
+			}
+				
+			// Set template ID
+			if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+			{
+				overlap.SetVsFinder(iTemplateID);
+			}
+			else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
+			{
+				overlap.SetNgcFid(iTemplateID);
+			}
+
+			// Add overlap to process list 
+			_curPanelFidFovOverlapLists[iFidIndex].push_back(overlap);
+
+			if(bHasSingleOvelap)
+				return(true);
+
+		} // for(iCam=0; iCam<iNumCameras; iCam++)
+	} // for(iTrig=0; iTrig<iNumTriggers; iTrig++)
+
+	if(bSingleOverlapOnly)
+		return(bHasSingleOvelap);
+	else
+		return(true);
+}
+
+// Create fiducial overlap for a fudical
+// pFidFeature: input, fiducial feature
+// iFidIndex: index of fiducial
+// dSearchExpX and dSearchExpY: fiducial search expansion in CAD space
+// pFidImage: output, fiducial image
+void OverlapManager::CreateFidFovOverlaps4Fid(
+	Feature* pFidFeature,	
+	int iFidIndex,
+	double dSearchExpX,
+	double dSearchExpY,
+	Image* pFidImage)
+{
+	// Clear content for current fiducial overlap list
+	_curPanelFidFovOverlapLists[iFidIndex].clear();
+
+	// Create a fiducial image
+	// If image size is change, the image will be rereated. Otherwise, no creation
+	CreateFiducialImage(pFidImage, pFidFeature, dSearchExpX, dSearchExpY);
+
+	// Calcualte minimum size for Overlap
+	unsigned int iExpPixelsCol = (unsigned int)(dSearchExpY/_pPanel->GetPixelSizeY());
+	unsigned int iExpPixelsRow = (unsigned int)(dSearchExpX/_pPanel->GetPixelSizeX());
+		
+	int iSafePixels = 10;
+	int iMinOvelapWidth = pFidImage->Columns() - 2*iExpPixelsCol + iSafePixels;
+	int iMinOvelapHeight = pFidImage->Rows() - 2*iExpPixelsRow + iSafePixels;
+
+	for(unsigned int iLayer=0; iLayer<_pMosaicSet->GetNumMosaicLayers(); iLayer++)
+	{
+		// Layer fiducial overlap control parameter
+		MosaicLayer *pLayer = _pMosaicSet->GetLayer(iLayer);
+		if(!pLayer->IsAlignWithFiducial()) // If not use Fiducial
+			continue;
+
+		bool bFidBrighter = pLayer->IsFiducialBrighterThanBackground();
+		bool bAllowNegMatch = pLayer->IsFiducialAllowNegativeMatch();
+
+		// Create or get existing fiducial template ID
+		int iTemplateID;
+		if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+		{
+			iTemplateID = VsFinderCorrelation::Instance().CreateVsTemplate(pFidFeature, bFidBrighter, bAllowNegMatch);
+			if(iTemplateID < 0) 
+			{
+				LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps4Fid():Failed to create vsfinder template");
+				return;
+			}
+		}
+		else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
+		{
+			iTemplateID = CreateNgcFidTemplate(pFidImage, pFidFeature, bFidBrighter, bAllowNegMatch);
+			if(iTemplateID < 0) 
+			{
+				LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps4Fid():Failed to create cyberNgc template");
+				return;
+			}
+		}
+
+		// First check whether a single FOV can cover entire search area	
+		bool bSingleOverlapOnly = true;
+		bool bHasSingleOvelap = CreateFidOverlapForLayer(
+			pLayer, 
+			pFidImage, 	
+			iFidIndex,
+			iTemplateID,
+			bSingleOverlapOnly,
+			iMinOvelapWidth,
+			iMinOvelapHeight);
+
+		// If no single FOV can cover entire search area 
+		if(!bHasSingleOvelap)
+		{
+			bSingleOverlapOnly = false;
+			CreateFidOverlapForLayer(
+				pLayer, 
+				pFidImage, 	
+				iFidIndex,
+				iTemplateID,
+				bSingleOverlapOnly,
+				iMinOvelapWidth,
+				iMinOvelapHeight);
+		} 
+	}
+}
 
 // Create Fiducial and Fov overlaps
 void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
@@ -673,236 +847,129 @@ void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
 		return;
 	}
 
-	// Set feature to result set 
-	int iIndex = 0;
-	for(FeatureListIterator iFid = _pPanel->beginFiducials(); iFid != _pPanel->endFiducials(); iFid++)
-	{
-		_pFidResultsSet->GetPanelFiducialResultsPtr(iIndex)->SetFeaure(iFid->second);
-		iIndex++;
-	}
-
 	// Allocate images for process
-	if(_pFidImages == NULL)
-		_pFidImages = new Image[iNum];
-
-	bool bFirstPanel = false;
-	if(bForCurPanel && _pCurPanelFidImages == NULL)
+	if(bForCurPanel)
 	{
-		_pCurPanelFidImages= new Image[iNum];
-		bFirstPanel = true;
+		if(_pCurPanelFidImages == NULL)
+			_pCurPanelFidImages= new Image[iNum];
+	}
+	else
+	{	
+		if(_pFidImages == NULL)
+			_pFidImages = new Image[iNum];
 	}
 
-	unsigned int iLayer, iCam, iTrig, iCount=-1;	
+	unsigned int iFidIndex=-1;	
 	for(FeatureListIterator iFid = _pPanel->beginFiducials(); iFid != _pPanel->endFiducials(); iFid++)
 	{
-		iCount++;
+		iFidIndex++;
 
-		// Create/Get fiducail image and do clean up if it is necessary 
+		// Set feature to result set 
+		_pFidResultsSet->GetPanelFiducialResultsPtr(iFidIndex)->SetFeaure(iFid->second);
+
+		// Get fiducial image and search expansion 
 		double dExpandX, dExpandY;
 		Image* pFidImage = NULL;
 		if(!bForCurPanel)
 		{
 			dExpandX = CorrelationParametersInst.dFiducialSearchExpansionX;
 			dExpandY = CorrelationParametersInst.dFiducialSearchExpansionY;
-			pFidImage = &_pFidImages[iCount];
-			// Create a fiducial image
-			CreateFiducialImage(pFidImage, iFid->second, dExpandX, dExpandY);
+			pFidImage = &_pFidImages[iFidIndex];
+			
 		}
 		else
 		{
 			dExpandX = 2e-3;
 			dExpandY = 2e-3;
-			pFidImage = &_pCurPanelFidImages[iCount];
-			if(bFirstPanel)
-			{
-				// Create a fiducial image
-				CreateFiducialImage(pFidImage, iFid->second, dExpandX, dExpandY);
-			}
-
-			// Clear content for each panel
-			_curPanelFidFovOverlapLists[iCount].clear();
-			_pFidResultsSet->GetPanelFiducialResultsPtr(iCount)->GetFidOverlapListPtr()->clear(); 
+			pFidImage = &_pCurPanelFidImages[iFidIndex];
 		}
+		
+		CreateFidFovOverlaps4Fid(
+			iFid->second,		
+			iFidIndex,
+			dExpandX,
+			dExpandY,
+			pFidImage);	
 		
 		/* for Debug
 		string s;
 		char cTemp[100];
-		sprintf_s(cTemp, 100, "C:\\Temp\\Fid_%d.bmp", iCount);
+		sprintf_s(cTemp, 100, "C:\\Temp\\Fid_%d.bmp", iFidIndex);
 		s.append(cTemp);
 		pFidImage.Save(s);
 		//*/
+	}
 
-		// Calcualte minimum size for Overlap
-		unsigned int iExpPixelsCol = (unsigned int)(dExpandY/_pPanel->GetPixelSizeY());
-		unsigned int iExpPixelsRow = (unsigned int)(dExpandX/_pPanel->GetPixelSizeX());
-		
-		int iSafePixels = 10;
-		int iMinOvelapWidth = pFidImage->Columns() - 2*iExpPixelsCol + iSafePixels;
-		int iMinOvelapHeight = pFidImage->Rows() - 2*iExpPixelsRow + iSafePixels;
+	// Create nominal overlap list from current overlap list
+	if(!bForCurPanel)
+	{
+		// Clean up nominal list
+		for(unsigned int iLayer = 0; iLayer < _pMosaicSet->GetNumMosaicLayers(); iLayer++)
+			for(unsigned int iTrig = 0; iTrig< _iNumTriggers; iTrig++)
+				for(unsigned int iCam = 0; iCam < _iNumCameras; iCam++)
+					_fidFovOverlapLists[iLayer][iTrig][iCam].clear();
 
-		for(iLayer=0; iLayer<_pMosaicSet->GetNumMosaicLayers(); iLayer++)
+		// Fill nominal list
+		for(unsigned int iFidIndex = 0; iFidIndex < iNum; iFidIndex++)
 		{
-			MosaicLayer *pLayer = _pMosaicSet->GetLayer(iLayer);
-			if(!pLayer->IsAlignWithFiducial()) // If not use Fiducial
-				continue;
-
-			bool bFidBrighter = pLayer->IsFiducialBrighterThanBackground();
-			bool bAllowNegMatch = pLayer->IsFiducialAllowNegativeMatch();
-
-			int iVsFinderTemplateId, iCyberNgcTemplateId;
-			if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
+			FidFovOverlapList::iterator i;
+			for(i= _curPanelFidFovOverlapLists[iFidIndex].begin(); i != _curPanelFidFovOverlapLists[iFidIndex].end(); i++)
 			{
-				iVsFinderTemplateId = VsFinderCorrelation::Instance().CreateVsTemplate(iFid->second, bFidBrighter, bAllowNegMatch);
-				if(iVsFinderTemplateId < 0) 
-				{
-					LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create vsfinder template");
-					return;
-				}
+				unsigned int iLayer = i->GetMosaicImage()->Index();
+				unsigned int iTrig = i->GetTriggerIndex();
+				unsigned int iCam = i->GetCameraIndex();
+				_fidFovOverlapLists[iLayer][iTrig][iCam].push_back(*i);
 			}
-			else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
-			{
-				iCyberNgcTemplateId = CreateNgcFidTemplate(pFidImage, iFid->second, bFidBrighter, bAllowNegMatch);
-				if(iCyberNgcTemplateId < 0) 
-				{
-					LOG.FireLogEntry(LogTypeError, "OverlapManager::CreateFidFovOverlaps():Failed to create cyberNgc template");
-					return;
-				}
-			}
-
-			// First check whether a single FOV can cover entire search area			
-			bool bSingleOvelap = false;
-			unsigned int iNumCameras = pLayer->GetNumberOfCameras();
-			unsigned int iNumTriggers = pLayer->GetNumberOfTriggers();
-			for(iTrig=0; iTrig<iNumTriggers; iTrig++)
-			{
-				for(iCam=0; iCam<iNumCameras; iCam++)
-				{
-					FidFovOverlap overlap(
-						pLayer,
-						pair<unsigned int, unsigned int>(iCam, iTrig),
-						pFidImage,
-						pFidImage->CenterX(),
-						pFidImage->CenterY(),
-						_validRect);
-
-					// Overlap validation check
-					if(!overlap.IsValid())
-						continue;
-
-					/*/ Make sure fiducial template area is inside overlap 
-					int iSafePixels = 15;
-					UIRect rectFid= overlap.GetCoarsePair()->GetSecondRoi();
-					unsigned int iExpPixelsCol = (unsigned int)(CorrelationParametersInst.dFiducialSearchExpansionY/_pPanel->GetPixelSizeY());
-					unsigned int iExpPixelsRow = (unsigned int)(CorrelationParametersInst.dFiducialSearchExpansionX/_pPanel->GetPixelSizeX());
-					if(rectFid.FirstColumn >  iExpPixelsCol-iSafePixels ||
-						rectFid.LastColumn < pFidImage.Columns()-1 - (iExpPixelsCol-iSafePixels) || 
-						rectFid.FirstRow >  iExpPixelsRow-iSafePixels ||
-						rectFid.LastRow < pFidImage.Rows()-1 - (iExpPixelsRow-iSafePixels))
-						continue;
-					//*/
-
-					// If FOV doesn't cover entire search area
-					// +2 pixels to compensate possible rounding error
-					UIRect rectFid= overlap.GetCoarsePair()->GetSecondRoi();
-					if(rectFid.Columns()+2 < pFidImage->Columns()||
-						rectFid.Rows()+2 < pFidImage->Rows())
-					{
-						continue;
-					}
-				
-					if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
-					{
-						overlap.SetVsFinder(iVsFinderTemplateId);
-					}
-					else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
-					{
-						overlap.SetNgcFid(iCyberNgcTemplateId);
-					}
-
-					// Add overlap that covers entire search area
-					FidFovOverlap* pOvelap1;
-					if(!bForCurPanel)
-					{	
-						_fidFovOverlapLists[iLayer][iTrig][iCam].push_back(overlap);
-						pOvelap1 = &(*_fidFovOverlapLists[iLayer][iTrig][iCam].rbegin());
-					}
-					else
-					{
-						_curPanelFidFovOverlapLists[iCount].push_back(overlap);
-						pOvelap1 = &(*_curPanelFidFovOverlapLists[iCount].rbegin());
-					}
-					
-					// Add to fiducial result set
-					_pFidResultsSet->GetPanelFiducialResultsPtr(iCount)->AddFidFovOvelapPoint(pOvelap1);
-
-					// Single FOV covers entire search arae
-					bSingleOvelap = true;
-					break;
-				} //for(iCam=0; iCam<iNumCameras; iCam++)
-				
-				if(bSingleOvelap) 
-					break;
-
-			}	//for(iTrig=0; iTrig<iNumTriggers; iTrig++)
-
-			// If no single FOV can cover entire search area 
-			if(!bSingleOvelap)
-			{
-				for(iTrig=0; iTrig<iNumTriggers; iTrig++)
-				{
-					for(iCam=0; iCam<iNumCameras; iCam++)
-					{
-						FidFovOverlap overlap(
-							pLayer,
-							pair<unsigned int, unsigned int>(iCam, iTrig),
-							pFidImage,
-							pFidImage->CenterX(),
-							pFidImage->CenterY(),
-							_validRect);
-
-						// Overlap validation check
-						if(!overlap.IsValid())
-							continue;
-
-						// If ovealp is less than minimum size
-						UIRect rectFid= overlap.GetCoarsePair()->GetSecondRoi();
-						if((int)rectFid.Columns() < iMinOvelapWidth||
-							(int)rectFid.Rows() < iMinOvelapHeight)
-						{
-							continue;
-						}
-				
-						// If ovlap is bigger than minimum size
-						if(CorrelationParametersInst.fidSearchMethod == FIDVSFINDER)
-						{
-							overlap.SetVsFinder(iVsFinderTemplateId);
-						}
-						else if(CorrelationParametersInst.fidSearchMethod == FIDCYBERNGC)
-						{
-							overlap.SetNgcFid(iCyberNgcTemplateId);
-						}
-
-						// Add overlap which partially covers search area 
-						FidFovOverlap* pOvelap1;
-						if(!bForCurPanel)
-						{
-							// Add overlap that covers entire search area
-							_fidFovOverlapLists[iLayer][iTrig][iCam].push_back(overlap);
-							pOvelap1 = &(*_fidFovOverlapLists[iLayer][iTrig][iCam].rbegin());
-						}
-						else
-						{
-							_curPanelFidFovOverlapLists[iCount].push_back(overlap);
-							pOvelap1 = &(*_curPanelFidFovOverlapLists[iCount].rbegin());
-						}
-					
-						_pFidResultsSet->GetPanelFiducialResultsPtr(iCount)->AddFidFovOvelapPoint(pOvelap1);
-
-					} // for(iCam=0; iCam<iNumCameras; iCam++)
-				} // for(iTrig=0; iTrig<iNumTriggers; iTrig++)
-			} // if(!bSingleOvelap)
 		}
 	}
+}
+
+// Create fiducial result set
+// Should be called after all fiducial overlap is processed
+void OverlapManager::CreateFiducialResultSet(bool bCurPanel)
+{
+	// Clean up first
+	for(unsigned int iFidIndex  = 0; iFidIndex < _pPanel->NumberOfFiducials(); iFidIndex++)
+	{
+		_pFidResultsSet->GetPanelFiducialResultsPtr(iFidIndex)->GetFidOverlapListPtr()->clear();
+	}
+
+	if(!bCurPanel) // Use nominal fiducial overlaps
+	{
+		for(unsigned int iLayer = 0; iLayer < _pMosaicSet->GetNumMosaicLayers(); iLayer++)
+		{
+			for(unsigned int iTrig = 0; iTrig< _iNumTriggers; iTrig++)
+			{
+				for(unsigned int iCam = 0; iCam < _iNumCameras; iCam++)
+				{
+					FidFovOverlapList* pFidFovList = &_fidFovOverlapLists[iLayer][iTrig][iCam];
+					for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
+					{
+						if(i->IsProcessed())
+						{ 
+							int iFidIndex = i->GetFiducialIndex();
+							_pFidResultsSet->GetPanelFiducialResultsPtr(iFidIndex)->GetFidOverlapListPtr()->push_back(&(*i));
+						}
+					}
+				}
+			}
+		}
+	}
+	else	// Use current fiducial overlaps
+	{
+		for(unsigned int iFidIndex  = 0; iFidIndex < _pPanel->NumberOfFiducials(); iFidIndex++)
+		{
+			FidFovOverlapList* pFidFovList = &_curPanelFidFovOverlapLists[iFidIndex];	
+			for(list<FidFovOverlap>::iterator i=pFidFovList->begin(); i!=pFidFovList->end(); i++)
+			{
+				if(i->IsProcessed())
+				{ 
+					_pFidResultsSet->GetPanelFiducialResultsPtr(iFidIndex)->GetFidOverlapListPtr()->push_back(&(*i));
+				}
+			}
+		}
+	}
+
 }
 
 // Get FidFovOverlap list for certain Fov
