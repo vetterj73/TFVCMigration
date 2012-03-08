@@ -41,6 +41,8 @@ CorrelationParameters::CorrelationParameters(void)
 	dCyberNgcMinCorrScore = 0.5;		// The minimum correlation score for CyberNgc
 	dFiducialSearchExpansionX = 6e-3;	// Fiducial search expansion in x and y of world space 
 	dFiducialSearchExpansionY = 2e-3;
+	dFidSearchExpXWithEdge = 2e-3;		// Fiducial search expansion in x and y of world space with panel edge information
+	dFidSearchExpYWithEdge = 2e-3;
 
 	// FovFov Alignment result check for each trigger
 	bFovFovAlignCheck = true;			// Whether do FovFov alignment check for each trigger

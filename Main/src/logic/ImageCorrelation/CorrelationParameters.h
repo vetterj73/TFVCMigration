@@ -56,6 +56,8 @@ public:
 	double dCyberNgcMinCorrScore;			// The minimum correlation score for vsFinder
 	double dFiducialSearchExpansionX;		// Fiducial search expansion in x and y of world space 
 	double dFiducialSearchExpansionY;
+	double dFidSearchExpXWithEdge;			// Fiducial search expansion in x and y of world space with panel edge information
+	double dFidSearchExpYWithEdge;
 
 	// FovFov Alignment result check for each trigger
 	bool bFovFovAlignCheck;					// Whether do FovFov alignment check for each trigger

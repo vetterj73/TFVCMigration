@@ -879,8 +879,8 @@ void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
 		}
 		else
 		{
-			dExpandX = 2e-3;
-			dExpandY = 2e-3;
+			dExpandX = CorrelationParametersInst.dFidSearchExpXWithEdge;
+			dExpandY = CorrelationParametersInst.dFidSearchExpYWithEdge;
 			pFidImage = &_pCurPanelFidImages[iFidIndex];
 		}
 		
