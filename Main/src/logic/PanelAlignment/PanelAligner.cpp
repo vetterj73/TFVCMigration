@@ -427,8 +427,7 @@ bool PanelAligner::CreateTransforms()
 		{
 			LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed!");
 			// Do nominal fiducial overlap alignment
-			bool bForCurPanel = false;
-			_pOverlapManager->DoAlignment4AllFiducial(bForCurPanel);
+			_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
 		}
 		else	// If leading edge detection is success
 		{
@@ -519,25 +518,26 @@ bool PanelAligner::CreateTransforms()
 
 			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search for edge !");
 			// Create and Calculate fiducial overlaps for current panel
-			_pOverlapManager->DoAlignment4AllFiducial(true);	
+			_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);	
 
 			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): after Fiducial search for edge !");
 		}
 	}
+	bool bForCurPanel = bUseEdgeInfo ;
+	
+	// After all fiducial overlaps are calculated
+	_pOverlapManager->CreateFiducialResultSet(bForCurPanel);
 
 	if(!bUseEdgeInfo)
 	{
 		// Fiducial alignment check based on SIM calibration
+		// Must after CreateFiducialResultSet()
 		if(CorrelationParametersInst.bFiducialAlignCheck)
 			FiducialAlignmentCheckOnCalibration();
 	}
 
 	// Pick the best alignment for each physical fiducial
-	bool bCurPanel = false;
-	if(bUseEdgeInfo) bCurPanel = true;
-		// After all fiducial overlaps are calculated
-	_pOverlapManager->CreateFiducialResultSet(bCurPanel);
-		// Must after CreateFiducialResultSet()
+	// Must after CreateFiducialResultSet()
 	PickOneAlign4EachPanelFiducial();
 
 	// Create matrix and vector for solver
