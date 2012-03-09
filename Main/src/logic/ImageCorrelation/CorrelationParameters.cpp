@@ -65,7 +65,7 @@ CorrelationParameters::CorrelationParameters(void)
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 
 	// Whether use projective transform
-	bUseProjectiveTransform = false;
+	bUseProjectiveTransform = true;
 	bUseCameraModelStitch = false;
 
 	// Adjust morph to create stitched image for component height
