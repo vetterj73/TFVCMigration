@@ -132,7 +132,7 @@ namespace SIMMosaicUtils
                 for (uint j = 0; j < set.GetNumMosaicLayers(); j++)
                 {
                     ManagedCorrelationFlags flag = set.GetCorrelationSet(i, j);
-                    if (i == j)
+                    if (i == j) // For same layer
                     {
                         flag.SetCameraToCamera(true);
 
@@ -141,10 +141,18 @@ namespace SIMMosaicUtils
                             flag.SetTriggerToTrigger(true); // For one illumination for a SIM
                         else
                             flag.SetTriggerToTrigger(false);
+
+                        // If only one camera is used 
+                        if(set.GetLayer(0).GetNumberOfCameras() == 1)
+                            flag.SetTriggerToTrigger(true);
                     }
-                    else
+                    else // For different layers
                     {
                         flag.SetCameraToCamera(false);
+
+                        // If only one or 2 trigger
+                        if (set.GetLayer(0).GetNumberOfTriggers() <= 2)
+                            flag.SetCameraToCamera(true);
 
                         if ((i == 0 && j == 3) || (i == 3 && j == 0) ||
                              (i == 1 && j == 2) || (i == 2 && j == 1))
