@@ -322,8 +322,16 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	double* pdCenY1 = new double[iNumCams1];
 	pLayer1->TriggerCentersInX(pdCenX1);
 	pLayer1->CameraCentersInY(pdCenY1);
-	double dSpanTrig = (pdCenX1[0] - pdCenX1[iNumTrigs1-1])/(iNumTrigs1-1);
-	double dSpanCam = (pdCenY1[iNumCams1-1] - pdCenY1[0])/(iNumCams1-1);
+	double dSpanTrig;
+	if(iNumTrigs1 > 1)
+		dSpanTrig = (pdCenX1[0] - pdCenX1[iNumTrigs1-1])/(iNumTrigs1-1);
+	else
+		dSpanTrig = _pPanel->xLength();
+	double dSpanCam;
+	if(iNumCams1 > 1)
+		dSpanCam = (pdCenY1[iNumCams1-1] - pdCenY1[0])/(iNumCams1-1);
+	else
+		dSpanCam = _pPanel->yLength();
 	
 	unsigned int iNumTrigs2 = pLayer2->GetNumberOfTriggers();
 	unsigned int iNumCams2 = pLayer2->GetNumberOfCameras();
