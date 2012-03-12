@@ -75,7 +75,7 @@ public:
 
 protected:
 	virtual void ZeroTheSystem() =0;
-	unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
+	virtual unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
 	//virtual bool MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const=0;
 
 //private:   // protected so they can be inherited ?!

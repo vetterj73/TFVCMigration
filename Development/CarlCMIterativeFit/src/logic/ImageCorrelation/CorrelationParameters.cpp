@@ -66,7 +66,7 @@ CorrelationParameters::CorrelationParameters(void)
 	bUseProjectiveTransform = false;
 	bUseCameraModelStitch = false;
 	bUseCameraModelIterativeStitch = false;
-	iSolverMaxIterations = 5;  // set to 2 or 3 once confident (large number now to catch convergence issues)
+	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
 
 	// Adjust morph to create stitched image for component height
 	bAdjustMorph4ComponentHeight = true;

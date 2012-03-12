@@ -71,7 +71,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	//unsigned int iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
 	if (bUseCameraModelIterativeStitch)
 	{
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch True, %d", bUseCameraModelStitch);
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelIterativeStitch True, %d", bUseCameraModelIterativeStitch);
 		_pSolver = new RobustSolverIterative(	
 						&_solverMap, 
 						iMaxNumCorrelations,

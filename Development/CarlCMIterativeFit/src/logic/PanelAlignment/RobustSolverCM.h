@@ -39,6 +39,7 @@ public:
 	
 
 protected:
+	void	ReorderAndTranspose();
 	virtual void ZeroTheSystem();
 	
 

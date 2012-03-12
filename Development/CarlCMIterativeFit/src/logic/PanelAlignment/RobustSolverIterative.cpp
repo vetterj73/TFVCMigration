@@ -184,8 +184,7 @@ void RobustSolverIterative::FillMatrixA()
 	for(i =0; i<_iMaxNumCorrelations; i++)
 	{
 		// walk through stored correlation results and rebuild the array using updated values
-		_iCurrentRow = _fitInfo[i].rowInMatrix;
-		double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+		
 		unsigned int iColInMatrixA = _fitInfo[i].colInMatrixA;
 		unsigned int orderedTrigIndexA = iColInMatrixA / _iNumParamsPerIndex;
 		unsigned int deviceNumA = _pSet->GetLayer(_fitInfo[i].fovIndexA.IlluminationIndex)->DeviceIndex();
@@ -210,6 +209,8 @@ void RobustSolverIterative::FillMatrixA()
 		Zpoly[9] = pow(boardX,0) * pow(boardY,3);
 		if (_fitInfo[i].fitType == 1) // fiducial fit
 		{
+			_iCurrentRow = _fitInfo[i].rowInMatrix;
+			double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			double	dFidRoiCenX  = _fitInfo[i].dFidRoiCenX;
 			double	dFidRoiCenY  = _fitInfo[i].dFidRoiCenY;
 			// X direction equations
@@ -268,6 +269,8 @@ void RobustSolverIterative::FillMatrixA()
 		}
 		else if (_fitInfo[i].fitType == 2) // FOV to FOV fit
 		{
+			_iCurrentRow = _fitInfo[i].rowInMatrix;
+			double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			unsigned int iColInMatrixB = _fitInfo[i].colInMatrixB;
 			unsigned int orderedTrigIndexB = iColInMatrixB / _iNumParamsPerIndex;
 			unsigned int deviceNumB = _pSet->GetLayer(_fitInfo[i].fovIndexB.IlluminationIndex)->DeviceIndex();
@@ -277,26 +280,33 @@ void RobustSolverIterative::FillMatrixA()
 			double	dxSensordzB = _fitInfo[i].dxSensordzB;
 			double	dySensordzB = _fitInfo[i].dySensordzB;
 
-			pdRow[iColInMatrixA] += w;	// X_trig,   Y_trig wt = 0
-			pdRow[iColInMatrixB] -= w;  // may be in same trigger number
-			pdRow[iColInMatrixA+2] += -w * (xSensorA*sin(_dThetaEst[orderedTrigIndexA]) 
+			// For easier debug of matrix, flip signs of equations so that lower column number 
+			// has + terms, higher col number has - terms
+			int eqSign;
+			if (iColInMatrixA <= iColInMatrixB)
+				eqSign = +1;
+			else
+				eqSign = -1;
+			pdRow[iColInMatrixA] += w * eqSign;	// X_trig,   Y_trig wt = 0
+			pdRow[iColInMatrixB] -= w * eqSign;  // may be in same trigger number
+			pdRow[iColInMatrixA+2] += -w * eqSign * (xSensorA*sin(_dThetaEst[orderedTrigIndexA]) 
 									  +ySensorA*cos(_dThetaEst[orderedTrigIndexA]) ) ;
-			pdRow[iColInMatrixB+2] -= -w * (xSensorB*sin(_dThetaEst[orderedTrigIndexB]) 
+			pdRow[iColInMatrixB+2] -= -w * eqSign * (xSensorB*sin(_dThetaEst[orderedTrigIndexB]) 
 									  +ySensorB*cos(_dThetaEst[orderedTrigIndexB]) ) ;
 			
 			// drift terms
 			unsigned int calDriftColA = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
-			pdRow[calDriftColA] = w * cos(_dThetaEst[orderedTrigIndexA]);
-			pdRow[calDriftColA+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA] = w * eqSign * cos(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA+1] = -w * eqSign * sin(_dThetaEst[orderedTrigIndexA]);
 			unsigned int calDriftColB = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
-			pdRow[calDriftColB] -= w * cos(_dThetaEst[orderedTrigIndexB]);
-			pdRow[calDriftColB+1] -= -w * sin(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB] -= w * eqSign * cos(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB+1] -= -w * eqSign * sin(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-				pdRow[_iMatrixWidth - _iNumZTerms + j] = w * Zpoly[j] 
+				pdRow[_iMatrixWidth - _iNumZTerms + j] = w * eqSign * Zpoly[j] 
 					* (  dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) - dySensordzA * sin(_dThetaEst[orderedTrigIndexA])
 					   - dxSensordzB * cos(_dThetaEst[orderedTrigIndexB]) + dySensordzB * sin(_dThetaEst[orderedTrigIndexB]));
-			_dVectorB[_iCurrentRow] = w * 
+			_dVectorB[_iCurrentRow] = w * eqSign * 
 				(- xSensorA * cos(_dThetaEst[orderedTrigIndexA]) + ySensorA * sin(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * cos(_dThetaEst[orderedTrigIndexB]) - ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
 			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
@@ -305,32 +315,32 @@ void RobustSolverIterative::FillMatrixA()
 				_fitInfo[i].fovIndexB.IlluminationIndex,
 				_fitInfo[i].fovIndexB.TriggerIndex, _fitInfo[i].fovIndexB.CameraIndex,
 				xSensorA, ySensorA, xSensorB, ySensorB);
-			_pdWeights[_iCurrentRow] = w;
+			_pdWeights[_iCurrentRow] = w * eqSign;
 	
 			_iCurrentRow++;
 			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			// Y direction
-			pdRow[iColInMatrixA+1] += w;
-			pdRow[iColInMatrixB+1] -= w;  // may be in same trigger number
-			pdRow[iColInMatrixA+2] += w * (xSensorA * cos(_dThetaEst[orderedTrigIndexA]) 
+			pdRow[iColInMatrixA+1] += w * eqSign;
+			pdRow[iColInMatrixB+1] -= w * eqSign;  // may be in same trigger number
+			pdRow[iColInMatrixA+2] += w * eqSign * (xSensorA * cos(_dThetaEst[orderedTrigIndexA]) 
 									 -ySensorA * sin(_dThetaEst[orderedTrigIndexA]) ) ;
-			pdRow[iColInMatrixB+2] -= w * (xSensorB * cos(_dThetaEst[orderedTrigIndexB]) 
+			pdRow[iColInMatrixB+2] -= w * eqSign * (xSensorB * cos(_dThetaEst[orderedTrigIndexB]) 
 									 -ySensorB * sin(_dThetaEst[orderedTrigIndexB]) ) ;
 
 			// drift terms
 			//calDriftColA = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
-			pdRow[calDriftColA] = w * sin(_dThetaEst[orderedTrigIndexA]);
-			pdRow[calDriftColA+1] = w * cos(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA] = w * eqSign * sin(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftColA+1] = w * eqSign * cos(_dThetaEst[orderedTrigIndexA]);
 			//calDriftCol = _iCalDriftStartCol + (deviceNumB * _iNumCameras + iCamIndexB)  * 2;
-			pdRow[calDriftColB] -= w * sin(_dThetaEst[orderedTrigIndexB]);
-			pdRow[calDriftColB+1] -= w * cos(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB] -= w * eqSign * sin(_dThetaEst[orderedTrigIndexB]);
+			pdRow[calDriftColB+1] -= w * eqSign * cos(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-				pdRow[_iMatrixWidth - _iNumZTerms + j] =  w * Zpoly[j] 
+				pdRow[_iMatrixWidth - _iNumZTerms + j] =  w * eqSign * Zpoly[j] 
 					* (  dxSensordzA * sin(_dThetaEst[orderedTrigIndexA]) + dySensordzA * cos(_dThetaEst[orderedTrigIndexA])
 					   - dxSensordzB * sin(_dThetaEst[orderedTrigIndexB]) - dySensordzB * cos(_dThetaEst[orderedTrigIndexB]));
 
-			_dVectorB[_iCurrentRow] = w * 
+			_dVectorB[_iCurrentRow] = w * eqSign * 
 				(- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) - ySensorA * cos(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * sin(_dThetaEst[orderedTrigIndexB]) + ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
 			
@@ -341,7 +351,7 @@ void RobustSolverIterative::FillMatrixA()
 				_fitInfo[i].fovIndexB.TriggerIndex, _fitInfo[i].fovIndexB.CameraIndex,
 				w,
 				boardX,boardY, calDriftColA, calDriftColB, deviceNumA, deviceNumB);
-			_pdWeights[_iCurrentRow] = w;
+			_pdWeights[_iCurrentRow] = w * eqSign;
 	
 			_iCurrentRow++;
 		
@@ -359,11 +369,11 @@ void RobustSolverIterative::SolveXOneIteration()
 
 	// we built A in row order
 	// the qr factorization method requires column order
-	bool bRemoveEmptyRows = false;
+	//bool bRemoveEmptyRows = false;
 	//bRemoveEmptyRows = false;
-	int* mb = new int[_iMatrixWidth];
-	unsigned int iEmptyRows;
-	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);
+	//int* mb = new int[_iMatrixWidth];
+	//unsigned int iEmptyRows;
+	ReorderAndTranspose();
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
@@ -375,10 +385,12 @@ void RobustSolverIterative::SolveXOneIteration()
 		alg_h(                // Robust regression by Huber's "Algorithm H".
 			// Inputs //			
 
-			_iMatrixHeight,             /* Number of equations */
+			//_iMatrixHeight,             /* Number of equations */
+			_iCurrentRow,             /* Number of equations */
 			_iMatrixWidth,				/* Number of unknowns */
 			_dMatrixA,				// System matrix
-			_iMatrixHeight,			//AStride
+			//_iMatrixHeight,			//AStride
+			_iCurrentRow,
 			_dVectorB,			// Constant vector (not overwritten); must not coincide with x[] or resid[]. 
 
 		   // Outputs //
@@ -408,7 +420,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		fileName.clear();
 		fileName.assign(cTemp);
 		ofstream of(fileName);
-		for(unsigned int k=0; k<_iMatrixHeight; k++)
+		for(unsigned int k=0; k<_iCurrentRow; k++)
 		{ 
 			of << resid[k] << std::endl;
 		}
@@ -432,14 +444,14 @@ void RobustSolverIterative::SolveXOneIteration()
 	LOG.FireLogEntry(LogTypeSystem, "RobustSolverIterative::SolveXAlgH():alg_h nIterations=%d, scaleparm=%f, cond=%f", algHRetVal, scaleparm, cond);
 
 	delete [] resid;
-	delete [] mb;
+	//delete [] mb;
 
 	// copy board Z shape terms to the _zCoef array
 	// First we'll put take VectorX values for Z and use it to populate Zpoly (a 4x4 array)
 	// FORTRAN ORDER !!!!!
 	_zCoef[0][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 0];
 	_zCoef[1][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 1];
-	_zCoef[2][0] = _dVectorX[_iMatrixWidth - _iNumZTerms + 2];
+	_zCoef[2][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 2];
 	_zCoef[3][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 3];
 	
 	_zCoef[0][1] = _dVectorX[_iMatrixWidth- _iNumZTerms + 4];
@@ -913,3 +925,5 @@ void RobustSolverIterative::OutputVectorXCSV(string filename) const
 	of.close();
 }
 #pragma endregion
+
+
