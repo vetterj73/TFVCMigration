@@ -50,7 +50,7 @@ namespace CyberStitchFidTester
         private static double _dYDiffSqrSumTol = 0.0;
         private static double _dXRMS = 0.0;//used for the xoffset RMS
         private static double _dYRMS = 0.0;
-
+        private static bool _bDetectPanelEedge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
 
@@ -136,6 +136,9 @@ namespace CyberStitchFidTester
                     _bRtoL = true;
                 if (args[i] == "-frr")
                     _bFRR = true;
+                if (args[i] == "-de")
+                    _bDetectPanelEedge = true;
+
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -266,6 +269,9 @@ namespace CyberStitchFidTester
                     Console.WriteLine("Could not initialize Core API");
                     return;
                 }
+
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 // Set up mosaic set
                 SetupMosaic(true, false);
