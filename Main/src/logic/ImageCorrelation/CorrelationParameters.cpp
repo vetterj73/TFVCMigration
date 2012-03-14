@@ -73,9 +73,11 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// Panel edge detection
 	bDetectPanelEdge = false;				// Detection panel edge to reduce fiducial search area
+	iLayerIndex4Edge = 0;					// Index of mosaic layer for panel edge detection	
 		// Conveyor reference
 	bConveyorLeft2Right = true;				// Conveyor moving direction
 	bConveyorFixedFrontRail = true;			// conveyor fixed rail
+
 			// Control parameters
 	dMinLeadingEdgeGap = 2e-3;				// Minimum gap between image edge and nominal panel leading edge
 	dLeadingEdgeSearchRange = 4e-3;			// Search range for panel leading edge

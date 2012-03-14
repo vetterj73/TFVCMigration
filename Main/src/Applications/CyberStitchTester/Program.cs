@@ -54,6 +54,7 @@ namespace CyberStitchTester
             bool bUseProjective = false;
             bool bUseCameraModel = false;
             int numberToRun = 1;
+            int iLayerIndex4Edge = 0;
 
             for(int i=0; i<args.Length; i++)
             {
@@ -75,6 +76,8 @@ namespace CyberStitchTester
                     bUseCameraModel = true;
                 if (args[i] == "-de")
                     _bDetectPanelEedge = true;
+                if (args[i] == "-le" && i < args.Length - 1)
+                    iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
                 if (args[i] == "-rtol")
                     _bRtoL = true;
                 if (args[i] == "-frr")
@@ -128,7 +131,7 @@ namespace CyberStitchTester
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, !d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))

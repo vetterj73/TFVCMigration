@@ -165,7 +165,8 @@ OverlapManager::OverlapManager(
 	if(CorrelationParametersInst.bDetectPanelEdge)
 	{
 		_pEdgeDetector = new PanelEdgeDetection();
-		_pEdgeDetector->Initialization(_pMosaicSet->GetLayer(0), _validRect);
+		int iLayerIndex = CorrelationParametersInst.iLayerIndex4Edge;
+		_pEdgeDetector->Initialization(_pMosaicSet->GetLayer(iLayerIndex), _validRect);
 	}
 }
 

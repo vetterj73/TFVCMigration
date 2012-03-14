@@ -98,6 +98,7 @@ namespace CyberStitchFidTester
             int numberToRun = 1;
             string unitTestFolder="";
             double dCalScale = 1.0;
+            int iLayerIndex4Edge = 0;
             ManagedFeatureLocationCheck fidChecker;
          
             //output csv file shows the comparison results
@@ -132,12 +133,14 @@ namespace CyberStitchFidTester
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
-                if (args[i] == "-rtol")
+                else if (args[i] == "-rtol")
                     _bRtoL = true;
-                if (args[i] == "-frr")
+                else if (args[i] == "-frr")
                     _bFRR = true;
-                if (args[i] == "-de")
+                else if (args[i] == "-de")
                     _bDetectPanelEedge = true;
+                else if (args[i] == "-le" && i < args.Length - 1)
+                    iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
 
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
@@ -270,8 +273,9 @@ namespace CyberStitchFidTester
                     return;
                 }
 
+                // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, !d.ConveyorRtoL, !d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 // Set up mosaic set
                 SetupMosaic(true, false);

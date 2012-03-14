@@ -178,12 +178,14 @@ namespace PanelAlignM {
 	}
 
 	void ManagedPanelAlignment::SetPanelEdgeDetection(
-		bool bDetectPanelEdge, 
+		bool bDetectPanelEdge,
+		int iLayerIndex4Edge,
 		bool bConveyorLeft2Right,
 		bool bConveyorFixedFrontRail)
 	{
 		_pAligner->SetPanelEdgeDetection(
 			bDetectPanelEdge, 
+			iLayerIndex4Edge,
 			bConveyorLeft2Right,
 			bConveyorFixedFrontRail);
 	}

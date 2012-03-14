@@ -59,6 +59,7 @@ public:
 	void EnableFiducialAlignmentCheck(bool bValue);
 	void SetPanelEdgeDetection(
 		bool bDetectPanelEdge, 
+		int iLayer4Edge,
 		bool bConveyorLeft2Right,
 		bool bConveyorFixedFrontRail);
 	void SetCalibrationWeight(double dValue);

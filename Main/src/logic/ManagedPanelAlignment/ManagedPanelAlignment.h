@@ -124,6 +124,7 @@ namespace PanelAlignM {
 		void EnableFiducialAlignmentCheck(bool bValue);
 		void SetPanelEdgeDetection(
 			bool bDetectPanelEdge, 
+			int iLayerIndex4Edge,
 			bool bConveyorLeft2Right,
 			bool bConveyorFixedFrontRail);
 		void SetCalibrationWeight(double dValue);

@@ -207,10 +207,12 @@ void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
 
 void PanelAligner::SetPanelEdgeDetection(
 	bool bDetectPanelEdge, 
+	int iLayerIndex4Edge,
 	bool bConveyorLeft2Right,
 	bool bConveyorFixedFrontRail)
 {
 	CorrelationParametersInst.bDetectPanelEdge = bDetectPanelEdge;
+	CorrelationParametersInst.iLayerIndex4Edge = iLayerIndex4Edge;
 	CorrelationParametersInst.bConveyorLeft2Right = bConveyorLeft2Right;
 	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
 }
@@ -417,10 +419,10 @@ bool PanelAligner::CreateTransforms()
 	{
 		// Get panel leading edge information
 		double dSlope, dLeftXOffset, dRightXOffset;
-		int iLayerIndex, iTrigIndex, iLeftCamIndex, iRightCamIndex;
+		int iLayerIndex4Edge, iTrigIndex, iLeftCamIndex, iRightCamIndex;
 		EdgeInfoType type = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(
 			&dSlope, &dLeftXOffset, &dRightXOffset,
-			&iLayerIndex, &iTrigIndex, 
+			&iLayerIndex4Edge, &iTrigIndex, 
 			&iLeftCamIndex, &iRightCamIndex);
 
 		if(type == INVALID || type == CONFLICTION) // If leading edge detection is failed
@@ -443,7 +445,7 @@ bool PanelAligner::CreateTransforms()
 			}
 
 			// Add panel leading edge constraints
-			MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(iLayerIndex);
+			MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(iLayerIndex4Edge);
 			if(type == LEFTONLYVALID || type == BOTHVALID)
 			{
 				_pSolver->AddPanelEdgeContraints(pLayer, iLeftCamIndex, iTrigIndex, dLeftXOffset, dSlope);

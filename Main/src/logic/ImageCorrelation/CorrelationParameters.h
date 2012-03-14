@@ -90,9 +90,11 @@ public:
 
 	// Panel edge detection
 	bool bDetectPanelEdge;					// Detection panel edge to reduce fiducial search area
+	int	iLayerIndex4Edge;					// Index of mosaic layer for panel edge detection
 		// Conveyor reference
 	bool bConveyorLeft2Right;				// Conveyor moving direction
 	bool bConveyorFixedFrontRail;			// conveyor fixed rail
+	
 		// Control parameters
 	double dMinLeadingEdgeGap;				// Minimum gap between image edge and nominal panel leading edge
 	double dLeadingEdgeSearchRange;			// Search range for panel leading edge
