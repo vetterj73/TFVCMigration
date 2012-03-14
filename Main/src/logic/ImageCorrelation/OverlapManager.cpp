@@ -166,6 +166,8 @@ OverlapManager::OverlapManager(
 	{
 		_pEdgeDetector = new PanelEdgeDetection();
 		int iLayerIndex = CorrelationParametersInst.iLayerIndex4Edge;
+		if(iLayerIndex < 0) iLayerIndex = 0;
+		if(iLayerIndex > (int)_pMosaicSet->GetNumMosaicLayers()-1) iLayerIndex = _pMosaicSet->GetNumMosaicLayers()-1;
 		_pEdgeDetector->Initialization(_pMosaicSet->GetLayer(iLayerIndex), _validRect);
 	}
 }
