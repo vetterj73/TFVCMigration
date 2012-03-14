@@ -301,11 +301,13 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 
 	// Check the validataion of the results
 	bool bLeftValid = false, bRightValid = false;
-	if(_pLeftFovJob != NULL || _pLeftFovJob->IsResultValid())
-		bLeftValid= true;
+	if(_pLeftFovJob != NULL)
+		if(_pLeftFovJob->IsResultValid())
+			bLeftValid= true;
 
-	if(_pRightFovJob != NULL || _pRightFovJob->IsResultValid())
-		bRightValid= true;
+	if(_pRightFovJob != NULL)
+		if(_pRightFovJob->IsResultValid())
+			bRightValid= true;
 
 	// Both results are not valid
 	if(!bLeftValid && !bRightValid)
