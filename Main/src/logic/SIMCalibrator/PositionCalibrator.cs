@@ -356,10 +356,7 @@ namespace SIMCalibrator
             int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
             int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
 
-            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
-                        pframe.CaptureSpecIndex());
-
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), 0, (uint)mosaic_column, (uint)mosaic_row);
 
             // Immediately remove the frame buffer...
             _device.ReleaseFrameBuffer(pframe);
