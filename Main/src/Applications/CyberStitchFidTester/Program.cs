@@ -471,6 +471,8 @@ namespace CyberStitchFidTester
             Output("Processing Complete");
             Terminate();
 
+            _aligner.Dispose();
+
             if(!bImageOnly)
                 ManagedCoreAPI.TerminateAPI();
         }
