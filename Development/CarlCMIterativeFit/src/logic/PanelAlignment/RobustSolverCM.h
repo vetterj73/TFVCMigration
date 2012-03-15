@@ -39,7 +39,7 @@ public:
 	
 
 protected:
-	void	ReorderAndTranspose();
+	void	ReorderAndTranspose(bool bRemoveEmptyRows);
 	virtual void ZeroTheSystem();
 	
 
@@ -62,6 +62,7 @@ protected:
 	unsigned int	_iTotalNumberOfTriggers;
 	unsigned int	_iNumCalDriftTerms;
 	unsigned int	_iMaxNumCorrelations;
+	unsigned int	_iMatrixALastRowUsed;  // 
 
 	unsigned int	_iIterationNumber;
 	unsigned int	_iMaxIterations;

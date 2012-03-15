@@ -85,7 +85,7 @@ CorrelationParameters::CorrelationParameters(void)
 	NumThreads = 8;
 
 	// debug flags
-	bSaveFiducialOverlaps = false;
+	bSaveFiducialOverlaps = true;
 	bSaveOverlaps = false;
 	bSaveTransformVectors = true;
 	sDiagnosticPath = "C:\\Temp\\";

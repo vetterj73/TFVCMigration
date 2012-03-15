@@ -718,11 +718,11 @@ void RobustSolverCM::SolveXAlgH()
 
 	// we built A in row order
 	// the qr factorization method requires column order
-	//bool bRemoveEmptyRows = false;
+	bool bRemoveEmptyRows = true;
 	//bRemoveEmptyRows = false;
 	//int* mb = new int[_iMatrixWidth];
 	//unsigned int iEmptyRows;
-	ReorderAndTranspose();
+	ReorderAndTranspose(bRemoveEmptyRows);
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
@@ -735,11 +735,11 @@ void RobustSolverCM::SolveXAlgH()
 			// Inputs //			
 
 			//_iMatrixHeight,             /* Number of equations */
-			_iCurrentRow,             /* Number of equations */
+			_iMatrixALastRowUsed,             /* Number of equations */
 			_iMatrixWidth,				/* Number of unknowns */
 			_dMatrixA,				// System matrix
 			//_iMatrixHeight,			//AStride
-			_iCurrentRow,
+			_iMatrixALastRowUsed,
 			_dVectorB,			// Constant vector (not overwritten); must not coincide with x[] or resid[]. 
 
 		   // Outputs //
@@ -1135,11 +1135,15 @@ void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols,
 
 
 //  transpose Matrix A for banded solver
-// Don't reorder for this solver, only transpose to _iCurrentRow 
-void RobustSolverCM::ReorderAndTranspose()
+// Don't reorder for this solver, only transpose to _iCurrentRow if bRemoveEmptyRows
+void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 {
 	string fileName;
 	char cTemp[100];
+	if (bRemoveEmptyRows)
+		_iMatrixALastRowUsed = _iCurrentRow;
+	else
+		_iMatrixALastRowUsed = _iMatrixHeight;
 	if (_bSaveMatrixCSV) 
 	{
 		// Save Matrix A
@@ -1149,7 +1153,7 @@ void RobustSolverCM::ReorderAndTranspose()
 		fileName.assign(cTemp);
 		ofstream of(fileName);
 	
-		for(unsigned int k=0; k<_iCurrentRow; k++)
+		for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 		{ 
 			for(unsigned int j=0; j<_iMatrixWidth; j++)
 			{
@@ -1166,7 +1170,7 @@ void RobustSolverCM::ReorderAndTranspose()
 		fileName.clear();
 		fileName.assign(cTemp);
 		of.open(fileName);
-		for(unsigned int k=0; k<_iCurrentRow; k++)
+		for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 		{ 
 			of << _dVectorB[k] << std::endl;
 		}
@@ -1179,7 +1183,7 @@ void RobustSolverCM::ReorderAndTranspose()
 			fileName.clear();
 			fileName.assign(cTemp);
 			of.open(fileName);
-			for(unsigned int k=0; k<_iCurrentRow; k++)
+			for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 			{ 
 				of << _pdWeights[k] << std::endl;
 			}
@@ -1193,7 +1197,7 @@ void RobustSolverCM::ReorderAndTranspose()
 			fileName.clear();
 			fileName.assign(cTemp);
 			of.open(fileName);
-			for(unsigned int k=0; k<_iCurrentRow; k++)
+			for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 			{ 
 				of << _pcNotes[k] << std::endl;
 			}
@@ -1211,12 +1215,10 @@ void RobustSolverCM::ReorderAndTranspose()
 	//	dCopyB[i]=0;
 	unsigned int iDestRow = 0;
 	//list<LeftIndex>::const_iterator i;
-	for (unsigned int row(0); row<_iCurrentRow; row++)
+	for (unsigned int row(0); row<_iMatrixALastRowUsed; row++)
 	{
 		for(unsigned int col(0); col<_iMatrixWidth; ++col)
-			workspace[col*_iCurrentRow+row] = _dMatrixA[row*_iMatrixWidth+col];
-
-		//dCopyB[row] = _dVectorB[row];
+			workspace[col*_iMatrixALastRowUsed+row] = _dMatrixA[row*_iMatrixWidth+col];
 
 	}
 	
@@ -1224,9 +1226,6 @@ void RobustSolverCM::ReorderAndTranspose()
 	
 	// include empty rows
 	::memcpy(_dMatrixA, workspace, _iMatrixSize*sizeof(double));
-
-	//for(unsigned int k=0; k<_iCurrentRow; k++)
-	//	_dVectorB[k] = dCopyB[k];
 
 	// for debug
 	if (_bSaveMatrixCSV) 
@@ -1238,7 +1237,7 @@ void RobustSolverCM::ReorderAndTranspose()
 		ofstream of(fileName);		
 		of << std::scientific;
 
-		unsigned int ilines = _iCurrentRow;
+		unsigned int ilines = _iMatrixALastRowUsed;
 		
 		for(unsigned int j=0; j<_iMatrixWidth; j++)
 		{
@@ -1251,56 +1250,8 @@ void RobustSolverCM::ReorderAndTranspose()
 			}
 			of << std::endl;
 		}
-
 		of.close();
-
-		/*// Save Matrix A
-		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixAOrdered_%d.csv",iFileSaveIndex); 
-		fileName.clear();
-		fileName.assign(cTemp);
-		of.open(fileName);		
-		for(unsigned int k=0; k<ilines; k++)
-		{ 
-			for(unsigned int j=0; j<_iMatrixWidth; j++)
-			{
-				of << _dMatrixA[j*ilines+k];
-				if(j != _iMatrixWidth-1)
-					of <<",";
-			}
-			of << std::endl;
-		}
-		of.close();
-		
-		// Save Matrix B
-		sprintf_s(cTemp, 100, "C:\\Temp\\VectorBOrdered_%d.csv",iFileSaveIndex); 
-		fileName.clear();
-		fileName.assign(cTemp);
-		of.open(fileName);		
-		for(unsigned int k=0; k<ilines; k++)
-		{ 
-			of << _dVectorB[k] << std::endl;
-		}
-		of.close();
-
-		// Save blocklength
-		sprintf_s(cTemp, 100, "C:\\Temp\\BlockLength_%d.csv",iFileSaveIndex); 
-		fileName.clear();
-		fileName.assign(cTemp);
-		of.open(fileName);		
-		of << _iMatrixWidth << std::endl;
-		of << ilines <<std::endl;
-		of << iMaxLength <<std::endl;
-		for(unsigned int k=0; k<_iMatrixWidth; k++)
-		{ 
-			of <<  piCounts[k] << std::endl;
-		}
-		of.close();
-		*/
 	} 
-
-
 	delete [] workspace;
-	//delete [] dCopyB;
-
 }
 

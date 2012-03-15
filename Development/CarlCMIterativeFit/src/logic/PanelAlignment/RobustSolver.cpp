@@ -69,7 +69,7 @@ RobustSolver::RobustSolver(
 	map<FovIndex, unsigned int>* pFovOrderMap)
 {
 	_pFovOrderMap = pFovOrderMap;
-	_bSaveMatrixCSV=false;
+	_bSaveMatrixCSV=true;
 	_bVerboseLogging = true;
 	_iNumFovs = (unsigned int)pFovOrderMap->size();
 	iFileSaveIndex = 0;	

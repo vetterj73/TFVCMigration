@@ -369,11 +369,11 @@ void RobustSolverIterative::SolveXOneIteration()
 
 	// we built A in row order
 	// the qr factorization method requires column order
-	//bool bRemoveEmptyRows = false;
+	bool bRemoveEmptyRows = true;
 	//bRemoveEmptyRows = false;
 	//int* mb = new int[_iMatrixWidth];
 	//unsigned int iEmptyRows;
-	ReorderAndTranspose();
+	ReorderAndTranspose(bRemoveEmptyRows);
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
@@ -386,11 +386,11 @@ void RobustSolverIterative::SolveXOneIteration()
 			// Inputs //			
 
 			//_iMatrixHeight,             /* Number of equations */
-			_iCurrentRow,             /* Number of equations */
+			_iMatrixALastRowUsed,             /* Number of equations */
 			_iMatrixWidth,				/* Number of unknowns */
 			_dMatrixA,				// System matrix
 			//_iMatrixHeight,			//AStride
-			_iCurrentRow,
+			_iMatrixALastRowUsed,
 			_dVectorB,			// Constant vector (not overwritten); must not coincide with x[] or resid[]. 
 
 		   // Outputs //
