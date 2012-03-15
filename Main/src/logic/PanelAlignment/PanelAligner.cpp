@@ -427,7 +427,7 @@ bool PanelAligner::CreateTransforms()
 
 		if(type == INVALID || type == CONFLICTION) // If leading edge detection is failed
 		{
-			LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed!");
+			LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code+%d!", (int)type);
 			// Do nominal fiducial overlap alignment
 			_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
 		}

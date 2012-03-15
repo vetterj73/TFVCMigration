@@ -118,6 +118,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	bool bFirst = true;
 	int iSelectIndex = -1;
 	double dSelectY = -1;
+	if(ptParam->type == TOPEDGE) dSelectY = 1e5;
 	double dSelectSize = -1;
 	double dMaxSlope = tan(ptParam->dAngleRange);
 	for(int i = 0; i < MIN(lines->total,100); i++ )
