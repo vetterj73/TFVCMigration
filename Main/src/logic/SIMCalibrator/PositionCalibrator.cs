@@ -218,7 +218,16 @@ namespace SIMCalibrator
         private void AdjustCalibrationBasedOnLastAcquisition()
         {
             // Always Adjust YOffset...
-            _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset();
+            if (!_device.ConveyorRtoL)
+
+            {
+                _device.YOffset = _device.YOffset - _fidList.GetAverageYOffset();
+            }
+
+            else
+            {
+                _device.YOffset = _device.YOffset + _fidList.GetAverageYOffset();
+            }
 
             // Always update the velocity...
             _beginningVelocity = _device.ConveyorVelocity;
@@ -228,7 +237,9 @@ namespace SIMCalibrator
             // Update the X if velocity is in tolerance...
             if (_fidList.IsVelocityRatioInTolerance(vRatio))
             {
+                if (!_device.FixedRearRail)
                 _device.HomeOffset = _device.HomeOffset + _fidList.GetAverageXOffset();
+                else _device.HomeOffset = _device.HomeOffset - _fidList.GetAverageXOffset();
             }
         }
 
@@ -319,7 +330,7 @@ namespace SIMCalibrator
 
         private void SetupMosaic(bool loggingOn, bool isColor)
         {
-            ManagedSIMCamera cam = _device.GetSIMCamera(0);
+            ManagedSIMCamera cam = _device.GetSIMCamera(_device.FirstCameraEnabled);
             _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, (uint)cam.Columns(), (uint)cam.Rows(), (uint)cam.Columns(), cPixelSizeInMeters, cPixelSizeInMeters, true, isColor, 1);
             SimMosaicTranslator.AddDeviceToMosaic(_device, 0,_mosaicSet);
             SimMosaicTranslator.SetCorrelationFlagsFIDOnly(_mosaicSet);
@@ -341,9 +352,14 @@ namespace SIMCalibrator
         {
             if (_mosaicSet == null)
                 return;
+            int device = pframe.DeviceIndex();
+            int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
+            int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
 
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), 0,
-                                (uint) pframe.CameraIndex(), (uint) pframe.TriggerIndex());
+            uint layer = (uint)(pframe.DeviceIndex() * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
+                        pframe.CaptureSpecIndex());
+
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
 
             // Immediately remove the frame buffer...
             _device.ReleaseFrameBuffer(pframe);
