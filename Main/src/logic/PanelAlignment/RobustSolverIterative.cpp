@@ -572,6 +572,9 @@ void RobustSolverIterative::ConstrainPerTrig()
 }
 void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
 {
+	// Pix2Board in Iterative overloads the same function in the CM version
+	// This function is called by the FlattenFiducial function, which is defined in CM
+	// 
 	// p2Board translates between a pixel location (for a given illumination, trigger and camera defined by index) to xyBoard location
 	// remember that xyBoard is on a warped surface, so the xy distance between marks is likely to be less than the
 	// CAD distance
@@ -613,8 +616,8 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 	
 	// can now estimate Z   zCoef HAS FORTRAN ORDERING
 	double Zestimate(0);
-	for (unsigned int k(0); k < _iNumBasisFunctions; k++)
-		for (unsigned int j(0); j < _iNumBasisFunctions; j++)
+	for (unsigned int k(0); k < NUMBER_Z_BASIS_FUNCTIONS; k++)
+		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
 			Zestimate += _zCoef[j][k] * pow(xyBoard->x,(double)j) * pow(xyBoard->y,(double)k);
 
 	// accurate Z value allows accurate calc of xySensor

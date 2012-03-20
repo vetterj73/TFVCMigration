@@ -99,6 +99,9 @@ void RobustSolverCM::ZeroTheSystem()
 
 	for(i =0; i<_iMatrixWidth; i++)
 		_dVectorX[i] = 0.0;
+	for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
+		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
+			_zCoef[i][j] = 0.0;
 }
 
 void RobustSolverCM::ConstrainZTerms()
@@ -845,8 +848,8 @@ void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoar
 
 	// can now estimate Z   zCoef HAS FORTRAN ORDERING
 	double Zestimate(0);
-	for (unsigned int k(0); k < _iNumBasisFunctions; k++)
-		for (unsigned int j(0); j < _iNumBasisFunctions; j++)
+	for (unsigned int k(0); k < NUMBER_Z_BASIS_FUNCTIONS; k++)
+		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
 			Zestimate += _zCoef[j][k] * pow(xyBoard->x,(double)j) * pow(xyBoard->y,(double)k);
 
 	// accurate Z value allows accurate calc of xySensor
