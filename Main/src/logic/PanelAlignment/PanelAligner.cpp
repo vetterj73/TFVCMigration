@@ -71,10 +71,19 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	// Create solver for all illuminations
 	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
 	bool bUseCameraModelStitch = CorrelationParametersInst.bUseCameraModelStitch;
+	bool bUseCameraModelIterativeStitch = CorrelationParametersInst.bUseCameraModelIterativeStitch;
 	CreateImageOrderInSolver(&_solverMap);	
 	unsigned int iMaxNumCorrelations =  _pOverlapManager->MaxCorrelations();  
 	//unsigned int iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
-	if (bUseCameraModelStitch)
+	if (bUseCameraModelIterativeStitch)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelIterativeStitch True, %d", bUseCameraModelIterativeStitch);
+		_pSolver = new RobustSolverIterative(	
+						&_solverMap, 
+						iMaxNumCorrelations,
+						_pSet);  // TODO Is it wise to send _pSet to solver??????????????????????????????????????
+	}
+	else if (bUseCameraModelStitch)
 	{
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch True, %d", bUseCameraModelStitch);
 		_pSolver = new RobustSolverCM(	
@@ -133,7 +142,7 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
-	if( CorrelationParametersInst.bUseCameraModelStitch )
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
 	{
 		_pSolver->ConstrainZTerms();
 		_pSolver->ConstrainPerTrig();
@@ -198,6 +207,11 @@ void PanelAligner::UseCameraModelStitch(bool bValue)
 {
 	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelStitch = bValue;
+}
+void PanelAligner::UseCameraModelIterativeStitch(bool bValue)
+{
+	// set some useful value.....
+	CorrelationParametersInst.bUseCameraModelIterativeStitch = bValue;
 }
 
 void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
@@ -733,10 +747,10 @@ bool PanelAligner::CreateImageOrderInSolver(
 		{
 			FovIndex index(iIllumIndex, iTrigIndex, i);
 			(*pOrderMap)[index] = iCount;
-			if( !CorrelationParametersInst.bUseCameraModelStitch ) 
+			if( !CorrelationParametersInst.bUseCameraModelStitch  && !CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 				iCount++;
 		}
-		if( CorrelationParametersInst.bUseCameraModelStitch ) 
+		if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 			iCount++;
 	}
 		

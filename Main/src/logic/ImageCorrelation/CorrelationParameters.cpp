@@ -67,6 +67,8 @@ CorrelationParameters::CorrelationParameters(void)
 	// Whether use projective transform
 	bUseProjectiveTransform = true;
 	bUseCameraModelStitch = false;
+	bUseCameraModelIterativeStitch = false;
+	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
 
 	// Adjust morph to create stitched image for component height
 	bAdjustMorph4ComponentHeight = true;
@@ -89,7 +91,7 @@ CorrelationParameters::CorrelationParameters(void)
 	// debug flags
 	bSaveFiducialOverlaps = false;
 	bSaveOverlaps = false;
-	bSaveTransformVectors = true;
+	bSaveTransformVectors = false;
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";
 }

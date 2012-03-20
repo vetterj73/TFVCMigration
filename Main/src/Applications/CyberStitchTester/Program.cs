@@ -53,6 +53,8 @@ namespace CyberStitchTester
             bool bAdjustForHeight = true;
             bool bUseProjective = false;
             bool bUseCameraModel = false;
+            bool bUseIterativeCameraModel = false;
+            
             int numberToRun = 1;
             int iLayerIndex4Edge = 0;
 
@@ -76,8 +78,8 @@ namespace CyberStitchTester
                     bUseCameraModel = true;
                 if (args[i] == "-de")
                     _bDetectPanelEedge = true;
-                if (args[i] == "-le" && i < args.Length - 1)
-                    iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
+                if (args[i] == "-iter")
+                    bUseIterativeCameraModel = true;
                 if (args[i] == "-rtol")
                     _bRtoL = true;
                 if (args[i] == "-frr")
@@ -126,6 +128,11 @@ namespace CyberStitchTester
                 if (bUseCameraModel)
                 {
                     _aligner.UseCameraModelStitch(true);
+                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                }
+                if (bUseIterativeCameraModel)
+                {
+                    _aligner.UseCameraModelIterativeStitch(true);
                     _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                 }
 

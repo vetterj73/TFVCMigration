@@ -10,7 +10,7 @@
 #include "FiducialResult.h"
 #include "Logger.h"
 #include "coord.h"
-
+#include <direct.h> //_mkdir
 
 #define NUMBER_Z_BASIS_FUNCTIONS 4
 #define PI        (3.141592653589793)
@@ -29,7 +29,12 @@ public:
 		TriggerIndex = iTrigIndex;
 		CameraIndex = iCamIndex;
 	}
-
+	FovIndex()
+	{
+		IlluminationIndex = 0;
+		TriggerIndex = 0;
+		CameraIndex = 0;
+	}
 	unsigned int IlluminationIndex;
 	unsigned int TriggerIndex;   // trigger order within Illumination
 	unsigned int CameraIndex;	// camera order within trigger
@@ -70,11 +75,11 @@ public:
 	virtual void OutputVectorXCSV(string filename) const=0;
 	virtual void Reset()=0;
 	virtual void FlattenFiducials(PanelFiducialResultsSet* fiducialSet)=0;
-	
+	int				iFileSaveIndex;  // mark output files with this number
 
 protected:
 	virtual void ZeroTheSystem() =0;
-	unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
+	virtual unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
 	//virtual bool MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const=0;
 
 //private:   // protected so they can be inherited ?!
@@ -102,106 +107,10 @@ protected:
 
 	bool			_bSaveMatrixCSV;
 	bool			_bVerboseLogging;
+
+	
 };
 
 
-class RobustSolverFOV: public RobustSolver
-{
-public:
-	RobustSolverFOV(
-		map<FovIndex, unsigned int>* pFovOrderMap, 
-		unsigned int iMaxNumCorrelations, 
-		bool bProjectiveTrans);
 
-	~RobustSolverFOV(void);
 
-	bool AddCalibationConstraints(
-		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false);
-	bool AddPanelEdgeContraints(
-		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
-		double dXOffset, double dSlope);
-	bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
-	bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
-	bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
-
-	void			ConstrainZTerms(){};
-	void			ConstrainPerTrig(){};
-	void			FlattenFiducials(PanelFiducialResultsSet* fiducialSet){};
-
-	ImgTransform GetResultTransform(
-		unsigned int iLlluminationIndex,
-		unsigned int iTriggerIndex,
-		unsigned int iCameraIndex);
-	void OutputVectorXCSV(string filename) const;
-	void Reset() {ZeroTheSystem();};
-	void SolveXAlgH() {SolveXAlgHB();};
-	
-
-protected:
-	void ZeroTheSystem();
-	void SolveXAlgHB();
-private:
-	bool MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const;
-
-};
-
-class RobustSolverCM: public RobustSolver
-{
-public:
-	RobustSolverCM(
-		map<FovIndex, unsigned int>* pFovOrderMap, 
-		unsigned int iMaxNumCorrelations,
-		MosaicSet* pSet);
-
-	~RobustSolverCM(void);
-
-	bool AddCalibationConstraints(
-		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false) {return true;};
-	bool AddPanelEdgeContraints(
-		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
-		double dXOffset, double dSlope) {return true;};
-	bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
-	bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
-	bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
-
-	ImgTransform GetResultTransform(
-		unsigned int iLlluminationIndex,
-		unsigned int iTriggerIndex,
-		unsigned int iCameraIndex) ;
-	void OutputVectorXCSV(string filename) const;
-	void			ConstrainZTerms();
-	void			ConstrainPerTrig();
-	void Reset() {ZeroTheSystem();};
-	void SolveXAlgH();
-	void			FlattenFiducials(PanelFiducialResultsSet* fiducialSet);
-
-	
-
-protected:
-	void ZeroTheSystem();
-	
-
-private:
-	MosaicSet*		_pSet;
-	unsigned int	CountCameras();
-	void			Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
-	void			LstSqFit(double *FidFitA, unsigned int FidFitRows, unsigned int FidFitCols, double *FidFitb, double *FidFitX, double *resid);
-	bool MatchProjeciveTransform(	
-		unsigned int iIlluminationIndex,
-		unsigned int iTriggerIndex,
-		unsigned int iCameraIndex, 
-		double dTrans[3][3]) ;
-	unsigned int	_iNumParamsPerIndex;
-	unsigned int	_iNumZTerms;
-	unsigned int	_iNumBasisFunctions;
-	unsigned int	_iLengthNotes;
-	unsigned int	_iNumFids;
-
-	ImgTransform	_Board2CAD;  // used by flatten fiducial to map from warped board XY to flat CAD XY
-	double			_zCoef[NUMBER_Z_BASIS_FUNCTIONS][NUMBER_Z_BASIS_FUNCTIONS];
-	// above uses a define !!  tied to _iNumZTerms wich is a variable !!
-	
-
-};

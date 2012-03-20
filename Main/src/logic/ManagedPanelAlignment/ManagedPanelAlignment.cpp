@@ -166,6 +166,10 @@ namespace PanelAlignM {
 	{
 		_pAligner->UseCameraModelStitch(bValue);
 	}
+	void ManagedPanelAlignment::UseCameraModelIterativeStitch(bool bValue)
+	{
+		_pAligner->UseCameraModelIterativeStitch(bValue);
+	}
 
 	void ManagedPanelAlignment::UseProjectiveTransform(bool bValue)
 	{

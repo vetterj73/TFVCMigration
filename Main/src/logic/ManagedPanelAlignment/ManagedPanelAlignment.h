@@ -121,6 +121,7 @@ namespace PanelAlignM {
 		void UseCyberNgc4Fiducial();
 		void UseProjectiveTransform(bool bValue);
 		void UseCameraModelStitch(bool bValue);
+		void UseCameraModelIterativeStitch(bool bValue);
 		void EnableFiducialAlignmentCheck(bool bValue);
 		void SetPanelEdgeDetection(
 			bool bDetectPanelEdge, 

@@ -95,6 +95,7 @@ namespace CyberStitchFidTester
             bool bUseProjective = false;
             bool bUseCameraModel = false;
             bool bSaveStitchedResultsImage = false;
+            bool bUseIterativeCameraModel = false;
             int numberToRun = 1;
             string unitTestFolder="";
             double dCalScale = 1.0;
@@ -133,7 +134,9 @@ namespace CyberStitchFidTester
                     bUseProjective = true;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
-                else if (args[i] == "-rtol")
+                if (args[i] == "-iter")
+                    bUseIterativeCameraModel = true;
+                if (args[i] == "-rtol")
                     _bRtoL = true;
                 else if (args[i] == "-frr")
                     _bFRR = true;
@@ -289,15 +292,22 @@ namespace CyberStitchFidTester
                     _aligner.OnAlignmentDone += OnAlignmentDone;
                     _aligner.NumThreads(8);
                     _aligner.LogFiducialOverlaps(true);
-                    _aligner.UseProjectiveTransform(bUseProjective);
+                    if (bUseProjective)
+                        _aligner.UseProjectiveTransform(true);
                     if (dCalScale != 1.0)
                         _aligner.SetCalibrationWeight(dCalScale);
 
-                if (bUseCameraModel)
-                {
-                    _aligner.UseCameraModelStitch(true);
-                    _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                } 
+                    if (bUseCameraModel)
+                    {
+                        _aligner.UseCameraModelStitch(true);
+                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                    }
+
+                    if (bUseIterativeCameraModel)
+                    {
+                        _aligner.UseCameraModelIterativeStitch(true);
+                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+                    }
 
                     if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                     {

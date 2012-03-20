@@ -81,6 +81,9 @@ public:
 	
 	// Whether use camera model image stitching
 	bool bUseCameraModelStitch;
+	bool bUseCameraModelIterativeStitch;
+
+	unsigned int iSolverMaxIterations;
 	
 	// Overlap
 	unsigned int iMinOverlapSize;			// Minimum overlap size for FovFov and FovCad

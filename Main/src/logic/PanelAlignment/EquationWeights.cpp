@@ -38,7 +38,7 @@ EquationWeights::EquationWeights(void)
 	wRbyEdge = wRcal*1e3;	// FOV rotation based on edge detection
 
 	// For Camera Model
-	wZConstrain = 10;   // lightly constrain Z model to flat
+	wZConstrain = 100;   // lightly constrain Z model to flat
 	wZConstrainZero = 1e6;  // strongly constrain unused Z model terms to flat
 	wXIndex = 0.01;		// constrain xTrig, yTrig, thetaTrig to match expected values
 	wFidFlatBoardScale   = 1e3;
@@ -46,6 +46,9 @@ EquationWeights::EquationWeights(void)
 	wFidFlatFiducialLateralShift = 1e3;
 	wFidFlatFlattenFiducial = 1e5;
 	RelativeFidFovCamModWeight = 1e-3;
+
+	wCalDriftZero = 1e4;  // expect cal to drift < 100um, start weighting at 10 um
+
 
 	// Parameters of weight for Fov and Fov overlap
 	_dWeightFovFov = 2e5;
