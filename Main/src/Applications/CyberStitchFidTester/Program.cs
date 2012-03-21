@@ -291,7 +291,7 @@ namespace CyberStitchFidTester
                     _aligner.SetAllLogTypes(true);
                     _aligner.OnAlignmentDone += OnAlignmentDone;
                     _aligner.NumThreads(8);
-                    _aligner.LogFiducialOverlaps(true);
+            //        _aligner.LogFiducialOverlaps(true);
                     if (bUseProjective)
                         _aligner.UseProjectiveTransform(true);
                     if (dCalScale != 1.0)
