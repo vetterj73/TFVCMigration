@@ -20,7 +20,7 @@ public:
 	virtual ~RobustSolverCM(void);
 
 	virtual bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
-	virtual bool AddPanelEdgeContraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, double dXOffset, double dSlope) {return true;};
+	virtual bool AddPanelEdgeContraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, double dXOffset, double dSlope);
 	virtual bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
 	virtual bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
 	virtual bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);

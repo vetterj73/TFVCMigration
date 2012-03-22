@@ -142,11 +142,12 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
-	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
-	{
-		_pSolver->ConstrainZTerms();
-		_pSolver->ConstrainPerTrig();
-	}
+	// now added just before AddOverlapResultsForIllum()
+	//if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
+	//{
+	//	_pSolver->ConstrainZTerms();
+	//	_pSolver->ConstrainPerTrig();
+	//}
 
 	if(_pMaskSolver != NULL)
 		_pMaskSolver->Reset();
@@ -451,6 +452,11 @@ bool PanelAligner::CreateTransforms()
 			bUseEdgeInfo = true;
 
 			// Create matrix and vector for solver
+			if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
+			{
+				_pSolver->ConstrainZTerms();
+				_pSolver->ConstrainPerTrig();
+			}
 			for(int i=0; i<iNumIllums; i++)
 			{
 				// Not use fiducial, not pin panel with calibration 
@@ -557,6 +563,11 @@ bool PanelAligner::CreateTransforms()
 	PickOneAlign4EachPanelFiducial();
 
 	// Create matrix and vector for solver
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
+	{
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+	}
 	for(int i=0; i<iNumIllums; i++)
 	{
 		// Use nominal fiducail overlaps if edge info is not available

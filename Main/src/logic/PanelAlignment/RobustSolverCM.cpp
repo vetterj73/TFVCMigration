@@ -128,7 +128,6 @@ void RobustSolverCM::ConstrainZTerms()
 		ZfitTerms = 9;
 	else
 		ZfitTerms = 10;
-	
 	double* Zterm; // pointer to location in A for setting Z
 	for(unsigned int row(0); row< _iNumZTerms; ++row)
 	{
@@ -219,6 +218,86 @@ void RobustSolverCM::ConstrainPerTrig()
 			_iCurrentRow++;
 		}
 	}
+}
+
+// Add constraint base on panel edge
+bool RobustSolverCM::AddPanelEdgeContraints(
+	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
+	double dXOffset, double dSlope)
+{
+	// dXOffset is the X position of the 0,0 pixel of the imager,
+	// dSlope is the rotation (estimate) of the imager
+	// 
+	// Position of equation in Matirix
+	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
+	unsigned int indexID( (*_pFovOrderMap)[index] );
+	unsigned int iCols = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
+	unsigned int iRows = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+	unsigned int iFOVPosA( indexID * _iNumParamsPerIndex);
+	
+	// Add a equataions 
+	// model the equations after the fiducial alignment set
+	// x_trig - s_y * theta_trig = dsx/dz * Z = x_fid - s_x
+	double w = Weights.wXbyEdge;
+	TransformCamModel camCalA = 
+				_pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+	double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.S[CAL_ARRAY_X],
+					_iNumBasisFunctions);
+	double ySensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.S[CAL_ARRAY_Y],
+					_iNumBasisFunctions);
+	double dxSensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.dSdz[CAL_ARRAY_X],
+					_iNumBasisFunctions);
+	double dySensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.dSdz[CAL_ARRAY_Y],
+					_iNumBasisFunctions);
+	// approximate position of the 0,0 pixel on the surface of the board
+	double boardX = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2);
+	double boardY = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5);
+	double* Zpoly;
+	Zpoly = new double[_iNumZTerms];
+	Zpoly[0] = pow(boardX,0) * pow(boardY,0);
+	Zpoly[1] = pow(boardX,1) * pow(boardY,0);
+	Zpoly[2] = pow(boardX,2) * pow(boardY,0);
+	Zpoly[3] = pow(boardX,3) * pow(boardY,0);
+	Zpoly[4] = pow(boardX,0) * pow(boardY,1);
+	Zpoly[5] = pow(boardX,1) * pow(boardY,1);
+	Zpoly[6] = pow(boardX,2) * pow(boardY,1);
+	Zpoly[7] = pow(boardX,0) * pow(boardY,2);
+	Zpoly[8] = pow(boardX,1) * pow(boardY,2);
+	Zpoly[9] = pow(boardX,0) * pow(boardY,3);
+
+	pdRow[iFOVPosA] += w;
+	pdRow[iFOVPosA+2] += -ySensorA * w;
+	for (unsigned int j(0); j < _iNumZTerms; j++)
+			pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * dxSensordzA * w;
+	_dVectorB[_iCurrentRow] = w * (dXOffset - xSensorA);
+	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BoardEdge:%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
+		index.IlluminationIndex,
+		iTrigIndex, iCamIndex,
+		xSensorA, ySensorA, dXOffset, dSlope );
+	_pdWeights[_iCurrentRow] = w;
+	_iCurrentRow++;
+
+	// constrain theta_trig
+	w = Weights.wRbyEdge; 
+	pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+	pdRow[iFOVPosA+2] += w;
+	_dVectorB[_iCurrentRow] = w * dSlope;
+	_pdWeights[_iCurrentRow] = w;
+	_iCurrentRow++;
+	return(true);
 }
 
 
@@ -815,6 +894,8 @@ void RobustSolverCM::SolveXAlgH()
 	_zCoef[1][3] = 0;
 	_zCoef[2][3] = 0;
 	_zCoef[3][3] = 0;
+
+	iFileSaveIndex++;
 }
 
 void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)

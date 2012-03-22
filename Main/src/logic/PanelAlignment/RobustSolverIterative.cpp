@@ -133,7 +133,7 @@ void RobustSolverIterative::SolveXAlgH()
 	{
 		// zero out A, b, x, and notes
 		_iCurrentRow = 0;
-		iFileSaveIndex = _iIterationNumber;
+		//iFileSaveIndex = _iIterationNumber;
 		for(i=0; i<_iMatrixSize; i++)
 			_dMatrixA[i] = 0.0;
 
@@ -162,6 +162,8 @@ void RobustSolverIterative::SolveXAlgH()
 		//{
 		//	_dCalDriftEst[i] += _dVectorX[_iCalDriftStartCol + i];
 		//}
+		iFileSaveIndex++;  
+		
 	}	
 	// spoof some later code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//_iIterationNumber++;  
@@ -356,6 +358,41 @@ void RobustSolverIterative::FillMatrixA()
 			_iCurrentRow++;
 		
 		}
+		else if (_fitInfo[i].fitType == 3) // Constrain board edge
+		{
+			_iCurrentRow = _fitInfo[i].rowInMatrix;
+			double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+			double	dXOffset  = _fitInfo[i].dFidRoiCenX;
+			double	dSlope    = _fitInfo[i].dFidRoiCenY;
+			// X direction equations
+			pdRow[iColInMatrixA] += w;
+			pdRow[iColInMatrixA+2] += -ySensorA * w;
+			unsigned int calDriftCol = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
+			pdRow[calDriftCol] = w * cos(_dThetaEst[orderedTrigIndexA]);
+			pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
+			for (unsigned int j(0); j < _iNumZTerms; j++)
+					pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * dxSensordzA * w;
+			_dVectorB[_iCurrentRow] = w * (dXOffset 
+				- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
+				+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BrdEdge:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+				_fitInfo[i].fovIndexA.IlluminationIndex,
+				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
+				xSensorA, ySensorA,dxSensordzA,dySensordzA,dXOffset, dSlope, _dThetaEst[orderedTrigIndexA] );
+			_pdWeights[_iCurrentRow] = w;
+			_iCurrentRow++;
+
+			// constrain theta_trig
+			w = Weights.wRbyEdge; 
+			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+			pdRow[iColInMatrixA+2] += w;
+			_dVectorB[_iCurrentRow] = w * (dSlope - _dThetaEst[orderedTrigIndexA]);
+			_pdWeights[_iCurrentRow] = w;
+			_iCurrentRow++;
+			
+		}
+		else if (_fitInfo[i].fitType != 0)
+			LOG.FireLogEntry(LogTypeError, "RobustSolverIterative::FillMatrixA():  Invalid fit type");
 	}
 	delete [] Zpoly;
 }
@@ -867,6 +904,68 @@ bool RobustSolverIterative::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	_iCorrelationNum++;
 	return( true );
 }
+// Add constraint base on panel edge
+bool RobustSolverIterative::AddPanelEdgeContraints(
+	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
+	double dXOffset, double dSlope)
+{
+	// dXOffset is the X position of the 0,0 pixel of the imager,
+	// dSlope is the rotation (estimate) of the imager
+	// 
+	// Position of equation in Matirix
+	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
+	unsigned int indexID( (*_pFovOrderMap)[index] );
+	unsigned int iCols = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
+	unsigned int iRows = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+	unsigned int iFOVPosA( indexID * _iNumParamsPerIndex);
+	
+	// Add a equataions 
+	// model the equations after the fiducial alignment set
+	// x_trig - s_y * theta_trig = dsx/dz * Z = x_fid - s_x
+	double w = Weights.wXbyEdge;
+	TransformCamModel camCalA = 
+				_pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+	_fitInfo[_iCorrelationNum].xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.S[CAL_ARRAY_X],
+					_iNumBasisFunctions);
+	_fitInfo[_iCorrelationNum].ySensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.S[CAL_ARRAY_Y],
+					_iNumBasisFunctions);
+	_fitInfo[_iCorrelationNum].dxSensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.dSdz[CAL_ARRAY_X],
+					_iNumBasisFunctions);
+	_fitInfo[_iCorrelationNum].dySensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
+					0.0, 0.0, 
+					_iNumBasisFunctions, _iNumBasisFunctions,
+					(float*)camCalA.dSdz[CAL_ARRAY_Y],
+					_iNumBasisFunctions);
+	// approximate position of the 0,0 pixel on the surface of the board
+	_fitInfo[_iCorrelationNum].boardX = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2);
+	_fitInfo[_iCorrelationNum].boardY = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5);
+	
+	_fitInfo[_iCorrelationNum].fitType=3;
+	_fitInfo[_iCorrelationNum].fovIndexA.IlluminationIndex = index.IlluminationIndex;
+	_fitInfo[_iCorrelationNum].fovIndexA.TriggerIndex = iTrigIndex;
+	_fitInfo[_iCorrelationNum].fovIndexA.CameraIndex = iCamIndex;
+	_fitInfo[_iCorrelationNum].colInMatrixA = (*_pFovOrderMap)[index] *_iNumParamsPerIndex;
+	_fitInfo[_iCorrelationNum].rowInMatrix = _iCurrentRow;
+	_fitInfo[_iCorrelationNum].w = w;
+	_fitInfo[_iCorrelationNum].dFidRoiCenX = dXOffset;
+	_fitInfo[_iCorrelationNum].dFidRoiCenY = dSlope;
+	_iCurrentRow++;
+	_iCurrentRow++;
+	_iCorrelationNum++;
+	
+	return(true);
+}
+
 
 #pragma region Debug
 // Debug
