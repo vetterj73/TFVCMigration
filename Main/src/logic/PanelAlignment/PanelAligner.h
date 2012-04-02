@@ -97,6 +97,7 @@ protected:
 	// For debug
 	void DisturbFiducialAlignment();
 	void TestGetImagePatch();
+	void TestSingleImagePatch();
 
 private:
 	FidFovOverlapList _lastProcessedFids;

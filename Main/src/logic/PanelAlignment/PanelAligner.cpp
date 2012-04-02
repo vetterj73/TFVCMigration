@@ -606,6 +606,7 @@ bool PanelAligner::CreateTransforms()
 
 	// for debug
 	// TestGetImagePatch();
+	// TestSingleImagePatch();
 
 	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
@@ -1050,6 +1051,45 @@ void PanelAligner::TestGetImagePatch()
 		iCount++;
 	}
 }
+
+void PanelAligner::TestSingleImagePatch()
+{
+	// Layer index
+	int iLayerIndex = 3;
+
+	// Image patch location and size on the stitched image
+	int iStartCol = 3967;
+	int iStartRow = 1202;
+	int iCols = 2301;
+	int iRows = 2301;
+
+	MosaicDM::FOVPreferSelected setFov;
+
+
+	Image* pImg;
+	int iBytePerPIxel = 1;
+	if(_pSet->IsBayerPattern())
+	{
+		pImg = new ColorImage(BGR, false);
+	}
+	else
+	{
+		pImg = new Image();
+	}
+
+	// The image that will hold the image patch 
+	// Its transform need not match patch information
+	ImgTransform trans;
+	pImg->Configure(iCols, iRows, iCols, trans, trans, true);
+	_pSet->GetLayer(iLayerIndex)->GetImagePatch(
+		pImg->GetBuffer(), iCols, iStartRow, iStartCol, iRows, iCols,
+		&setFov);
+
+	pImg->Save( "C:\\Temp\\Patch.bmp");
+
+	delete pImg;
+}
+
 
 ///////////////////////////////////////////////////////
 //	FiducialResultCheck Class

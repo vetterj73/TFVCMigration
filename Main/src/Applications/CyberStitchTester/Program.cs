@@ -154,6 +154,44 @@ namespace CyberStitchTester
                 return;
             }
 
+            // Calculate indices
+            uint iLayerIndex1 = 0;
+            uint iLayerIndex2 = 0;
+            switch (_mosaicSet.GetNumMosaicLayers())
+            {
+                case 1:
+                    iLayerIndex1 = 0;
+                    iLayerIndex2 = 0;
+                    break;
+
+                case 2:
+                    iLayerIndex1 = 0;
+                    iLayerIndex2 = 1;
+                    break;
+
+                case 4:
+                    iLayerIndex1 = 2;
+                    iLayerIndex2 = 3;
+                    break;
+            }
+
+            // Set component height if it exist
+            double dMaxHeight = 0;
+            if (bAdjustForHeight)
+                dMaxHeight = _panel.GetMaxComponentHeight();
+
+            if (dMaxHeight > 0)
+            {
+                bool bSmooth = true;
+                IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
+                uint iSpan = (uint)_panel.GetNumPixelsInY();
+                double dHeightRes = _panel.GetHeightResolution();
+                double dPupilDistance = 0.3702;
+                // Need modified based on layers that have component 
+                _mosaicSet.GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+                _mosaicSet.GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+            }
+
             bool bDone = false;
             while(!bDone)
             {
@@ -181,44 +219,7 @@ namespace CyberStitchTester
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
                     ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
-                    
-                    // Calculate indices
-                    uint iLayerIndex1 = 0;
-                    uint iLayerIndex2 = 0;
-                    switch (_mosaicSet.GetNumMosaicLayers())
-                    {
-                        case 1:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 0;
-                            break;
-
-                        case 2:
-                            iLayerIndex1 = 0;
-                            iLayerIndex2 = 1;
-                            break;
-
-                        case 4:
-                            iLayerIndex1 = 2;
-                            iLayerIndex2 = 3;
-                            break;
-                    }
-
-                    // Set component height if it exist
-                    double dMaxHeight = 0;
-                    if (bAdjustForHeight)
-                        dMaxHeight = _panel.GetMaxComponentHeight();
-
-                    if (dMaxHeight > 0)
-                    {
-                        bool bSmooth = true;
-                        IntPtr heightBuf = _panel.GetHeightImageBuffer(bSmooth);
-                        uint iSpan = (uint)_panel.GetNumPixelsInY();
-                        double dHeightRes = _panel.GetHeightResolution();
-                        double dPupilDistance = 0.3702;
-                        // Need modified based on layers that have component 
-                        _mosaicSet.GetLayer(iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
-                        _mosaicSet.GetLayer(iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
-                    }
+                   
 
                     if (_bBayerPattern) // for bayer pattern
                     {
