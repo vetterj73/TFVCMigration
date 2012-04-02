@@ -1004,7 +1004,7 @@ void PanelAligner::TestGetImagePatch()
 			(unsigned int)( (box.p2.y + box.Height()*0.3)/dRes ),
 			(unsigned int)( (box.p1.x - box.Width()*0.3)/dRes ),
 			(unsigned int)( (box.p2.x + box.Width()*0.3)/dRes ),
-			&setFov, 0, 0);
+			&setFov);
 	}
 
 	pStitchedImage->Save("C:\\Temp\\patchImage.bmp");

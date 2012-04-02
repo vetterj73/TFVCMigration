@@ -345,13 +345,8 @@ namespace MosaicDM
 	// Get a morphed image patch
 	// pBuf: inout, the buffer hold the patch, memeory is allocated before pass in
 	// iPixelSpan: buffer's span in pixel
-	// iStartCol, iWidth, iStartRow and iHeight: Roi in pixel
+	// iStartCol, iWidth, iStartRow and iHeight: Roi in pixel of CAD space
 	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
-	// pHeighImgBuf and iHeightImgSpan: input, height image buf and its span 
-	// The buffer point to (0, 0) of Height image, 
-	// It's origin needs not be the origin of pBuf in the world space
-	// dHeightResolution: gray level resolution of height image
-	// PupilDistance: Pupil distance in meter
 	bool MosaicLayer::GetImagePatch(
 		unsigned char* pBuf,
 		unsigned int iPixelSpan,
@@ -383,9 +378,7 @@ namespace MosaicDM
 			iCols-1,
 			0,
 			iRows-1,
-			pPreferSelectedFov,
-			iStartRowInCad,
-			iStartColInCad);
+			pPreferSelectedFov);
 
 		delete pImage;
 		return(bFlag);
@@ -393,20 +386,15 @@ namespace MosaicDM
 
 	// Get a morphed image patch
 	// pImage: inout, the image hold the patch, memeory is allocated before pass in
-	// iLeft, iRight, iTop and iBottom: Roi in pixel
+	// iLeft, iRight, iTop and iBottom: Roi in pixel of pImage
 	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
-	// pHeighImage: input, height image (it's origin should match pImage's origin)
-	// dHeightResolution: gray level resolution of height image
-	// PupilDistance: Pupil distance in meter
 	bool MosaicLayer::GetImagePatch(
 		Image* pImage, 
 		unsigned int iLeft,
 		unsigned int iRight,
 		unsigned int iTop,
 		unsigned int iBottom,
-		FOVPreferSelected* pPreferSelectedFov,
-		unsigned int iStartRowInCad,
-		unsigned int iStartColInCad)
+		FOVPreferSelected* pPreferSelectedFov)
 	{
 		// valication check
 		if(pImage == NULL) 
@@ -803,6 +791,8 @@ namespace MosaicDM
 		if(_pHeightInfo != 0)
 		{
 			double dRes = GetMosaicSet()->GetNominalPixelSizeX();
+			int iStartRowInCad = (int)(pImage->GetTransform().GetItem(2)/dRes +0.5);
+			int iStartColInCad = (int)(pImage->GetTransform().GetItem(5)/dRes +0.5);	
 			ImgTransform inputTransform;
 			inputTransform.Config(dRes, dRes, 0, dRes*iStartRowInCad, dRes*iStartColInCad);
 

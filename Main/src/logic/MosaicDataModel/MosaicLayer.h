@@ -140,9 +140,7 @@ namespace MosaicDM
 				unsigned int iRight,
 				unsigned int iTop,
 				unsigned int iBottom,
-				FOVPreferSelected* pPreferSelectedFov,
-				unsigned int iStartRowInCad,
-				unsigned int iStartColInCad);
+				FOVPreferSelected* pPreferSelectedFov);
 
 			void SetStitchedBuffer(unsigned char *pBuffer);
 
