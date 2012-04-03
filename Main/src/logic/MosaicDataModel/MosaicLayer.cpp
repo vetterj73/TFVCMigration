@@ -250,7 +250,7 @@ namespace MosaicDM
 		
 		char buf[20];
 		sprintf_s(buf, 19, "Stitcher%d", _layerIndex);
-		CyberJob::JobManager jm(buf, 8);
+		CyberJob::JobManager jm(buf, _pMosaicSet->GetThreadNumber());
 		vector<MorphJob*> morphJobs;
 		// Morph each Fov to create stitched panel image
 		for(unsigned int iTrig=0; iTrig<iNumTrigs; iTrig++)

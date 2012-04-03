@@ -54,6 +54,7 @@ namespace MosaicDM
 	{
 		public:
 			friend class MosaicSet;
+			friend class DemosaicJob;
 
 			///
 			///	Constructor

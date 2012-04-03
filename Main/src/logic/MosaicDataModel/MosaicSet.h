@@ -1,17 +1,21 @@
 #pragma once
 
 #include "LoggableObject.h"
+#include "JobManager.h"
 using namespace LOGGER;
 
 #include <vector>
 #include <map>
+#include <list>
 using std::map;
 using std::pair;
 using std::vector;
+using std::list;
 
 namespace MosaicDM 
 {
 	class MosaicLayer;
+	class DemosaicSet;
 	typedef vector<MosaicLayer*> LayerList;
 	typedef LayerList::iterator LayerListIterator;
 
@@ -27,6 +31,7 @@ namespace MosaicDM
 	class MosaicSet : public LoggableObject
 	{
 		public:
+			friend class DemosaicJob;
 
 			///
 			///	Constructor
@@ -139,6 +144,14 @@ namespace MosaicDM
 			/// Copies transforms from an existing mosaic set.
 			bool CopyBuffers(MosaicSet *pMosaicSet);
 
+			// Get/set number of threads for  
+			int GetThreadNumber() {return _iNumThreads;};
+				// Set must before any raw image is in 
+			void SetThreadNumber(int iValue) {if(iValue > 0) _iNumThreads = iValue;};
+
+		protected:
+			int NumberOfImageTiles();
+
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;
@@ -155,5 +168,9 @@ namespace MosaicDM
 			bool _ownBuffers;
 			bool _bBayerPattern;
 			int _iBayerType;
+
+			CyberJob::JobManager *_pDemosaicJobManager;
+			list<DemosaicJob*> _demosaicJobPtrList;
+			int _iNumThreads;
 	};
 }

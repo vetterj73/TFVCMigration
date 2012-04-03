@@ -163,6 +163,7 @@ copy *.h ..\..\..\pub\include</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CorrelationFlags.h" />
+    <ClInclude Include="DemosaicJob.h" />
     <ClInclude Include="MorphJob.h" />
     <ClInclude Include="MosaicLayer.h" />
     <ClInclude Include="MosaicSet.h" />
@@ -171,6 +172,7 @@ copy *.h ..\..\..\pub\include</Command>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CorrelationFlags.cpp" />
+    <ClCompile Include="DemosaicJob.cpp" />
     <ClCompile Include="MorphJob.cpp" />
     <ClCompile Include="MosaicLayer.cpp" />
     <ClCompile Include="MosaicSet.cpp" />

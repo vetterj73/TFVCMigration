@@ -7,6 +7,7 @@
 #include "Utilities.h"
 #include "Bitmap.h"
 #include "ColorImage.h"
+#include "DemosaicJob.h"
 
 namespace MosaicDM 
 {
@@ -34,6 +35,9 @@ namespace MosaicDM
 		
 		_bBayerPattern = bBayerPattern;
 		_iBayerType = iBayerType;
+
+		_pDemosaicJobManager = NULL;
+		_iNumThreads = 8;
 	}
 
 	MosaicSet::~MosaicSet()
@@ -51,6 +55,9 @@ namespace MosaicDM
 		
 		_layerList.clear();
 		_correlationFlagsMap.clear();
+
+		if(_pDemosaicJobManager != NULL)
+			delete _pDemosaicJobManager;
 	}
 
 	bool MosaicSet::CopyTransforms(MosaicSet *pMosaicSet)
@@ -176,6 +183,15 @@ namespace MosaicDM
 			_layerList[i]->ClearAllImages();
 	}
 
+	int MosaicSet::NumberOfImageTiles()
+	{
+		int iNum = 0;
+		for(unsigned int i=0; i<_layerList.size(); i++)
+			iNum += _layerList[i]->GetNumberOfTiles();
+
+		return(iNum);
+	}
+
 	bool MosaicSet::SaveAllStitchedImagesToDirectory(string directoryName)
 	{
 		string fullDir = directoryName;
@@ -260,14 +276,30 @@ namespace MosaicDM
 	// Input buffer need to be Bayer or grayscale
 	bool MosaicSet::AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
-		MosaicLayer *pLayer = GetLayer(layerIndex);
-		if(pLayer == NULL)
-			return false;
+		// Create the thread job manager if it is necessary
+		if(_pDemosaicJobManager == NULL)
+			_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
+		
+		// Add demosaic job to thread manager
+		DemosaicJob* pJob = new DemosaicJob(this, pBuffer, layerIndex, cameraIndex, triggerIndex);
+		_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
+		_demosaicJobPtrList.push_back(pJob);
 
-		if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
-			return false;
+		// If all images are added, clean up
+		if(HasAllImages())
+		{
+			_pDemosaicJobManager->MarkAsFinished();
+			while(_pDemosaicJobManager->TotalJobs() > 0)
+				Sleep(10);
 
-		FireImageAdded(layerIndex, cameraIndex, triggerIndex);
+			list<DemosaicJob*>::iterator i;
+			for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
+				delete (*i);
+
+			_demosaicJobPtrList.clear();
+		}
+
+		FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
 
 		return true;
 	}
