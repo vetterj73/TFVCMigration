@@ -37,6 +37,7 @@ namespace MosaicDM
 		_iBayerType = iBayerType;
 
 		_pDemosaicJobManager = NULL;
+		_demosaicJobPtrList.clear();
 		_iNumThreads = 8;
 	}
 
@@ -290,7 +291,7 @@ namespace MosaicDM
 			_demosaicJobPtrList.push_back(pJob);
 
 			// If all images are added, clean up
-			if(HasAllImages())
+			if(_demosaicJobPtrList.size() == NumberOfImageTiles())
 			{
 				// Wait all demosaics are done
 				_pDemosaicJobManager->MarkAsFinished();
