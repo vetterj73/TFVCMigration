@@ -140,6 +140,11 @@ namespace MMosaicDM
 				_pMosaicSet->ClearAllImages();
 			}
 
+			void SetThreadNumber(unsigned int iValue)
+			{
+				_pMosaicSet->SetThreadNumber((int)iValue);
+			}
+
 			event ImageAddedDelegate^ OnImageAdded;
 
 			/// \internal

@@ -121,6 +121,7 @@ namespace CyberStitchTester
             try
             {
                 _aligner.NumThreads(_numThreads);
+                _mosaicSet.SetThreadNumber(_numThreads);
                 //_aligner.LogOverlaps(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();

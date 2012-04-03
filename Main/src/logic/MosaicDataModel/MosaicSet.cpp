@@ -276,30 +276,50 @@ namespace MosaicDM
 	// Input buffer need to be Bayer or grayscale
 	bool MosaicSet::AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
-		// Create the thread job manager if it is necessary
-		if(_pDemosaicJobManager == NULL)
-			_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
-		
-		// Add demosaic job to thread manager
-		DemosaicJob* pJob = new DemosaicJob(this, pBuffer, layerIndex, cameraIndex, triggerIndex);
-		_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
-		_demosaicJobPtrList.push_back(pJob);
-
-		// If all images are added, clean up
-		if(HasAllImages())
+		// If bayer pattern, demosaic is needed.
+		// Work in Multi-thread to speed up
+		if(_bBayerPattern)
 		{
-			_pDemosaicJobManager->MarkAsFinished();
-			while(_pDemosaicJobManager->TotalJobs() > 0)
-				Sleep(10);
+			// Create the thread job manager if it is necessary
+			if(_pDemosaicJobManager == NULL)
+				_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
+		
+			// Add demosaic job to thread manager
+			DemosaicJob* pJob = new DemosaicJob(this, pBuffer, layerIndex, cameraIndex, triggerIndex);
+			_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
+			_demosaicJobPtrList.push_back(pJob);
 
-			list<DemosaicJob*>::iterator i;
-			for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
-				delete (*i);
+			// If all images are added, clean up
+			if(HasAllImages())
+			{
+				// Wait all demosaics are done
+				_pDemosaicJobManager->MarkAsFinished();
+				while(_pDemosaicJobManager->TotalJobs() > 0)
+					Sleep(10);
 
-			_demosaicJobPtrList.clear();
+				// Clear job list
+				list<DemosaicJob*>::iterator i;
+				for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
+					delete (*i);
+
+				_demosaicJobPtrList.clear();
+				
+				FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
+			}
 		}
+		// If greyscale, demosaic is not needed. 
+		// Not necessary to add overheader by use multi-thread manager 
+		else	
+		{
+			MosaicLayer *pLayer = GetLayer(layerIndex);
+			if(pLayer == NULL)
+				return false;
 
-		FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
+			if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
+				return false;
+
+			FireImageAdded(layerIndex, cameraIndex, triggerIndex);
+		}
 
 		return true;
 	}
