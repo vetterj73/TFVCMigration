@@ -24,6 +24,8 @@ namespace SIMCalibratorTester
         private static PositionCalibrator _positionCalibrator = null;
         private static ManualResetEvent _calDoneEvent = new ManualResetEvent(false);
         private static bool isColor = false;
+        private static bool bRtoL = false; // right to left conveyor direction indicator
+        private static bool bFRR = false; // fixed rear rail indicator
         
         static void Main(string[] args)
         {
@@ -54,6 +56,10 @@ namespace SIMCalibratorTester
                     LoggingActive = true;
                 else if (args[i] == "-c")
                     isColor = true;
+                else if (args[i] == "-rtol")
+                    bRtoL = true;
+                else if (args[i] == "-frr")
+                    bFRR = true;
                 else if (args[i] == "-h")
                 {
                     ShowHelp();
@@ -92,7 +98,7 @@ namespace SIMCalibratorTester
                 bSimulating = true;
 
             _positionCalibrator = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(deviceIndex),
-                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive, isColor);
+                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive, isColor,bRtoL,bFRR);
 
             _positionCalibrator.LogEvent += OnLogEntryFromClient;
 
@@ -228,6 +234,8 @@ namespace SIMCalibratorTester
             Console.WriteLine("-l Activate Logging.  Defaults to false");
             Console.WriteLine("-p <panelFile> required panel file path (xml or srf).");
             Console.WriteLine("-s <simulationFile> optional xml simulation file.");
+            Console.WriteLine("-frr <bool> conveyor fixed rear rail indicator");
+            Console.WriteLine("-rtol <bool> right to left conveyor direction indicator");
             Console.WriteLine("-h to show this help");
             Console.WriteLine("NOTE:  Panel file must contain at least one fiducial!");
         }

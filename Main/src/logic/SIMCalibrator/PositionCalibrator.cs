@@ -48,6 +48,8 @@ namespace SIMCalibrator
         private CalibrationStatus _calibrationStatus = CalibrationStatus.AquisitionFailed;
         private bool _waitingForImages = false;
         private double _beginningVelocity = 0;
+        private bool _bRtoL = false;
+        private bool _bFRR = false;
 
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
@@ -67,13 +69,17 @@ namespace SIMCalibrator
         /// <param name="loggingOn"></param>
         /// <param name="isColor"></param>
         public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
-            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor)
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor, bool bRtoL,bool bFRR)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
 
             if (device == null)
                 throw new ApplicationException("The input device is null!");
+
+            //Setup conveyor mode
+            _bRtoL = bRtoL;
+            _bFRR = bFRR;
 
             // Events fired for images.
             ManagedSIMDevice.OnFrameDone += FrameDone;
@@ -82,6 +88,7 @@ namespace SIMCalibrator
             _panel = panel;
             _device = device;
             SetupCaptureSpecs(bSimulating);
+            
 
             // Sets up the mosaic from the device...
             SetupMosaic(loggingOn, isColor);
@@ -310,6 +317,9 @@ namespace SIMCalibrator
 
                 if(desiredCount != bufferCount)
                     throw new ApplicationException("Could not allocate buffers...");
+
+                _device.ConveyorRtoL = _bRtoL;
+                _device.FixedRearRail = _bFRR;
 
                 ManagedSIMCaptureSpec cs1 = _device.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                 if (cs1 == null)
