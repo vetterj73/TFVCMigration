@@ -122,6 +122,48 @@ set CADDIR=E:\CyberStitchRegressionData\RegressionTest8
 %APP% -b -w -s "%SIMDATA%\SentryData3(FRRandRtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_RtoL.txt -l %OUTPUTBACKUP%\NoEdgeFRR_RtoL.txt -u .\Results\UnitTest\ 
 %APP% -b -w -s "%SIMDATA%\SentryData4(FRR)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_LtoR.txt -l %OUTPUTBACKUP%\NoEdgeFRR_LtoR.txt -u .\Results\UnitTest\ 
 %APP% -b -w -s "%SIMDATA%\SentryData5(RtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFFR_RtoL.txt -l %OUTPUTBACKUP%\NoEdgeFFR_RtoL.txt -u .\Results\UnitTest\ 
+REM save as above but using camera model and iterative solvers
+%APP% -de -b -cammod -s "%SIMDATA%\SentryData3(FRRandRtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFRR_RtoLCameraModel.txt -l %OUTPUTBACKUP%\EdgeFRR_RtoLCameraModel.txt -u .\Results\UnitTest\ 
+%APP% -de -b -cammod -s "%SIMDATA%\SentryData4(FRR)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFRR_LtoRCameraModel.txt -l %OUTPUTBACKUP%\EdgeFRR_LtoRCameraModel.txt -u .\Results\UnitTest\ 
+%APP% -de -b -cammod -s "%SIMDATA%\SentryData5(RtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFFR_RtoLCameraModel.txt -l %OUTPUTBACKUP%\EdgeFFR_RtoLCameraModel.txt -u .\Results\UnitTest\ 
+%APP% -b -cammod -s "%SIMDATA%\SentryData3(FRRandRtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_RtoLCameraModel.txt -l %OUTPUTBACKUP%\NoEdgeFRR_RtoLCameraModel.txt -u .\Results\UnitTest\ 
+%APP% -b -cammod -s "%SIMDATA%\SentryData4(FRR)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_LtoRCameraModel.txt -l %OUTPUTBACKUP%\NoEdgeFRR_LtoRCameraModel.txt -u .\Results\UnitTest\ 
+%APP% -b -cammod -s "%SIMDATA%\SentryData5(RtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFFR_RtoLCameraModel.txt -l %OUTPUTBACKUP%\NoEdgeFFR_RtoLCameraModel.txt -u .\Results\UnitTest\ 
+
+%APP% -de -b -iter -s "%SIMDATA%\SentryData3(FRRandRtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFRR_RtoLIterative.txt -l %OUTPUTBACKUP%\EdgeFRR_RtoLIterative.txt -u .\Results\UnitTest\ 
+%APP% -de -b -iter -s "%SIMDATA%\SentryData4(FRR)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFRR_LtoRIterative.txt -l %OUTPUTBACKUP%\EdgeFRR_LtoRIterative.txt -u .\Results\UnitTest\ 
+%APP% -de -b -iter -s "%SIMDATA%\SentryData5(RtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\EdgeFFR_RtoLIterative.txt -l %OUTPUTBACKUP%\EdgeFFR_RtoLIterative.txt -u .\Results\UnitTest\ 
+%APP% -b -iter -s "%SIMDATA%\SentryData3(FRRandRtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_RtoLIterative.txt -l %OUTPUTBACKUP%\NoEdgeFRR_RtoLIterative.txt -u .\Results\UnitTest\ 
+%APP% -b -iter -s "%SIMDATA%\SentryData4(FRR)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFRR_LtoRIterative.txt -l %OUTPUTBACKUP%\NoEdgeFRR_LtoRIterative.txt -u .\Results\UnitTest\ 
+%APP% -b -iter -s "%SIMDATA%\SentryData5(RtoL)\Raw\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\NoEdgeFFR_RtoLIterative.txt -l %OUTPUTBACKUP%\NoEdgeFFR_RtoLIterative.txt -u .\Results\UnitTest\ 
+
+
+REM DEK-VG board, including cases of shifted calibration data
+set SIMDATA=E:\CyberStitchRegressionData\RegressionTest9
+set CADDIR= E:\CyberStitchRegressionData\RegressionTest9
+
+REM DEK-VG board
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsCameraModel.txt -l %OUTPUTBACKUP%\DEK-VG_4FidsCameraModel.txt  -u .\Results\UnitTest\ 
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsCameraModel.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsCameraModel.txt  -u .\Results\UnitTest\ 
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsCameraModel.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsCameraModel.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsIterative.txt   -l %OUTPUTBACKUP%\DEK-VG_4FidsIterative.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsIterative.txt   -l %OUTPUTBACKUP%\DEK-VG_3FidsIterative.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsIterative.txt   -l %OUTPUTBACKUP%\DEK-VG_2FidsIterative.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsProjective.txt -l %OUTPUTBACKUP%\DEK-VG_4FidsProjective.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsProjective.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsProjective.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsProjective.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsProjective.txt  -u .\Results\UnitTest\ 
+
+REM DEK-VG board with skewed calibration
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_4FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -cammod -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsIterative_offsetCal.txt   -l %OUTPUTBACKUP%\DEK-VG_4FidsIterative_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsIterative_offsetCal.txt   -l %OUTPUTBACKUP%\DEK-VG_3FidsIterative_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -iter   -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsIterative_offsetCal.txt   -l %OUTPUTBACKUP%\DEK-VG_2FidsIterative_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsProjective_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_4FidsProjective_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsProjective_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsProjective_offsetCal.txt  -u .\Results\UnitTest\ 
+%APP% -w      -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsProjective_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsProjective_offsetCal.txt  -u .\Results\UnitTest\ 
+
 
 
  
