@@ -68,6 +68,7 @@ AllResultNames = []  # track all of the regression test file names
 OverallResults = {}  # a dictionary to hold the results.
 for dirName in dirNames: # walk through each regression test (by date)
     Results = {}
+    Results["panelsPerRun"] = 0
     fns = glob.glob(dirName + "/*.txt")
     for fn in fns:
         fh = open(fn)
@@ -96,6 +97,7 @@ for dirName in dirNames: # walk through each regression test (by date)
                 elif ( len(row) > 2 
                       and type(row[1]) == types.StringType 
                       and row[1].find("Panel Processing end time: ") == 0 ): 
+                        Results["panelsPerRun"] += 1
                         # parse out the end time, remove leading space
                         t = time.strptime(row[1][26:].strip(),"%m/%d/%Y %I:%M:%S %p")
                         Results[resultName]["endTime"] = time.mktime(t)
@@ -116,6 +118,7 @@ for dirName in dirNames: # walk through each regression test (by date)
                     row = line.split()
                     Results[resultName]["summary"].append( float( row[-1] ))
     OverallResults[dirName] = Results
+
 
 #
 nRuns = len(dirNames)
@@ -141,23 +144,36 @@ plotBoxDims = [0.1,0.25,0.6,0.65]
 # 0.25 from botom is needed for very large x tick labels
 # 0.6 is active width of graph, lots of room at right for legend
 # 0.65 is active height (saves some room at top for title)
-fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
-# results in a 1680 x 1050 plot with reasonalble text sizes
-pylab.axes(plotBoxDims) 
+
 # plot out the total run time
 xVals = [] # since every regression tset should have a time I could have written xVals = range(nRuns)
-yVals = []
+timeVals = []
+panelCounts = []
 for x, dirName in enumerate(dirNames):
     xVals.append(x)
-    yVals.append( OverallResults[dirName]["runTime"] )
+    timeVals.append( OverallResults[dirName]["runTime"] )
+    panelCounts.append( OverallResults[dirName]["panelsPerRun"] )
 
-pylab.plot( xVals, array(yVals)/3600., "-x")
-pylab.xticks(range(nRuns), dirNames, rotation=90)
-pylab.title("CyberStitchFidTest Overall Regression Execution Time, " )
-pylab.ylabel("Time (hours)" )
-#limY = pylab.ylim()
+fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
+# results in a 1680 x 1050 plot with reasonalble text sizes
+ax1 = pylab.axes(plotBoxDims) 
+pylab.plot( xVals, array(timeVals)/3600., "b-x", label="Execution Time (Hours)")
+pylab.xticks(range(nRuns), dirNames, rotation=90) # do this twice????
+pylab.title("CyberStitchFidTest Overall Regression Execution Time and Panel Count" )
+pylab.ylabel("Time (hours)" , color='b' )
 pylab.ylim( 0, 12)
+ax2 = ax1.twinx() # second y axis
+pylab.plot( xVals, panelCounts, "g-x", label="Panel Count")
+pylab.xticks(range(nRuns), dirNames, rotation=90)
+
+pylab.ylabel("Total Panels" , color='g')
+#pylab.legend()
+#legends for both (if desired) need be done one at a time and manually positioned
 pylab.grid()
+for tl in ax1.get_yticklabels():
+    tl.set_color('b')
+for tl in ax2.get_yticklabels():
+    tl.set_color('g')
 fig2.savefig(destDir + "Regression_ExecutionTime.png")
 pylab.close()
 
