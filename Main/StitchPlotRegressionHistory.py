@@ -55,16 +55,18 @@ def parseCsvString(line):
 
 # plot line marker symbols
 markers = ['o' , 'D' , 'h' , 'H' , 'p' , '+' , '.' , 's' , '*' , 'd' , '1' , '3' , '4' , '2' , 'v' , '<' , '>' , '^' , ',' , 'x' ]
+# where to place plots ** this must match the location in the RunChart.htm web page
 destDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/ResultsFolders/RegressionRunCharts/"
+# location of regression test result text files
 srcDir = "C:/CyberStitchRegression/"
 os.chdir(srcDir)
 dirNames = glob.glob("20*") # assume that all directories of interest start out with 21st century date, assume no stray file have this structure
 dirNames.sort()  # just in case they aren't in date order
 
-
+# read all of the regression files
 AllResultNames = []  # track all of the regression test file names
-OverallResults = {}
-for dirName in dirNames:
+OverallResults = {}  # a dictionary to hold the results.
+for dirName in dirNames: # walk through each regression test (by date)
     Results = {}
     fns = glob.glob(dirName + "/*.txt")
     for fn in fns:
@@ -74,10 +76,10 @@ for dirName in dirNames:
         if len(lines) < 3:
             break  # must be an empty file
         resultName = fn[ fn.index("\\")+1 : -4] # remove dirName and '.txt' from the name
-        if AllResultNames.count(resultName) < 1:
+        if AllResultNames.count(resultName) < 1:  # a new run?  e.g. add the name '3FidsProjective' to the list
             AllResultNames.append(resultName)
         Results[resultName] = {"res":[], "summary":[]}
-        temp = lines.pop(0)
+        temp = lines.pop(0) # remove first two lines
         temp = lines.pop(0)
         sectionOne = True
         # the results file consists of two sections
@@ -89,7 +91,8 @@ for dirName in dirNames:
             if sectionOne:
                 row = parseCsvString(line)
                 if type(row[0]) != types.StringType and row[-1] != 1:
-                    Results[resultName]["res"].append(row)
+                    Results[resultName]["res"].append(row) # save individual fid results, 
+                    # we don't yet plot this detailed data
                 elif ( len(row) > 2 
                       and type(row[1]) == types.StringType 
                       and row[1].find("Panel Processing end time: ") == 0 ): 
@@ -100,7 +103,7 @@ for dirName in dirNames:
                             t = time.strptime(row[0][25:].strip(),"%m/%d/%Y %I:%M:%S %p")
                             Results[resultName]["startTime"] = time.mktime(t)
             else:
-                # into the summary section
+                # into the summary section, this is where most of the plot data is found
                 if line.find("Xoffset RMS:") > 0:
                     XOffsetStart = line.find("Xoffset RMS:")+ len("Xoffset RMS:")
                     XOffsetEnd = line.find(",", XOffsetStart)
@@ -117,6 +120,7 @@ for dirName in dirNames:
 #
 nRuns = len(dirNames)
 
+# find the total execution time -- use the time from the earliest start time to the last end time
 for dirName in dirNames:
     startTime = 1e10
     endTime = 0.
@@ -131,16 +135,23 @@ for dirName in dirNames:
     OverallResults[dirName]["runTime"] = clip(endTime - startTime, 0, 1e5)
     
 #
+plotBoxDims = [0.1,0.25,0.6,0.65]
+# position the plot within the window
+# 0.1 from left is enough room for y label
+# 0.25 from botom is needed for very large x tick labels
+# 0.6 is active width of graph, lots of room at right for legend
+# 0.65 is active height (saves some room at top for title)
 fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
-pylab.axes([0.1,0.25,0.8,0.65])
-xVals = []
+# results in a 1680 x 1050 plot with reasonalble text sizes
+pylab.axes(plotBoxDims) 
+# plot out the total run time
+xVals = [] # since every regression tset should have a time I could have written xVals = range(nRuns)
 yVals = []
 for x, dirName in enumerate(dirNames):
     xVals.append(x)
     yVals.append( OverallResults[dirName]["runTime"] )
 
 pylab.plot( xVals, array(yVals)/3600., "-x")
-
 pylab.xticks(range(nRuns), dirNames, rotation=90)
 pylab.title("CyberStitchFidTest Overall Regression Execution Time, " )
 pylab.ylabel("Time (hours)" )
@@ -148,7 +159,6 @@ pylab.ylabel("Time (hours)" )
 pylab.ylim( 0, 12)
 pylab.grid()
 fig2.savefig(destDir + "Regression_ExecutionTime.png")
-
 pylab.close()
 
 
@@ -156,8 +166,8 @@ ResultNames = copy.copy(AllResultNames)
 pylab.close()
 for runName, searchPattern, Label  in runTypes:
     fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
-    pylab.axes([0.1,0.25,0.6,0.65])
-    group = popName(ResultNames, searchPattern)
+    pylab.axes(plotBoxDims)
+    group = popName(ResultNames, searchPattern) # only those file names matching the pattern
     group.sort()
     for item in group:
         xVals = []
