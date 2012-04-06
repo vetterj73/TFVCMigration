@@ -164,6 +164,8 @@ pylab.ylabel("Time (hours)" , color='b' )
 pylab.ylim( 0, 12)
 ax2 = ax1.twinx() # second y axis
 pylab.plot( xVals, panelCounts, "g-x", label="Panel Count")
+limY = pylab.ylim()
+pylab.ylim( 0, limY[1])
 pylab.xticks(range(nRuns), dirNames, rotation=90)
 
 pylab.ylabel("Total Panels" , color='g')
