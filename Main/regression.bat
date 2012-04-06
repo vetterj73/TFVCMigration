@@ -176,4 +176,4 @@ xcopy /S /E /Y /Q %OUTPUTDIR%\* %ROOTDIR%\%THEDATE%\
 
 REM Create run charts
 REM Need to put the script in a better location
-c:\python27\python.exe \users\bbuilder\data\StitchPlotRegressionHistory.py
+c:\python27\python.exe .\StitchPlotRegressionHistory.py
