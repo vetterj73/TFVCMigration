@@ -115,6 +115,18 @@ set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\JukiSinglePWBfor2080(col
 %APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterative.txt       -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterative.txt -u .\Results\UnitTest\ -n 4
 %APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 4
 
+REM  Not Populated JUKI board data set 
+REM  this is the smaller panel P/N 1C07501D
+set SIMDATA=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\RegressionTest6Data(40micronPerCycle)
+set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\RegressionTest6CAD
+
+%APP%     -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedProjective.txt      -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedProjective.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedProjectiveEdge.txt  -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedProjectiveEdge.txt -u .\Results\UnitTest\ -n 1
+%APP%     -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedCameraModel.txt     -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedCameraModel.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedCameraModelEdge.txt -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedCameraModelEdge.txt -u .\Results\UnitTest\ -n 1
+%APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedIterative.txt       -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedIterative.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 1
+
 REM
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest7
 set CADDIR=E:\CyberStitchRegressionData\RegressionTest7
