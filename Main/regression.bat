@@ -103,7 +103,19 @@ REM     RUN All collected panels
 %APP% -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mmsProjective.txt -l %OUTPUTBACKUP%\4FidsZ-4mmsProjective.txt -u .\Results\UnitTest\ -n 10
 %APP% -de -b -w -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes4Fids(rectangle).xml" -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\4FidsZ-4mmsProjectiveEdge.txt -l %OUTPUTBACKUP%\4FidsZ-4mmsProjectiveEdge.txt -u .\Results\UnitTest\ -n 10
 
+REM  Populated JUKI board data set 
+REM  this panel has a wide variety of components
+set SIMDATA=E:\CyberStitchRegressionData\RegressionTest6\JukiSinglePWBfor2080(colorSim)\RegressionTest6Data(40micronPerCycle)
+set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\JukiSinglePWBfor2080(colorSim)\RegressionTest6CAD
 
+%APP%     -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedProjective.txt      -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedProjective.txt -u .\Results\UnitTest\ -n 4
+%APP% -de -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedProjectiveEdge.txt  -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedProjectiveEdge.txt -u .\Results\UnitTest\ -n 4
+%APP%     -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedCameraModel.txt     -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedCameraModel.txt -u .\Results\UnitTest\ -n 4
+%APP% -de -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedCameraModelEdge.txt -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedCameraModelEdge.txt -u .\Results\UnitTest\ -n 4
+%APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterative.txt       -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterative.txt -u .\Results\UnitTest\ -n 4
+%APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 4
+
+REM
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest7
 set CADDIR=E:\CyberStitchRegressionData\RegressionTest7
 
