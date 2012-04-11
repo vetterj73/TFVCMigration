@@ -12,6 +12,9 @@ import time
 # these groups are identified by strings in their names
 # groups of data types:
 runTypes = [["Focus", "-4mm"      ,"Through Focus Runs"],
+            ["Populated", "Populated", "Populated compared to Non-Populated"],
+            ["Edge",  "Edge"      ,"Apply Board Edge Detection"],
+            ["DEK-VG","DEK-VG"    ,"DEK-VG with and without Calibration Error"],
             ["Proj",  "Projective","Projective Transform"],
             ["Cam",   "Camera"    ,"Camera Model"],
             ["Iter",  "Iterative" ,"Iterative (Calibration Drift)"],
@@ -56,9 +59,10 @@ def parseCsvString(line):
 # plot line marker symbols
 markers = ['o' , 'D' , 'h' , 'H' , 'p' , '+' , '.' , 's' , '*' , 'd' , '1' , '3' , '4' , '2' , 'v' , '<' , '>' , '^' , ',' , 'x' ]
 # where to place plots ** this must match the location in the RunChart.htm web page
-destDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/ResultsFolders/RegressionRunCharts/"
-# location of regression test result text files
-srcDir = "C:/CyberStitchRegression/"
+destDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/RegressionRunCharts/"
+# location of regression test result text files ** use the projects directory **
+#srcDir = "C:/CyberStitchRegression/"
+srcDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/CyberStitchRegression/"
 os.chdir(srcDir)
 dirNames = glob.glob("20*") # assume that all directories of interest start out with 21st century date, assume no stray file have this structure
 dirNames.sort()  # just in case they aren't in date order
