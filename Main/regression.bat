@@ -2,6 +2,7 @@ rem '-w' flag should not matter if '-cammod' flag is set
 set ROOTDIR=C:\CyberStitchRegression
 set OUTPUTDIR=%ROOTDIR%\Results
 set OUTPUTBACKUP=%ROOTDIR%\LastResults
+set PROJECTSBACKUPDIR="\\msp\dfs\Projects\CyberStitch\CyberStitchRegression"
 set APP=.\src\Applications\CyberStitchFidTester\bin\x64\Release\CyberStitchFidTester.exe
 ROBOCOPY "\\msp\dfs\archive\CyberStitchRegressionData"  "E:\CyberStitchRegressionData" /s
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2Data(1micronPerCycle)
@@ -115,8 +116,8 @@ set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\JukiSinglePWBfor2080(col
 %APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterative.txt       -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterative.txt -u .\Results\UnitTest\ -n 4
 %APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\JukiSinglePWBfor2080(3Fids)Mitutoyo.xml" -f "%CADDIR%\JukiSinglePWBfor2080(AllFids_NoPad)Mitutoyo.xml" -o  %OUTPUTDIR%\JukiSinglePWBPopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\JukiSinglePWBPopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 4
 
-REM  Not Populated JUKI board data set 
 REM  this is the smaller panel P/N 1C07501D
+REM  Not Populated JUKI board data set 
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\RegressionTest6Data(40micronPerCycle)
 set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\RegressionTest6CAD
 
@@ -126,6 +127,17 @@ set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colo
 %APP% -de -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedCameraModelEdge.txt -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedCameraModelEdge.txt -u .\Results\UnitTest\ -n 1
 %APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedIterative.txt       -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedIterative.txt -u .\Results\UnitTest\ -n 1
 %APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_NotPopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\Juki1C07501_NotPopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 1
+
+REM  Populated JUKI board data set 
+set SIMDATA=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\Populated
+set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colorSim)\RegressionTest6CAD
+
+%APP%     -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedProjective.txt      -l %OUTPUTBACKUP%\Juki1C07501_PopulatedProjective.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -w      -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedProjectiveEdge.txt  -l %OUTPUTBACKUP%\Juki1C07501_PopulatedProjectiveEdge.txt -u .\Results\UnitTest\ -n 1
+%APP%     -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedCameraModel.txt     -l %OUTPUTBACKUP%\Juki1C07501_PopulatedCameraModel.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedCameraModelEdge.txt -l %OUTPUTBACKUP%\Juki1C07501_PopulatedCameraModelEdge.txt -u .\Results\UnitTest\ -n 1
+%APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedIterative.txt       -l %OUTPUTBACKUP%\Juki1C07501_PopulatedIterative.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\Juki1C07501_PopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 1
 
 REM
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest7
@@ -197,6 +209,9 @@ REM Convert blanks to zeros...
 set THEDATE=%THEDATE: =0%
 mkdir %ROOTDIR%\%THEDATE%
 xcopy /S /E /Y /Q %OUTPUTDIR%\* %ROOTDIR%\%THEDATE%\
+
+mkdir %PROJECTSBACKUPDIR%\%THEDATE%
+xcopy /S /E /Y /Q %OUTPUTDIR%\* %PROJECTSBACKUPDIR%\%THEDATE%\
 
 REM Create run charts
 REM Need to put the script in a better location
