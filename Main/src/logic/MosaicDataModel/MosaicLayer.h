@@ -27,6 +27,7 @@ namespace MosaicDM
 		FOVTBPOS preferTB;
 		FOVLRPOS selectedLR;
 		FOVTBPOS selectedTB;
+		bool bAdjustForHeight; 
 			
 		FOVPreferSelected()
 		{
@@ -34,6 +35,8 @@ namespace MosaicDM
 			preferTB = NOPREFERTB;
 			selectedLR = NOPREFERLR;
 			selectedTB = NOPREFERTB;
+
+			bAdjustForHeight = true; // Adjust for component height if height information is available
 		}
 	};
 
@@ -164,7 +167,17 @@ namespace MosaicDM
 			void AllocateStitchedImageIfNecessary();
 			bool CalculateStitchGrids();
 
-			bool CalculateGridBoundary();
+			bool CalculateAllGridBoundary();
+			bool CalculateGridBoundary(
+				int iBeginInvTrig, int iEndInvTrig,
+				int iBeginCam, int iEndCam,
+				double* pdGridXBoundary, double* pdGridYBoundary);
+
+			void CalculateFOVsForImagePatch(
+				DRect worldRoi, bool bAjustForHeight,
+				int* piStartInvTrig, int* piEndInvTrig,
+				int* piStartCam, int* piEndCam,
+				double* pdPatchGridXBoundary, double* pdPatchGridYBoundary);
 
 			///
 			///	Adds an image...
