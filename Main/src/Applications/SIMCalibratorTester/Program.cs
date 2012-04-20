@@ -26,6 +26,9 @@ namespace SIMCalibratorTester
         private static bool isColor = false;
         private static bool bRtoL = false; // right to left conveyor direction indicator
         private static bool bFRR = false; // fixed rear rail indicator
+        private static bool bEncoder = false; // use encoder for the velocity
+        private static bool bEncoderPolarity = false;
+        private static int iEncoderResolution = 46511;
         
         static void Main(string[] args)
         {
@@ -60,6 +63,12 @@ namespace SIMCalibratorTester
                     bRtoL = true;
                 else if (args[i] == "-frr")
                     bFRR = true;
+                else if (args[i] == "-encoder")
+                    bEncoder = true;
+                else if (args[i] == "-er" && i < args.Length - 1)
+                    iEncoderResolution = Convert.ToInt32(args[i + 1]);
+                else if (args[i] == "-encoderPolarity")
+                    bEncoderPolarity = true;
                 else if (args[i] == "-h")
                 {
                     ShowHelp();
@@ -98,7 +107,7 @@ namespace SIMCalibratorTester
                 bSimulating = true;
 
             _positionCalibrator = new PositionCalibrator(_panel, ManagedCoreAPI.GetDevice(deviceIndex),
-                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive, isColor,bRtoL,bFRR);
+                bSimulating, xFidSearchArea, yFidSearchArea, LoggingActive, isColor, bRtoL, bFRR, bEncoder,bEncoderPolarity, iEncoderResolution);
 
             _positionCalibrator.LogEvent += OnLogEntryFromClient;
 
@@ -236,6 +245,9 @@ namespace SIMCalibratorTester
             Console.WriteLine("-s <simulationFile> optional xml simulation file.");
             Console.WriteLine("-frr <bool> conveyor fixed rear rail indicator");
             Console.WriteLine("-rtol <bool> right to left conveyor direction indicator");
+            Console.WriteLine("-encoder <bool> use encoder");
+            Console.WriteLine("-er <int> set the encoder resolution(ticks/meter)");
+            Console.WriteLine("-encoderPolarity <bool> set encoderPolarity (defualt is counterclockwise)");
             Console.WriteLine("-h to show this help");
             Console.WriteLine("NOTE:  Panel file must contain at least one fiducial!");
         }

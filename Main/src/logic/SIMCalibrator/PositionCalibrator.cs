@@ -50,7 +50,9 @@ namespace SIMCalibrator
         private double _beginningVelocity = 0;
         private bool _bRtoL = false;
         private bool _bFRR = false;
-
+        private bool _bEncoder = false;
+        private bool _bEncoderPolarity = false;
+        private int _iEncoderResolution = 0;
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
         /// </summary>
@@ -69,7 +71,7 @@ namespace SIMCalibrator
         /// <param name="loggingOn"></param>
         /// <param name="isColor"></param>
         public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
-            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor, bool bRtoL,bool bFRR)
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor, bool bRtoL, bool bFRR, bool bEncoder, bool bEncoderPolarity, int iEncoderResolution)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
@@ -80,7 +82,9 @@ namespace SIMCalibrator
             //Setup conveyor mode
             _bRtoL = bRtoL;
             _bFRR = bFRR;
-
+            _bEncoder = bEncoder;
+            _bEncoderPolarity = bEncoderPolarity;
+            _iEncoderResolution = iEncoderResolution;
             // Events fired for images.
             ManagedSIMDevice.OnFrameDone += FrameDone;
             ManagedSIMDevice.OnAcquisitionDone += AcquisitionDone;
@@ -237,10 +241,19 @@ namespace SIMCalibrator
             }
 
             // Always update the velocity...
-            _beginningVelocity = _device.ConveyorVelocity;
             double vRatio = _fidList.GetNominalToActualVelocityRatio();
-            _device.ConveyorVelocity = _beginningVelocity + GetVelocityOffsetInMetersPerSecond();
-            
+            if(!_device.EncoderEnable)
+            {
+                _beginningVelocity = _device.ConveyorVelocity;
+                _device.ConveyorVelocity = _beginningVelocity + GetVelocityOffsetInMetersPerSecond();   
+            }
+
+            else
+            {
+                _beginningVelocity = 1/(_device.EncoderResolution);
+                _device.EncoderResolution = (int)Math.Round(1 / (_beginningVelocity + GetVelocityOffsetInMetersPerTick())); 
+            }
+                  
             // Update the X if velocity is in tolerance...
             if (_fidList.IsVelocityRatioInTolerance(vRatio))
             {
@@ -291,6 +304,12 @@ namespace SIMCalibrator
             return _beginningVelocity - (_beginningVelocity * ratio);
         }
 
+        public double GetVelocityOffsetInMetersPerTick()
+        {
+            double ratio = _fidList.GetNominalToActualVelocityRatio();
+            return _beginningVelocity - (_beginningVelocity * ratio);
+        }
+
         /// <summary>
         /// Fires a messages to client that lets them know that calibration is complete
         /// </summary>
@@ -320,6 +339,12 @@ namespace SIMCalibrator
 
                 _device.ConveyorRtoL = _bRtoL;
                 _device.FixedRearRail = _bFRR;
+                _device.EncoderEnable = _bEncoder;
+                if (_device.EncoderEnable)
+                {
+                    _device.EncoderResolution = _iEncoderResolution;
+                    _device.EncoderPolarity = _bEncoderPolarity;
+                }
 
                 ManagedSIMCaptureSpec cs1 = _device.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                 if (cs1 == null)
