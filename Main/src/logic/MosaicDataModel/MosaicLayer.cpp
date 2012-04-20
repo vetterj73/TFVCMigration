@@ -469,7 +469,7 @@ namespace MosaicDM
 			for(int iInvTrig = 0; iInvTrig < (int)_numTriggers; iInvTrig++)
 			{ 
 				if(pdPatchGridXBoundary[2*iInvTrig]<worldRoi.xMin && 
-					worldRoi.xMin<pdPatchGridXBoundary[2*iInvTrig+1])
+					worldRoi.xMin<=pdPatchGridXBoundary[2*iInvTrig+1])
 				{
 					iStartInvTrig = iInvTrig;
 					break;
@@ -490,7 +490,7 @@ namespace MosaicDM
 			for(int iInvTrig = _numTriggers-1; iInvTrig >= 0; iInvTrig--)
 			{
 				if(pdPatchGridXBoundary[2*iInvTrig]<worldRoi.xMax && 
-					worldRoi.xMax<pdPatchGridXBoundary[2*iInvTrig+1])
+					worldRoi.xMax<=pdPatchGridXBoundary[2*iInvTrig+1])
 				{
 					iEndInvTrig = iInvTrig;
 					break;
@@ -513,7 +513,7 @@ namespace MosaicDM
 			for(int iCam = 0; iCam < (int)_numCameras; iCam++)
 			{
 				if(pdPatchGridYBoundary[2*iCam]<worldRoi.yMin && 
-					worldRoi.yMin<pdPatchGridYBoundary[2*iCam+1])
+					worldRoi.yMin<=pdPatchGridYBoundary[2*iCam+1])
 				{
 					iStartCam = iCam;
 					break;
@@ -534,7 +534,7 @@ namespace MosaicDM
 			for(int iCam = _numCameras-1; iCam >= 0; iCam--)
 			{
 				if(pdPatchGridYBoundary[2*iCam]<worldRoi.yMax && 
-					worldRoi.yMax<pdPatchGridYBoundary[2*iCam+1])
+					worldRoi.yMax<=pdPatchGridYBoundary[2*iCam+1])
 				{
 					iEndCam = iCam;
 					break;
@@ -548,102 +548,25 @@ namespace MosaicDM
 		*piEndCam = iEndCam;
 	}
 
-	// Get a morphed image patch
-	// pBuf: inout, the buffer hold the patch, memeory is allocated before pass in
-	// iPixelSpan: buffer's span in pixel
-	// iStartCol, iWidth, iStartRow and iHeight: Roi in pixel of CAD space
+	// Calcualte boundary in Row for FOV used for image patch
+	// pImage and word ROI: input, patch image and its ROi in world space
+	// iTop and iBottom: patch image and its location in CAD
+	// pdPatchGridXBoundary: grid boundary for image patch
+	// iStartInvTrig and iEndInvTrig: trigger range
 	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
-	bool MosaicLayer::GetImagePatch(
-		unsigned char* pBuf,
-		unsigned int iPixelSpan,
-		unsigned int iStartRowInCad,
-		unsigned int iStartColInCad,
-		unsigned int iRows,
-		unsigned int iCols,
-		FOVPreferSelected* pPreferSelectedFov)
-	{
-		// Create image
-		Image* pImage;
-		if(GetMosaicSet()->IsBayerPattern())
-		{
-			pImage = new ColorImage(BGR, false);
-		}
-		else
-		{
-			pImage = new Image();
-		}
-
-		double dRes = GetMosaicSet()->GetNominalPixelSizeX();
-		ImgTransform inputTransform;
-		inputTransform.Config(dRes, dRes, 0, dRes*iStartRowInCad, dRes*iStartColInCad);	
-		pImage->Configure(iCols, iRows, iPixelSpan, inputTransform, inputTransform, false, pBuf);
-
-		bool bFlag = GetImagePatch(
-			pImage, 
-			0,
-			iCols-1,
-			0,
-			iRows-1,
-			pPreferSelectedFov);
-
-		delete pImage;
-		return(bFlag);
-	}
-
-	// Get a morphed image patch
-	// pImage: inout, the image hold the patch, memeory is allocated before pass in
-	// iLeft, iRight, iTop and iBottom: Roi in pixel of pImage
-	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
-	bool MosaicLayer::GetImagePatch(
+	// piPixelRowBoundary: ouput, boundary in Row for FOV used for image patch
+	void MosaicLayer::CalPatchFOVRowBoundary(
 		Image* pImage, 
-		unsigned int iLeft,
-		unsigned int iRight,
+		DRect worldRoi,
 		unsigned int iTop,
 		unsigned int iBottom,
-		FOVPreferSelected* pPreferSelectedFov)
+		const double* pdPatchGridXBoundary,
+		int iStartInvTrig,
+		int iEndInvTrig,
+		FOVPreferSelected* pPreferSelectedFov,
+		int* piPixelRowBoundary)
 	{
-		// valication check
-		if(pImage == NULL) 
-			return(false);
-
-		if(iLeft>iRight || iTop>iBottom)
-			return(false);
-
-		int iChannels = pImage->GetBytesPerPixel();
-		if(!GetMosaicSet()->IsBayerPattern())
-		{
-			if(iChannels != 1)
-				return(false);
-		}
-		else
-		{
-			if(iChannels != 3)
-				return(false);
-		}
-
-	// Calculate trig range and camera range for morph
-		// ROI in world
-		DRect worldRoi;
-		pImage->ImageToWorld(iTop, iLeft, &worldRoi.xMin, &worldRoi.yMin);
-		pImage->ImageToWorld(iBottom, iRight, &worldRoi.xMax, &worldRoi.yMax);
-
-		
-		double *pdPatchGridXBoundary = new double[2*_numTriggers];
-		double *pdPatchGridYBoundary = new double[2*_numCameras];
-
-		int iStartInvTrig, iEndInvTrig, iStartCam, iEndCam;
-		CalculateFOVsForImagePatch(
-			worldRoi, true,
-			&iStartInvTrig, &iEndInvTrig,
-			&iStartCam, &iEndCam,
-			pdPatchGridXBoundary, pdPatchGridYBoundary);
-		
-	// Calcuatle ROI of output image for each FOV that may be used 
 		int iInvTrigCount = iEndInvTrig - iStartInvTrig + 1;
-		int iCamCount = iEndCam - iStartCam + 1;
-
-		int* piPixelRowBoundary = new int[iInvTrigCount+1]; // Contain start Rows
-		int* piPixelColBoundary = new int[iCamCount+1];		// contain start Cols
 
 		// If more than 2 triggers are covered
 		if(iInvTrigCount > 2)
@@ -775,8 +698,29 @@ namespace MosaicDM
 			piPixelRowBoundary[0] = iTop;
 			piPixelRowBoundary[1] = iBottom+1;
 		}
+	}
 
-//***********************************************************************
+	
+	// Calcualte boundary in Column for FOV used for image patch
+	// pImage and word ROI: input, patch image and its ROi in world space
+	// iLeft and iRight: patch image and its location in CAD
+	// pdPatchGridYBoundary: grid boundary for image patch
+	// iStartCam and iEndCam: cameras range
+	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
+	// piPixelColBoundary: ouput, boundary in column for FOV used for image patch
+	void MosaicLayer::CalPatchFOVColumnBoundary(
+		Image* pImage, 
+		DRect worldRoi,
+		unsigned int iLeft,
+		unsigned int iRight,
+		const double* pdPatchGridYBoundary,
+		int iStartCam,
+		int iEndCam,
+		FOVPreferSelected* pPreferSelectedFov,
+		int* piPixelColBoundary)
+	{
+		int iCamCount = iEndCam - iStartCam + 1;
+
 		// If more than 2 cameras are covered
 		if(iCamCount > 2)
 		{
@@ -907,6 +851,121 @@ namespace MosaicDM
 			piPixelColBoundary[0] = iLeft;
 			piPixelColBoundary[1] = iRight+1;
 		}
+	}
+
+	// Get a morphed image patch
+	// pBuf: inout, the buffer hold the patch, memeory is allocated before pass in
+	// iPixelSpan: buffer's span in pixel
+	// iStartCol, iWidth, iStartRow and iHeight: Roi in pixel of CAD space
+	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
+	bool MosaicLayer::GetImagePatch(
+		unsigned char* pBuf,
+		unsigned int iPixelSpan,
+		unsigned int iStartRowInCad,
+		unsigned int iStartColInCad,
+		unsigned int iRows,
+		unsigned int iCols,
+		FOVPreferSelected* pPreferSelectedFov)
+	{
+		// Create image
+		Image* pImage;
+		if(GetMosaicSet()->IsBayerPattern())
+		{
+			pImage = new ColorImage(BGR, false);
+		}
+		else
+		{
+			pImage = new Image();
+		}
+
+		double dRes = GetMosaicSet()->GetNominalPixelSizeX();
+		ImgTransform inputTransform;
+		inputTransform.Config(dRes, dRes, 0, dRes*iStartRowInCad, dRes*iStartColInCad);	
+		pImage->Configure(iCols, iRows, iPixelSpan, inputTransform, inputTransform, false, pBuf);
+
+		bool bFlag = GetImagePatch(
+			pImage, 
+			0,
+			iCols-1,
+			0,
+			iRows-1,
+			pPreferSelectedFov);
+
+		delete pImage;
+		return(bFlag);
+	}
+
+	// Get a morphed image patch
+	// pImage: inout, the image hold the patch, memeory is allocated before pass in
+	// iLeft, iRight, iTop and iBottom: Roi in pixel of pImage
+	// pPreferSelectedFov: inout, the prefer Fovs and selected Fovs 
+	bool MosaicLayer::GetImagePatch(
+		Image* pImage, 
+		unsigned int iLeft,
+		unsigned int iRight,
+		unsigned int iTop,
+		unsigned int iBottom,
+		FOVPreferSelected* pPreferSelectedFov)
+	{
+		// valication check
+		if(pImage == NULL) 
+			return(false);
+
+		if(iLeft>iRight || iTop>iBottom)
+			return(false);
+
+		int iChannels = pImage->GetBytesPerPixel();
+		if(!GetMosaicSet()->IsBayerPattern())
+		{
+			if(iChannels != 1)
+				return(false);
+		}
+		else
+		{
+			if(iChannels != 3)
+				return(false);
+		}
+
+	// Calculate trig range and camera range for morph
+		// ROI in world
+		DRect worldRoi;
+		pImage->ImageToWorld(iTop, iLeft, &worldRoi.xMin, &worldRoi.yMin);
+		pImage->ImageToWorld(iBottom, iRight, &worldRoi.xMax, &worldRoi.yMax);
+
+		double *pdPatchGridXBoundary = new double[2*_numTriggers];
+		double *pdPatchGridYBoundary = new double[2*_numCameras];
+
+		int iStartInvTrig, iEndInvTrig, iStartCam, iEndCam;
+		CalculateFOVsForImagePatch(
+			worldRoi, true,
+			&iStartInvTrig, &iEndInvTrig,
+			&iStartCam, &iEndCam,
+			pdPatchGridXBoundary, pdPatchGridYBoundary);
+		
+	// Calcuatle ROI of output image for each FOV that may be used 
+		int iInvTrigCount = iEndInvTrig - iStartInvTrig + 1;
+		int iCamCount = iEndCam - iStartCam + 1;
+
+		int* piPixelRowBoundary = new int[iInvTrigCount+1]; // Contain start Rows
+		int* piPixelColBoundary = new int[iCamCount+1];		// contain start Cols
+
+		// For Row boundarys of FOVs
+		CalPatchFOVRowBoundary(
+			pImage, worldRoi,
+			iTop, iBottom,
+			pdPatchGridXBoundary,
+			iStartInvTrig,	iEndInvTrig,
+			pPreferSelectedFov,
+			piPixelRowBoundary);
+
+		// For Column boundarys of FOVs
+		CalPatchFOVColumnBoundary(
+			pImage, worldRoi,
+			iLeft, iRight,
+			pdPatchGridYBoundary,
+			iStartCam, iEndCam,
+			pPreferSelectedFov,
+			piPixelColBoundary);
 
 		// Create height image
 		Image* pHeightImage = NULL;
@@ -953,6 +1012,9 @@ namespace MosaicDM
 
 		delete [] piPixelRowBoundary;
 		delete [] piPixelColBoundary;
+
+		delete [] pdPatchGridXBoundary;
+		delete [] pdPatchGridYBoundary;
 
 		if(pHeightImage !=NULL)
 			delete pHeightImage; 

@@ -178,6 +178,28 @@ namespace MosaicDM
 				int* piStartInvTrig, int* piEndInvTrig,
 				int* piStartCam, int* piEndCam,
 				double* pdPatchGridXBoundary, double* pdPatchGridYBoundary);
+			
+			void CalPatchFOVRowBoundary(
+				Image* pImage, 
+				DRect worldRoi,
+				unsigned int iTop,
+				unsigned int iBottom,
+				const double* pdPatchGridXBoundary,
+				int iStartInvTrig,
+				int iEndInvTrig,
+				FOVPreferSelected* pPreferSelectedFov,
+				int* piPixelRowBoundary);
+
+			void CalPatchFOVColumnBoundary(
+				Image* pImage, 
+				DRect worldRoi,
+				unsigned int iLeft,
+				unsigned int iRight,
+				const double* pdPatchGridYBoundary,
+				int iStartCam,
+				int iEndCam,
+				FOVPreferSelected* pPreferSelectedFov,
+				int* piPixelColBoundary);
 
 			///
 			///	Adds an image...
