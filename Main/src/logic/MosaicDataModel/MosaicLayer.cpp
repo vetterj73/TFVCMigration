@@ -9,6 +9,9 @@
 using namespace CyberJob;
 namespace MosaicDM 
 {
+
+#pragma region  Constructor
+
 	MosaicLayer::MosaicLayer()
 	{
 		_pMosaicSet = NULL;
@@ -65,16 +68,6 @@ namespace MosaicDM
 			delete _pGreyStitchedImage;
 	}
 
-	unsigned int MosaicLayer::Index()
-	{
-		return _layerIndex;
-	}
-
-	unsigned int MosaicLayer::DeviceIndex()
-	{
-		return _deviceIndex;
-	}
-
 	void MosaicLayer::Initialize(
 		MosaicSet *pMosaicSet, 
         unsigned int numCameras,
@@ -114,8 +107,27 @@ namespace MosaicDM
 			_maskImages[i].Configure(_pMosaicSet->GetImageWidthInPixels(), 
 				_pMosaicSet->GetImageHeightInPixels(), _pMosaicSet->GetImageStrideInPixels(), 
 				false);
-
 		}
+	}
+
+#pragma endregion 
+
+#pragma  region Create stitched image 
+
+	// Set information for component height
+	void MosaicLayer::SetComponentHeightInfo(				
+		unsigned char* pHeightBuf,		// Component height image buf
+		unsigned int iHeightSpan,		// Component height image span
+		double dHeightResolution,		// Height resolution in grey level (meter/grey level)
+		double dPupilDistance)			// SIM pupil distance (meter))
+	{
+		if(_pHeightInfo == NULL)
+			_pHeightInfo = new ComponentHeightInfo();
+
+		_pHeightInfo->pHeightBuf = pHeightBuf;
+		_pHeightInfo->iHeightSpan = iHeightSpan;
+		_pHeightInfo->dHeightResolution = dHeightResolution;
+		_pHeightInfo->dPupilDistance = dPupilDistance;
 	}
 
 	void MosaicLayer::SetStitchedBuffer(unsigned char *pBuffer)
@@ -150,6 +162,34 @@ namespace MosaicDM
 		unsigned int iNumCols = _pMosaicSet->GetObjectLengthInPixels();
 
 		_pStitchedImage->Configure(iNumCols, iNumRows, iNumCols, inputTransform, inputTransform, true);
+	}
+
+	// Camera centers in Y of world space
+	void MosaicLayer::CameraCentersInY(double* pdCenY)
+	{
+		for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
+		{
+			pdCenY[iCam] = 0;
+			for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
+			{
+				pdCenY[iCam] += GetTile(iCam, iTrig)->GetImagPtr()->CenterY();
+			}
+			pdCenY[iCam] /= GetNumberOfTriggers();
+		}
+	}
+
+	// Trigger centesr in  X of world space 
+	void MosaicLayer::TriggerCentersInX(double* pdCenX)
+	{
+		for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
+		{
+			pdCenX[iTrig] = 0;
+			for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
+			{
+				pdCenX[iTrig] += GetTile(iCam, iTrig)->GetImagPtr()->CenterX();
+			}
+			pdCenX[iTrig] /= GetNumberOfCameras();
+		}
 	}
 
 	// Calculate grid for stitching image
@@ -283,6 +323,9 @@ namespace MosaicDM
 		_pMosaicSet->FireLogEntry(LogTypeDiagnostic, "Layer#%d: End Creating stitched image %s", _layerIndex, _pHeightInfo==NULL?"":"With Height"); 
 	}
 
+#pragma endregion
+
+#pragma region image patch 
 	// Calculate grid boundarys
 	// Fovs are organize into grid group 
 	bool MosaicLayer::CalculateGridBoundary()
@@ -837,6 +880,10 @@ namespace MosaicDM
 		return(true);
 	}
 
+#pragma endregion
+
+#pragma region FOV  and mask related
+
 	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
 	{
 		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())
@@ -902,35 +949,6 @@ namespace MosaicDM
 		return pTile->SetYCrCbImageBuffer(pBuffer);
 	}
 
-	// Camera centers in Y of world space
-	void MosaicLayer::CameraCentersInY(double* pdCenY)
-	{
-		for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
-		{
-			pdCenY[iCam] = 0;
-			for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
-			{
-				pdCenY[iCam] += GetTile(iCam, iTrig)->GetImagPtr()->CenterY();
-			}
-			pdCenY[iCam] /= GetNumberOfTriggers();
-		}
-	}
-
-	// Trigger centesr in  X of world space 
-	void MosaicLayer::TriggerCentersInX(double* pdCenX)
-	{
-		for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
-		{
-			pdCenX[iTrig] = 0;
-			for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
-			{
-				pdCenX[iTrig] += GetTile(iCam, iTrig)->GetImagPtr()->CenterX();
-			}
-			pdCenX[iTrig] /= GetNumberOfCameras();
-		}
-
-	}
-
 	// Prepare Mask images to use (validate mask images)
 	bool MosaicLayer::PrepareMaskImages()
 	{
@@ -960,21 +978,10 @@ namespace MosaicDM
 		return(&_maskImages[iPos]);
 	}
 
-	// Set information for component height
-	void MosaicLayer::SetComponentHeightInfo(				
-		unsigned char* pHeightBuf,		// Component height image buf
-		unsigned int iHeightSpan,		// Component height image span
-		double dHeightResolution,		// Height resolution in grey level (meter/grey level)
-		double dPupilDistance)			// SIM pupil distance (meter))
-	{
-		if(_pHeightInfo == NULL)
-			_pHeightInfo = new ComponentHeightInfo();
+#pragma endregion
 
-		_pHeightInfo->pHeightBuf = pHeightBuf;
-		_pHeightInfo->iHeightSpan = iHeightSpan;
-		_pHeightInfo->dHeightResolution = dHeightResolution;
-		_pHeightInfo->dPupilDistance = dPupilDistance;
-	}
+
+#pragma region debug
 
 	// for debug
 	Image* MosaicLayer::GetGreyStitchedImage(bool bRecreate)
@@ -998,4 +1005,6 @@ namespace MosaicDM
 		_bXShift = bValue;
 		_stitchedImageValid = false; // next stitch image need recalcualte
 	};
+
+#pragma endregion
 }

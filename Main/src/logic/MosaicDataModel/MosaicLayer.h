@@ -56,14 +56,7 @@ namespace MosaicDM
 			friend class MosaicSet;
 			friend class DemosaicJob;
 
-			///
-			///	Constructor
-			///
 			MosaicLayer();
-
-			///
-			///	Destructor
-			///
 			~MosaicLayer(void);
 
 			///
@@ -88,8 +81,8 @@ namespace MosaicDM
 			///
 			bool HasAllImages();
 
-			unsigned int Index();
-			unsigned int DeviceIndex();
+			unsigned int Index() {return _layerIndex;};
+			unsigned int DeviceIndex() 	{return _deviceIndex;};
 
 			///
 			///	Gets the set this layer belongs to
