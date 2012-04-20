@@ -174,6 +174,9 @@ namespace MosaicDM
 				double* pdGridXBoundary, double* pdGridYBoundary);
 
 			void CalculateFOVsForImagePatch(
+				Image* pImage,	
+				int iLeft, int iRight,
+				int iTop, int iBottom,
 				DRect worldRoi, bool bAjustForHeight,
 				int* piStartInvTrig, int* piEndInvTrig,
 				int* piStartCam, int* piEndCam,
