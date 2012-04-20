@@ -51,8 +51,6 @@ namespace SIMCalibrator
         private bool _bRtoL = false;
         private bool _bFRR = false;
         private bool _bEncoder = false;
-        private bool _bEncoderPolarity = false;
-        private int _iEncoderResolution = 0;
         /// <summary>
         /// Fired after images are acquired and calibration is verified.
         /// </summary>
@@ -71,7 +69,7 @@ namespace SIMCalibrator
         /// <param name="loggingOn"></param>
         /// <param name="isColor"></param>
         public PositionCalibrator(CPanel panel, ManagedSIMDevice device, bool bSimulating,
-            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor, bool bRtoL, bool bFRR, bool bEncoder, bool bEncoderPolarity, int iEncoderResolution)
+            double fiducialSearchSizeXInMeters, double fiducialSearchSizeYInMeters, bool loggingOn, bool isColor, bool bRtoL, bool bFRR, bool bEncoder)
         {
             if (panel == null)
                 throw new ApplicationException("The input panel is null!");
@@ -83,8 +81,6 @@ namespace SIMCalibrator
             _bRtoL = bRtoL;
             _bFRR = bFRR;
             _bEncoder = bEncoder;
-            _bEncoderPolarity = bEncoderPolarity;
-            _iEncoderResolution = iEncoderResolution;
             // Events fired for images.
             ManagedSIMDevice.OnFrameDone += FrameDone;
             ManagedSIMDevice.OnAcquisitionDone += AcquisitionDone;
@@ -250,8 +246,8 @@ namespace SIMCalibrator
 
             else
             {
-                _beginningVelocity = 1/(_device.EncoderResolution);
-                _device.EncoderResolution = (int)Math.Round(1 / (_beginningVelocity + GetVelocityOffsetInMetersPerTick())); 
+                _beginningVelocity = 1.0/_device.EncoderResolution;
+                _device.EncoderResolution = (int)Math.Round(1.0 / (_beginningVelocity + GetVelocityOffsetInMetersPerTick())); 
             }
                   
             // Update the X if velocity is in tolerance...
@@ -340,12 +336,7 @@ namespace SIMCalibrator
                 _device.ConveyorRtoL = _bRtoL;
                 _device.FixedRearRail = _bFRR;
                 _device.EncoderEnable = _bEncoder;
-                if (_device.EncoderEnable)
-                {
-                    _device.EncoderResolution = _iEncoderResolution;
-                    _device.EncoderPolarity = _bEncoderPolarity;
-                }
-
+                
                 ManagedSIMCaptureSpec cs1 = _device.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                 if (cs1 == null)
                 {
