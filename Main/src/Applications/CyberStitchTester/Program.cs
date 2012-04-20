@@ -51,7 +51,7 @@ namespace CyberStitchTester
             bool bOwnBuffers = false;
             bool bMaskForDiffDevices = false;
             bool bAdjustForHeight = true;
-            bool bUseProjective = false;
+            bool bUseProjective = true;
             bool bUseCameraModel = false;
             bool bUseIterativeCameraModel = false;
             

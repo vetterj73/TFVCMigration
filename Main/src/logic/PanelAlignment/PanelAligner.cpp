@@ -8,10 +8,79 @@
 #include <direct.h> //_mkdir
 #include "EquationWeights.h"
 
+
+#pragma region Constructor/Initialization/Call back
+
 void ImageAdded(int layerIndex, int cameraIndex, int triggerIndex, void* context)
 {
 	PanelAligner *pPanelAlign = (PanelAligner *)context;
 	pPanelAlign->ImageAddedToMosaicCallback(layerIndex, triggerIndex, cameraIndex);
+}
+
+void PanelAligner::RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext)
+{
+	_registeredAlignmentDoneCallback = pCallback;
+	_pCallbackContext = pContext;
+}
+
+void PanelAligner::UnregisterAlignmentDoneCallback()
+{
+	_registeredAlignmentDoneCallback = NULL;
+	_pCallbackContext = NULL;
+}
+
+void PanelAligner::FireAlignmentDone(bool status)
+{
+	if(_registeredAlignmentDoneCallback != NULL)
+		_registeredAlignmentDoneCallback(status);
+}
+
+// Add single image (single entry protected by mutex)
+bool PanelAligner::ImageAddedToMosaicCallback(
+	unsigned int iLayerIndex, 
+	unsigned int iTrigIndex, 
+	unsigned int iCamIndex)
+{
+	// The image is suppose to enter one by one
+	WaitForSingleObject(_queueMutex, INFINITE);
+
+	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
+
+	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
+	
+	// Release mutex
+	ReleaseMutex(_queueMutex);
+	
+	// Masks are created after the first layer is aligned...
+	// The assumption being that masks are not needed for the first set...
+	if(_iMaskCreationStage>0 && !_bMasksCreated)
+	{
+		if(iTrigIndex == 9 && iCamIndex == 5)
+			iTrigIndex = 9;
+		// Wait all current overlap jobs done, then create mask
+		if(IsReadyToCreateMasks())
+		{
+			if(_pOverlapManager->FinishOverlaps())
+			{
+				if(CreateMasks())
+					_bMasksCreated= true;
+				else
+				{
+					//log fatal error
+				}
+			}
+		}
+	}
+
+	// If we are all done with alignment, create the transforms...
+	if(_pSet->HasAllImages() && _pOverlapManager->FinishOverlaps())
+	{
+		CreateTransforms();
+
+		FireAlignmentDone(true);
+	}
+
+	return(true);
 }
 
 PanelAligner::PanelAligner(void)
@@ -158,6 +227,11 @@ void PanelAligner::ResetForNextPanel()
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
 }
 
+#pragma endregion
+
+
+#pragma region parameters set/get
+
 void PanelAligner::LogFiducialOverlaps(bool bLog)
 {
 	CorrelationParametersInst.bSaveFiducialOverlaps = bLog;
@@ -232,76 +306,15 @@ void PanelAligner::SetPanelEdgeDetection(
 	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
 }
 
-void PanelAligner::RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext)
-{
-	_registeredAlignmentDoneCallback = pCallback;
-	_pCallbackContext = pContext;
-}
-
-void PanelAligner::UnregisterAlignmentDoneCallback()
-{
-	_registeredAlignmentDoneCallback = NULL;
-	_pCallbackContext = NULL;
-}
-
-void PanelAligner::FireAlignmentDone(bool status)
-{
-	if(_registeredAlignmentDoneCallback != NULL)
-		_registeredAlignmentDoneCallback(status);
-}
 
 void PanelAligner::SetCalibrationWeight(double dValue)
 {
 	EquationWeights::Instance().SetCalibrationScale(dValue);
 }
 
-// Add single image (single entry protected by mutex)
-bool PanelAligner::ImageAddedToMosaicCallback(
-	unsigned int iLayerIndex, 
-	unsigned int iTrigIndex, 
-	unsigned int iCamIndex)
-{
-	// The image is suppose to enter one by one
-	WaitForSingleObject(_queueMutex, INFINITE);
+#pragma endregion
 
-	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
-
-	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
-	
-	// Release mutex
-	ReleaseMutex(_queueMutex);
-	
-	// Masks are created after the first layer is aligned...
-	// The assumption being that masks are not needed for the first set...
-	if(_iMaskCreationStage>0 && !_bMasksCreated)
-	{
-		if(iTrigIndex == 9 && iCamIndex == 5)
-			iTrigIndex = 9;
-		// Wait all current overlap jobs done, then create mask
-		if(IsReadyToCreateMasks())
-		{
-			if(_pOverlapManager->FinishOverlaps())
-			{
-				if(CreateMasks())
-					_bMasksCreated= true;
-				else
-				{
-					//log fatal error
-				}
-			}
-		}
-	}
-
-	// If we are all done with alignment, create the transforms...
-	if(_pSet->HasAllImages() && _pOverlapManager->FinishOverlaps())
-	{
-		CreateTransforms();
-
-		FireAlignmentDone(true);
-	}
-
-	return(true);
-}
+#pragma region create transforms
 
 // Flag for create Masks
 bool PanelAligner::IsReadyToCreateMasks() const
@@ -605,8 +618,8 @@ bool PanelAligner::CreateTransforms()
 	_bResultsReady = true;
 
 	// for debug
-	// TestGetImagePatch();
-	// TestSingleImagePatch();
+	//TestGetImagePatch();
+	//TestSingleImagePatch();
 
 	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
@@ -787,52 +800,6 @@ bool PanelAligner::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderM
 	return(bFlag);
 }
 
-bool PanelAligner::Save3ChannelImage(string filePath,
-	unsigned char *pChannel1, unsigned char* pChannel2,	unsigned char* pChannel3, 
-	int numColumns, int numRows)
-{
-	Bitmap *rbg = Bitmap::New3ChannelBitmap( 
-		numRows, 
-		numColumns, 
-		pChannel1,
-		pChannel2,
-		pChannel3,
-		numColumns,
-		numColumns,
-		numColumns);
-
-	if(rbg == NULL)
-		return false;
-
-	rbg->write(filePath);
-	delete rbg;
-	return true;
-}
-
-bool PanelAligner::Save3ChannelImage(string filePath,
-	unsigned char *pChannel1, int iSpan1,
-	unsigned char* pChannel2, int iSpan2,
-	unsigned char* pChannel3, int iSpan3,
-	int numColumns, int numRows)
-{
-	Bitmap *rbg = Bitmap::New3ChannelBitmap( 
-		numRows, 
-		numColumns, 
-		pChannel1,
-		pChannel2,
-		pChannel3,
-		iSpan1,
-		iSpan2,
-		iSpan3);
-
-	if(rbg == NULL)
-		return false;
-
-	rbg->write(filePath);
-	delete rbg;
-	return true;
-}
-
 // Check fiducial alignment based on SIM calibration
 int PanelAligner::FiducialAlignmentCheckOnCalibration()
 {
@@ -907,7 +874,57 @@ bool PanelAligner::PickOneAlign4EachPanelFiducial()
 	return(true);
 }
 
+#pragma endregion
+
+#pragma region debug
+
 // For debug
+bool PanelAligner::Save3ChannelImage(string filePath,
+	unsigned char *pChannel1, unsigned char* pChannel2,	unsigned char* pChannel3, 
+	int numColumns, int numRows)
+{
+	Bitmap *rbg = Bitmap::New3ChannelBitmap( 
+		numRows, 
+		numColumns, 
+		pChannel1,
+		pChannel2,
+		pChannel3,
+		numColumns,
+		numColumns,
+		numColumns);
+
+	if(rbg == NULL)
+		return false;
+
+	rbg->write(filePath);
+	delete rbg;
+	return true;
+}
+
+bool PanelAligner::Save3ChannelImage(string filePath,
+	unsigned char *pChannel1, int iSpan1,
+	unsigned char* pChannel2, int iSpan2,
+	unsigned char* pChannel3, int iSpan3,
+	int numColumns, int numRows)
+{
+	Bitmap *rbg = Bitmap::New3ChannelBitmap( 
+		numRows, 
+		numColumns, 
+		pChannel1,
+		pChannel2,
+		pChannel3,
+		iSpan1,
+		iSpan2,
+		iSpan3);
+
+	if(rbg == NULL)
+		return false;
+
+	rbg->write(filePath);
+	delete rbg;
+	return true;
+}
+
 void PanelAligner::DisturbFiducialAlignment()
 {
 	unsigned int iNumIllums = _pSet->GetNumMosaicLayers();
@@ -939,12 +956,12 @@ void PanelAligner::DisturbFiducialAlignment()
 
 void PanelAligner::TestGetImagePatch()
 {
-	int iLayerIndex = 2;
+	int iLayerIndex = 3;
 	double dRes = _pSet->GetNominalPixelSizeX();
 
 	MosaicDM::FOVPreferSelected setFov;
 	//setFov.preferLR = MosaicDM::MosaicLayer::RIGHTFOV;
-	setFov.preferTB = MosaicDM::BOTTOMFOV;
+	//setFov.preferTB = MosaicDM::BOTTOMFOV;
 
 	// Modify color for different FOV for debug purpose
 	if(_pSet->IsBayerPattern())
@@ -1090,6 +1107,10 @@ void PanelAligner::TestSingleImagePatch()
 	delete pImg;
 }
 
+#pragma endregion
+
+
+#pragma region FiducailResultCheck class
 
 ///////////////////////////////////////////////////////
 //	FiducialResultCheck Class
@@ -1367,3 +1388,5 @@ int FiducialResultCheck::CheckFiducialResults()
 	else
 		return(1);
 }
+
+#pragma endregion
