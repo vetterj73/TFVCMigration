@@ -431,10 +431,10 @@ namespace MosaicDM
 		if(bAjustForHeight && _pHeightInfo != 0)
 		{
 			double dRes = GetMosaicSet()->GetNominalPixelSizeX();
-			int iStartRowInCad = (int)(pImage->GetTransform().GetItem(2)/dRes +0.5)+iLeft;
-			int iStartColInCad = (int)(pImage->GetTransform().GetItem(5)/dRes +0.5)+iTop;	
-			int iRows = iBottom - iTop +1;
-			int iCols = iRight - iLeft +1;
+			int iStartRowInCad = (int)(pImage->GetTransform().GetItem(2)/dRes + 0.5) + iLeft;
+			int iStartColInCad = (int)(pImage->GetTransform().GetItem(5)/dRes + 0.5) + iTop;	
+			int iRows = iBottom - iTop + 1;
+			int iCols = iRight - iLeft + 1;
 
 			int iMax = 0;
 			unsigned char* pLine = _pHeightInfo->pHeightBuf + _pHeightInfo->iHeightSpan*iStartRowInCad + iStartColInCad;
@@ -443,15 +443,17 @@ namespace MosaicDM
 				for(int ix = 0; ix < iCols; ix++)
 				{
 					if (iMax <(int)pLine[ix])
-						iMax = pLine[ix];
+						iMax = (int)pLine[ix];
 				}
 				pLine += _pHeightInfo->iHeightSpan;
 			}
 
 			double dMaxHeight = iMax * _pHeightInfo->dHeightResolution;
 			double dScale = 1.2;
-			dMaxHeightShiftX = dMaxHeight/_pHeightInfo->dPupilDistance*3.3e-2/2*dScale;
-			dMaxHeightShiftY = dMaxHeight/_pHeightInfo->dPupilDistance*4.4e-2/2*dScale;
+			double dFovInX = 3.3e-2;
+			double dFovInY = 4.4e-2;
+			dMaxHeightShiftX = dMaxHeight/_pHeightInfo->dPupilDistance * dFovInX/2 * dScale;
+			dMaxHeightShiftY = dMaxHeight/_pHeightInfo->dPupilDistance* dFovInY/2 * dScale;
 		}
 
 		// Grid boundary for whole panel, adjusted by height
@@ -464,7 +466,7 @@ namespace MosaicDM
 			{
 				if(pdPatchGridXBoundary[2*i-1] < pdPatchGridXBoundary[2*i])
 				{
-					double dHalf = (pdPatchGridXBoundary[2*i-1]+pdPatchGridXBoundary[2*i])/2;
+					double dHalf = (pdPatchGridXBoundary[2*i-1] + pdPatchGridXBoundary[2*i])/2;
 					pdPatchGridXBoundary[2*i-1] = dHalf;
 					pdPatchGridXBoundary[2*i] = dHalf;
 				}
@@ -480,7 +482,7 @@ namespace MosaicDM
 			{
 				if(pdPatchGridYBoundary[2*i-1] < pdPatchGridYBoundary[2*i])
 				{
-					double dHalf = (pdPatchGridYBoundary[2*i-1]+pdPatchGridYBoundary[2*i])/2;
+					double dHalf = (pdPatchGridYBoundary[2*i-1] + pdPatchGridYBoundary[2*i])/2;
 					pdPatchGridYBoundary[2*i-1] = dHalf;
 					pdPatchGridYBoundary[2*i] = dHalf;
 				}
@@ -575,7 +577,6 @@ namespace MosaicDM
 			}
 		}
 
-
 		// Grid boundary for selected triggers and cameras only
 		CalculateGridBoundary(
 			iStartInvTrig, iEndInvTrig,
@@ -583,19 +584,23 @@ namespace MosaicDM
 			pdPatchGridXBoundary + iStartInvTrig*2, 
 			pdPatchGridYBoundary + iStartCam*2);
 
-		// Adjust grid bounsary by height
-		for(int i=iStartInvTrig; i<=iEndInvTrig; i++)
+		// Adjust grid boundary by height
+		if(dMaxHeightShiftX>0)
 		{
-			pdPatchGridXBoundary[2*i] += dMaxHeightShiftX; 
-			pdPatchGridXBoundary[2*i+1] -= dMaxHeightShiftX; 
-			// Make sure adjacent FOV boundary has overlap
-			if(i>iStartInvTrig)
+			for(int i=iStartInvTrig; i<=iEndInvTrig; i++)
 			{
-				if(pdPatchGridXBoundary[2*i-1] < pdPatchGridXBoundary[2*i])
+				pdPatchGridXBoundary[2*i] += dMaxHeightShiftX; 
+				pdPatchGridXBoundary[2*i+1] -= dMaxHeightShiftX; 
+				// Make sure adjacent FOV boundary has overlap
+				if(i>iStartInvTrig)
 				{
-					double dHalf = (pdPatchGridXBoundary[2*i-1]+pdPatchGridXBoundary[2*i])/2;
-					pdPatchGridXBoundary[2*i-1] = dHalf;
-					pdPatchGridXBoundary[2*i] = dHalf;
+					if(pdPatchGridXBoundary[2*i-1] < pdPatchGridXBoundary[2*i])
+					{
+						// Should never reach here
+						double dHalf = (pdPatchGridXBoundary[2*i-1] + pdPatchGridXBoundary[2*i])/2;
+						pdPatchGridXBoundary[2*i-1] = dHalf;
+						pdPatchGridXBoundary[2*i] = dHalf;
+					}
 				}
 			}
 		}
@@ -609,7 +614,8 @@ namespace MosaicDM
 			{
 				if(pdPatchGridYBoundary[2*i-1] < pdPatchGridYBoundary[2*i])
 				{
-					double dHalf = (pdPatchGridYBoundary[2*i-1]+pdPatchGridYBoundary[2*i])/2;
+					// Should never reach here
+					double dHalf = (pdPatchGridYBoundary[2*i-1] + pdPatchGridYBoundary[2*i])/2;
 					pdPatchGridYBoundary[2*i-1] = dHalf;
 					pdPatchGridYBoundary[2*i] = dHalf;
 				}
