@@ -507,7 +507,7 @@ bool PanelAligner::CreateTransforms()
 			// Reset solver
 			_pSolver->Reset();
 
-			//* for debug
+			/* for debug
 				// Get shift 100 pixel stitched image
 			pLayer = _pSet->GetLayer(0);
 			pLayer->SetXShift(true);
