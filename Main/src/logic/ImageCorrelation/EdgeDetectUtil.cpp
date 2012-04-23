@@ -111,6 +111,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	// Hough transform
 	CvMemStorage* storage = cvCreateMemStorage(0);
 	CvSeq* lines = 0;
+	// Pick potential candidate hough line
 	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width/ptParam->iDecim);
 	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
 	
@@ -163,6 +164,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	// No leading ede is detected
 	if(iSelectIndex == -1)
 	{
+		ptParam->iFlag = -10;
 		return(false);
 	}
 
