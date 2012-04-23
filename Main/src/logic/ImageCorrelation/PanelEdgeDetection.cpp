@@ -327,7 +327,7 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	{
 		*pdSlope = _leftFovParam.dSlope;   // delta_x/delta_Y
 		double dAngle = atan(*pdSlope); 
-		*pdLeftXOffset = _leftFovParam.dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
+		*pdLeftXOffset = -_leftFovParam.dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdLeftXOffset += _panelRoi.xMax;
 		return(LEFTONLYVALID);
@@ -338,7 +338,7 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	{
 		*pdSlope = _rightFovParam.dSlope;   // delta_x/delta_Y
 		double dAngle = atan(*pdSlope); 
-		*pdRightXOffset = _rightFovParam.dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
+		*pdRightXOffset = -_rightFovParam.dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdRightXOffset += _panelRoi.xMax;
 		return(RIGHTONLYVALID);
