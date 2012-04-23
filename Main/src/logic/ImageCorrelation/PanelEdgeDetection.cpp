@@ -38,7 +38,7 @@ bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* p
 {
 	Image* pProcImage = new Image(*pImage);
 	IplImage* pCvImage =NULL;
-	// If this is color image and (not YCrCb or seperatly stored channel
+	// If this is color image and (not YCrCb or seperatly stored channel)
 	if(pImage->GetBytesPerPixel() > 1 && 
 		(!((ColorImage*)pImage)->IsChannelStoredSeperate() || ((ColorImage*)pImage)->GetColorStyle() != YCrCb ))
 	{
@@ -70,7 +70,14 @@ bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* p
 	pt2.x = 2500;
 	pt2.y = pt1.y +dSlope*pt2.x;
 	cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
-	cvSaveImage("C:\\Temp\\edgeImage.png", pCvImage);
+	if(ptParam->iLeft >10)
+	{
+		cvSaveImage("C:\\Temp\\edgeImage_left.png", pCvImage);
+	}
+	else
+	{
+		cvSaveImage("C:\\Temp\\edgeImage_right.png", pCvImage);
+	}
 	//*/
 	
 	cvReleaseImageHeader(&pCvImage);

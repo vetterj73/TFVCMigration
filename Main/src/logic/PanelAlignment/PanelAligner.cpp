@@ -513,17 +513,18 @@ bool PanelAligner::CreateTransforms()
 				// Get shift 100 pixel stitched image
 			pLayer = _pSet->GetLayer(0);
 			pLayer->SetXShift(true);
-			Image* pTempImage = pLayer->GetGreyStitchedImage();
+			Image* pTempImage = pLayer->GetGreyStitchedImage(); // For shifted stitched image
 			pLayer->SetXShift(false);
 			// Draw a 3-pixel width white line to represent leading edge
 			unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
 			::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
 
+				// Get shift 100 pixel Cad image
 			unsigned int iNumRows = _pPanel->GetNumPixelsInX();
 			unsigned int iNumCols = _pPanel->GetNumPixelsInY();
 			unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
 			ImgTransform trans;
-			Image tempImage2;
+			Image tempImage2;	// For shifted Cad image
 			tempImage2.Configure(iNumCols, iNumRows, iNumCols, 
 				trans, trans, true);
 			::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
