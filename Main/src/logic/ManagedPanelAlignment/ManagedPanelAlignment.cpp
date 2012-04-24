@@ -147,6 +147,11 @@ namespace PanelAlignM {
 		_pAligner->LogTransformVectors(bLog);
 	}
 
+	void ManagedPanelAlignment::LogPanelEdgeDebugImages(bool bLog)
+	{
+		_pAligner->LogPanelEdgeDebugImages(bLog);
+	}
+
 	void ManagedPanelAlignment::FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
 	{
 		_pAligner->FiducialSearchExpansionXInMeters(fidSearchXInMeters);

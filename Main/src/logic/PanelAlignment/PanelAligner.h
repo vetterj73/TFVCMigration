@@ -53,6 +53,7 @@ public:
 	void LogFiducialOverlaps(bool bLog);
 	void LogOverlaps(bool bLog);
 	void LogTransformVectors(bool bLog);
+	void LogPanelEdgeDebugImages(bool bLog);
 	void NumThreads(unsigned int numThreads);
 	void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
 	void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);

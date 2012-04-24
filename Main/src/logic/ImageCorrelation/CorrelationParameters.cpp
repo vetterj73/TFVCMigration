@@ -92,6 +92,7 @@ CorrelationParameters::CorrelationParameters(void)
 	bSaveFiducialOverlaps = false;
 	bSaveOverlaps = false;
 	bSaveTransformVectors = false;
+	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";
 }

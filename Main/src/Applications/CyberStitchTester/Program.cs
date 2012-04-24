@@ -126,6 +126,7 @@ namespace CyberStitchTester
                 //_aligner.LogOverlaps(true);
                 //_aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
+                //_aligner.LogPanelEdgeDebugImages(true);
                 _aligner.UseProjectiveTransform(bUseProjective);
                 if (bUseCameraModel)
                 {

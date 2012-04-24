@@ -61,24 +61,27 @@ bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* p
 
 	bool bFlag = ::FindLeadingEdge(pCvImage, ptParam);
 
-	/* For debug
-	float dSlope = ptParam->dSlope;
-	float dStartRow = ptParam->dStartRow;
-	CvPoint pt1, pt2;
-	pt1.x = 0;
-	pt1.y = dStartRow;
-	pt2.x = 2500;
-	pt2.y = pt1.y +dSlope*pt2.x;
-	cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
-	if(ptParam->iLeft >10)
+	// For debug
+	if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
 	{
-		cvSaveImage("C:\\Temp\\edgeImage_left.png", pCvImage);
+		float dSlope = ptParam->dSlope;
+		float dStartRow = ptParam->dStartRow;
+		CvPoint pt1, pt2;
+		pt1.x = 0;
+		pt1.y = dStartRow;
+		pt2.x = 2500;
+		pt2.y = pt1.y +dSlope*pt2.x;
+		cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
+		
+		char cTemp[100];
+				
+		if(ptParam->iLeft >10)
+			sprintf_s(cTemp, 100, "%sedgeImage_left.png", CorrelationParametersInst.sDiagnosticPath.c_str());		
+		else
+			sprintf_s(cTemp, 100, "%sedgeImage_right.png", CorrelationParametersInst.sDiagnosticPath.c_str());
+		
+		cvSaveImage(cTemp, pCvImage);
 	}
-	else
-	{
-		cvSaveImage("C:\\Temp\\edgeImage_right.png", pCvImage);
-	}
-	//*/
 	
 	cvReleaseImageHeader(&pCvImage);
 

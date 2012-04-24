@@ -247,6 +247,11 @@ void PanelAligner::LogTransformVectors(bool bLog)
 	CorrelationParametersInst.bSaveTransformVectors= bLog;
 }
 
+void PanelAligner::LogPanelEdgeDebugImages(bool bLog)
+{
+	CorrelationParametersInst.bSavePanelEdgeDebugImages = bLog;
+}
+
 void PanelAligner::NumThreads(unsigned int numThreads)
 {
 	CorrelationParametersInst.NumThreads = numThreads;
@@ -507,48 +512,50 @@ bool PanelAligner::CreateTransforms()
 			// Reset solver
 			_pSolver->Reset();
 
-			/* for debug
+			// for debug
+			if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
+			{
 				// Get shift 100 pixel stitched image
-			pLayer = _pSet->GetLayer(0);
-			pLayer->SetXShift(true);
-			Image* pTempImage = pLayer->GetGreyStitchedImage(); // For shifted stitched image
-			pLayer->SetXShift(false);
-			// Draw a 3-pixel width white line to represent leading edge
-			unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
-			::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
+				pLayer = _pSet->GetLayer(0);
+				pLayer->SetXShift(true);
+				Image* pTempImage = pLayer->GetGreyStitchedImage(); // For shifted stitched image
+				pLayer->SetXShift(false);
+				// Draw a 3-pixel width white line to represent leading edge
+				unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
+				::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
 
-				// Get shift 100 pixel Cad image
-			unsigned int iNumRows = _pPanel->GetNumPixelsInX();
-			unsigned int iNumCols = _pPanel->GetNumPixelsInY();
-			unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
-			ImgTransform trans;
-			Image tempImage2;	// For shifted Cad image
-			tempImage2.Configure(iNumCols, iNumRows, iNumCols, 
-				trans, trans, true);
-			::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
-			::memcpy(tempImage2.GetBuffer(), pCadBuf, iNumCols*(iNumRows-100)); 
-						// Draw a 3-pixel width white line to represent leading edge
-			pBuf = tempImage2.GetBuffer() + tempImage2.ByteRowStride()* (tempImage2.Rows()-1-100);
-			::memset(pBuf, 255, tempImage2.ByteRowStride()*3);
+					// Get shift 100 pixel Cad image
+				unsigned int iNumRows = _pPanel->GetNumPixelsInX();
+				unsigned int iNumCols = _pPanel->GetNumPixelsInY();
+				unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
+				ImgTransform trans;
+				Image tempImage2;	// For shifted Cad image
+				tempImage2.Configure(iNumCols, iNumRows, iNumCols, 
+					trans, trans, true);
+				::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
+				::memcpy(tempImage2.GetBuffer(), pCadBuf, iNumCols*(iNumRows-100)); 
+							// Draw a 3-pixel width white line to represent leading edge
+				pBuf = tempImage2.GetBuffer() + tempImage2.ByteRowStride()* (tempImage2.Rows()-1-100);
+				::memset(pBuf, 255, tempImage2.ByteRowStride()*3);
 
-			Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-				iNumRows, 
-				iNumCols,
-				pTempImage->GetBuffer(), 
-				tempImage2.GetBuffer(),
-				pTempImage->PixelRowStride(),
-				tempImage2.PixelRowStride() );
+				Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+					iNumRows, 
+					iNumCols,
+					pTempImage->GetBuffer(), 
+					tempImage2.GetBuffer(),
+					pTempImage->PixelRowStride(),
+					tempImage2.PixelRowStride() );
 
-			string sFileName;
-			char cTemp[100];
-			sprintf_s(cTemp, 100, "C:\\Temp\\StitchedEdgeImage_%d.bmp", _iPanelCount);
+				string sFileName;
+				char cTemp[100];
+				sprintf_s(cTemp, 100, "%sStitchedEdgeImage_%d.bmp", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
 		
-			sFileName.append(cTemp);
+				sFileName.append(cTemp);
 
-			rbg->write(sFileName);
+				rbg->write(sFileName);
 
-			delete rbg;
-			//*/
+				delete rbg;
+			}
 		}		
 		
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
