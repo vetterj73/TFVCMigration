@@ -22,9 +22,9 @@ struct StPanelEdgeInImage
 	double dAngleRange;			// Angle range of edge
 	
 	// Output
-	int iFlag;					// rResult flag			
-	double dStartRow;				// Line paramter base on original FOV image
-	double dSlope;
+	int iFlag;					// Result flag			
+	double dRowOffsetInColumn0;	// Row offest of line for panel edge at column 0
+	double dSlope;				// Slope of line for panel edge 
 
 	StPanelEdgeInImage()
 	{
@@ -38,7 +38,7 @@ struct StPanelEdgeInImage
 	void Reset()
 	{
 		iFlag = 0;
-		dStartRow = -1;
+		dRowOffsetInColumn0 = -1;
 		dSlope = 0;
 	}
 };

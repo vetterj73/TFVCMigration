@@ -297,6 +297,8 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	_dVectorB[_iCurrentRow] = w * dSlope;
 	_pdWeights[_iCurrentRow] = w;
 	_iCurrentRow++;
+
+	delete [] Zpoly;
 	return(true);
 }
 

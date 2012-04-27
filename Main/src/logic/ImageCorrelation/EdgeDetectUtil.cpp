@@ -202,7 +202,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	
 	// Convert for image origin (top left corner)
 	ptParam->dSlope = dSlope;
-	ptParam->dStartRow = (dOffset - ptParam->dSlope*ptParam->iLeft)*ptParam->iDecim +ptParam->iTop;
+	ptParam->dRowOffsetInColumn0 = (dOffset - ptParam->dSlope*ptParam->iLeft)*ptParam->iDecim +ptParam->iTop;
 
 	// clean up
 	cvReleaseStructuringElement(&pDilateSE);

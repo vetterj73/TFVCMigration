@@ -65,10 +65,10 @@ bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* p
 	if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
 	{
 		float dSlope = ptParam->dSlope;
-		float dStartRow = ptParam->dStartRow;
+		float dRowOffsetInColumn0 = ptParam->dRowOffsetInColumn0;
 		CvPoint pt1, pt2;
 		pt1.x = 0;
-		pt1.y = dStartRow;
+		pt1.y = dRowOffsetInColumn0;
 		pt2.x = 2500;
 		pt2.y = pt1.y +dSlope*pt2.x;
 		cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
@@ -296,7 +296,7 @@ FovPanelEdgeDetectJob* PanelEdgeDetection::GetValidJob(int iLayer, int iTrig, in
 
 // Calculate location of panel leading edge
 // pdSlope: out, the slope of leading edge (delta_x/delta_Y)
-// pdLeftXOffset and pdRightXOffset: out, the x offsets of left and right FOVs
+// pdLeftXOffset and pdRightXOffset: out, the x offsets of left and right FOVs ((0,0) pixel in image)
 // piLayer, piTrig, piLeftCam and piRightCam: out, the indics of left and right FOVs
 EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	double* pdSlope, double* pdLeftXOffset, double* pdRightXOffset,
@@ -330,7 +330,7 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	{
 		*pdSlope = _leftFovParam.dSlope;   // delta_x/delta_Y
 		double dAngle = atan(*pdSlope); 
-		*pdLeftXOffset = -_leftFovParam.dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
+		*pdLeftXOffset = -_leftFovParam.dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdLeftXOffset += _panelRoi.xMax;
 		return(LEFTONLYVALID);
@@ -341,7 +341,7 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	{
 		*pdSlope = _rightFovParam.dSlope;   // delta_x/delta_Y
 		double dAngle = atan(*pdSlope); 
-		*pdRightXOffset = -_rightFovParam.dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
+		*pdRightXOffset = -_rightFovParam.dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdRightXOffset += _panelRoi.xMax;
 		return(RIGHTONLYVALID);
@@ -355,12 +355,12 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 		// So that norminal transforms can be used in the calculation
 			// Center point of edge in FOV
 		double dLeftRoiCenCols = (_leftFovParam.iLeft + _leftFovParam.iRight)/2.0;
-		double dLeftRoiCenRows = _leftFovParam.dStartRow + _leftFovParam.dSlope*dLeftRoiCenCols;
+		double dLeftRoiCenRows = _leftFovParam.dRowOffsetInColumn0 + _leftFovParam.dSlope*dLeftRoiCenCols;
 		double dLeftCenX, dLeftCenY;
 		_pLeftFov->ImageToWorld(dLeftRoiCenRows, dLeftRoiCenCols, &dLeftCenX, &dLeftCenY); 
 
 		double dRightRoiCenCols = (_rightFovParam.iLeft + _rightFovParam.iRight)/2;
-		double dRightRoiCenRows = _rightFovParam.dStartRow + _rightFovParam.dSlope*dRightRoiCenCols;
+		double dRightRoiCenRows = _rightFovParam.dRowOffsetInColumn0 + _rightFovParam.dSlope*dRightRoiCenCols;
 		double dRightCenX, dRightCenY;
 		_pRightFov->ImageToWorld(dRightRoiCenRows, dRightRoiCenCols, &dRightCenX, &dRightCenY); 
 		
@@ -378,14 +378,14 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 		double dAngle = atan(*pdSlope); 
 
 		// Left x offset
-		double dStartRow = dLeftRoiCenRows - *pdSlope*dLeftRoiCenCols; // updated dStartRow
-		*pdLeftXOffset = -dStartRow*cos(dAngle)*_pLeftFov->PixelSizeY();
+		double dRowOffsetInColumn0 = dLeftRoiCenRows - *pdSlope*dLeftRoiCenCols; // updated dRowOffsetInColumn0
+		*pdLeftXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdLeftXOffset += _panelRoi.xMax;
 		
 		// Right x offset
-		dStartRow = dRightRoiCenRows - *pdSlope*dRightRoiCenCols;
-		*pdRightXOffset = -dStartRow*cos(dAngle)*_pRightFov->PixelSizeY();
+		dRowOffsetInColumn0 = dRightRoiCenRows - *pdSlope*dRightRoiCenCols;
+		*pdRightXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
 			*pdRightXOffset += _panelRoi.xMax;
 
