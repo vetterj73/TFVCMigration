@@ -69,6 +69,12 @@ void RobustSolverIterative::ZeroTheSystem()
 		_pdWeights[i] = 0.0;
 		sprintf_s(_pcNotes[i], _iLengthNotes, "");
 	}
+	for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
+		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
+			_zCoef[i][j] = 0.0;
+	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
+	_Board2CAD.SetMatrix( resetTransformValues );
+	
 
 	for(i =0; i<_iMatrixWidth; i++)
 		_dVectorX[i] = 0.0;

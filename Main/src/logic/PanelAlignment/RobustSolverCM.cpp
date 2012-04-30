@@ -102,6 +102,9 @@ void RobustSolverCM::ZeroTheSystem()
 	for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
 		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
 			_zCoef[i][j] = 0.0;
+	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
+	_Board2CAD.SetMatrix( resetTransformValues );
+	
 }
 
 void RobustSolverCM::ConstrainZTerms()
@@ -297,8 +300,6 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	_dVectorB[_iCurrentRow] = w * dSlope;
 	_pdWeights[_iCurrentRow] = w;
 	_iCurrentRow++;
-
-	delete [] Zpoly;
 	return(true);
 }
 
@@ -1314,7 +1315,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 	::memcpy(_dMatrixA, workspace, _iMatrixSize*sizeof(double));
 
 	// for debug
-	if (_bSaveMatrixCSV) 
+	/*if (_bSaveMatrixCSV) // comment out this section, very large file, slow to write
 	{
 		// Save transposed Matrix A 
 		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixA_t_%d.csv",iFileSaveIndex); 
@@ -1337,7 +1338,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 			of << std::endl;
 		}
 		of.close();
-	} 
+	} */
 	delete [] workspace;
 }
 
