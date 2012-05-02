@@ -234,59 +234,49 @@ namespace CyberStitchTester
                         if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1) + "\\") == false)
                             Output("Could not save mosaic images");
                         */
-                        //* for debug 
-                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                        //*/
                     }
-                    else // for gray scale
-                    {
-                        // Save a 3 channel image with CAD data...
-                        _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), 
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                        
+                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        /*
-                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(0).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(1).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    /*
+                    _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(0).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(1).GetStitchedBuffer(),
-                            _mosaicSet.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                            _panel.GetCADBuffer(), //heightBuf,
-                            _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                        //*/
+                    _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    //*/
 
-                        // Get the stitch grid 
-                        // Must after get stitched image of the same layer
-                        int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];
-                        int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
-                        _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
+                    // Get the stitch grid 
+                    // Must after get stitched image of the same layer
+                    int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];
+                    int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
+                    _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
 
-                        /*/ Testing a copy of mosaic...
-                        _mosaicSetCopy.CopyBuffers(_mosaicSet);
-                        _mosaicSetCopy.CopyTransforms(_mosaicSet);
-                        _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
-                             _mosaicSetCopy.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                             _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                             _panel.GetCADBuffer(),
-                             _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                         */
-                    }                       
+                    /*/ Testing a copy of mosaic...
+                    _mosaicSetCopy.CopyBuffers(_mosaicSet);
+                    _mosaicSetCopy.CopyTransforms(_mosaicSet);
+                    _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
+                    _mosaicSetCopy.GetLayer(iLayerIndex1).GetStitchedBuffer(),
+                    _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
+                    _panel.GetCADBuffer(),
+                    _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    //*/                      
                 }
 
                 // should we do another cycle?
