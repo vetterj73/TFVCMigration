@@ -88,9 +88,6 @@ CorrelationParameters::CorrelationParameters(void)
 	// Number of Threads to use for processing
 	NumThreads = 8;
 
-	// Seperate acqusition, demosaic and alignment in time frame for speed test
-	bSepratePocessStages = false;	
-
 	// debug flags
 	bSaveFiducialOverlaps = false;
 	bSaveOverlaps = false;

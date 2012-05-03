@@ -105,9 +105,6 @@ public:
 	
 	// Number of Threads to use for processing
 	unsigned int NumThreads;
-	
-	// Seperate acqusition, demosaic and alignment in time frame for speed test
-	bool bSepratePocessStages;	
 
 	// debug flage
 	bool bSaveFiducialOverlaps;
