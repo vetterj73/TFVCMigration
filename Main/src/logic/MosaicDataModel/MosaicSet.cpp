@@ -39,6 +39,8 @@ namespace MosaicDM
 		_pDemosaicJobManager = NULL;
 		_demosaicJobPtrList.clear();
 		_iNumThreads = 8;
+
+		_bSeperateProcessStages = false;
 	}
 
 	MosaicSet::~MosaicSet()

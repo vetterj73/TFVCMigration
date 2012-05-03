@@ -102,6 +102,7 @@ namespace MosaicDM
 			void SetOwnBuffers(bool bValue) { _ownBuffers = bValue;};
 			bool IsBayerPattern(){return _bBayerPattern;}; 
 			int GetBayerType(){return _iBayerType;};
+			void SetSeperateProcessStages(bool bValue) { _bSeperateProcessStages = bValue;};
 
 			///
 			/// Calculate the total number of triggers in the MosaicSet
@@ -172,5 +173,8 @@ namespace MosaicDM
 			CyberJob::JobManager *_pDemosaicJobManager;
 			list<DemosaicJob*> _demosaicJobPtrList;
 			int _iNumThreads;
+
+			// Seperate acqusition, demosaicing and alignment for speed test
+			bool _bSeperateProcessStages;
 	};
 }

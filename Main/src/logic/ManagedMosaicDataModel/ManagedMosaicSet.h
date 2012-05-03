@@ -182,6 +182,11 @@ namespace MMosaicDM
 			///
 			bool CopyBuffers(ManagedMosaicSet ^pSet);
 
+			void SetSeperateProcessStages(bool bValue) 
+			{
+				_pMosaicSet->SetSeperateProcessStages(bValue);
+			}
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		
