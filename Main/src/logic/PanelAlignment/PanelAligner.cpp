@@ -317,6 +317,12 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 	EquationWeights::Instance().SetCalibrationScale(dValue);
 }
 
+
+void PanelAligner::SetSeprateProcessStages(bool bValue)
+{
+	CorrelationParametersInst.bSepratePocessStages = bValue;
+}
+
 #pragma endregion
 
 #pragma region create transforms

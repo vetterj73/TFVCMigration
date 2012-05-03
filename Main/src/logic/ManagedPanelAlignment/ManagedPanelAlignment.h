@@ -130,6 +130,7 @@ namespace PanelAlignM {
 			bool bConveyorLeft2Right,
 			bool bConveyorFixedFrontRail);
 		void SetCalibrationWeight(double dValue);
+		void SetSeprateProcessStages(bool bValue);
 		
 		int GetNumberOfFidsProcessed();
 		

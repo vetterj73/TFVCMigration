@@ -204,6 +204,11 @@ namespace PanelAlignM {
 		_pAligner->SetCalibrationWeight(dValue);
 	}
 
+	void ManagedPanelAlignment::SetSeprateProcessStages(bool bValue)
+	{
+		_pAligner->SetSeprateProcessStages(bValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{
