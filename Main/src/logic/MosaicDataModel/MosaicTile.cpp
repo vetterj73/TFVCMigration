@@ -11,6 +11,7 @@ namespace MosaicDM
 		_pImage = NULL;
 		_pMosaicLayer = NULL;
 		_containsImage = false;
+		_bAdded2Aligner = false;
 	}
 
 	MosaicTile::~MosaicTile(void)

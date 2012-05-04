@@ -13,7 +13,8 @@ public:
 		unsigned char *pBuffer, 
 		unsigned int iLayerIndex, 
 		unsigned int iCameraIndex, 
-		unsigned int iTriggerIndex);
+		unsigned int iTriggerIndex,
+		bool bTrigAlignment = true);
 
 	virtual void Run();
 
@@ -23,6 +24,7 @@ private:
 	unsigned int _iLayerIndex; 
 	unsigned int _iCameraIndex; 
 	unsigned int _iTriggerIndex;
+	bool _bTrigAlignment;
 };
 
 }

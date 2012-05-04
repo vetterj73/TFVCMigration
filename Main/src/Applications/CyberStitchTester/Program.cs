@@ -54,6 +54,7 @@ namespace CyberStitchTester
             bool bUseProjective = true;
             bool bUseCameraModel = false;
             bool bUseIterativeCameraModel = false;
+            bool bSeperateProcessStages = false;
             
             int numberToRun = 1;
             int iLayerIndex4Edge = 0;
@@ -62,34 +63,36 @@ namespace CyberStitchTester
             {
                 if (args[i] == "-b")
                     bOwnBuffers = true;
-                if (args[i] == "-c")
+                else if (args[i] == "-c")
                     bContinuous = true;
                 else if (args[i] == "-n" && i < args.Length - 1)
                     numberToRun = Convert.ToInt16(args[i + 1]);
-                if (args[i] == "-m")
+                else if (args[i] == "-m")
                     bMaskForDiffDevices = true;
-                if (args[i] == "-bayer")
+                else if (args[i] == "-bayer")
                     _bBayerPattern = true;
-                if (args[i] == "-w")
+                else if (args[i] == "-w")
                     bUseProjective = true;
-                if (args[i] == "-nh")
+                else if (args[i] == "-nh")
                     bAdjustForHeight = false;
-                if (args[i] == "-cammod")
+                else if (args[i] == "-cammod")
                     bUseCameraModel = true;
-                if (args[i] == "-de")
+                else if (args[i] == "-de")
                     _bDetectPanelEedge = true;
-                if (args[i] == "-iter")
+                else if (args[i] == "-iter")
                     bUseIterativeCameraModel = true;
-                if (args[i] == "-rtol")
+                else if (args[i] == "-rtol")
                     _bRtoL = true;
-                if (args[i] == "-frr")
+                else if (args[i] == "-frr")
                     _bFRR = true;
-                if (args[i] == "-s" && i < args.Length - 1)
+                else if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
-                if (args[i] == "-t" && i < args.Length - 1)
+                else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
+                else if (args[i] == "-sps")
+                    bSeperateProcessStages = true;
             }
 
             // Setup the panel based on panel file
@@ -138,6 +141,7 @@ namespace CyberStitchTester
                     _aligner.UseCameraModelIterativeStitch(true);
                     _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                 }
+                _mosaicSet.SetSeperateProcessStages(bSeperateProcessStages);
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);

@@ -121,6 +121,8 @@ private:
 	bool _bMasksCreated;
 	bool _bResultsReady;
 
+	int _iNumFovProced;
+
 	// for debug
 	int _iPanelCount;
 };

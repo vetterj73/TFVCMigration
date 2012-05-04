@@ -10,13 +10,16 @@ DemosaicJob::DemosaicJob(
 	unsigned char *pBuffer, 
 	unsigned int iLayerIndex, 
 	unsigned int iCameraIndex, 
-	unsigned int iTriggerIndex)
+	unsigned int iTriggerIndex,
+	bool bTrigAlignment)
 {
 	_pSet = pSet; 
 	_pBuffer = pBuffer; 
 	_iLayerIndex = iLayerIndex; 
 	_iCameraIndex = iCameraIndex; 
 	_iTriggerIndex = iTriggerIndex;
+
+	_bTrigAlignment = bTrigAlignment;
 }
 
 void DemosaicJob::Run()
@@ -28,7 +31,8 @@ void DemosaicJob::Run()
 	if(!pLayer->AddRawImage(_pBuffer, _iCameraIndex, _iTriggerIndex))
 		return;
 
-	_pSet->FireImageAdded(_iLayerIndex, _iCameraIndex, _iTriggerIndex);
+	if(_bTrigAlignment)
+		_pSet->FireImageAdded(_iLayerIndex, _iCameraIndex, _iTriggerIndex);
 }
 
 }

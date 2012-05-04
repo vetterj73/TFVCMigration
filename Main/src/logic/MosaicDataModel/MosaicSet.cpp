@@ -279,49 +279,123 @@ namespace MosaicDM
 	// Input buffer need to be Bayer or grayscale
 	bool MosaicSet::AddRawImage(unsigned char *pBuffer, unsigned int layerIndex, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
-		// If bayer pattern, demosaic is needed.
-		// Work in Multi-thread to speed up
-		if(_bBayerPattern)
+		if(!_bSeperateProcessStages)	// Normal working mode
 		{
-			// Create the thread job manager if it is necessary
-			if(_pDemosaicJobManager == NULL)
-				_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
-		
-			// Add demosaic job to thread manager
-			DemosaicJob* pJob = new DemosaicJob(this, pBuffer, layerIndex, cameraIndex, triggerIndex);
-			_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
-			_demosaicJobPtrList.push_back(pJob);
-
-			// If all images are added, clean up
-			if(_demosaicJobPtrList.size() == NumberOfImageTiles())
+			// If bayer pattern, demosaic is needed.
+			// Work in Multi-thread to speed up
+			if(_bBayerPattern)
 			{
-				// Wait all demosaics are done
-				_pDemosaicJobManager->MarkAsFinished();
-				while(_pDemosaicJobManager->TotalJobs() > 0)
-					Sleep(10);
+				// Create the thread job manager if it is necessary
+				if(_pDemosaicJobManager == NULL)
+					_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
+		
+				// Add demosaic job to thread manager
+				DemosaicJob* pJob = new DemosaicJob(this, pBuffer, layerIndex, cameraIndex, triggerIndex);
+				_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
+				_demosaicJobPtrList.push_back(pJob);
 
-				// Clear job list
-				list<DemosaicJob*>::iterator i;
-				for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
-					delete (*i);
+				// If all images are added, clean up
+				if(_demosaicJobPtrList.size() == NumberOfImageTiles())
+				{
+					// Wait all demosaics are done
+					_pDemosaicJobManager->MarkAsFinished();
+					while(_pDemosaicJobManager->TotalJobs() > 0)
+						Sleep(10);
 
-				_demosaicJobPtrList.clear();
+					// Clear job list
+					list<DemosaicJob*>::iterator i;
+					for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
+						delete (*i);
+
+					_demosaicJobPtrList.clear();
 				
-				FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
+					FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
+				}
+			}
+			// If greyscale, demosaic is not needed. 
+			// Not necessary to add overheader by use multi-thread manager 
+			else	
+			{
+				MosaicLayer *pLayer = GetLayer(layerIndex);
+				if(pLayer == NULL)
+					return false;
+
+				if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
+					return false;
+
+				FireImageAdded(layerIndex, cameraIndex, triggerIndex);
 			}
 		}
-		// If greyscale, demosaic is not needed. 
-		// Not necessary to add overheader by use multi-thread manager 
-		else	
+		else // Speed test mode only
 		{
-			MosaicLayer *pLayer = GetLayer(layerIndex);
-			if(pLayer == NULL)
-				return false;
+			// Add acquired FOV data into list
+			FovData fovData;
+			fovData.pFovRawData = pBuffer;
+			fovData.iLayerIndex = layerIndex;
+			fovData.iTrigIndex = triggerIndex;
+			fovData.iCamIndex = cameraIndex;
+			_fovDataList.push_back(fovData);
 
-			if(!pLayer->AddRawImage(pBuffer, cameraIndex, triggerIndex))
-				return false;
+			// If all Fovs are collected
+			if(_fovDataList.size() == NumberOfImageTiles())
+			{
+				// If bayer pattern, demosaic is needed.
+				// Work in Multi-thread to speed up
+				if(_bBayerPattern)
+				{
+					FireLogEntry(LogTypeDiagnostic, "Start Demosaic!");
 
-			FireImageAdded(layerIndex, cameraIndex, triggerIndex);
+					// Create the thread job manager if it is necessary
+					if(_pDemosaicJobManager == NULL)
+						_pDemosaicJobManager = new CyberJob::JobManager("Demosaic", _iNumThreads);
+
+					for(list<FovData>::iterator i = _fovDataList.begin(); i != _fovDataList.end(); i++)
+					{
+						// Add demosaic job to thread manager
+						// Not send event to aligner
+						DemosaicJob* pJob = new DemosaicJob(this, i->pFovRawData, i->iLayerIndex, i->iCamIndex, i->iTrigIndex, false);
+						_pDemosaicJobManager->AddAJob((CyberJob::Job*)pJob);
+						_demosaicJobPtrList.push_back(pJob);
+					}
+
+					// Wait all demosaics are done
+					_pDemosaicJobManager->MarkAsFinished();
+					while(_pDemosaicJobManager->TotalJobs() > 0)
+						Sleep(10);
+
+					// Clear job list
+					list<DemosaicJob*>::iterator i;
+					for(i = _demosaicJobPtrList.begin(); i!= _demosaicJobPtrList.end(); i++)
+						delete (*i);
+
+					_demosaicJobPtrList.clear();
+
+					FireLogEntry(LogTypeDiagnostic, "End Demosaic!");
+				}
+				else
+				{	
+					// If greyscale, demosaic is not needed. 
+					// Not necessary to add overheader by use multi-thread manager 
+					for(list<FovData>::iterator i = _fovDataList.begin(); i != _fovDataList.end(); i++)
+					{
+						MosaicLayer *pLayer = GetLayer(i->iLayerIndex);
+						if(pLayer == NULL)
+							return false;
+
+						if(!pLayer->AddRawImage(i->pFovRawData, i->iCamIndex, i->iTrigIndex))
+							return false;
+					}
+				}
+
+				// Send events to aligner
+				FireLogEntry(LogTypeDiagnostic, "Start alignment!");
+				for(list<FovData>::iterator i = _fovDataList.begin(); i != _fovDataList.end(); i++)
+				{
+					FireImageAdded(i->iLayerIndex, i->iCamIndex, i->iTrigIndex);
+				}
+				// Clear fovdata list for next panel
+				_fovDataList.clear();
+			}
 		}
 
 		return true;

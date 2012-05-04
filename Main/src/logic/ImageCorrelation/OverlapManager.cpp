@@ -3,6 +3,7 @@
 #include "RenderShape.h"
 #include "CorrelationParameters.h"
 #include "MosaicLayer.h"
+#include "MosaicTile.h"
 #include "EquationWeights.h"
 #include <direct.h> //_mkdir
 
@@ -1008,6 +1009,9 @@ bool OverlapManager::DoAlignmentForFov(
 	unsigned int iTrigIndex,
 	unsigned int iCamIndex)
 {
+	// Flag that fov is added to alginer
+	_pMosaicSet->GetLayer(iMosaicIndex)->GetTile(iCamIndex, iTrigIndex)->SetAdded2Aligner();
+
 	if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
 	{
 		_mkdir(CorrelationParametersInst.GetOverlapPath().c_str());

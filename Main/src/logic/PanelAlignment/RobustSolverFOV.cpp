@@ -626,16 +626,18 @@ void RobustSolverFOV::SolveXAlgHB()
 	// we built A in row order
 	// the qr factorization method requires column order
 	bool bRemoveEmptyRows = true;
-	bRemoveEmptyRows = false;
 	int* mb = new int[_iMatrixWidth];
 	unsigned int iEmptyRows;
 	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);
+	int iNumEqs = 0;
+	for(int i = 0; i < _iMatrixWidth-bw+1; i++)
+		iNumEqs += mb[i];
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
 	double cond = 0;
 
-	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():BEGIN ALG_HB");
+	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():BEGIN ALG_HB with equations %d", iNumEqs);
 
 	int algHRetVal = 
 		alg_hb(                // Robust regression by Huber's "Algorithm H"/ Banded version.

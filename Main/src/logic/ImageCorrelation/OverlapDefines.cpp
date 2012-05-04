@@ -418,7 +418,9 @@ bool FovFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic1->GetTile(_imgPos1.first, _imgPos1.second)->ContainsImage() &&
+		_pMosaic1->GetTile(_imgPos1.first, _imgPos1.second)->Added2Aligner() &&
 		_pMosaic2->GetTile(_imgPos2.first, _imgPos2.second)->ContainsImage() &&
+		_pMosaic2->GetTile(_imgPos2.first, _imgPos2.second)->Added2Aligner() &&
 		_bValid;
 
 	return(bFlag);
@@ -545,6 +547,7 @@ bool CadFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
+		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->Added2Aligner() &&
 		(_pCadImg != NULL) && (_pCadImg->GetBuffer() != NULL) &&
 		_bValid;
 
@@ -633,6 +636,7 @@ bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
 		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
+		_pMosaic->GetTile(_imgPos.first, _imgPos.second)->Added2Aligner() &&
 		(_pFidImg != NULL) && (_pFidImg->GetBuffer() != NULL) &&
 		_bValid;
 

@@ -29,6 +29,10 @@ namespace MosaicDM
 			///
 			bool ContainsImage(){return _containsImage;}
 
+			/// return true if the fov was added to aligner
+			bool Added2Aligner() {return _bAdded2Aligner;};
+			void SetAdded2Aligner() {_bAdded2Aligner = true;};
+
 			///
 			///	Called by the MosaicLayer class.
 			///
@@ -60,6 +64,7 @@ namespace MosaicDM
 			void ClearImageBuffer()
 			{
 				_containsImage = false;
+				_bAdded2Aligner = false;
 			}
 
 			bool SetRawImageBuffer(unsigned char* pImageBuffer);
@@ -70,5 +75,6 @@ namespace MosaicDM
 			MosaicLayer *_pMosaicLayer;
 			bool _containsImage;
 			Image* _pImage;
+			bool _bAdded2Aligner;
 	};
 }

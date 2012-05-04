@@ -47,6 +47,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
 
 	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
+	_iNumFovProced++;
 	
 	// Release mutex
 	ReleaseMutex(_queueMutex);
@@ -73,8 +74,10 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	}
 
 	// If we are all done with alignment, create the transforms...
-	if(_pSet->HasAllImages() && _pOverlapManager->FinishOverlaps())
+	if(_pSet->NumberOfImageTiles()==_iNumFovProced)
 	{
+		_pOverlapManager->FinishOverlaps();
+
 		CreateTransforms();
 
 		FireAlignmentDone(true);
@@ -94,6 +97,8 @@ PanelAligner::PanelAligner(void)
 
 	//_queueMutex = CreateMutex(0, FALSE, "PanelAlignMutex"); // Mutex is not owned
 	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
+
+	_iNumFovProced = 0;
 
 	// for debug
 	_iPanelCount = 0;
@@ -121,6 +126,8 @@ void PanelAligner::CleanUp()
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
 	_pMaskSolver = NULL;
+
+	_iNumFovProced = 0;
 }
 
 // Change production
@@ -223,6 +230,8 @@ void PanelAligner::ResetForNextPanel()
 
 	_bMasksCreated = false;
 	_bResultsReady = false;
+
+	_iNumFovProced = 0;
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
 }

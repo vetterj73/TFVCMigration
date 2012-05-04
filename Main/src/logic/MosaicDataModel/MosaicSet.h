@@ -22,6 +22,15 @@ namespace MosaicDM
 	class CorrelationFlags;
 	typedef map< pair< int, int>, CorrelationFlags* > CorrelationFlagsMap;
 
+	class FovData
+	{
+	public:
+		unsigned char* pFovRawData;
+		int iLayerIndex;
+		int iTrigIndex;
+		int iCamIndex;
+	};
+
 	typedef void (*IMAGEADDED_CALLBACK)(int layerIndex, int cameraIndex, int triggerIndex, void* context);
 
 	///
@@ -150,7 +159,6 @@ namespace MosaicDM
 				// Set must before any raw image is in 
 			void SetThreadNumber(int iValue) {if(iValue > 0) _iNumThreads = iValue;};
 
-		protected:
 			int NumberOfImageTiles();
 
 		private:
@@ -176,5 +184,6 @@ namespace MosaicDM
 
 			// Seperate acqusition, demosaicing and alignment for speed test
 			bool _bSeperateProcessStages;
+			list<FovData> _fovDataList;
 	};
 }
