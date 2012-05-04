@@ -208,7 +208,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	_bMasksCreated = false;
 	_bResultsReady = false;
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Panel change over is done");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction(): End panel change over");
 	return(true);
 }
 
@@ -657,7 +657,7 @@ bool PanelAligner::CreateTransforms()
 	//TestGetImagePatch();
 	//TestSingleImagePatch();
 
-	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
+	//_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
 	{

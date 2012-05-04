@@ -339,11 +339,12 @@ namespace MosaicDM
 			// If all Fovs are collected
 			if(_fovDataList.size() == NumberOfImageTiles())
 			{
+				FireLogEntry(LogTypeDiagnostic, "End SIM1 acquisition");
 				// If bayer pattern, demosaic is needed.
 				// Work in Multi-thread to speed up
 				if(_bBayerPattern)
 				{
-					FireLogEntry(LogTypeDiagnostic, "Start Demosaic!");
+					FireLogEntry(LogTypeDiagnostic, "Begin demosaic");
 
 					// Create the thread job manager if it is necessary
 					if(_pDemosaicJobManager == NULL)
@@ -370,7 +371,7 @@ namespace MosaicDM
 
 					_demosaicJobPtrList.clear();
 
-					FireLogEntry(LogTypeDiagnostic, "End Demosaic!");
+					FireLogEntry(LogTypeDiagnostic, "End demosaic");
 				}
 				else
 				{	
@@ -388,7 +389,7 @@ namespace MosaicDM
 				}
 
 				// Send events to aligner
-				FireLogEntry(LogTypeDiagnostic, "Start alignment!");
+				FireLogEntry(LogTypeDiagnostic, "Begin cyberstitch alignment");
 				for(list<FovData>::iterator i = _fovDataList.begin(); i != _fovDataList.end(); i++)
 				{
 					FireImageAdded(i->iLayerIndex, i->iCamIndex, i->iTrigIndex);

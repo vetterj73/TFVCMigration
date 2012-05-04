@@ -147,12 +147,10 @@ namespace CyberStitchTester
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
                 _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
-                Output("Before ChangeProduction");
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
                 }
-                Output("After ChangeProduction");
             }
             catch (Exception except)
             {
@@ -207,6 +205,7 @@ namespace CyberStitchTester
                 _aligner.ResetForNextPanel();
                
                 _mosaicSet.ClearAllImages();
+                Output("Begin stitch cycle");
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -223,10 +222,13 @@ namespace CyberStitchTester
                     Output("The mosaic does not contain all images!");
                 else
                 {
+                    Output("End stitch cycle");
+
                     _cycleCount++;                   
                     // After a panel is stitched and before aligner is reset for next panel
                     ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
-                   
+
+                    Output("Begin morph");
 
                     if (_bBayerPattern) // for bayer pattern
                     {
@@ -239,7 +241,7 @@ namespace CyberStitchTester
                             Output("Could not save mosaic images");
                         */
                     }
-                        
+
                     _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
                         _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
@@ -280,7 +282,9 @@ namespace CyberStitchTester
                     _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
                     _panel.GetCADBuffer(),
                     _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                    //*/                      
+                    //*/
+
+                    Output("End morph");
                 }
 
                 // should we do another cycle?
@@ -305,6 +309,7 @@ namespace CyberStitchTester
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                    Output("Begin SIM" + i + " acquisition");
                     if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                         return false;
                 }
@@ -312,6 +317,7 @@ namespace CyberStitchTester
             else
             {   // launch device one by one in simulation case
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                Output("Begin SIM0 acquisition");
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return false;
             }
@@ -444,13 +450,15 @@ namespace CyberStitchTester
 
         private static void OnAcquisitionDone(int device, int status, int count)
         {
-            Output("OnAcquisitionDone Called!");
+            if(0 == device)
+                Output("End SIM"+device+" acquisition");
             numAcqsComplete++;
             // lauch next device in simulation case
             if (_bSimulating && numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
             {
-                Thread.Sleep(10000);
+                //Thread.Sleep(10000);
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(numAcqsComplete);
+                Output("Begin SIM" + numAcqsComplete + " acquisition");
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return;
             }
@@ -460,7 +468,7 @@ namespace CyberStitchTester
 
         private static void OnAlignmentDone(bool status)
         {
-            Output("OnAlignmentDone Called!");
+            Output("End cyberstitch alignment");
             mDoneEvent.Set();
         }
 
