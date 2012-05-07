@@ -276,7 +276,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		fileName.clear();
 		fileName.assign(cTemp);
 		ofstream of(fileName);		
-		of << std::scientific;
+		//of << std::scientific;
 
 		unsigned int ilines = _iMatrixHeight;
 		if(bRemoveEmptyRows)
