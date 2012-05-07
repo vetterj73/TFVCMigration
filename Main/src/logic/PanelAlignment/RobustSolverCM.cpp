@@ -690,14 +690,16 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	// p will contain p.r = pixel row locations, p.i = pixel col locations
 	// q.r will contain matching X (cad direction)
 	// q.i will contain matching Y
+	double XSampleFraction(0.80);  // we want to avoid the actual corners as they aren't used
+	double YSampleFraction(0.85);  // this sets the fraction of the image size where the fit occurs
 	int i(0);
 	for(unsigned int j=0; j<iNumY; j++)
 	{
 		for(unsigned int k=0; k<iNumX; k++)
 		{
-			p[i].r = (cos(-PI + angleStepX*k) + 1.0 )/2.0; // scaled 0 to 1
+			p[i].r = (XSampleFraction * cos(-PI + angleStepX*j) + 1.0 )/2.0; // scaled 0 to 1
 			p[i].r *= stopX - startX;
-			p[i].i = (cos(-PI + angleStepY*j) + 1.0 )/2.0; // scaled 0 to 1
+			p[i].i = (YSampleFraction * cos(-PI + angleStepY*k) + 1.0 )/2.0; // scaled 0 to 1
 			p[i].i *= stopY - startY;
 			// now find the matching point in CAD space
 			// order is:
