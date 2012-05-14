@@ -35,6 +35,7 @@ public:
 		// for projective transform
 	double wPMEq;		// m6 = m10 and m7 = m11
 	double wPM89;		// M8 = 0 and M9 = 0
+	double wPM67;		// M6 = 0 and M7 = 0 for first camera 
 	double wPMNext;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
 		
 	// for solve without fiducial and panel edge

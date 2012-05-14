@@ -992,7 +992,7 @@ void PanelAligner::DisturbFiducialAlignment()
 
 void PanelAligner::TestGetImagePatch()
 {
-	int iLayerIndex = 3;
+	int iLayerIndex = 2;
 	double dRes = _pSet->GetNominalPixelSizeX();
 
 	MosaicDM::FOVPreferSelected setFov;

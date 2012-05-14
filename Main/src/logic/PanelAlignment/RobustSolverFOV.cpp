@@ -316,12 +316,12 @@ bool RobustSolverFOV::AddCalibationConstraints(
 		else
 		{
 			//* 14 M6 = 0
-			pdRowBegin[iFOVPos+6] = 2e7;
+			pdRowBegin[iFOVPos+6] = Weights.wPM67;
 			pdRowBegin += _iMatrixWidth;
 			_iCurrentRow++;
 
 			//* 15 M7 = 0;
-			pdRowBegin[iFOVPos+7] = 2e7;
+			pdRowBegin[iFOVPos+7] = Weights.wPM67;
 			pdRowBegin += _iMatrixWidth;
 			_iCurrentRow++;
 		}

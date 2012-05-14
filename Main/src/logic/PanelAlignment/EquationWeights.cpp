@@ -27,7 +27,8 @@ EquationWeights::EquationWeights(void)
 		// for projective transform
 	wPMEq = 1e12;		// m6 = m10 and m7 = m11
 	wPM89 = 1e12;		// M8 = 0 and M9 = 0
-	wPMNext = 2e11;	// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
+	wPM67 = 1e12;		// M6 = 0 and M7 = 0 for first camera 
+	wPMNext = 2e11;		// M10 = Next camera/Triger M10, M11 = Next camera/triger M11
 
 	// for solve without fiducial and panel edge
 	wYcentNoFid = 1e5;	// Fov center Y position match calibration without fiducial equation (for single FOV only)
