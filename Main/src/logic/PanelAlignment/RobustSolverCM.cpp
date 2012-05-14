@@ -12,6 +12,7 @@ extern "C" {
 }
 
 
+#define CorrelationParametersInst CorrelationParameters::Instance() 
 
 
 RobustSolverCM::RobustSolverCM(
@@ -1127,10 +1128,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	delete [] FidFitX;
 	delete [] resid;
 		
-	// parse results
 	// log results for debug
-	
-
 	if (_bVerboseLogging)
 		LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
 			_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
@@ -1138,7 +1136,26 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	delete [] fidFlat2D;
 	delete [] fidCAD2D;
 
-
+	// Do some quality testing of the results
+	if(nGoodFids  < 2 )
+		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): Too few fiducials found, only found  = %d", nGoodFids);
+	
+	double skew;
+	double xStretch;
+	double yStretch;
+	// test that the scaling of the matrix if very close to 1.000
+	xStretch = sqrt(pow(_Board2CAD.GetItem(0), 2.0) + pow(_Board2CAD.GetItem(1), 2.0)) - 1;
+	yStretch = sqrt(pow(_Board2CAD.GetItem(3), 2.0) + pow(_Board2CAD.GetItem(4), 2.0)) - 1;
+	// the 1 and 3 terms should be equal and opposite, if not then the affine xform is skewing the board
+	skew = _Board2CAD.GetItem(1) + _Board2CAD.GetItem(3);
+	// as all units are meter / meter we can compare the results to IPC limits
+	// John Hoffman found  IPC-D-300G which allows a stretch of 200 um over 300 mm or 0.067%
+	if( abs(xStretch) > CorrelationParametersInst.dAlignBoardStretchLimit )
+		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): X stretch excessive = %f", xStretch);
+	if( abs(yStretch) > CorrelationParametersInst.dAlignBoardStretchLimit )
+		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): Y stretch excessive = %f", yStretch);
+	if( abs(skew) > CorrelationParametersInst.dAlignBoardSkewLimit )
+		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): skew excessive = %f", skew);
 }
 
 void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols, double *b, double *X, double *resid)
