@@ -358,8 +358,8 @@ namespace MosaicDM
 		panelRect.yMax = _pMosaicSet->GetObjectLengthInMeters();	
 
 		// Min overlap needed for FOV to be considered in calculation
-		double dMinOverlapInX = _pMosaicSet->GetImageHeightInPixels()*_pMosaicSet->GetNominalPixelSizeX()/3.0;
-		double dMinOverlapInY = _pMosaicSet->GetImageWidthInPixels()*_pMosaicSet->GetNominalPixelSizeY()/3.0;
+		double dMinOverlapInX = _pMosaicSet->GetImageHeightInPixels() * _pMosaicSet->GetNominalPixelSizeX() * 0.4;
+		double dMinOverlapInY = _pMosaicSet->GetImageWidthInPixels() * _pMosaicSet->GetNominalPixelSizeY() * 0.4;
 
 		// Boundary for each inverse trigger (x in world)
 		for(int iInvTrig=iBeginInvTrig; iInvTrig<=iEndInvTrig; iInvTrig++)
