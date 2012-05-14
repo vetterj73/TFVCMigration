@@ -58,6 +58,13 @@ CorrelationParameters::CorrelationParameters(void)
 	dMaxFidDisScaleDiff = 2e-3;			// Max Fiducial distnace scale that can be tolerate
 	dMaxSameFidInConsist = 5e-5;		// Max fiducial alignment result inconsist for the same fiducial (in meter)
 
+	// board scale test (for RobustSolverCM::FlattenFiducial() )
+	// these might be tied to the Fiducial check parameters above
+	dAlignBoardStretchLimit = 0.00067 * 3;			// units meter / meter   maximum that the panel can shrink stretch
+	// IPC-D-300G which allows a stretch of 200 um over 300 mm or 0.067%
+	dAlignBoardSkewLimit = 0.00067 * 1.5;			// units meter / meter maximum skew of board (in affine transform)
+
+
 	// Expansion from Cad image to create mask image in pixels
 	iMaskExpansionFromCad = 10;			
 
