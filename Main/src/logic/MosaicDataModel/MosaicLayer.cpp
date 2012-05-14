@@ -349,16 +349,39 @@ namespace MosaicDM
 		int iBeginInvTrig, int iEndInvTrig,
 		int iBeginCam, int iEndCam,
 		double* pdGridXBoundary, double* pdGridYBoundary)
-	{
+	{		
+		// Panel Rect
+		DRect panelRect;
+		panelRect.xMin = 0;
+		panelRect.yMin = 0;
+		panelRect.xMax = _pMosaicSet->GetObjectWidthInMeters();
+		panelRect.yMax = _pMosaicSet->GetObjectLengthInMeters();	
+
+		// Min overlap needed for FOV to be considered in calculation
+		double dMinOverlapInX = _pMosaicSet->GetImageHeightInPixels()*_pMosaicSet->GetNominalPixelSizeX()/3.0;
+		double dMinOverlapInY = _pMosaicSet->GetImageWidthInPixels()*_pMosaicSet->GetNominalPixelSizeY()/3.0;
+
 		// Boundary for each inverse trigger (x in world)
 		for(int iInvTrig=iBeginInvTrig; iInvTrig<=iEndInvTrig; iInvTrig++)
 		{
 			double dTopBound, dBottomBound;
+			bool bFirstCam = true;
 			for(int iCam=iBeginCam; iCam<=iEndCam; iCam++)
 			{
 				DRect rect = GetImage(iCam, _numTriggers-1-iInvTrig)->GetBoundBoxInWorld();
-				if(iCam==iBeginCam)
+				
+				// if more than one camera, ignore FOV has a little overlap with panel in Y
+				if(iBeginCam != iEndCam)
 				{
+					double dOverlapYMin = rect.yMin > panelRect.yMin ? rect.yMin : panelRect.yMin;
+					double dOverlapYMax = rect.yMax < panelRect.yMax ? rect.yMax : panelRect.yMax;
+					if(dOverlapYMax - dOverlapYMin < dMinOverlapInY)
+						continue;
+				}
+
+				if(bFirstCam)
+				{
+					bFirstCam = false;
 					dTopBound = rect.xMin;
 					dBottomBound = rect.xMax;
 				}
@@ -380,11 +403,23 @@ namespace MosaicDM
 		for(int iCam=iBeginCam; iCam<=iEndCam; iCam++)
 		{
 			double dLeftBound, dRightBound;
+			bool bFirstTrig = true;
 			for(int iTrig=iBeginInvTrig; iTrig<=iEndInvTrig; iTrig++)
 			{
-				DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
-				if(iTrig==iBeginInvTrig)
+				DRect rect = GetImage(iCam, _numTriggers-1-iTrig)->GetBoundBoxInWorld();
+
+				// if more than one trigger, ignore FOV has a little overlap with panel in X
+				if(iBeginInvTrig != iEndInvTrig)
 				{
+					double dOverlapXMin = rect.xMin > panelRect.xMin ? rect.xMin : panelRect.xMin;
+					double dOverlapXMax = rect.xMax < panelRect.xMax ? rect.xMax : panelRect.xMax;
+					if(dOverlapXMax - dOverlapXMin < dMinOverlapInX)
+						continue;
+				}
+
+				if(bFirstTrig)
+				{
+					bFirstTrig = false;
 					dLeftBound = rect.yMin;
 					dRightBound = rect.yMax;
 				}
