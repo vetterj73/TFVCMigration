@@ -167,28 +167,66 @@ namespace MosaicDM
 	// Camera centers in Y of world space
 	void MosaicLayer::CameraCentersInY(double* pdCenY)
 	{
+		// Panel area in X
+		double dPanelXMin = 0;
+		double dPanelXMax = _pMosaicSet->GetObjectWidthInMeters();	
+
+		// Min overlap needed for FOV to be considered in calculation
+		double dMinOverlapInX = _pMosaicSet->GetImageHeightInPixels() * _pMosaicSet->GetNominalPixelSizeX() * 0.4;
+
 		for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
 		{
 			pdCenY[iCam] = 0;
+			int iCount = 0;
 			for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
 			{
+				// if more than one trigger, ignore FOV has a little overlap with panel in X
+				if(GetNumberOfTriggers() > 1)
+				{	
+					DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
+					double dOverlapXMin = rect.xMin > dPanelXMin ? rect.xMin : dPanelXMin;
+					double dOverlapXMax = rect.xMax < dPanelXMax ? rect.xMax : dPanelXMax;
+					if(dOverlapXMax - dOverlapXMin < dMinOverlapInX)
+						continue;
+				}
+
 				pdCenY[iCam] += GetTile(iCam, iTrig)->GetImagPtr()->CenterY();
+				iCount++;
 			}
-			pdCenY[iCam] /= GetNumberOfTriggers();
+			pdCenY[iCam] /= iCount;
 		}
 	}
 
 	// Trigger centesr in  X of world space 
 	void MosaicLayer::TriggerCentersInX(double* pdCenX)
 	{
+		// Panel area in Y
+		double dPanelYMin = 0;
+		double dPanelYMax = _pMosaicSet->GetObjectLengthInMeters();	
+
+		// Min overlap needed for FOV to be considered in calculation
+		double dMinOverlapInY = _pMosaicSet->GetImageWidthInPixels() * _pMosaicSet->GetNominalPixelSizeY() * 0.4;
+		
 		for(unsigned int iTrig=0; iTrig<GetNumberOfTriggers(); iTrig++)
 		{
 			pdCenX[iTrig] = 0;
+			int iCount = 0;
 			for(unsigned int iCam=0; iCam<GetNumberOfCameras(); iCam++)
-			{
+			{	
+				// if more than one camera, ignore FOV has a little overlap with panel in Y
+				if(GetNumberOfCameras() > 1)
+				{	
+					DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
+					double dOverlapYMin = rect.yMin > dPanelYMin ? rect.yMin : dPanelYMin;
+					double dOverlapYMax = rect.yMax < dPanelYMax ? rect.yMax : dPanelYMax;
+					if(dOverlapYMax - dOverlapYMin < dMinOverlapInY)
+						continue;
+				}
+
 				pdCenX[iTrig] += GetTile(iCam, iTrig)->GetImagPtr()->CenterX();
+				iCount++;
 			}
-			pdCenX[iTrig] /= GetNumberOfCameras();
+			pdCenX[iTrig] /= iCount++;
 		}
 	}
 
