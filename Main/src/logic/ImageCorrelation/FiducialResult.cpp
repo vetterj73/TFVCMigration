@@ -31,7 +31,7 @@ void PanelFiducialResults::LogResults()
 			CorrelationResult result = (*i)->GetCoarsePair()->GetCorrelationResult();
 			int iWeight = (int)(Weights.CalWeight((*i)->GetCoarsePair()));
 			LOG.FireLogEntry(LogTypeDiagnostic, "	Illumintion(%d), Trigger(%d), Camera(%d): CorrScore(%d), Ambig(%d), offset(%d,%d)pixels, weight(%d)",
-				(*i)->GetMosaicImage()->Index(), (*i)->GetTriggerIndex(), (*i)->GetCameraIndex(),
+				(*i)->GetMosaicLayer()->Index(), (*i)->GetTriggerIndex(), (*i)->GetCameraIndex(),
 				(int)(result.CorrCoeff*100), (int)(result.AmbigScore*100), (int)(result.ColOffset), (int)(result.RowOffset),
 				(int)(Weights.CalWeight((*i)->GetCoarsePair())));
 		}

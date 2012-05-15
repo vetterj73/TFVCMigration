@@ -1187,9 +1187,9 @@ int FiducialResultCheck::CheckFiducialResults()
 				for(list<FidFovOverlap*>::iterator n = pResults2->begin(); n != pResults2->end(); n++)
 				{
 					ImgTransform trans1 = _pSolver->GetResultTransform(
-						(*m)->GetMosaicImage()->Index(), (*m)->GetTriggerIndex(), (*m)->GetCameraIndex());
+						(*m)->GetMosaicLayer()->Index(), (*m)->GetTriggerIndex(), (*m)->GetCameraIndex());
 					ImgTransform trans2 = _pSolver->GetResultTransform(
-						(*n)->GetMosaicImage()->Index(), (*n)->GetTriggerIndex(), (*n)->GetCameraIndex());
+						(*n)->GetMosaicLayer()->Index(), (*n)->GetTriggerIndex(), (*n)->GetCameraIndex());
 					FiducialDistance fidDis(*m, trans1, *n, trans2);
 					if(fidDis._bValid)
 						fidDisList.push_back(fidDis);
@@ -1298,7 +1298,7 @@ int FiducialResultCheck::CheckFiducialResults()
 			if(iCount2 >=2 && (double)iCount2/(double)iCount1>0.5)
 			{
 				LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): FidOverlap (Layer=%d, Trig=%d, Cam=%d) is outlier base on consistent check, %d out %d scale are out of rang", 
-					(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex(),
+					(*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex(),
 					iCount2, iCount1);
 
 				// Mark all distances related to the aligmment outlier out
@@ -1345,7 +1345,7 @@ int FiducialResultCheck::CheckFiducialResults()
 			{
 				// Calcualte the fiducail location based on alignment
 				ImgTransform trans = _pSolver->GetResultTransform(
-					(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
+					(*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
 				double x, y;
 				(*j)->CalFidCenterBasedOnTransform(trans, &x, &y);
 
@@ -1396,7 +1396,7 @@ int FiducialResultCheck::CheckFiducialResults()
 					{
 						// Calcualte the fiducail location based on alignment
 						ImgTransform trans = _pSolver->GetResultTransform(
-							(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
+							(*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex());
 						double x, y;
 						(*j)->CalFidCenterBasedOnTransform(trans, &x, &y);
 
@@ -1407,7 +1407,7 @@ int FiducialResultCheck::CheckFiducialResults()
 							(*j)->SetIsGoodForSolver(false);
 							iOutlierCount++;
 							LOG.FireLogEntry(LogTypeDiagnostic, "FiducialResultCheck::CheckFiducialResults(): FidOverlap (Layer=%d, Trig=%d, Cam=%d) is outlier base on consistent check", 
-								(*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex()); 
+								(*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex()); 
 						}
 					}
 				}

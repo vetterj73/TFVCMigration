@@ -927,7 +927,7 @@ void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
 			FidFovOverlapList::iterator i;
 			for(i= _curPanelFidFovOverlapLists[iFidIndex].begin(); i != _curPanelFidFovOverlapLists[iFidIndex].end(); i++)
 			{
-				unsigned int iLayer = i->GetMosaicImage()->Index();
+				unsigned int iLayer = i->GetMosaicLayer()->Index();
 				unsigned int iTrig = i->GetTriggerIndex();
 				unsigned int iCam = i->GetCameraIndex();
 				_fidFovOverlapLists[iLayer][iTrig][iCam].push_back(*i);
@@ -1254,8 +1254,8 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piIllumIndices, unsig
 // 
 bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const
 {
-	unsigned int iIndex1 = pOverlap->GetFirstMosaicImage()->Index();
-	unsigned int iIndex2 = pOverlap->GetSecondMosaicImage()->Index();
+	unsigned int iIndex1 = pOverlap->GetFirstMosaicLayer()->Index();
+	unsigned int iIndex2 = pOverlap->GetSecondMosaicLayer()->Index();
 	
 	bool bFlag1=false, bFlag2=false;
 	unsigned int i;
@@ -1689,8 +1689,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 			{
 				(*j)->SetIsGoodForSolver(false);
 				LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovCoarseInconsistCheck(): InConsist detected in Column of overlap (Layer=%d, Trig=%d, Cam=%d) and (Layer=%d, Trig=%d, cam=%d)",
-					(*j)->GetFirstMosaicImage()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
-					(*j)->GetSecondMosaicImage()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
+					(*j)->GetFirstMosaicLayer()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
+					(*j)->GetSecondMosaicLayer()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
 				iReturnFlag++;
 
 				// for debug
@@ -1717,8 +1717,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 				{
 					(*j)->SetIsGoodForSolver(false);
 					LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovCoarseInconsistCheck():InConsist detected in Row of overlap (Layer=%d, Trig=%d, Cam=%d) and (Layer=%d, Trig=%d, cam=%d)",
-						(*j)->GetFirstMosaicImage()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
-						(*j)->GetSecondMosaicImage()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
+						(*j)->GetFirstMosaicLayer()->Index(), (*j)->GetFirstTriggerIndex(), (*j)->GetFirstCameraIndex(),
+						(*j)->GetSecondMosaicLayer()->Index(), (*j)->GetSecondTriggerIndex(), (*j)->GetSecondCameraIndex());
 					iReturnFlag++;
 
 					// for debug
@@ -1835,8 +1835,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 			FovFovOverlap* pOverlap = (FovFovOverlap*)(*j)->GetOverlapPtr();
 			int iIndex = (*j)->GetIndex();
 			LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovFineInconsistCheck():InConsist detected in Column of overlap (Layer=%d, Trig=%d, Cam=%d) and (Layer=%d, Trig=%d, cam=%d), fine #%d",
-				pOverlap->GetFirstMosaicImage()->Index(), pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
-				pOverlap->GetSecondMosaicImage()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
+				pOverlap->GetFirstMosaicLayer()->Index(), pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
+				pOverlap->GetSecondMosaicLayer()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 				iIndex);
 			iReturnFlag++;
 
@@ -1864,8 +1864,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 				FovFovOverlap* pOverlap = (FovFovOverlap*)(*j)->GetOverlapPtr();
 				int iIndex = (*j)->GetIndex();
 				LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovFineInconsistCheck():InConsist detected in Row of overlap (Layer=%d, Trig=%d, Cam=%d) and (Layer=%d, Trig=%d, cam=%d), fine #%d",
-					pOverlap->GetFirstMosaicImage()->Index(), pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
-					pOverlap->GetSecondMosaicImage()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
+					pOverlap->GetFirstMosaicLayer()->Index(), pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
+					pOverlap->GetSecondMosaicLayer()->Index(), pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 					iIndex);
 				iReturnFlag++;
 

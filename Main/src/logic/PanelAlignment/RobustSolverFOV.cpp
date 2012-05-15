@@ -372,14 +372,14 @@ bool RobustSolverFOV::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// First Fov's information
-	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicImage()->Index();
+	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetFirstTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetFirstCameraIndex();
 	FovIndex index1(iMosicIndexA, iTrigIndexA, iCamIndexA); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index1] *_iNumParamsPerFov;
 
 	// Second Fov's information
-	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicImage()->Index();
+	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicLayer()->Index();
 	unsigned int iTrigIndexB = pOverlap->GetSecondTriggerIndex();
 	unsigned int iCamIndexB = pOverlap->GetSecondCameraIndex();
 	FovIndex index2(iMosicIndexB, iTrigIndexB, iCamIndexB); 
@@ -468,7 +468,7 @@ bool RobustSolverFOV::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
-	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();
+	unsigned int iMosicIndex= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndex = pOverlap->GetCameraIndex();
 	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 
@@ -543,7 +543,7 @@ bool RobustSolverFOV::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
-	unsigned int iMosicIndex= pOverlap->GetMosaicImage()->Index();
+	unsigned int iMosicIndex= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndex = pOverlap->GetCameraIndex();
 	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 

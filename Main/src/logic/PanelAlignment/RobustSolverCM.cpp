@@ -316,14 +316,14 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// First Fov's information
-	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicImage()->Index();
+	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetFirstTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetFirstCameraIndex();
 	FovIndex index1(iMosicIndexA, iTrigIndexA, iCamIndexA); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index1] *_iNumParamsPerIndex;
 
 	// Second Fov's information
-	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicImage()->Index();
+	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicLayer()->Index();
 	unsigned int iTrigIndexB = pOverlap->GetSecondTriggerIndex();
 	unsigned int iCamIndexB = pOverlap->GetSecondCameraIndex();
 	FovIndex index2(iMosicIndexB, iTrigIndexB, iCamIndexB); 
@@ -442,9 +442,9 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * (dxSensordzA - dxSensordzB)* w;
 		_dVectorB[_iCurrentRow] = -w * (xSensorA - xSensorB);
 		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d_%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
-			pOverlap->GetFirstMosaicImage()->Index(),
+			pOverlap->GetFirstMosaicLayer()->Index(),
 			pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
-			pOverlap->GetSecondMosaicImage()->Index(),
+			pOverlap->GetSecondMosaicLayer()->Index(),
 			pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 			i->GetIndex(),
 			colImgA, rowImgA, colImgB, rowImgB, xSensorA, ySensorA, xSensorB, ySensorB);
@@ -461,9 +461,9 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * (dySensordzA - dySensordzB)* w;
 		_dVectorB[_iCurrentRow] = -w * (ySensorA - ySensorB);
 		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d_%d,%.2e,%.2e,%.4e,%.4e", 
-			pOverlap->GetFirstMosaicImage()->Index(),
+			pOverlap->GetFirstMosaicLayer()->Index(),
 			pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
-			pOverlap->GetSecondMosaicImage()->Index(),
+			pOverlap->GetSecondMosaicLayer()->Index(),
 			pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 			i->GetIndex(),
 			i->GetCorrelationResult().CorrCoeff, i->GetCorrelationResult().AmbigScore,
@@ -490,7 +490,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 	
 	// Fov's information
-	unsigned int iMosicIndexA= pOverlap->GetMosaicImage()->Index();
+	unsigned int iMosicIndexA= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetCameraIndex();
 	FovIndex index(iMosicIndexA, iTrigIndexA, iCamIndexA); 
@@ -578,7 +578,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
 	_dVectorB[_iCurrentRow] = w * (dFidRoiCenX - xSensorA);
 	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
-		pOverlap->GetMosaicImage()->Index(),
+		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
 		colImgA, rowImgA, xSensorA, ySensorA, pOverlap->GetFiducialXPos(),pOverlap->GetFiducialYPos() );
 	_pdWeights[_iCurrentRow] = w;
@@ -592,7 +592,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
 	_dVectorB[_iCurrentRow] = w * (dFidRoiCenY - ySensorA);
 	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.2e,%.4e,%.4e", 
-		pOverlap->GetMosaicImage()->Index(),
+		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
 		pPair->GetCorrelationResult().CorrCoeff, pPair->GetCorrelationResult().AmbigScore,
 		boardX,boardY);
@@ -1024,7 +1024,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 				POINTPIX pix;
 				pix.u = colPeak;  // Pix2Board uses u -> i, v -> r
 				pix.v = rowPeak;
-				FovIndex fovIndex( (*j)->GetMosaicImage()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex() );
+				FovIndex fovIndex( (*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex() );
 				Pix2Board(pix, fovIndex, &xyBoard);
 					
 				// brdFlat from warpxy

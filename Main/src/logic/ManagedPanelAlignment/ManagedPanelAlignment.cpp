@@ -92,7 +92,7 @@ namespace PanelAlignM {
 			{
 				// FOV information
 				ManagedFidResult ^mResult = gcnew ManagedFidResult();
-				mResult->iLayerIndex = (*j)->GetMosaicImage()->Index();
+				mResult->iLayerIndex = (*j)->GetMosaicLayer()->Index();
 				mResult->iTrigIndex = (*j)->GetTriggerIndex();
 				mResult->iCamIndex = (*j)->GetCameraIndex();
 
