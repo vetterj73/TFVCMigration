@@ -112,7 +112,7 @@ namespace MosaicDM
 			bool IsBayerPattern(){return _bBayerPattern;}; 
 			int GetBayerType(){return _iBayerType;};
 			void SetSeperateProcessStages(bool bValue) { _bSeperateProcessStages = bValue;};
-
+			
 			///
 			/// Calculate the total number of triggers in the MosaicSet
 			///
@@ -123,6 +123,9 @@ namespace MosaicDM
 			///	Get the correlation flags associated with the certain layers
 			///
 			CorrelationFlags* GetCorrelationFlags(unsigned int layerX, unsigned int layerY);
+
+
+			unsigned int GetNumDevice();
 
 			///
 			///	Are all of the images from all layers collected?

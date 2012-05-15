@@ -39,14 +39,25 @@ void PanelFiducialResults::LogResults()
 
 }
 
-double PanelFiducialResults::CalConfidence()
+// iDeviceIndex: -1 (default) for all SIMs, 0 for first SIM, 1 for second SIM
+double PanelFiducialResults::CalConfidence(int iDeviceIndex)
 {
 	double dConfidenceScore = 0;
 
 	// Pick the higheset one for each physical fiducial
 	for(list<FidFovOverlap*>::iterator i = _fidFovOverlapPointList.begin(); i != _fidFovOverlapPointList.end(); i++)
 	{
-		if((*i)->IsProcessed() && (*i)->IsGoodForSolver() && (*i)->GetWeightForSolver()>0)
+		// Skip the device that is not considered
+		if(iDeviceIndex >= 0)	// consider only one device
+			if((*i)->GetMosaicLayer()->DeviceIndex() != iDeviceIndex)
+				continue;
+	
+		// Whether the overlap result is valid
+		bool bValid = (*i)->IsProcessed() && (*i)->IsGoodForSolver() && (*i)->GetWeightForSolver()>0;
+		if(iDeviceIndex >= 0)
+			bValid = (*i)->IsProcessed() && (*i)->GetWeightForSolver()>0;
+	
+		if(bValid)
 		{
 			CorrelationResult result = (*i)->GetCoarsePair()->GetCorrelationResult();
 			double dScore = result.CorrCoeff*(1-result.AmbigScore);
@@ -92,13 +103,13 @@ void PanelFiducialResultsSet::LogResults()
 }
 
 // Calculate confidence based on the fid
-double PanelFiducialResultsSet::CalConfidence()
+double PanelFiducialResultsSet::CalConfidence(int iDeviceIndex)
 {
 	// Calculate confidence for each physical fiducial
 	list<double> dConfidenceList;
 	for(int i=0; i<_iSize; i++)
 	{
-		double dConfidence = _pResultSet[i].CalConfidence();
+		double dConfidence = _pResultSet[i].CalConfidence(iDeviceIndex);
 		dConfidenceList.push_back(dConfidence);
 	}
 	dConfidenceList.sort();

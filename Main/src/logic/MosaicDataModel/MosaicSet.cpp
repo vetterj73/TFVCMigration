@@ -171,6 +171,34 @@ namespace MosaicDM
 		return _correlationFlagsMap[Pair];
 	}
 
+	unsigned int MosaicSet::GetNumDevice()
+	{
+		list<unsigned int> deviceIndice;
+		deviceIndice.clear();
+
+		for(LayerListIterator i=_layerList.begin(); i!=_layerList.end(); i++)
+		{
+			unsigned int iIndex = (*i)->DeviceIndex();
+
+			// Whether index is contained
+			bool bContain = false;
+			for(list<unsigned int>::iterator j=deviceIndice.begin(); j!=deviceIndice.end(); j++)
+			{
+				if((*j) == iIndex)
+				{
+					bContain = true;
+					break;
+				}
+			}
+
+			// If not contained, add it
+			if(!bContain)
+				deviceIndice.push_back(iIndex);
+		}
+
+		return(deviceIndice.size());
+	}
+
 	bool MosaicSet::HasAllImages()
 	{
 		for(unsigned int i=0; i<_layerList.size(); i++)

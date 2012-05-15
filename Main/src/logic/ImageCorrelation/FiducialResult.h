@@ -22,7 +22,7 @@ public:
 
 	Feature* GetFeaturePtr() {return _pFeature;};
 
-	double CalConfidence();
+	double CalConfidence(int iDeviceIndex = -1);
 
 	int GetId() {return _pFeature->GetId();};
 	double GetCadX() {return _pFeature->GetCadX();};
@@ -42,7 +42,7 @@ public:
 
 	void LogResults();
 
-	double  CalConfidence();
+	double  CalConfidence(int iDeviceIndex = -1);
 
 	int Size() {return(_iSize); };
 

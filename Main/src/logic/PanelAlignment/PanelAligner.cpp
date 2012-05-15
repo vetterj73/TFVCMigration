@@ -651,6 +651,19 @@ bool PanelAligner::CreateTransforms()
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 
+	// Log fiducial confidence
+	int iNumDevice = _pSet->GetNumDevice();
+	if(iNumDevice > 1)
+	{
+		for(int i=0; i<iNumDevice; i++)
+		{
+			double dConfid =_pOverlapManager->GetFidResultsSetPoint()->CalConfidence(i);
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Device %d fiducial confidence = %d", i, (int)(dConfid*100) );
+		}
+	}
+	double dConfid =_pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Overall fiducial confidence = %d", (int)(dConfid*100) );
+
 	_bResultsReady = true;
 
 	// for debug
