@@ -142,7 +142,8 @@ for dirName in dirNames:
     OverallResults[dirName]["runTime"] = clip(endTime - startTime, 0, 1e5)
     
 #
-plotBoxDims = [0.1,0.25,0.6,0.65]
+#plotBoxDims = [0.1,0.25,0.6,0.65]
+plotBoxDims = [0.08,0.25,0.6,0.65]
 # position the plot within the window
 # 0.1 from left is enough room for y label
 # 0.25 from botom is needed for very large x tick labels
@@ -202,7 +203,7 @@ for runName, searchPattern, Label  in runTypes:
             "-"+markers[group.index(item)%len(markers)],
             label=item)
     #
-    pylab.legend(loc='right', bbox_to_anchor=(1.35, 0.8),
+    pylab.legend(loc='right', bbox_to_anchor=(1.38, 0.8),
               ncol=1, fancybox=True, shadow=True,
               prop={"size":10})
     #legend(loc='best' , #bbox_to_anchor=(0.5, 1.0),
