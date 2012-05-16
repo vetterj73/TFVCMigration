@@ -110,6 +110,10 @@ namespace PanelAlignM {
 			
 			mSet->resultsSet->Add(mResults);
 			mSet->dConfidence = resultsSet->CalConfidence();
+			mSet->dPanelSkew   = resultsSet->GetPanelSkew();
+			mSet->dPanelXscale = resultsSet->GetXscale();
+			mSet->dPanelYscale = resultsSet->GetYscale();
+			mSet->nGoodFids = resultsSet->GetnGoodFids();
 		}
 
 		return mSet;

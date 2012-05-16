@@ -1148,6 +1148,10 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	yStretch = sqrt(pow(_Board2CAD.GetItem(3), 2.0) + pow(_Board2CAD.GetItem(4), 2.0)) - 1;
 	// the 1 and 3 terms should be equal and opposite, if not then the affine xform is skewing the board
 	skew = _Board2CAD.GetItem(1) + _Board2CAD.GetItem(3);
+	fiducialSet->SetnGoodFids(nGoodFids);
+	fiducialSet->SetPanelSkew(skew);
+	fiducialSet->SetXscale(xStretch);
+	fiducialSet->SetYscale(yStretch);
 	// as all units are meter / meter we can compare the results to IPC limits
 	// John Hoffman found  IPC-D-300G which allows a stretch of 200 um over 300 mm or 0.067%
 	if( abs(xStretch) > CorrelationParametersInst.dAlignBoardStretchLimit )

@@ -2,6 +2,7 @@
 #include "EquationWeights.h"
 #include "lsqrpoly.h"
 #include "Logger.h"
+#include "CorrelationParameters.h"
 
 #include "rtypes.h"
 #include "dot2d.h"
