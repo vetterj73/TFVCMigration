@@ -14,8 +14,8 @@ namespace MMosaicDM
 		ManagedFOVPreferSelected preferSelectedM)
 	{
 		MosaicDM::FOVPreferSelected preferSelectedFov;
-		preferSelectedFov.preferLR = preferSelectedM.preferLR;
-		preferSelectedFov.preferTB = preferSelectedM.preferTB;
+		preferSelectedFov.preferLR = (MosaicDM::FOVLRPOS)preferSelectedM.preferLR;
+		preferSelectedFov.preferTB = (MosaicDM::FOVTBPOS)preferSelectedM.preferTB;
 
 		bool bFlag = _pMosaicLayer->GetImagePatch(
 			(unsigned char*)(void*) pBuf,
@@ -26,8 +26,8 @@ namespace MMosaicDM
 			iCols,
 			&preferSelectedFov);
 
-		preferSelectedM.selectedLR = preferSelectedFov.selectedLR;
-		preferSelectedM.selectedTB = preferSelectedFov.selectedTB;
+		preferSelectedM.selectedLR = (FOVLRPOSM)preferSelectedFov.selectedLR;
+		preferSelectedM.selectedTB = (FOVTBPOSM)preferSelectedFov.selectedTB;
 
 		return(bFlag);
 	}

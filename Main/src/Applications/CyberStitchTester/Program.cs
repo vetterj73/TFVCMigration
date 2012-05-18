@@ -268,6 +268,9 @@ namespace CyberStitchTester
                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
                     //*/
 
+                    // Get fiducial information
+                    ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
+
                     // Get the stitch grid 
                     // Must after get stitched image of the same layer
                     int[] pCols = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfCameras() + 1];

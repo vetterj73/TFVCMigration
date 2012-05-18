@@ -73,7 +73,8 @@ namespace PanelAlignM {
 	{
 	public:
 		List<ManagedPanelFidResults^> ^resultsSet;
-		double dConfidence;
+		double dOverallConfidence;
+		array<double>^ dDeviceConfidences; 
 		double dPanelSkew;		// estimate of skew of panel (unit-less number indicating how much the board has warped from rectangular)
 		double dPanelXscale;			// estimates of scale error in X and Y directions
 		double dPanelYscale;

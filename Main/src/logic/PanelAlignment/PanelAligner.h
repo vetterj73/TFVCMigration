@@ -76,6 +76,8 @@ public:
 	void RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext);
 	void UnregisterAlignmentDoneCallback();
 
+	MosaicSet* GetMosaicSet() {return _pSet;};
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();

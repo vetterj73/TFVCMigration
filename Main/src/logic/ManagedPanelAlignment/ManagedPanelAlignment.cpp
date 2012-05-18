@@ -74,9 +74,9 @@ namespace PanelAlignM {
 		ManagedPanelFidResultsSet ^mSet = gcnew ManagedPanelFidResultsSet;
 		mSet->resultsSet = gcnew List<ManagedPanelFidResults^>;
 
+		// for each physical fiducial
 		for(int i=0; i<resultsSet->Size(); i++)
 		{
-			// for each physical fiducial
 			PanelFiducialResults* pResults = resultsSet->GetPanelFiducialResultsPtr(i);
 			ManagedPanelFidResults ^mResults = gcnew ManagedPanelFidResults;
 			mResults->results = gcnew List<ManagedFidResult^>;
@@ -109,12 +109,20 @@ namespace PanelAlignM {
 			}
 			
 			mSet->resultsSet->Add(mResults);
-			mSet->dConfidence = resultsSet->CalConfidence();
-			mSet->dPanelSkew   = resultsSet->GetPanelSkew();
-			mSet->dPanelXscale = resultsSet->GetXscale();
-			mSet->dPanelYscale = resultsSet->GetYscale();
-			mSet->nGoodFids = resultsSet->GetnGoodFids();
 		}
+
+		mSet->dPanelSkew   = resultsSet->GetPanelSkew();
+		mSet->dPanelXscale = resultsSet->GetXscale();
+		mSet->dPanelYscale = resultsSet->GetYscale();
+		mSet->nGoodFids = resultsSet->GetnGoodFids();
+			
+		// Confidence for overall panel
+		mSet->dOverallConfidence = resultsSet->CalConfidence();
+		// Confidence for each device
+		unsigned int iNumDevice = _pAligner->GetMosaicSet()->GetNumDevice();
+		mSet->dDeviceConfidences = gcnew array<double>(iNumDevice);
+		for(int i=0; i<iNumDevice; i++)
+			mSet->dDeviceConfidences[i] = resultsSet->CalConfidence(i);
 
 		return mSet;
 	}

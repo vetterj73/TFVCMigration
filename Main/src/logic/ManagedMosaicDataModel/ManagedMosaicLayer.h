@@ -6,20 +6,34 @@
 
 namespace MMosaicDM 
 {
-	public struct ManagedFOVPreferSelected
+	public enum class FOVLRPOSM
+	{
+		NOPREFERLR,
+		LEFTFOV,
+		RIGHTFOV,
+	};
+
+	public enum class FOVTBPOSM
+	{
+		NOPREFERTB,
+		TOPFOV,
+		BOTTOMFOV
+	};
+
+	public ref struct ManagedFOVPreferSelected
 	{
 	public:
-		MosaicDM::FOVLRPOS preferLR;
-		MosaicDM::FOVTBPOS preferTB;
-		MosaicDM::FOVLRPOS selectedLR;
-		MosaicDM::FOVTBPOS selectedTB;
+		FOVLRPOSM preferLR;
+		FOVTBPOSM preferTB;
+		FOVLRPOSM selectedLR;
+		FOVTBPOSM selectedTB;
 			
 		ManagedFOVPreferSelected()
 		{
-			preferLR = MosaicDM::NOPREFERLR;
-			preferTB = MosaicDM::NOPREFERTB;
-			selectedLR = MosaicDM::NOPREFERLR;
-			selectedTB = MosaicDM::NOPREFERTB;
+			preferLR = FOVLRPOSM::NOPREFERLR;
+			preferTB = FOVTBPOSM::NOPREFERTB;
+			selectedLR = FOVLRPOSM::NOPREFERLR;
+			selectedTB = FOVTBPOSM::NOPREFERTB;
 		}
 	};
 
