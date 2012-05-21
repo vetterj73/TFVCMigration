@@ -36,7 +36,8 @@ RobustSolverIterative::RobustSolverIterative(
 {
 	_iMaxIterations = CorrelationParametersInst.iSolverMaxIterations;
 	_iCalDriftStartCol = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
-	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + _iNumCalDriftTerms;
+	_iStartColZTerms = _iCalDriftStartCol + _iNumCalDriftTerms;
+	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + (_iNumDevices-1)*2 + _iNumCalDriftTerms;
 	
 	_dThetaEst = new double[_iTotalNumberOfTriggers];
 	_fitInfo = new fitInfo[_iMaxNumCorrelations];
@@ -69,9 +70,10 @@ void RobustSolverIterative::ZeroTheSystem()
 		_pdWeights[i] = 0.0;
 		sprintf_s(_pcNotes[i], _iLengthNotes, "");
 	}
-	for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
-		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
-			_zCoef[i][j] = 0.0;
+	for (unsigned int dev(0); dev < MAX_NUMBER_DEVICES; dev++)
+		for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
+			for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
+				_zCoef[dev][i][j] = 0.0;
 	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
 	_Board2CAD.SetMatrix( resetTransformValues );
 	
@@ -233,7 +235,7 @@ void RobustSolverIterative::FillMatrixA()
 			pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-					pdRow[_iMatrixWidth - _iNumZTerms + j] = w * Zpoly[j] * 
+					pdRow[ColumnZTerm(j, deviceNumA)] = w * Zpoly[j] * 
 						(dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) 
 						 - dySensordzA * sin(_dThetaEst[orderedTrigIndexA]) );
 			//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
@@ -256,7 +258,7 @@ void RobustSolverIterative::FillMatrixA()
 			pdRow[calDriftCol+1] = w * cos(_dThetaEst[orderedTrigIndexA]);
 			
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-					pdRow[_iMatrixWidth - _iNumZTerms + j] = w * Zpoly[j] * 
+					pdRow[ColumnZTerm(j, deviceNumA)] = w * Zpoly[j] * 
 					(dxSensordzA * sin(_dThetaEst[orderedTrigIndexA]) 
 						 + dySensordzA * cos(_dThetaEst[orderedTrigIndexA]) ) ;
 			//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
@@ -311,9 +313,12 @@ void RobustSolverIterative::FillMatrixA()
 			pdRow[calDriftColB+1] -= -w * eqSign * sin(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-				pdRow[_iMatrixWidth - _iNumZTerms + j] = w * eqSign * Zpoly[j] 
-					* (  dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) - dySensordzA * sin(_dThetaEst[orderedTrigIndexA])
-					   - dxSensordzB * cos(_dThetaEst[orderedTrigIndexB]) + dySensordzB * sin(_dThetaEst[orderedTrigIndexB]));
+			{
+				pdRow[ColumnZTerm(j, deviceNumA)] = w * eqSign * Zpoly[j] 
+					* (  dxSensordzA * cos(_dThetaEst[orderedTrigIndexA]) - dySensordzA * sin(_dThetaEst[orderedTrigIndexA]));
+				pdRow[ColumnZTerm(j, deviceNumB)] += w * eqSign * Zpoly[j] 
+					* ( - dxSensordzB * cos(_dThetaEst[orderedTrigIndexB]) + dySensordzB * sin(_dThetaEst[orderedTrigIndexB]));
+			}
 			_dVectorB[_iCurrentRow] = w * eqSign * 
 				(- xSensorA * cos(_dThetaEst[orderedTrigIndexA]) + ySensorA * sin(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * cos(_dThetaEst[orderedTrigIndexB]) - ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
@@ -344,10 +349,12 @@ void RobustSolverIterative::FillMatrixA()
 			pdRow[calDriftColB+1] -= w * eqSign * cos(_dThetaEst[orderedTrigIndexB]);
 			// Board warp terms
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-				pdRow[_iMatrixWidth - _iNumZTerms + j] =  w * eqSign * Zpoly[j] 
-					* (  dxSensordzA * sin(_dThetaEst[orderedTrigIndexA]) + dySensordzA * cos(_dThetaEst[orderedTrigIndexA])
-					   - dxSensordzB * sin(_dThetaEst[orderedTrigIndexB]) - dySensordzB * cos(_dThetaEst[orderedTrigIndexB]));
-
+			{
+				pdRow[ColumnZTerm(j, deviceNumA)] =  w * eqSign * Zpoly[j] 
+					* (  dxSensordzA * sin(_dThetaEst[orderedTrigIndexA]) + dySensordzA * cos(_dThetaEst[orderedTrigIndexA]));
+				pdRow[ColumnZTerm(j, deviceNumB)] +=  w * eqSign * Zpoly[j] 
+					* (- dxSensordzB * sin(_dThetaEst[orderedTrigIndexB]) - dySensordzB * cos(_dThetaEst[orderedTrigIndexB]));
+			}
 			_dVectorB[_iCurrentRow] = w * eqSign * 
 				(- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) - ySensorA * cos(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * sin(_dThetaEst[orderedTrigIndexB]) + ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
@@ -377,7 +384,7 @@ void RobustSolverIterative::FillMatrixA()
 			pdRow[calDriftCol] = w * cos(_dThetaEst[orderedTrigIndexA]);
 			pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
 			for (unsigned int j(0); j < _iNumZTerms; j++)
-					pdRow[_iMatrixWidth - _iNumZTerms + j] = Zpoly[j] * dxSensordzA * w;
+					pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dxSensordzA * w;
 			_dVectorB[_iCurrentRow] = w * (dXOffset 
 				- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
 				+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
@@ -492,25 +499,28 @@ void RobustSolverIterative::SolveXOneIteration()
 	// copy board Z shape terms to the _zCoef array
 	// First we'll put take VectorX values for Z and use it to populate Zpoly (a 4x4 array)
 	// FORTRAN ORDER !!!!!
-	_zCoef[0][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 0];
-	_zCoef[1][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 1];
-	_zCoef[2][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 2];
-	_zCoef[3][0] = _dVectorX[_iMatrixWidth- _iNumZTerms + 3];
+	for (unsigned int deviceNum(0); deviceNum < _iNumDevices; deviceNum++ )
+	{
+		_zCoef[deviceNum][0][0] = _dVectorX[ColumnZTerm(0, deviceNum)];
+		_zCoef[deviceNum][1][0] = _dVectorX[ColumnZTerm(1, deviceNum)];
+		_zCoef[deviceNum][2][0] = _dVectorX[ColumnZTerm(2, deviceNum)];
+		_zCoef[deviceNum][3][0] = _dVectorX[ColumnZTerm(3, deviceNum)];
 	
-	_zCoef[0][1] = _dVectorX[_iMatrixWidth- _iNumZTerms + 4];
-	_zCoef[1][1] = _dVectorX[_iMatrixWidth- _iNumZTerms + 5];
-	_zCoef[2][1] = _dVectorX[_iMatrixWidth- _iNumZTerms + 6];
-	_zCoef[3][1] = 0;
-	
-	_zCoef[0][2] = _dVectorX[_iMatrixWidth- _iNumZTerms + 7];
-	_zCoef[1][2] = _dVectorX[_iMatrixWidth- _iNumZTerms + 8];
-	_zCoef[2][2] = 0;
-	_zCoef[3][2] = 0;
-
-	_zCoef[0][3] = _dVectorX[_iMatrixWidth- _iNumZTerms + 9];
-	_zCoef[1][3] = 0;
-	_zCoef[2][3] = 0;
-	_zCoef[3][3] = 0;
+		_zCoef[deviceNum][0][1] = _dVectorX[ColumnZTerm(4, deviceNum)];
+		_zCoef[deviceNum][1][1] = _dVectorX[ColumnZTerm(5, deviceNum)];
+		_zCoef[deviceNum][2][1] = _dVectorX[ColumnZTerm(6, deviceNum)];
+		_zCoef[deviceNum][3][1] = 0;		
+											
+		_zCoef[deviceNum][0][2] = _dVectorX[ColumnZTerm(7, deviceNum)];
+		_zCoef[deviceNum][1][2] = _dVectorX[ColumnZTerm(8, deviceNum)];
+		_zCoef[deviceNum][2][2] = 0;		
+		_zCoef[deviceNum][3][2] = 0;		
+											
+		_zCoef[deviceNum][0][3] = _dVectorX[ColumnZTerm(9, deviceNum)];
+		_zCoef[deviceNum][1][3] = 0;
+		_zCoef[deviceNum][2][3] = 0;
+		_zCoef[deviceNum][3][3] = 0;
+	}
 }
 
 
@@ -628,7 +638,7 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 	unsigned int iOrderedTrigIndex = (*_pFovOrderMap)[fovindex];
 	unsigned int iVectorXIndex = iOrderedTrigIndex *_iNumParamsPerIndex;
 	unsigned int deviceNum = _pSet->GetLayer(iIllumIndex)->DeviceIndex();
-		
+	
 	TransformCamModel camCal = 
 				 _pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
 	complexd xySensor;
@@ -661,7 +671,7 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 	double Zestimate(0);
 	for (unsigned int k(0); k < NUMBER_Z_BASIS_FUNCTIONS; k++)
 		for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
-			Zestimate += _zCoef[j][k] * pow(xyBoard->x,(double)j) * pow(xyBoard->y,(double)k);
+			Zestimate += _zCoef[deviceNum][j][k] * pow(xyBoard->x,(double)j) * pow(xyBoard->y,(double)k);
 
 	// accurate Z value allows accurate calc of xySensor
 	xySensor.r +=  Zestimate *
@@ -1022,11 +1032,11 @@ void RobustSolverIterative::OutputVectorXCSV(string filename) const
 	}
 	
 	of << "Z ";
-	for(j=0; j<_iNumZTerms; ++j)
+	for(j=0; j<_iNumZTerms + (_iNumDevices-1)*2; ++j)
 	{
 		
 
-		double d = _dVectorX[_iMatrixWidth - _iNumZTerms + j];
+		double d = _dVectorX[_iStartColZTerms + j];
 		of << "," << d;
 	}
 	of <<  std::endl;

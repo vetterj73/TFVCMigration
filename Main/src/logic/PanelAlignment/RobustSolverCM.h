@@ -40,6 +40,7 @@ public:
 
 protected:
 	void	ReorderAndTranspose(bool bRemoveEmptyRows);
+	unsigned int ColumnZTerm(unsigned int term, unsigned int deviceNum);
 	virtual void ZeroTheSystem();
 	
 
@@ -52,8 +53,10 @@ protected:
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex, 
 		double dTrans[3][3]) ;
+	
 	unsigned int	_iNumParamsPerIndex;
 	unsigned int	_iNumZTerms;
+	unsigned int	_iStartColZTerms;
 	unsigned int	_iNumBasisFunctions;
 	unsigned int	_iLengthNotes;
 	unsigned int	_iNumFids;
@@ -68,7 +71,7 @@ protected:
 	unsigned int	_iMaxIterations;
 
 	ImgTransform	_Board2CAD;  // used by flatten fiducial to map from warped board XY to flat CAD XY
-	double			_zCoef[NUMBER_Z_BASIS_FUNCTIONS][NUMBER_Z_BASIS_FUNCTIONS];
+	double			_zCoef[MAX_NUMBER_DEVICES][NUMBER_Z_BASIS_FUNCTIONS][NUMBER_Z_BASIS_FUNCTIONS];
 	// above uses a define !!  tied to _iNumZTerms wich is a variable !!
 	
 

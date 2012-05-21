@@ -47,6 +47,8 @@ EquationWeights::EquationWeights(void)
 	wFidFlatFiducialLateralShift = 1e3;
 	wFidFlatFlattenFiducial = 1e5;
 	RelativeFidFovCamModWeight = 1e-3;
+	//RelativeFidFovCamModWeight = 1e-1;
+	wSimMountZMatch = 2000;
 
 	wCalDriftZero = 1e4;  // expect cal to drift < 100um, start weighting at 10 um
 

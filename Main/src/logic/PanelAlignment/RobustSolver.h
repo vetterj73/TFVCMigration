@@ -14,7 +14,7 @@
 
 #define NUMBER_Z_BASIS_FUNCTIONS 4
 #define PI        (3.141592653589793)
-
+#define MAX_NUMBER_DEVICES 3
 
 using namespace MosaicDM;
 class FovIndex
