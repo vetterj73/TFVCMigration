@@ -100,7 +100,7 @@ namespace MMosaicDM
 				unsigned int iStartColInCad,
 				unsigned int iRows,
 				unsigned int iCols,
-				ManagedFOVPreferSelected preferSelectedM);	// FOV preferance
+				ManagedFOVPreferSelected^ pPreferSelectedM);	// FOV preferance
 
 			// Valid only after stitched image is created
 			bool GetStitchGrid(array<int>^ pCols, array<int>^ pRows)

@@ -11,11 +11,11 @@ namespace MMosaicDM
 		unsigned int iStartColInCad,
 		unsigned int iRows,
 		unsigned int iCols,
-		ManagedFOVPreferSelected preferSelectedM)
+		ManagedFOVPreferSelected^ pPreferSelectedM)
 	{
 		MosaicDM::FOVPreferSelected preferSelectedFov;
-		preferSelectedFov.preferLR = (MosaicDM::FOVLRPOS)preferSelectedM.preferLR;
-		preferSelectedFov.preferTB = (MosaicDM::FOVTBPOS)preferSelectedM.preferTB;
+		preferSelectedFov.preferLR = (MosaicDM::FOVLRPOS)pPreferSelectedM->preferLR;
+		preferSelectedFov.preferTB = (MosaicDM::FOVTBPOS)pPreferSelectedM->preferTB;
 
 		bool bFlag = _pMosaicLayer->GetImagePatch(
 			(unsigned char*)(void*) pBuf,
@@ -26,8 +26,8 @@ namespace MMosaicDM
 			iCols,
 			&preferSelectedFov);
 
-		preferSelectedM.selectedLR = (FOVLRPOSM)preferSelectedFov.selectedLR;
-		preferSelectedM.selectedTB = (FOVTBPOSM)preferSelectedFov.selectedTB;
+		pPreferSelectedM->selectedLR = (FOVLRPOSM)preferSelectedFov.selectedLR;
+		pPreferSelectedM->selectedTB = (FOVTBPOSM)preferSelectedFov.selectedTB;
 
 		return(bFlag);
 	}

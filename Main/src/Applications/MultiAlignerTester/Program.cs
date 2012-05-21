@@ -47,7 +47,7 @@ namespace MultiAlignerTester
             bool bContinuous = false;
             bool bOwnBuffers = false;
             bool bMaskForDiffDevices = false;
-            bool bAdjustForHeight = true;
+            //bool bAdjustForHeight = true;
             bool bUseProjective = false;
             bool bUseCameraModel = false;
             int numberToRun = 1;
@@ -66,8 +66,8 @@ namespace MultiAlignerTester
                     _bBayerPattern = true;
                 if (args[i] == "-w")
                     bUseProjective = true;
-                if (args[i] == "-nh")
-                    bAdjustForHeight = false;
+                //if (args[i] == "-nh")
+                //    bAdjustForHeight = false;
                 if (args[i] == "-cammod")
                     bUseCameraModel = true;
                 if (args[i] == "-s" && i < args.Length - 1)

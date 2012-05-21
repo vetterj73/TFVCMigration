@@ -277,6 +277,11 @@ namespace CyberStitchTester
                     int[] pRows = new int[_mosaicSet.GetLayer(iLayerIndex1).GetNumberOfTriggers() + 1];
                     _mosaicSet.GetLayer(iLayerIndex1).GetStitchGrid(pCols, pRows);
 
+                    // For image patch test
+                    //IntPtr pPoint = _mosaicSet.GetLayer(iLayerIndex1).GetStitchedBuffer();
+                    //ManagedFOVPreferSelected select = new ManagedFOVPreferSelected();
+                    //_mosaicSet.GetLayer(iLayerIndex1).GetImagePatch(pPoint, 100, 0, 0, 100, 100, select);
+
                     /*/ Testing a copy of mosaic...
                     _mosaicSetCopy.CopyBuffers(_mosaicSet);
                     _mosaicSetCopy.CopyTransforms(_mosaicSet);
