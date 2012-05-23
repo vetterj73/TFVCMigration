@@ -78,7 +78,6 @@ namespace PanelAlignM {
 		double dPanelSkew;		// estimate of skew of panel (unit-less number indicating how much the board has warped from rectangular)
 		double dPanelXscale;			// estimates of scale error in X and Y directions
 		double dPanelYscale;
-		unsigned int nGoodFids;	// how many fiducials were used in the aligner (each physical fiducial is used at most one time)
 	};
 
 	///
