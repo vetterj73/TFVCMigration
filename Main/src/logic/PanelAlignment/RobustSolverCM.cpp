@@ -1241,7 +1241,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	yStretch = sqrt(pow(_Board2CAD.GetItem(3), 2.0) + pow(_Board2CAD.GetItem(4), 2.0)) - 1;
 	// the 1 and 3 terms should be equal and opposite, if not then the affine xform is skewing the board
 	skew = _Board2CAD.GetItem(1) + _Board2CAD.GetItem(3);
-	fiducialSet->SetnGoodFids(nGoodFids);
+	//fiducialSet->SetnGoodFids(nGoodFids);
 	fiducialSet->SetPanelSkew(skew);
 	fiducialSet->SetXscale(xStretch);
 	fiducialSet->SetYscale(yStretch);

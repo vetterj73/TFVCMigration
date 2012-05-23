@@ -49,8 +49,6 @@ public:
 	void		SetXscale(double scale){_dXscale= scale;};	
 	double		GetYscale(){return _dYscale;};	
 	void		SetYscale(double scale){_dYscale= scale;};	
-	unsigned int 	GetnGoodFids(){return _nGoodFids;};	
-	void		SetnGoodFids(unsigned int nFids){_nGoodFids= nFids;};	
 	
 	int Size() {return(_iSize); };
 
@@ -62,7 +60,6 @@ private:
 	double				_dPanelSkew;		// estimate of skew of panel (unit-less number indicating how much the board has warped from rectangular)
 	double				_dXscale;			// estimates of scale error in X and Y directions
 	double				_dYscale;
-	unsigned int		_nGoodFids;	// how many fiducials were used in the aligner (each physical fiducial is used at most one time)
 };
 
 // World distance between two fiducials in the fiducial overlap

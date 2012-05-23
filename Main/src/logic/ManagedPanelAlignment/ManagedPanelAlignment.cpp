@@ -114,7 +114,7 @@ namespace PanelAlignM {
 		mSet->dPanelSkew   = resultsSet->GetPanelSkew();
 		mSet->dPanelXscale = resultsSet->GetXscale();
 		mSet->dPanelYscale = resultsSet->GetYscale();
-		mSet->nGoodFids = resultsSet->GetnGoodFids();
+		
 			
 		// Confidence for overall panel
 		mSet->dOverallConfidence = resultsSet->CalConfidence();

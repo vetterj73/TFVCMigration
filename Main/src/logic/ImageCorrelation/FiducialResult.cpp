@@ -85,6 +85,10 @@ PanelFiducialResultsSet::PanelFiducialResultsSet(unsigned int iSize)
 	}
 
 	_pResultSet = new PanelFiducialResults[_iSize];
+
+	_dPanelSkew = 0;
+	_dXscale = 0;
+	_dYscale = 0;
 }
 
 PanelFiducialResultsSet::~PanelFiducialResultsSet()
