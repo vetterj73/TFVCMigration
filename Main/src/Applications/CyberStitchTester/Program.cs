@@ -145,7 +145,11 @@ namespace CyberStitchTester
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+
+                // Add trigger to trigger overlaps for same layer
+                for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+                    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
 
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {

@@ -311,6 +311,10 @@ namespace CyberStitchFidTester
                         _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                     }
 
+                    // Add trigger to trigger overlaps for same layer
+                    for (uint i = 0; i < _mosaicSetProcessing.GetNumMosaicLayers(); i++)
+                        _mosaicSetProcessing.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
+
                     if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                     {
                         throw new ApplicationException("Aligner failed to change production ");
