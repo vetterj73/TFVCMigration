@@ -631,7 +631,7 @@ void RobustSolverFOV::SolveXAlgHB()
 	unsigned int iEmptyRows;
 	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);
 	int iNumEqs = 0;
-	for(int i = 0; i < _iMatrixWidth-bw+1; i++)
+	for(unsigned int i = 0; i < _iMatrixWidth-bw+1; i++)
 		iNumEqs += mb[i];
 
 	double*	resid = new double[_iMatrixHeight];

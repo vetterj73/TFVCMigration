@@ -1121,16 +1121,17 @@ void PanelAligner::TestGetImagePatch()
 void PanelAligner::TestSingleImagePatch()
 {
 	// Layer index
-	int iLayerIndex = 3;
+	int iLayerIndex = 2;
 
 	// Image patch location and size on the stitched image
-	int iStartCol = 3967;
-	int iStartRow = 1202;
-	int iCols = 2301;
-	int iRows = 2301;
+	int iStartCol = 625;
+	int iStartRow = 2391;
+	int iCols = 51;
+	int iRows = 101;
 
 	MosaicDM::FOVPreferSelected setFov;
-
+	setFov.preferTB = TOPFOV;
+	setFov.preferLR = RIGHTFOV;
 
 	Image* pImg;
 	int iBytePerPIxel = 1;

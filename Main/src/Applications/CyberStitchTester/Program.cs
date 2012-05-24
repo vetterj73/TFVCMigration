@@ -248,7 +248,7 @@ namespace CyberStitchTester
                         _panel.GetCADBuffer(), //heightBuf,
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                    /*
+                    //*
                     _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),

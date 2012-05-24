@@ -121,7 +121,7 @@ namespace PanelAlignM {
 		// Confidence for each device
 		unsigned int iNumDevice = _pAligner->GetMosaicSet()->GetNumDevice();
 		mSet->dDeviceConfidences = gcnew array<double>((int)iNumDevice);
-		for(int i=0; i<iNumDevice; i++)
+		for(unsigned int i=0; i<iNumDevice; i++)
 			mSet->dDeviceConfidences[i] = resultsSet->CalConfidence(i);
 
 		return mSet;
