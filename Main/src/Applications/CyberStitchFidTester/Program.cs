@@ -312,8 +312,8 @@ namespace CyberStitchFidTester
                     }
 
                     // Add trigger to trigger overlaps for same layer
-                    for (uint i = 0; i < _mosaicSetProcessing.GetNumMosaicLayers(); i++)
-                        _mosaicSetProcessing.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
+                    //for (uint i = 0; i < _mosaicSetProcessing.GetNumMosaicLayers(); i++)
+                    //    _mosaicSetProcessing.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
 
                     if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
                     {
