@@ -728,7 +728,7 @@ ImgTransform RobustSolverFOV::GetResultTransform(
 	return(trans);
 }
 
-// From 12 calcualted parameters to match a projecive transform
+/*/ From 12 calcualted parameters to match a projecive transform
 bool RobustSolverFOV::MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const
 {
 	int iNumX = 10;
@@ -749,6 +749,89 @@ bool RobustSolverFOV::MatchProjeciveTransform(const double pPara[12], double dTr
 		{
 			pRow[iIndex] = kx*iStepX;
 			pCol[iIndex] = ky*iStepY;
+
+			pX[iIndex] = pRow[iIndex]*pPara[0] + pCol[iIndex]*pPara[1] + pPara[2] +
+				pRow[iIndex]*pRow[iIndex]*pPara[6] +
+				pRow[iIndex]*pCol[iIndex]*pPara[7] +
+				pCol[iIndex]*pCol[iIndex]*pPara[8];
+
+			pY[iIndex] = pRow[iIndex]*pPara[3] + pCol[iIndex]*pPara[4] + pPara[5] +
+				pRow[iIndex]*pRow[iIndex]*pPara[9] +
+				pRow[iIndex]*pCol[iIndex]*pPara[10] +
+				pCol[iIndex]*pCol[iIndex]*pPara[11];
+
+			iIndex++;
+		}
+	}
+
+	// Create matching projective transform
+	int m = iNumX*iNumY;
+	complexd* p = new complexd[m];
+	complexd* q = new complexd[m];
+	complexd* resid = new complexd[m];
+	//complexd p[25], q[25], resid[25];
+	double RMS, dRcond;
+	
+	for(int j=0; j<m; j++)
+	{
+		p[j].r = pRow[j];
+		p[j].i = pCol[j];
+		q[j].r = pX[j];
+		q[j].i = pY[j];
+	}
+
+	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
+	//LOG.FireLogEntry(LogTypeSystem, "RobustSolver::MatchProjeciveTransform():RMS = %f", RMS/(1.6e-5));
+
+	if(iFlag != 0)
+	{
+		//LOG.FireLogEntry(LogTypeSystem, "RobustSolver::MatchProjeciveTransform():Failed to create matching projective transform");
+	}
+
+	delete [] p;
+	delete [] q;
+	delete [] resid;
+
+	delete [] pRow;
+	delete [] pCol;
+	delete [] pX;
+	delete [] pY;
+
+	if(iFlag != 0)
+		return(false);
+	else
+		return(true);
+}
+//*/
+
+// From 12 calcualted parameters to match a projecive transform
+bool RobustSolverFOV::MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const
+{
+	// Pixels selected for mapping
+	int iNumX = 3;
+	int iNumY = 3;
+	int iTotalNum = iNumX*iNumY;
+	double dEdgeScaleX = 0.05;
+	double dEdgeScaleY = 0.05;
+	int iImgRows = 1944;
+	int iImgCols = 2592;
+	int iStartRow = (int)(dEdgeScaleX*iImgRows);
+	int iStartCol = (int)(dEdgeScaleY*iImgCols);
+	int iStepRows = (int)(iImgRows*(1-2*dEdgeScaleX)/(iNumX-1));  // Rows
+	int iStepCols = (int)(iImgCols*(1-2*dEdgeScaleY)/(iNumY-1));  // Columes
+	double* pRow = new double[iTotalNum];
+	double* pCol = new double[iTotalNum];
+	double* pX	 = new double[iTotalNum];
+	double* pY	 = new double[iTotalNum];
+
+	// Create match pairs for projective transform
+	int iIndex = 0;
+	for(int ky=0; ky<iNumY; ky++)
+	{
+		for(int kx=0; kx<iNumX; kx++)
+		{
+			pRow[iIndex] = iStartRow + kx*iStepRows;
+			pCol[iIndex] = iStartCol + ky*iStepCols;
 
 			pX[iIndex] = pRow[iIndex]*pPara[0] + pCol[iIndex]*pPara[1] + pPara[2] +
 				pRow[iIndex]*pRow[iIndex]*pPara[6] +
