@@ -434,6 +434,148 @@ bool PanelAligner::CreateMasks()
 	return(true);
 }
 
+bool PanelAligner::UseEdgeInfomation()
+{
+	bool bUseEdgeInfo =false;
+
+	// Get panel leading edge information
+	double dSlope, dLeftXOffset, dRightXOffset;
+	int iLayerIndex4Edge, iTrigIndex, iLeftCamIndex, iRightCamIndex;
+	EdgeInfoType type = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(
+		&dSlope, &dLeftXOffset, &dRightXOffset,
+		&iLayerIndex4Edge, &iTrigIndex, 
+		&iLeftCamIndex, &iRightCamIndex);
+
+	// If leading edge detection is failed
+	if(type == INVALID || type == CONFLICTION) 
+	{
+		LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code %d!", (int)type);
+		return(bUseEdgeInfo);
+	}
+		
+	// If leading edge detection is success
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Panel leading edge detection success with code %d!", (int)type);
+	bUseEdgeInfo = true;
+
+	// Create matrix and vector for solver
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
+	{
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+	}
+
+	int iNumIllums = _pSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumIllums; i++)
+	{
+		// Not use fiducial, not pin panel with calibration 
+		// since panel leading edge will be used
+		AddOverlapResultsForIllum(_pSolver, i, false, false);
+	}
+
+	// Add panel leading edge constraints
+	MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(iLayerIndex4Edge);
+	if(type == LEFTONLYVALID || type == BOTHVALID)
+	{
+		_pSolver->AddPanelEdgeContraints(pLayer, iLeftCamIndex, iTrigIndex, dLeftXOffset, dSlope);
+	}
+	if(type == RIGHTONLYVALID || type == BOTHVALID)
+	{
+		_pSolver->AddPanelEdgeContraints(pLayer, iRightCamIndex, iTrigIndex, dRightXOffset, dSlope);
+	}
+	// Solve transforms with panel leading edge but without fiducial information
+	_pSolver->SolveXAlgH();
+
+	// Get intermediate result transforms
+	for(int i=0; i<iNumIllums; i++)
+	{
+		// Get calculated transforms
+		pLayer = _pSet->GetLayer(i);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				Image* img = pLayer->GetImage(iCam, iTrig);
+				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
+				img->SetTransform(t);
+			}
+		}
+	}
+			
+	// Reset solver
+	_pSolver->Reset();
+
+	// for debug
+	if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
+	{
+		// Get shift 100 pixel stitched image
+		pLayer = _pSet->GetLayer(0);
+		pLayer->SetXShift(true);
+		Image* pTempImage = pLayer->GetGreyStitchedImage(); // For shifted stitched image
+		pLayer->SetXShift(false);
+		// Draw a 3-pixel width white line to represent leading edge
+		unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
+		::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
+
+		// Get shift 100 pixel Cad image
+		unsigned int iNumRows = _pPanel->GetNumPixelsInX();
+		unsigned int iNumCols = _pPanel->GetNumPixelsInY();
+		unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
+		ImgTransform trans;
+		Image tempImage2;	// For shifted Cad image
+		tempImage2.Configure(iNumCols, iNumRows, iNumCols, trans, trans, true);
+		::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
+		::memcpy(tempImage2.GetBuffer(), pCadBuf, iNumCols*(iNumRows-100)); 
+		// Draw a 3-pixel width white line to represent leading edge
+		pBuf = tempImage2.GetBuffer() + tempImage2.ByteRowStride()* (tempImage2.Rows()-1-100);
+		::memset(pBuf, 255, tempImage2.ByteRowStride()*3);
+
+		Bitmap* rbg = Bitmap::New2ChannelBitmap( 
+			iNumRows, 
+			iNumCols,
+			pTempImage->GetBuffer(), 
+			tempImage2.GetBuffer(),
+			pTempImage->PixelRowStride(),
+			tempImage2.PixelRowStride() );
+
+		string sFileName;
+		char cTemp[100];
+		sprintf_s(cTemp, 100, "%sStitchedEdgeImage_%d.bmp", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
+		sFileName.append(cTemp);
+		rbg->write(sFileName);
+		delete rbg;
+	}
+		
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
+	// Create and Calculate fiducial overlaps for current panel
+	_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);	
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
+	
+	// After all fiducial overlaps are calculated
+	_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+
+	// If edge information is used but fiducial confidence is very low
+	// Fall back to without panel edge information
+	double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
+	if(dConfidence < 0.1)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Fall back without edge detection");
+			
+		// not use edge information
+		bUseEdgeInfo = false;
+			
+		// Do nominal fiducial overlap alignment
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search");
+		_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search");
+
+		// After all fiducial overlaps are calculated (It will clear old information automatically)
+		_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+	}
+
+	return(bUseEdgeInfo);
+}
+
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
@@ -459,144 +601,7 @@ bool PanelAligner::CreateTransforms()
 	bool bUseEdgeInfo = false;
 	if(CorrelationParametersInst.bDetectPanelEdge)
 	{
-		// Get panel leading edge information
-		double dSlope, dLeftXOffset, dRightXOffset;
-		int iLayerIndex4Edge, iTrigIndex, iLeftCamIndex, iRightCamIndex;
-		EdgeInfoType type = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(
-			&dSlope, &dLeftXOffset, &dRightXOffset,
-			&iLayerIndex4Edge, &iTrigIndex, 
-			&iLeftCamIndex, &iRightCamIndex);
-
-		if(type == INVALID || type == CONFLICTION) // If leading edge detection is failed
-		{
-			LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code %d!", (int)type);
-		}
-		else	// If leading edge detection is success
-		{
-			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Panel leading edge detection success with code %d!", (int)type);
-			bUseEdgeInfo = true;
-
-			// Create matrix and vector for solver
-			if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
-			{
-				_pSolver->ConstrainZTerms();
-				_pSolver->ConstrainPerTrig();
-			}
-			for(int i=0; i<iNumIllums; i++)
-			{
-				// Not use fiducial, not pin panel with calibration 
-				// since panel leading edge will be used
-				AddOverlapResultsForIllum(_pSolver, i, false, false);
-			}
-
-			// Add panel leading edge constraints
-			MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(iLayerIndex4Edge);
-			if(type == LEFTONLYVALID || type == BOTHVALID)
-			{
-				_pSolver->AddPanelEdgeContraints(pLayer, iLeftCamIndex, iTrigIndex, dLeftXOffset, dSlope);
-			}
-			if(type == RIGHTONLYVALID || type == BOTHVALID)
-			{
-				_pSolver->AddPanelEdgeContraints(pLayer, iRightCamIndex, iTrigIndex, dRightXOffset, dSlope);
-			}
-			// Solve transforms with panel leading edge but without fiducial information
-			_pSolver->SolveXAlgH();
-
-			// Get intermediate result transforms
-			for(int i=0; i<iNumIllums; i++)
-			{
-				// Get calculated transforms
-				pLayer = _pSet->GetLayer(i);
-				for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-				{
-					for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-					{
-						Image* img = pLayer->GetImage(iCam, iTrig);
-						ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
-						img->SetTransform(t);
-					}
-				}
-			}
-			
-			// Reset solver
-			_pSolver->Reset();
-
-			// for debug
-			if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
-			{
-				// Get shift 100 pixel stitched image
-				pLayer = _pSet->GetLayer(0);
-				pLayer->SetXShift(true);
-				Image* pTempImage = pLayer->GetGreyStitchedImage(); // For shifted stitched image
-				pLayer->SetXShift(false);
-				// Draw a 3-pixel width white line to represent leading edge
-				unsigned char* pBuf = pTempImage->GetBuffer() + pTempImage->ByteRowStride()* (pTempImage->Rows()-1-100);
-				::memset(pBuf, 255, pTempImage->ByteRowStride()*3);
-
-					// Get shift 100 pixel Cad image
-				unsigned int iNumRows = _pPanel->GetNumPixelsInX();
-				unsigned int iNumCols = _pPanel->GetNumPixelsInY();
-				unsigned char* pCadBuf =_pPanel->GetCadBuffer()+iNumCols*100;
-				ImgTransform trans;
-				Image tempImage2;	// For shifted Cad image
-				tempImage2.Configure(iNumCols, iNumRows, iNumCols, 
-					trans, trans, true);
-				::memset(tempImage2.GetBuffer(), 0, iNumCols*iNumRows);
-				::memcpy(tempImage2.GetBuffer(), pCadBuf, iNumCols*(iNumRows-100)); 
-							// Draw a 3-pixel width white line to represent leading edge
-				pBuf = tempImage2.GetBuffer() + tempImage2.ByteRowStride()* (tempImage2.Rows()-1-100);
-				::memset(pBuf, 255, tempImage2.ByteRowStride()*3);
-
-				Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-					iNumRows, 
-					iNumCols,
-					pTempImage->GetBuffer(), 
-					tempImage2.GetBuffer(),
-					pTempImage->PixelRowStride(),
-					tempImage2.PixelRowStride() );
-
-				string sFileName;
-				char cTemp[100];
-				sprintf_s(cTemp, 100, "%sStitchedEdgeImage_%d.bmp", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
-		
-				sFileName.append(cTemp);
-
-				rbg->write(sFileName);
-
-				delete rbg;
-			}
-		}		
-		
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
-		// Create and Calculate fiducial overlaps for current panel
-		_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);	
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
-	}
-	
-	// After all fiducial overlaps are calculated
-	_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
-
-	// If edge information is used but fiducial confidence is very low
-	// Fall back to without panel edge information
-	if(bUseEdgeInfo)
-	{
-		double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
-		if(dConfidence < 0.1)
-		{
-			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
-			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Fall back without edge detection");
-			
-			// not use edge information
-			bUseEdgeInfo = false;
-			
-			// Do nominal fiducial overlap alignment
-			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search");
-			_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
-			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search");
-
-			// After all fiducial overlaps are calculated (It will clear old information automatically)
-			_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
-		}
+		bUseEdgeInfo =UseEdgeInfomation();
 	}
 
 	if(!bUseEdgeInfo)
