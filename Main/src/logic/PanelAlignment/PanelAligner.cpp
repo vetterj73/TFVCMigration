@@ -549,29 +549,6 @@ bool PanelAligner::UseEdgeInfomation()
 	// Create and Calculate fiducial overlaps for current panel
 	_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);	
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
-	
-	// After all fiducial overlaps are calculated
-	_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
-
-	// If edge information is used but fiducial confidence is very low
-	// Fall back to without panel edge information
-	double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
-	if(dConfidence < 0.1)
-	{
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Fall back without edge detection");
-			
-		// not use edge information
-		bUseEdgeInfo = false;
-			
-		// Do nominal fiducial overlap alignment
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search");
-		_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search");
-
-		// After all fiducial overlaps are calculated (It will clear old information automatically)
-		_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
-	}
 
 	return(bUseEdgeInfo);
 }
@@ -601,7 +578,33 @@ bool PanelAligner::CreateTransforms()
 	bool bUseEdgeInfo = false;
 	if(CorrelationParametersInst.bDetectPanelEdge)
 	{
-		bUseEdgeInfo =UseEdgeInfomation();
+		bUseEdgeInfo = UseEdgeInfomation();
+	}
+
+	// After all fiducial overlaps are calculated
+	_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+
+	// If edge information is used but fiducial confidence is very low
+	// Fall back to without panel edge information
+	if(bUseEdgeInfo)
+	{
+		double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
+		if(dConfidence < 0.1)
+		{
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Fall back without edge detection");
+			
+			// not use edge information
+			bUseEdgeInfo = false;
+			
+			// Do nominal fiducial overlap alignment
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search");
+			_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
+			LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search");
+
+			// After all fiducial overlaps are calculated (It will clear old information automatically)
+			_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+		}
 	}
 
 	if(!bUseEdgeInfo)
