@@ -68,6 +68,7 @@ EquationWeights::EquationWeights(void)
 	_dWeightFidFov = 2e6;
 	_dMinFidFovLimit = 0.03;
 	_dMaxFidFovAmbig = 0.8;
+	_dMinFidFovAmbig = 0.25; // any ambiguity below this limit is considered equally good
 }
 
 EquationWeights::~EquationWeights(void)
@@ -105,6 +106,7 @@ double EquationWeights::CalWeight(CorrelationPair* pPair)
 
 		case Fid_To_Fov:
 		{
+			dAmbig = dAmbig < _dMinFidFovAmbig ?   _dMinFidFovAmbig : dAmbig; 
 			dWeight = fabs(dCorrScore) *(_dMaxFidFovAmbig-dAmbig) - _dMinFidFovLimit;
 			dWeight *= _dWeightFidFov;
 		}

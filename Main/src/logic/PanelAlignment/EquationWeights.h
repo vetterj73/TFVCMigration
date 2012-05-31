@@ -77,5 +77,6 @@ private:
 	double _dWeightFidFov;
 	double _dMinFidFovLimit;
 	double _dMaxFidFovAmbig;
+	double _dMinFidFovAmbig;	// all ambiguities below this level are assumed to be equally good (initial value ~ 0.2)
 };
 
