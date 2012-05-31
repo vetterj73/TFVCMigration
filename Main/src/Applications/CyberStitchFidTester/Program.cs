@@ -159,6 +159,8 @@ namespace CyberStitchFidTester
             // Open output text file.
             writer = new StreamWriter(outputTextPath);
 
+            Output("The report file: " + outputTextPath);
+
             string[] imagePath = ExpandFilePaths(imagePathPattern);
             bool bImageOnly = false;
             if(imagePath.Length > 0)
