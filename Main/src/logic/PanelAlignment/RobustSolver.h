@@ -57,7 +57,7 @@ public:
 		bool bPinFov=false)=0;
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
-		double dXOffset, double dSlope)=0;
+		double dXOffset, double dSlope, bool bSlopeOnly=false)=0;
 	virtual bool AddFovFovOvelapResults(FovFovOverlap* pOverlap)=0;
 	virtual bool AddCadFovOvelapResults(CadFovOverlap* pOverlap)=0;
 	virtual bool AddFidFovOvelapResults(FidFovOverlap* pOverlap)=0;

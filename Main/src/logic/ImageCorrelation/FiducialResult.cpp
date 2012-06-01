@@ -70,6 +70,30 @@ double PanelFiducialResults::CalConfidence(int iDeviceIndex)
 	return(dConfidenceScore);
 }
 
+// Check whether this is a ambiguous physical fiducial
+bool PanelFiducialResults::IsAmbiguous()
+{
+	// If confidence score is high, not a ambiguous physical fiducial 
+	double dConfidence = CalConfidence();
+	if(dConfidence > 0.2) 
+		return(false);
+
+	for(list<FidFovOverlap*>::iterator i = _fidFovOverlapPointList.begin(); i != _fidFovOverlapPointList.end(); i++)
+	{
+		// If not processed, skip
+		if(!(*i)->IsProcessed())
+			continue;
+			
+		// Whether the  fiducial is ambiguous
+		CorrelationResult result;
+		(*i)->GetCoarsePair()->GetCorrelationResult(&result);
+		if(result.CorrCoeff > 0.5 && result.AmbigScore > 0.85)
+			return(true);
+	}
+
+	return(false);
+}
+
 ///////////////////////////////////////////////////////////////
 //////		PanelFiducialResultsSet Class
 ///////////////////////////////////////////////////////////////
@@ -144,6 +168,33 @@ double PanelFiducialResultsSet::CalConfidence(int iDeviceIndex)
 
 	return(0); // should never reach here
 }
+
+bool PanelFiducialResultsSet::IsOneGoodOneAmbig()
+{
+	int iGoodCount = 0;
+	int iAmbigCount = 0;
+
+	for(int i=0; i<_iSize; i++)
+	{
+		double dConfidence = _pResultSet[i].CalConfidence();
+		if(dConfidence > 0.5)
+		{
+			iGoodCount++;
+		}
+		else
+		{
+			if(_pResultSet[i].IsAmbiguous())
+				iAmbigCount++;
+		}
+	}
+
+	if(iGoodCount == 1 && iAmbigCount == 1)
+		return(true);
+	else
+		return(false);
+}
+
+
 
 //////////////////////////////////////////////////////
 //	FiducialDistance class

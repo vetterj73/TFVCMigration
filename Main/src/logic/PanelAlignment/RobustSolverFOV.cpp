@@ -333,7 +333,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 // Add constraint base on panel edge
 bool RobustSolverFOV::AddPanelEdgeContraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
-	double dXOffset, double dSlope)
+	double dXOffset, double dSlope, bool bSlopeOnly)
 {
 	// Position of equation in Matirix
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 

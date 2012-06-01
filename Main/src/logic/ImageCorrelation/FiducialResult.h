@@ -23,6 +23,7 @@ public:
 	Feature* GetFeaturePtr() {return _pFeature;};
 
 	double CalConfidence(int iDeviceIndex = -1);
+	bool IsAmbiguous();
 
 	int GetId() {return _pFeature->GetId();};
 	double GetCadX() {return _pFeature->GetCadX();};
@@ -42,7 +43,8 @@ public:
 
 	void LogResults();
 
-	double  CalConfidence(int iDeviceIndex = -1);
+	double		CalConfidence(int iDeviceIndex = -1);
+	bool		IsOneGoodOneAmbig();
 	double		GetPanelSkew(){return _dPanelSkew;};	
 	void		SetPanelSkew(double skew){_dPanelSkew = skew;};	
 	double		GetXscale(){return _dXscale;};	

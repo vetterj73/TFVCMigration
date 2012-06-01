@@ -923,7 +923,7 @@ bool RobustSolverIterative::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 // Add constraint base on panel edge
 bool RobustSolverIterative::AddPanelEdgeContraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
-	double dXOffset, double dSlope)
+	double dXOffset, double dSlope, bool bSlopeOnly)
 {
 	// dXOffset is the X position of the 0,0 pixel of the imager,
 	// dSlope is the rotation (estimate) of the imager
