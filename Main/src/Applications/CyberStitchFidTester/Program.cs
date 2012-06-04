@@ -600,8 +600,8 @@ namespace CyberStitchFidTester
                         dResults[i * iItems] * iUnitCoverter, dResults[i * iItems + 1] * iUnitCoverter, 
                         xDifference, yDifference,
                         dResults[i * iItems + 4], dResults[i * iItems + 5]));
-                    _dXDiffSqrSumTol += _dXDiffSqrSum[i];
-                    _dYDiffSqrSumTol += _dYDiffSqrSum[i];
+                    _dXDiffSqrSumTol += Math.Pow(xDifference, 2);
+                    _dYDiffSqrSumTol += Math.Pow(yDifference, 2);
                 }
             }
 
