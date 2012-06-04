@@ -295,19 +295,15 @@ FovPanelEdgeDetectJob* PanelEdgeDetection::GetValidJob(int iLayer, int iTrig, in
 }
 
 // Calculate location of panel leading edge
-// pdSlope: out, the slope of leading edge (delta_x/delta_Y)
-// pdLeftXOffset and pdRightXOffset: out, the x offsets of left and right FOVs ((0,0) pixel in image)
-// piLayer, piTrig, piLeftCam and piRightCam: out, the indics of left and right FOVs
-EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
-	double* pdSlope, double* pdLeftXOffset, double* pdRightXOffset,
-	int* piLayer,int* piTrig,
-	int* piLeftCam, int* piRightCam)
+// pInfo: out, panel leading edge information
+// Return false if there is a fatal error
+bool PanelEdgeDetection::CalLeadingEdgeLocation(EdgeInfo* pInfo)
 {
 	// Fov indexes
-	*piLayer = _iLayerIndex;
-	*piTrig = _iEdgeTrigIndex;
-	*piLeftCam = _iLeftCamIndex; 
-	*piRightCam = _iRightCamIndex;
+	pInfo->iLayerIndex = _iLayerIndex;
+	pInfo->iTrigIndex = _iEdgeTrigIndex;
+	pInfo->iLeftCamIndex = _iLeftCamIndex; 
+	pInfo->iRightCamIndex = _iRightCamIndex;
 
 	// Check the validataion of the results
 	bool bLeftValid = false, bRightValid = false;
@@ -322,29 +318,34 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 	// Both results are not valid
 	if(!bLeftValid && !bRightValid)
 	{
-		return(INVALID);
+		pInfo->type = INVALID;
+		return(true);
 	}
 	
 	// Only left result is valid
 	if(bLeftValid && !bRightValid)
 	{
-		*pdSlope = _leftFovParam.dSlope;   // delta_x/delta_Y
-		double dAngle = atan(*pdSlope); 
-		*pdLeftXOffset = -_leftFovParam.dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
+		pInfo->dPanelSlope = _leftFovParam.dSlope;   // delta_x/delta_Y
+		double dAngle = atan(pInfo->dPanelSlope); 
+		pInfo->dLeftXOffset = -_leftFovParam.dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
-			*pdLeftXOffset += _panelRoi.xMax;
-		return(LEFTONLYVALID);
+			pInfo->dLeftXOffset += _panelRoi.xMax;
+
+		pInfo->type = LEFTONLYVALID;
+		return(true);
 	}
 
 	// Only right result is valid
 	if(!bLeftValid && bRightValid)
 	{
-		*pdSlope = _rightFovParam.dSlope;   // delta_x/delta_Y
-		double dAngle = atan(*pdSlope); 
-		*pdRightXOffset = -_rightFovParam.dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
+		pInfo->dPanelSlope = _rightFovParam.dSlope;   // delta_x/delta_Y
+		double dAngle = atan(pInfo->dPanelSlope); 
+		pInfo->dRightXOffset = -_rightFovParam.dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
-			*pdRightXOffset += _panelRoi.xMax;
-		return(RIGHTONLYVALID);
+			pInfo->dRightXOffset += _panelRoi.xMax;
+
+		pInfo->type = RIGHTONLYVALID;
+		return(true);
 	}
 
 	// Both results are valid
@@ -371,29 +372,31 @@ EdgeInfoType PanelEdgeDetection::CalLeadingEdgeLocation(
 		if(fabs(dPanelEdgeSlope-_leftFovParam.dSlope) > tan(PI/180) ||
 			fabs(dPanelEdgeSlope-_rightFovParam.dSlope) > tan(PI/180))
 		{
-			return(CONFLICTION);
+			pInfo->type = CONFLICTION;
+			return(true);
 		}
 
-		*pdSlope = dPanelEdgeSlope;	
-		double dAngle = atan(*pdSlope); 
+		pInfo->dPanelSlope = dPanelEdgeSlope;	
+		double dAngle = atan(pInfo->dPanelSlope); 
 
 		// Left x offset
-		double dRowOffsetInColumn0 = dLeftRoiCenRows - *pdSlope*dLeftRoiCenCols; // updated dRowOffsetInColumn0
-		*pdLeftXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
+		double dRowOffsetInColumn0 = dLeftRoiCenRows - pInfo->dPanelSlope*dLeftRoiCenCols; // updated dRowOffsetInColumn0
+		pInfo->dLeftXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pLeftFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
-			*pdLeftXOffset += _panelRoi.xMax;
+			pInfo->dLeftXOffset += _panelRoi.xMax;
 		
 		// Right x offset
-		dRowOffsetInColumn0 = dRightRoiCenRows - *pdSlope*dRightRoiCenCols;
-		*pdRightXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
+		dRowOffsetInColumn0 = dRightRoiCenRows - pInfo->dPanelSlope*dRightRoiCenCols;
+		pInfo->dRightXOffset = -dRowOffsetInColumn0*cos(dAngle)*_pRightFov->PixelSizeY();
 		if(_leadingEdgeType == BOTTOMEDGE) 
-			*pdRightXOffset += _panelRoi.xMax;
+			pInfo->dRightXOffset += _panelRoi.xMax;
 
-		return(BOTHVALID);
+		pInfo->type = BOTHVALID;
+		return(true);
 	}
 
 	// Should never reach here 
-	return(INVALID);
+	return(false);
 }
 #pragma endregion
 

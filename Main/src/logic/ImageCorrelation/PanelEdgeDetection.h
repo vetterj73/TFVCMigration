@@ -29,11 +29,29 @@ private:
 // Type of edge information (edge detection results)
 enum EdgeInfoType
 {
+	NOPROCESSED,
 	INVALID,
 	CONFLICTION,
 	LEFTONLYVALID,
 	RIGHTONLYVALID,
 	BOTHVALID,
+};
+
+struct EdgeInfo
+{
+	EdgeInfoType type;
+	double dPanelSlope;			// the slope of leading edge (delta_x/delta_Y)
+	double dLeftXOffset;	// the x offsets of left and right FOVs ((0,0) pixel in image)
+	double dRightXOffset;
+	int iLayerIndex;				// the indics of left and right FOVs
+	int iTrigIndex;
+	int iLeftCamIndex;
+	int iRightCamIndex;
+
+	EdgeInfo() 
+	{
+		type = NOPROCESSED;
+	};
 };
 
 // Class for panel edge detection
@@ -49,10 +67,7 @@ public:
 
 	void Reset();
 
-	EdgeInfoType CalLeadingEdgeLocation(
-		double* pdSlope, double* pdLeftXOffset, double* pdRightXOffset,
-		int* piLayer,int* piTrig,
-		int* piLeftCam, int* piRightCam);
+	bool PanelEdgeDetection::CalLeadingEdgeLocation(EdgeInfo* pInfo);
 
 private:
 	bool _bConveyorLeft2Right;
