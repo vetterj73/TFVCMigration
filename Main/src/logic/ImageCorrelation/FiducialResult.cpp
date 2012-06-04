@@ -169,8 +169,10 @@ double PanelFiducialResultsSet::CalConfidence(int iDeviceIndex)
 	return(0); // should never reach here
 }
 
-bool PanelFiducialResultsSet::IsOneGoodOneAmbig()
+bool PanelFiducialResultsSet::IsOneGoodOneAmbig(int* piGoodIndex)
 {
+	*piGoodIndex = -1;
+
 	int iGoodCount = 0;
 	int iAmbigCount = 0;
 
@@ -179,6 +181,7 @@ bool PanelFiducialResultsSet::IsOneGoodOneAmbig()
 		double dConfidence = _pResultSet[i].CalConfidence();
 		if(dConfidence > 0.5)
 		{
+			*piGoodIndex = i;
 			iGoodCount++;
 		}
 		else

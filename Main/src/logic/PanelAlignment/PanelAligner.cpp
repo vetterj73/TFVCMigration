@@ -435,10 +435,10 @@ bool PanelAligner::CreateMasks()
 }
 
 // Align panel with panel leading edge information
-bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo)
+bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 {
-// Create matrix and vector for solver
-	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
+	// Create matrix and vector for solver
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch)
 	{
 		_pSolver->ConstrainZTerms();
 		_pSolver->ConstrainPerTrig();
@@ -452,20 +452,29 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo)
 		AddOverlapResultsForIllum(_pSolver, i, false, false);
 	}
 
+	// If fiducial information is available, edge x location is not needed 
+	bool bSlopeOnly = false;
+	if(iFidIndex>=0)
+	{
+		AddCurPanelFidOverlapResultsForPhyiscalFiducial(_pSolver, iFidIndex);
+		bSlopeOnly = true;
+	}
+
 	// Add panel leading edge constraints
 	MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(pEdgeInfo->iLayerIndex);
 	if(pEdgeInfo->type == LEFTONLYVALID || pEdgeInfo->type == BOTHVALID)
 	{
 		_pSolver->AddPanelEdgeContraints(
 			pLayer, pEdgeInfo->iLeftCamIndex, pEdgeInfo->iTrigIndex, 
-			pEdgeInfo->dLeftXOffset, pEdgeInfo->dPanelSlope);
+			pEdgeInfo->dLeftXOffset, pEdgeInfo->dPanelSlope, bSlopeOnly);
 	}
 	if(pEdgeInfo->type == RIGHTONLYVALID || pEdgeInfo->type == BOTHVALID)
 	{
 		_pSolver->AddPanelEdgeContraints(
 			pLayer, pEdgeInfo->iRightCamIndex, pEdgeInfo->iTrigIndex, 
-			pEdgeInfo->dRightXOffset, pEdgeInfo->dPanelSlope);
+			pEdgeInfo->dRightXOffset, pEdgeInfo->dPanelSlope, bSlopeOnly);
 	}
+
 	// Solve transforms with panel leading edge but without fiducial information
 	_pSolver->SolveXAlgH();
 
@@ -556,17 +565,43 @@ bool PanelAligner::UseEdgeInfomation()
 	if(!AlignWithPanelEdge(&edgeInfo))
 		return(false);
 		
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search with edge!");
 	// Create and Calculate fiducial overlaps for current panel
 	_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);	
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search with edge!");
 
 	// After all fiducial overlaps are calculated (It will clear old information automatically)
 	_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+	double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
 	
 	// If edge information is used but fiducial confidence is very low
+	// If it is possible, using edge and good fiducial result further reduce search range
+	if(dConfidence < 0.1)
+	{
+		if(!CorrelationParametersInst.bUseCameraModelStitch && !CorrelationParametersInst.bUseCameraModelIterativeStitch)
+		{
+			int iGoodIndex; 
+			bFlag = _pOverlapManager->GetFidResultsSetPoint()->IsOneGoodOneAmbig(&iGoodIndex);
+			if(bFlag)
+			{
+				if(!AlignWithPanelEdge(&edgeInfo, iGoodIndex))
+					return(false);
+
+				LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search with edge and fiducial #%d!", iGoodIndex);
+				// Create and Calculate fiducial overlaps for current panel
+				bool bHasEdgeFidInfo = true;
+				_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo, bHasEdgeFidInfo);	
+				LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search with edge and fiducial #%d!", iGoodIndex);
+				
+				// After all fiducial overlaps are calculated (It will clear old information automatically)
+				_pOverlapManager->CreateFiducialResultSet(bUseEdgeInfo);
+				dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
+			}
+		}
+	}
+
+	// If edge information is used but fiducial confidence is very low
 	// Fall back to without panel edge information
-	double dConfidence = _pOverlapManager->GetFidResultsSetPoint()->CalConfidence();
 	if(dConfidence < 0.1)
 	{
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
@@ -757,20 +792,26 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 	}
 }
 
+
 // Add current panel/(not nominal) fiducial overlap results
 void PanelAligner::AddCurPanelFidOverlapResults(RobustSolver* solver)
 {
 	for(unsigned int k=0; k<_pPanel->NumberOfFiducials(); k++)
 	{
-		FidFovOverlapList* pFidFovList =_pOverlapManager->GetCurPanelFidFovList4Fid(k);
-		for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+		AddCurPanelFidOverlapResultsForPhyiscalFiducial(solver, k);
+	}
+}
+
+void PanelAligner::AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver* solver, int iIndex)
+{
+	FidFovOverlapList* pFidFovList =_pOverlapManager->GetCurPanelFidFovList4Fid(iIndex);
+	for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+	{
+		if(ite->IsProcessed() && ite->IsGoodForSolver())
 		{
-			if(ite->IsProcessed() && ite->IsGoodForSolver())
-			{
-				solver->AddFidFovOvelapResults(&(*ite));
-				// These are used to verify that the last fids actually worked...
-				_lastProcessedFids.push_back(*ite);
-			}
+			solver->AddFidFovOvelapResults(&(*ite));
+			// These are used to verify that the last fids actually worked...
+			_lastProcessedFids.push_back(*ite);
 		}
 	}
 }

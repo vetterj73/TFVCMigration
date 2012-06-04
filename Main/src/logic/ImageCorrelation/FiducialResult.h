@@ -44,7 +44,7 @@ public:
 	void LogResults();
 
 	double		CalConfidence(int iDeviceIndex = -1);
-	bool		IsOneGoodOneAmbig();
+	bool		IsOneGoodOneAmbig(int* piGoodIndex);
 	double		GetPanelSkew(){return _dPanelSkew;};	
 	void		SetPanelSkew(double skew){_dPanelSkew = skew;};	
 	double		GetXscale(){return _dXscale;};	

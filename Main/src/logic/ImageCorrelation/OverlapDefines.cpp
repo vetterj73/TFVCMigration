@@ -705,10 +705,11 @@ bool FidFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sFidFov_I%dT%dC%d_FIN%d_TID%d.bmp", 
+	sprintf_s(cTemp, 100, "%sFidFov_#%d_I%dT%dC%d_FIN%d_TID%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		_iFidIndex, 
 		_pLayer->Index(), _imgPos.second, _imgPos.first,
-		_iFidIndex, _iTemplateID);
+		_iTemplateID);
 		
 	s.append(cTemp);
 	_coarsePair.DumpImg(s);
@@ -723,10 +724,11 @@ bool FidFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sResult_FidFov_I%dT%dC%d_FIN%d_TID%d_Score%dAmbig%d%s.bmp", 
+	sprintf_s(cTemp, 100, "%sResult_FidFov_#%d_I%dT%dC%d_TID%d_Score%dAmbig%d%s.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		_iFidIndex,
 		_pLayer->Index(), _imgPos.second, _imgPos.first, 
-		_iFidIndex, _iTemplateID,
+		_iTemplateID,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100),
 		_fidSearchMethod==FIDCYBERNGC? "_Ngc" : "");

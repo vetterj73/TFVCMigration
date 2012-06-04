@@ -849,7 +849,7 @@ void OverlapManager::CreateFidFovOverlaps4Fid(
 }
 
 // Create Fiducial and Fov overlaps
-void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
+void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel, bool bHasEdgeFidInfo)
 {
 	// Validation check
 	unsigned int iNum = _pPanel->NumberOfFiducials();
@@ -882,17 +882,23 @@ void OverlapManager::CreateFidFovOverlaps(bool bForCurPanel)
 		// Get fiducial image and search expansion 
 		double dExpandX, dExpandY;
 		Image* pFidImage = NULL;
-		if(!bForCurPanel)
+		if(!bForCurPanel) // For all panels
 		{
 			dExpandX = CorrelationParametersInst.dFiducialSearchExpansionX;
 			dExpandY = CorrelationParametersInst.dFiducialSearchExpansionY;
 			pFidImage = &_pFidImages[iFidIndex];
 			
 		}
-		else
+		else if(!bHasEdgeFidInfo) // For current panel and has edge information but not fid location information
 		{
 			dExpandX = CorrelationParametersInst.dFidSearchExpXWithEdge;
 			dExpandY = CorrelationParametersInst.dFidSearchExpYWithEdge;
+			pFidImage = &_pCurPanelFidImages[iFidIndex];
+		}
+		else
+		{
+			dExpandX = CorrelationParametersInst.dFidSearchExpXWithEdge1Fid;
+			dExpandY = CorrelationParametersInst.dFidSearchExpYWithEdge1Fid;
 			pFidImage = &_pCurPanelFidImages[iFidIndex];
 		}
 		
@@ -1066,7 +1072,7 @@ bool OverlapManager::DoAlignmentForFov(
 }
 
 // Do alignment for all fiducial
-bool OverlapManager::DoAlignment4AllFiducial(bool bForCurPanel)
+bool OverlapManager::DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFidInfo)
 {
 	// Validation check
 	if(_pJobManager->TotalJobs() > 0)
@@ -1107,7 +1113,7 @@ bool OverlapManager::DoAlignment4AllFiducial(bool bForCurPanel)
 	else	// Use current panel Fiducial overlap
 	{
 		// Create fiducail overlaps for currente panel
-		CreateFidFovOverlaps(true);
+		CreateFidFovOverlaps(true, bHasEdgeFidInfo);
 
 		// Do current panel fiducial overlaps
 		for(unsigned int k =0; k<_pPanel->NumberOfFiducials(); k++)

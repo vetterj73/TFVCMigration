@@ -91,10 +91,11 @@ protected:
 	bool IsReadyToCreateMasks() const;
 	bool CreateMasks();
 	bool CreateTransforms();
-	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo);
+	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
 	bool UseEdgeInfomation();
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanel=false);
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);
+	void AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver* solver, int iIndex);
 
 	int FiducialAlignmentCheckOnCalibration();
 	bool PickOneAlign4EachPanelFiducial();

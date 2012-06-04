@@ -39,7 +39,7 @@ public:
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex);
 
-	bool DoAlignment4AllFiducial(bool bForCurPanel);
+	bool DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFidInfo=false);
 
 	FovFovOverlapList* GetFovFovListForFov(
 		unsigned int iMosaicIndex, 
@@ -87,7 +87,7 @@ protected:
 
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();
-	void CreateFidFovOverlaps(bool bForCurPanel=false);
+	void CreateFidFovOverlaps(bool bForCurPanel=false, bool bHasEdgeFidInfo = false);
 	
 	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
 
