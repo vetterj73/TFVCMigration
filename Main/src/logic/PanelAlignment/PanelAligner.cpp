@@ -434,26 +434,10 @@ bool PanelAligner::CreateMasks()
 	return(true);
 }
 
-bool PanelAligner::UseEdgeInfomation()
+// Align panel with panel leading edge information
+bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo)
 {
-	bool bUseEdgeInfo =false;
-
-	// Get panel leading edge information
-	EdgeInfo edgeInfo;
-	bool bFlag = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(&edgeInfo);
-
-	// If leading edge detection is failed
-	if(edgeInfo.type == INVALID || edgeInfo.type == CONFLICTION) 
-	{
-		LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code %d!", (int)edgeInfo.type);
-		return(bUseEdgeInfo);
-	}
-		
-	// If leading edge detection is success
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Panel leading edge detection success with code %d", (int)edgeInfo.type);
-	bUseEdgeInfo = true;
-
-	// Create matrix and vector for solver
+// Create matrix and vector for solver
 	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
 	{
 		_pSolver->ConstrainZTerms();
@@ -469,18 +453,18 @@ bool PanelAligner::UseEdgeInfomation()
 	}
 
 	// Add panel leading edge constraints
-	MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(edgeInfo.iLayerIndex);
-	if(edgeInfo.type == LEFTONLYVALID || edgeInfo.type == BOTHVALID)
+	MosaicLayer* pLayer = _pOverlapManager->GetMosaicSet()->GetLayer(pEdgeInfo->iLayerIndex);
+	if(pEdgeInfo->type == LEFTONLYVALID || pEdgeInfo->type == BOTHVALID)
 	{
 		_pSolver->AddPanelEdgeContraints(
-			pLayer, edgeInfo.iLeftCamIndex, edgeInfo.iTrigIndex, 
-			edgeInfo.dLeftXOffset, edgeInfo.dPanelSlope);
+			pLayer, pEdgeInfo->iLeftCamIndex, pEdgeInfo->iTrigIndex, 
+			pEdgeInfo->dLeftXOffset, pEdgeInfo->dPanelSlope);
 	}
-	if(edgeInfo.type == RIGHTONLYVALID || edgeInfo.type == BOTHVALID)
+	if(pEdgeInfo->type == RIGHTONLYVALID || pEdgeInfo->type == BOTHVALID)
 	{
 		_pSolver->AddPanelEdgeContraints(
-			pLayer, edgeInfo.iRightCamIndex, edgeInfo.iTrigIndex, 
-			edgeInfo.dRightXOffset, edgeInfo.dPanelSlope);
+			pLayer, pEdgeInfo->iRightCamIndex, pEdgeInfo->iTrigIndex, 
+			pEdgeInfo->dRightXOffset, pEdgeInfo->dPanelSlope);
 	}
 	// Solve transforms with panel leading edge but without fiducial information
 	_pSolver->SolveXAlgH();
@@ -544,6 +528,33 @@ bool PanelAligner::UseEdgeInfomation()
 		rbg->write(sFileName);
 		delete rbg;
 	}
+
+	return(true);
+}
+
+// Use panel leading edge information to Align fiducials
+bool PanelAligner::UseEdgeInfomation()
+{
+	bool bUseEdgeInfo =false;
+
+	// Get panel leading edge information
+	EdgeInfo edgeInfo;
+	bool bFlag = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(&edgeInfo);
+
+	// If leading edge detection is failed
+	if(edgeInfo.type == INVALID || edgeInfo.type == CONFLICTION) 
+	{
+		LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code %d!", (int)edgeInfo.type);
+		return(bUseEdgeInfo);
+	}
+		
+	// If leading edge detection is success
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Panel leading edge detection success with code %d", (int)edgeInfo.type);
+	bUseEdgeInfo = true;
+
+	// Align panel with panel leading edge information
+	if(!AlignWithPanelEdge(&edgeInfo))
+		return(false);
 		
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search %s !", bUseEdgeInfo ? "with edge":"without edge");
 	// Create and Calculate fiducial overlaps for current panel

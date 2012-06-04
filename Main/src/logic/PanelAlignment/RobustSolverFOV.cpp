@@ -344,10 +344,13 @@ bool RobustSolverFOV::AddPanelEdgeContraints(
 	double dNorminalPixelSize = trans.GetItem(0);
 
 	// Position X constraint
-	pdRowBegin[iFOVPos+2] = Weights.wXbyEdge; // M[2]
-	_dVectorB[_iCurrentRow] = Weights.wXbyEdge * dXOffset;
-	pdRowBegin += _iMatrixWidth;
-	_iCurrentRow++;
+	if(!bSlopeOnly)
+	{
+		pdRowBegin[iFOVPos+2] = Weights.wXbyEdge; // M[2]
+		_dVectorB[_iCurrentRow] = Weights.wXbyEdge * dXOffset;
+		pdRowBegin += _iMatrixWidth;
+		_iCurrentRow++;
+	}
 
 	// Angle constraint
 	// dNorminalPixelSize * (-dSlope) = M[1];

@@ -58,6 +58,8 @@ public:
 	double dFiducialSearchExpansionY;
 	double dFidSearchExpXWithEdge;			// Fiducial search expansion in x and y of world space with panel edge information
 	double dFidSearchExpYWithEdge;
+	double dFidSearchExpXWithEdge1Fid;		// Fiducial search expansion in x and y of world space with panel edge information and one fiducial information
+	double dFidSearchExpYWithEdge1Fid;
 
 	// FovFov Alignment result check for each trigger
 	bool bFovFovAlignCheck;					// Whether do FovFov alignment check for each trigger
