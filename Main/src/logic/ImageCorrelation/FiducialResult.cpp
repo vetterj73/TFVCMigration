@@ -43,6 +43,7 @@ void PanelFiducialResults::LogResults()
 double PanelFiducialResults::CalConfidence(int iDeviceIndex)
 {
 	double dConfidenceScore = 0;
+	double dMaxCorrScore = 0;
 
 	// Pick the higheset one for each physical fiducial
 	for(list<FidFovOverlap*>::iterator i = _fidFovOverlapPointList.begin(); i != _fidFovOverlapPointList.end(); i++)
@@ -53,17 +54,26 @@ double PanelFiducialResults::CalConfidence(int iDeviceIndex)
 				continue;
 	
 		// Whether the overlap result is valid
-		bool bValid = (*i)->IsProcessed() && (*i)->IsGoodForSolver() && (*i)->GetWeightForSolver()>0;
+		bool bValid = (*i)->IsProcessed(); 
+			//&& (*i)->IsGoodForSolver();
+			//&& (*i)->GetWeightForSolver()>0;
 		if(iDeviceIndex >= 0)
-			bValid = (*i)->IsProcessed() && (*i)->GetWeightForSolver()>0;
+			bValid = (*i)->IsProcessed(); 
+			//&& (*i)->GetWeightForSolver()>0;
 	
 		if(bValid)
 		{
 			CorrelationResult result = (*i)->GetCoarsePair()->GetCorrelationResult();
-			double dScore = result.CorrCoeff*(1-result.AmbigScore);
+			
+			//double dScore = result.CorrCoeff*(1-result.AmbigScore);
+			//if(dConfidenceScore < dScore)
+			//	dConfidenceScore = dScore;
 
-			if(dConfidenceScore < dScore)
-				dConfidenceScore = dScore;
+			if(dMaxCorrScore < result.CorrCoeff)
+			{
+				dMaxCorrScore = result.CorrCoeff;
+				dConfidenceScore = result.CorrCoeff*(1-result.AmbigScore);
+			}
 		}
 	}
 
