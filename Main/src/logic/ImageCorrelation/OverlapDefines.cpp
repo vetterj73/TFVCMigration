@@ -705,7 +705,7 @@ bool FidFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sFidFov_#%d_I%dT%dC%d_FIN%d_TID%d.bmp", 
+	sprintf_s(cTemp, 100, "%sFidFov_#%d_I%dT%dC%d_TID%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_iFidIndex, 
 		_pLayer->Index(), _imgPos.second, _imgPos.first,

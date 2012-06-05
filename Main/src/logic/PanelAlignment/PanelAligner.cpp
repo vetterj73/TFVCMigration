@@ -532,7 +532,7 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 
 		string sFileName;
 		char cTemp[100];
-		sprintf_s(cTemp, 100, "%sStitchedEdgeImage_%d.bmp", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
+		sprintf_s(cTemp, 100, "%sStitchedEdgeImage_%d_Fid#%d.bmp", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount, iFidIndex);
 		sFileName.append(cTemp);
 		rbg->write(sFileName);
 		delete rbg;
@@ -550,8 +550,8 @@ bool PanelAligner::UseEdgeInfomation()
 	EdgeInfo edgeInfo;
 	bool bFlag = _pOverlapManager->GetEdgeDetector()->CalLeadingEdgeLocation(&edgeInfo);
 
-	// If leading edge detection is failed
-	if(edgeInfo.type == INVALID || edgeInfo.type == CONFLICTION) 
+	// If leading edge detection is failed or not processed
+	if(edgeInfo.type == INVALID || edgeInfo.type == CONFLICTION || edgeInfo.type == NOPROCESSED) 
 	{
 		LOG.FireLogEntry(LogTypeError, "PanelAligner::CreateTransforms(): Panel leading edge detection failed with code %d!", (int)edgeInfo.type);
 		return(bUseEdgeInfo);
@@ -605,15 +605,14 @@ bool PanelAligner::UseEdgeInfomation()
 	if(dConfidence < 0.1)
 	{
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): With edge detection, Fiducial condidence is %d!", (int)(dConfidence*100));
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Fall back without edge detection");
 			
 		// not use edge information
 		bUseEdgeInfo = false;
 			
 		// Do nominal fiducial overlap alignment
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin Fiducial search");
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Begin fallback Fiducial search without edge");
 		_pOverlapManager->DoAlignment4AllFiducial(bUseEdgeInfo);
-		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End Fiducial search");
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): End fallback Fiducial search without edge");
 	}
 
 	return(bUseEdgeInfo);
