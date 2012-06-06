@@ -19,6 +19,10 @@ runTypes = [["Focus", "-4mm"      ,"Through Focus Runs"],
             ["Cam",   "Camera"    ,"Camera Model"],
             ["Iter",  "Iterative" ,"Iterative (Calibration Drift)"],
             ["Other", ""          ,"Other"]]
+
+# Oldest date to plot
+ignoreBefore = time.strptime("2012-04-23","%Y-%m-%d") 
+
 # each runType containts a name (e.g. 'Proj'), a search string (e.g. find 'Projective' in file name)
 # and a label (e.g. "Projective Transform" a descriptive string for the plots)
 
@@ -66,7 +70,13 @@ srcDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/CyberStitchRegressi
 os.chdir(srcDir)
 dirNames = glob.glob("20*") # assume that all directories of interest start out with 21st century date, assume no stray file have this structure
 dirNames.sort()  # just in case they aren't in date order
+# remove old data
+for i, dirName in enumerate(dirNames):
+    t=time.strptime(dirName,"%Y-%m-%d-%H-%M-%S")
+    if t > ignoreBefore:
+        break
 
+dirNames = dirNames[i:]
 # read all of the regression files
 AllResultNames = []  # track all of the regression test file names
 OverallResults = {}  # a dictionary to hold the results.
@@ -90,6 +100,10 @@ for dirName in dirNames: # walk through each regression test (by date)
         # the results file consists of two sections
         # section 1 is the per panel results for each fiducial
         # section 2 is the summary section
+        xSquaredSum = 0
+        ySquaredSum = 0
+        numFidsFound = 0
+        worstFid = 0
         for line in lines:
             if line[:4] == " Fid":
                 sectionOne = False
@@ -97,6 +111,12 @@ for dirName in dirNames: # walk through each regression test (by date)
                 row = parseCsvString(line)
                 if type(row[0]) != types.StringType and row[-1] != 1:
                     Results[resultName]["res"].append(row) # save individual fid results, 
+                    xSquaredSum += row[4]**2
+                    ySquaredSum += row[5]**2
+                    offset = sqrt( row[4]**2 + row[5]**2 )
+                    if offset > worstFid:
+                        worstFid = offset
+                    numFidsFound += 1
                     # we don't yet plot this detailed data
                 elif ( len(row) > 2 
                       and type(row[1]) == types.StringType 
@@ -113,11 +133,14 @@ for dirName in dirNames: # walk through each regression test (by date)
                 if line.find("Xoffset RMS:") > 0:
                     XOffsetStart = line.find("Xoffset RMS:")+ len("Xoffset RMS:")
                     XOffsetEnd = line.find(",", XOffsetStart)
-                    Results[resultName]["summary"].append( float( line[XOffsetStart:XOffsetEnd] ) )
+                    #Results[resultName]["summary"].append( float( line[XOffsetStart:XOffsetEnd] ) )
+                    Results[resultName]["summary"].append( sqrt(xSquaredSum / numFidsFound) )
                     YOffsetStart = line.find("Yoffset RMS:")+ len("Yoffset RMS:")
                     YOffsetEnd = line.find(",", YOffsetStart)
-                    Results[resultName]["summary"].append( float( line[YOffsetStart:YOffsetEnd] ) )
+                    #Results[resultName]["summary"].append( float( line[YOffsetStart:YOffsetEnd] ) )
+                    Results[resultName]["summary"].append( sqrt(ySquaredSum / numFidsFound) )
                     Results[resultName]["summary"].append( sqrt(Results[resultName]["summary"][0]**2 + Results[resultName]["summary"][1]**2) )
+                    Results[resultName]["summary"].append( worstFid )
                 if line.find("Average Offset:") == 0:
                     row = line.split()
                     Results[resultName]["summary"].append( float( row[-1] ))
@@ -170,7 +193,7 @@ pylab.ylim( 0, 12)
 ax2 = ax1.twinx() # second y axis
 pylab.plot( xVals, panelCounts, "g-x", label="Panel Count")
 limY = pylab.ylim()
-pylab.ylim( 0, limY[1])
+pylab.ylim( 0, limY[1]*1.1)
 pylab.xticks(range(nRuns), dirNames, rotation=90)
 
 pylab.ylabel("Total Panels" , color='g')
@@ -185,6 +208,7 @@ fig2.savefig(destDir + "Regression_ExecutionTime.png")
 pylab.close()
 
 
+# Plot RMS Errors
 ResultNames = copy.copy(AllResultNames)
 pylab.close()
 for runName, searchPattern, Label  in runTypes:
@@ -217,4 +241,39 @@ for runName, searchPattern, Label  in runTypes:
     pylab.grid()
     #pylab.show()
     fig2.savefig(destDir + "Regression_" + runName + ".png")
+    pylab.close()
+
+# Plot Worst Case Errors
+ResultNames = copy.copy(AllResultNames)
+pylab.close()
+for runName, searchPattern, Label  in runTypes:
+    fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
+    pylab.axes(plotBoxDims)
+    group = popName(ResultNames, searchPattern) # only those file names matching the pattern
+    group.sort()
+    for item in group:
+        xVals = []
+        yVals = []
+        for x, dirName in enumerate(dirNames):
+            if OverallResults[dirName].has_key(item):
+                xVals.append(x)
+                yVals.append( OverallResults[dirName][item]['summary'][3] )
+        pylab.plot( xVals, yVals, 
+            "-"+markers[group.index(item)%len(markers)],
+            label=item)
+    #
+    pylab.legend(loc='right', bbox_to_anchor=(1.38, 0.8),
+              ncol=1, fancybox=True, shadow=True,
+              prop={"size":10})
+    #legend(loc='best' , #bbox_to_anchor=(0.5, 1.0),
+    #          ncol=4, fancybox=True, shadow=True,
+    #          prop={"size":10})
+    pylab.xticks(range(nRuns), dirNames, rotation=90)
+    pylab.title("CyberStitchFidTest Regression Results - WORST CASE FIDS, " + Label )
+    pylab.ylabel("Worst Fiducial Offset (um)" )
+    limY = pylab.ylim()
+    pylab.ylim( 0, limY[1])
+    pylab.grid()
+    #pylab.show()
+    fig2.savefig(destDir + "Regression_WorstCase" + runName + ".png")
     pylab.close()
