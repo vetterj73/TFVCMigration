@@ -137,7 +137,7 @@ set CADDIR=E:\CyberStitchRegressionData\RegressionTest6\Juki1c07501Dfor2080(colo
 %APP%     -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedCameraModel.txt     -l %OUTPUTBACKUP%\Juki1C07501_PopulatedCameraModel.txt -u .\Results\UnitTest\ -n 1
 %APP% -de -b -cammod -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedCameraModelEdge.txt -l %OUTPUTBACKUP%\Juki1C07501_PopulatedCameraModelEdge.txt -u .\Results\UnitTest\ -n 1
 %APP%     -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedIterative.txt       -l %OUTPUTBACKUP%\Juki1C07501_PopulatedIterative.txt -u .\Results\UnitTest\ -n 1
-REM %APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\Juki1C07501_PopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 1
+%APP% -de -b -iter   -s "%SIMDATA%\SIMScenario.xml" -p "%CADDIR%\1CD7501Dfor2080only.xml" -f "%CADDIR%\1CD7501Dfor2080only(addPanelFIDs)NoPads_NoTriangle.xml" -o  %OUTPUTDIR%\Juki1C07501_PopulatedIterativeEdge.txt   -l %OUTPUTBACKUP%\Juki1C07501_PopulatedIterativeEdge.txt -u .\Results\UnitTest\ -n 1
 
 REM
 set SIMDATA=E:\CyberStitchRegressionData\RegressionTest7
