@@ -42,6 +42,19 @@ struct DRect
 	double xMax;
 	double yMin;
 	double yMax;
+
+	DRect();
+	void Reset();
+	
+	double Width() const;
+	double Height() const;
+	double Area() const;
+	double CenX() const;
+	double CenY() const;
+
+	bool IsValid() const;
+
+	DRect OverlapRect(DRect inRect) const;
 };
 
 

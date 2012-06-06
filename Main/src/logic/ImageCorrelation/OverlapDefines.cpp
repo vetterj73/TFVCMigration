@@ -453,6 +453,24 @@ bool FovFovOverlap::IsFromSameDevice() const
 	return(_pLayer1->DeviceIndex() == _pLayer2->DeviceIndex());	
 }
 
+double FovFovOverlap::CalWeightSum()
+{
+	if(!_bGood4Solver)
+		return(0);
+
+	double dSumWeight = 0;
+
+	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+	{
+		if(i->IsProcessed() && i->IsGoodForSolver())
+		{
+			dSumWeight += Weights.CalWeight(&(*i));
+		}
+	}
+
+	return(dSumWeight);
+}
+
 // For Debug 
 bool FovFovOverlap::DumpOvelapImages()
 {

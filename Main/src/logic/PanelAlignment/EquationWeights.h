@@ -13,6 +13,8 @@ public:
 
 	void SetCalibrationScale(double dValue);
 
+	double GetFovFovWeight(){return _dWeightFovFov;};
+
 protected:
 	static EquationWeights* ptr;
 
