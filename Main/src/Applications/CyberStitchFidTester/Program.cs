@@ -171,13 +171,13 @@ namespace CyberStitchFidTester
                 _processingPanel = LoadProductionFile(panelFile, cPixelSizeInMeters);
                 if (_processingPanel == null)
                 {
-                    Terminate();
+                    Terminate(false);
                     Console.WriteLine("Could not load Panel File: " + panelFile);
                     return;
                 }
             } else if (!bImageOnly) // Panel file must exist...
             {
-                Terminate();
+                Terminate(false);
                 Console.WriteLine("The panel file does not exist..: " + panelFile);
                 return;
             }
@@ -199,7 +199,7 @@ namespace CyberStitchFidTester
                 }
                 if (_fidPanel == null)
                 {
-                    Terminate();
+                    Terminate(false);
                     Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
                     return;
                 }
@@ -226,7 +226,7 @@ namespace CyberStitchFidTester
             }
             else
             {
-                Terminate();
+                Terminate(false);
                 Console.WriteLine("Fid Test File does not exist: " + fidPanelFile);
                 return;
             }
@@ -273,7 +273,7 @@ namespace CyberStitchFidTester
                 // Initialize the SIM CoreAPI
                 if (!InitializeSimCoreAPI(simulationFile))
                 {
-                    Terminate();
+                    Terminate(false);
                     Console.WriteLine("Could not initialize Core API");
                     return;
                 }
@@ -293,10 +293,6 @@ namespace CyberStitchFidTester
                     _aligner.SetAllLogTypes(true);
                     _aligner.OnAlignmentDone += OnAlignmentDone;
                     _aligner.NumThreads(8);
-            //        _aligner.LogTransformVectors(true);
-            //        _aligner.LogFiducialOverlaps(true);
-            //        _aligner.LogPanelEdgeDebugImages(true);
-
                     _aligner.UseProjectiveTransform(bUseProjective);
                     if (dCalScale != 1.0)
                         _aligner.SetCalibrationWeight(dCalScale);
@@ -325,85 +321,130 @@ namespace CyberStitchFidTester
                 catch (Exception except)
                 {
                     Output("Error Changing Production: " + except.Message);
-                    Terminate();
+                    Terminate(true);
                     return;
                 }
 
-                bool bDone = false;
-
-                while (!bDone)
+                try
                 {
-                    numAcqsComplete = 0;
-                    _aligner.ResetForNextPanel();
-                    _mosaicSetSim.ClearAllImages();
-                    _mosaicSetIllum.ClearAllImages();
-                    _mosaicSetProcessing.ClearAllImages();
-                    if (!GatherImages())
-                    {
-                        Output("Issue with StartAcquisition");
-                        bDone = true;
-                    }
-                    else
-                    {
-                        Output("Waiting for Images...");
-                        mCollectedEvent.WaitOne();
-                    }
-
-                    // Verify that mosaic is filled in...
-                    if (!_mosaicSetSim.HasAllImages())
-                        Output("The mosaic does not contain all images!");
-                    else
-                    {
-                        _cycleCount++;
-                        CreateIllumImages();
-                        _dtStartTime = DateTime.Now;
-                        RunStitch();
-                        _dtEndTime = DateTime.Now;
-                         _tsRunTime = _dtEndTime - _dtStartTime;
-                        _tsTotalRunTime += _tsRunTime;
-
-                        //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
-                        // for fiducials(used for stitch) location check
-                        //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
-                        //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
-                        //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
-                        //                          _processingPanel.GetCADBuffer(),
-                        //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
-
-                        ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
-                        Output("Panel Skew is: " + set.dPanelSkew);
-                        Output("Panel dPanelXscale is: " + set.dPanelXscale);
-                        Output("Panel dPanelYscale is: " + set.dPanelYscale);
-
-                        if (bSaveStitchedResultsImage)
-                            _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                                   _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                                   _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                                   _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
-                                                   _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-                        if (_cycleCount == 1)
-                        {
-                            writer.WriteLine("Units: Microns");
-                            //outline is the output file column names
-                            writer.WriteLine(headerLine);
-                        }
-
-                        if (_fidPanel != null)
-                            RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
-                    }
-                    if (_cycleCount >= numberToRun)
-                        bDone = true;
-                    else
-                    {
-                        mCollectedEvent.Reset();
-                        mAlignedEvent.Reset();
-                    }
+                    RunAcquireAndStitch(numberToRun, fidChecker, bSaveStitchedResultsImage);
                 }
+                catch (Exception except)
+                {
+                    Output("Error during acquire and stitch: " + except.Message);
+                    Terminate(true);
+                    return;
+                }
+
             } // End Simulation Mode
 
+            // Last attempt to force proper shutdown...
+            try
+            {
+                WriteResults(lastOutputTextPath, outputTextPath, unitTestFolder);
+                Output("Processing Complete");
+            }
+            catch (Exception except)
+            {
+                Output("Error during write results: " + except.Message);
+            }
+            finally
+            {
+                Terminate(!bImageOnly);           
+            }
+        }
 
+        private static void Terminate(bool bTerminateCore)
+        {
+            if (writer != null)
+                writer.Close();
+
+            if (logger != null)
+                logger.Kill();
+
+            _aligner.Dispose();       
+
+            if(bTerminateCore)
+                ManagedCoreAPI.TerminateAPI();
+        }
+
+        private static void RunAcquireAndStitch(int numberToRun, ManagedFeatureLocationCheck fidChecker, bool bSaveStitchedResultsImage)
+        {
+            bool bDone = false;
+            while (!bDone)
+            {
+                numAcqsComplete = 0;
+                _aligner.ResetForNextPanel();
+                _mosaicSetSim.ClearAllImages();
+                _mosaicSetIllum.ClearAllImages();
+                _mosaicSetProcessing.ClearAllImages();
+                if (!GatherImages())
+                {
+                    Output("Issue with StartAcquisition");
+                    bDone = true;
+                }
+                else
+                {
+                    Output("Waiting for Images...");
+                    mCollectedEvent.WaitOne();
+                }
+
+                // Verify that mosaic is filled in...
+                if (!_mosaicSetSim.HasAllImages())
+                    Output("The mosaic does not contain all images!");
+                else
+                {
+                    _cycleCount++;
+                    CreateIllumImages();
+                    _dtStartTime = DateTime.Now;
+                    RunStitch();
+                    _dtEndTime = DateTime.Now;
+                    _tsRunTime = _dtEndTime - _dtStartTime;
+                    _tsTotalRunTime += _tsRunTime;
+
+                    //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
+                    // for fiducials(used for stitch) location check
+                    //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
+                    //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
+                    //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
+                    //                          _processingPanel.GetCADBuffer(),
+                    //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
+
+                    ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
+                    Output("Panel Skew is: " + set.dPanelSkew);
+                    Output("Panel dPanelXscale is: " + set.dPanelXscale);
+                    Output("Panel dPanelYscale is: " + set.dPanelYscale);
+
+                    if (bSaveStitchedResultsImage)
+                        _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
+                                               _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
+                    if (_cycleCount == 1)
+                    {
+                        writer.WriteLine("Units: Microns");
+                        //outline is the output file column names
+                        writer.WriteLine(headerLine);
+                    }
+
+                    if (_fidPanel != null)
+                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
+                }
+                if (_cycleCount >= numberToRun)
+                    bDone = true;
+                else
+                {
+                    mCollectedEvent.Reset();
+                    mAlignedEvent.Reset();
+                }
+            }
+        }
+
+        private static void WriteResults(string lastOutputTextPath, string outputTextPath, string unitTestFolder)
+        {
             writer.WriteLine(" Fid#, XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev, Absolute XOffset Mean, Absolute YOffset Mean, Absolute XOffset Stdev, Absolute YOffset Stdev, Number of cycle ");
-            for (int i = 0; i < ifidsNum; i++)
+            for (int i = 0; i < _fidPanel.NumberOfFiducials; i++)
             {
                 if (_icycleCount[i] == 0)   // If no fiducial is found
                 {
@@ -490,23 +531,6 @@ namespace CyberStitchFidTester
                     }
                 }
             }
-
-            Output("Processing Complete");
-            Terminate();
-
-            _aligner.Dispose();
-
-            if(!bImageOnly)
-                ManagedCoreAPI.TerminateAPI();
-        }
-
-        private static void Terminate()
-        {
-            if (writer != null)
-                writer.Close();
-
-            if(logger != null)
-                logger.Kill();
         }
 
         private static void ShowHelp()
