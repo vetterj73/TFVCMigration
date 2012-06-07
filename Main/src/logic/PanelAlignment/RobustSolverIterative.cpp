@@ -243,7 +243,7 @@ void RobustSolverIterative::FillMatrixA()
 				(dFidRoiCenX 
 				- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
 				+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				xSensorA, ySensorA,dxSensordzA,dySensordzA,dFidRoiCenX,dFidRoiCenY, _dThetaEst[orderedTrigIndexA] );
@@ -266,7 +266,7 @@ void RobustSolverIterative::FillMatrixA()
 				(dFidRoiCenY 
 				- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) 
 				- ySensorA * cos(_dThetaEst[orderedTrigIndexA]) );
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.4e,%.4e, %d, %d", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:L%d:T%d:C%d,%.2e,%.4e,%.4e, %d, %d", 
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				w,
@@ -322,7 +322,7 @@ void RobustSolverIterative::FillMatrixA()
 			_dVectorB[_iCurrentRow] = w * eqSign * 
 				(- xSensorA * cos(_dThetaEst[orderedTrigIndexA]) + ySensorA * sin(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * cos(_dThetaEst[orderedTrigIndexB]) - ySensorB * sin(_dThetaEst[orderedTrigIndexB]) );
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				_fitInfo[i].fovIndexB.LayerIndex,
@@ -359,7 +359,7 @@ void RobustSolverIterative::FillMatrixA()
 				(- xSensorA * sin(_dThetaEst[orderedTrigIndexA]) - ySensorA * cos(_dThetaEst[orderedTrigIndexA])
 				 + xSensorB * sin(_dThetaEst[orderedTrigIndexB]) + ySensorB * cos(_dThetaEst[orderedTrigIndexB]) );
 			
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d,%.2e,%.4e,%.4e,%d,%d,%d,%d", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d,%.2e,%.4e,%.4e,%d,%d,%d,%d", 
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				_fitInfo[i].fovIndexB.LayerIndex,
@@ -388,7 +388,7 @@ void RobustSolverIterative::FillMatrixA()
 			_dVectorB[_iCurrentRow] = w * (dXOffset 
 				- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
 				+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BrdEdge:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BrdEdge:L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				xSensorA, ySensorA,dxSensordzA,dySensordzA,dXOffset, dSlope, _dThetaEst[orderedTrigIndexA] );

@@ -522,7 +522,7 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumB)] += Zpoly[j] * (-dxSensordzB)* w;
 		}
 		_dVectorB[_iCurrentRow] = -w * (xSensorA - xSensorB);
-		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:I%d:T%d:C%d_I%d:T%d:C%d_%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d_%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
 			pOverlap->GetFirstMosaicLayer()->Index(),
 			pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
 			pOverlap->GetSecondMosaicLayer()->Index(),
@@ -545,7 +545,7 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumB)] += Zpoly[j] * (-dySensordzB)* w;
 		}
 		_dVectorB[_iCurrentRow] = -w * (ySensorA - ySensorB);
-		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:%d:I%d:C%d_%d:I%d:C%d_%d,%.2e,%.2e,%.4e,%.4e", 
+		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d_%d,%.2e,%.2e,%.4e,%.4e", 
 			pOverlap->GetFirstMosaicLayer()->Index(),
 			pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
 			pOverlap->GetSecondMosaicLayer()->Index(),
@@ -663,7 +663,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dxSensordzA * w;
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
 	_dVectorB[_iCurrentRow] = w * (dFidRoiCenX - xSensorA);
-	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:%d:I%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "FidCorr:L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
 		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
 		colImgA, rowImgA, xSensorA, ySensorA, pOverlap->GetFiducialXPos(),pOverlap->GetFiducialYPos() );
@@ -678,7 +678,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dySensordzA * w;
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
 	_dVectorB[_iCurrentRow] = w * (dFidRoiCenY - ySensorA);
-	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:%d:I%d:C%d,%.2e,%.2e,%.4e,%.4e", 
+	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:L%d:T%d:C%d,%.2e,%.2e,%.4e,%.4e", 
 		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
 		pPair->GetCorrelationResult().CorrCoeff, pPair->GetCorrelationResult().AmbigScore,

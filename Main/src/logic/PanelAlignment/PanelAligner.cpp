@@ -420,7 +420,7 @@ bool PanelAligner::CreateMasks()
 				
 				string s;
 				char cTemp[100];
-				sprintf_s(cTemp, 100, "%sMaskI%dT%dC%d.bmp", 
+				sprintf_s(cTemp, 100, "%sMaskL%dT%dC%d.bmp", 
 					CorrelationParametersInst.GetOverlapPath().c_str(),
 					i, iTrig, iCam);
 				s.append(cTemp);
