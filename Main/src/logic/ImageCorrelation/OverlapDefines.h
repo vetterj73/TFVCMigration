@@ -113,6 +113,8 @@ public:
 	bool IsAdjustedBasedOnCoarseAlignment() const { return _bAdjustedBaseOnCoarse;};
 	void SetAdjustedBasedOnCoarseAlignment(bool bValue) {_bAdjustedBaseOnCoarse = bValue;};
 
+	double CalWeightSum();
+
 	// For debug
 	bool DumpOvelapImages();
 	bool DumpResultImages();
