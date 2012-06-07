@@ -306,13 +306,13 @@ bool OverlapManager::IsMaskImageNeeded()
 #pragma endregion
 
 #pragma region FovFovOverlaps
-// Create Fov overlap for two illuminations
-bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2)
+// Create Fov overlap for two layers
+bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsigned int iIndex2)
 {
 	MosaicLayer *pLayer1 = _pMosaicSet->GetLayer(iIndex1);
 	MosaicLayer *pLayer2 = _pMosaicSet->GetLayer(iIndex2);
 
-	// Correlation setting between two layers (illuminations)
+	// Correlation setting between two layers
 	CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(iIndex1, iIndex2);
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
@@ -348,7 +348,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 	pLayer2->TriggerCentersInX(pdCenX2);
 	pLayer2->CameraCentersInY(pdCenY2);
 
-	// For each image in first layer (illuminaiton)
+	// For each image in first layer
 	unsigned int iCam1, iTrig1;
 	int iCam2, iTrig2; // Must be integer to avoid for cycle error
 	for(iTrig1 = 0; iTrig1<iNumTrigs1; iTrig1++)
@@ -508,7 +508,7 @@ void OverlapManager::CreateFovFovOverlaps()
 	{
 		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
 		{
-			CreateFovFovOverlapsForTwoIllum(i, j);
+			CreateFovFovOverlapsForTwoLayer(i, j);
 		}
 	}
 }
@@ -1209,26 +1209,26 @@ unsigned int OverlapManager::MaxMaskCorrelations() const
 	if(_iMaskCreationStage<=0)
 		return(0);
 
-	unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
+	unsigned int* piLayerIndices = new unsigned int[_iMaskCreationStage];
 	for(int i=0; i<_iMaskCreationStage; i++)
-		piIllumIndices[i] = i;
+		piLayerIndices[i] = i;
 
-	unsigned int iNum =MaxCorrelations(piIllumIndices, _iMaskCreationStage);
+	unsigned int iNum =MaxCorrelations(piLayerIndices, _iMaskCreationStage);
 
-	delete [] piIllumIndices;
+	delete [] piLayerIndices;
 
 	return(iNum);
 }
 
 //Report possible maximum corrleaiton will be used by solver to create transforms
-unsigned int OverlapManager::MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const
+unsigned int OverlapManager::MaxCorrelations(unsigned int* piLayerIndices, unsigned int iNumLayer) const
 {
 	unsigned int iFovFovCount = 0;
 	unsigned int iCadFovCount = 0;
 	unsigned int iFidFovCount = 0;
 
 	unsigned int i, iTrig, iCam;
-	for(i=0; i<iNumIllums; i++)
+	for(i=0; i<iNumLayer; i++)
 	{
 		for(iTrig=0; iTrig<_iNumTriggers; iTrig++)
 		{
@@ -1238,7 +1238,7 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piIllumIndices, unsig
 				list<FovFovOverlap>* pFovList = &_fovFovOverlapLists[i][iTrig][iCam];
 				for(list<FovFovOverlap>::iterator ite=pFovList->begin(); ite!=pFovList->end(); ite++)
 				{
-					if(IsFovFovOverlapForIllums(&(*ite), piIllumIndices, iNumIllums))
+					if(IsFovFovOverlapForLayers(&(*ite), piLayerIndices, iNumLayer))
 					{
 						iFovFovCount++;
 					}
@@ -1262,19 +1262,19 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piIllumIndices, unsig
 
 // Check wether FovFov overlap's all mosaic image is in the list
 // 
-bool OverlapManager::IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const
+bool OverlapManager::IsFovFovOverlapForLayers(FovFovOverlap* pOverlap, unsigned int* piLayerIndices, unsigned int iNumLayer) const
 {
 	unsigned int iIndex1 = pOverlap->GetFirstMosaicLayer()->Index();
 	unsigned int iIndex2 = pOverlap->GetSecondMosaicLayer()->Index();
 	
 	bool bFlag1=false, bFlag2=false;
 	unsigned int i;
-	for(i=0; i<iNumIllums; i++)
+	for(i=0; i<iNumLayer; i++)
 	{
-		if(iIndex1 == piIllumIndices[i])
+		if(iIndex1 == piLayerIndices[i])
 			bFlag1 = true;
 
-		if(iIndex2 == piIllumIndices[i])
+		if(iIndex2 == piLayerIndices[i])
 			bFlag2 = true;
 	}
 
@@ -1512,7 +1512,7 @@ bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, 
 		for(int j=i; j<iNumLayer; j++)
 		{
 			int iCoarseNum, iFineNum;
-			if(FovFovAlignConsistCheckForTwoIllum(i, j, &iCoarseNum, &iFineNum))
+			if(FovFovAlignConsistCheckForTwoLayer(i, j, &iCoarseNum, &iFineNum))
 			{
 				*piCoarseInconsistNum += iCoarseNum;
 				*piFineInconsistNum += iFineNum;
@@ -1523,10 +1523,10 @@ bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, 
 	return(true);
 }
 
-// Check inconsist of Fov to Fov overlap reults for layers/illuminations
+// Check inconsist of Fov to Fov overlap reults for layers
 // piCoarseInconsistNum: output, number of carse alignmemt failed in check
 // piFineInconsistNum: output, number of fine alignmemt failed in check
-bool OverlapManager::FovFovAlignConsistCheckForTwoIllum(
+bool OverlapManager::FovFovAlignConsistCheckForTwoLayer(
 	unsigned int iLayer1, unsigned int iLayer2,
 	int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
@@ -1594,7 +1594,7 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 		for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
 		{
 			// If right overlap and processed
-			bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed() && i->IsGoodForSolver());
+			bool bFlag = (i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed() && i->IsGoodForSolver());
 			if(bFlag)
 			{
 				bool bInList = false;
@@ -1624,7 +1624,7 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 			for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
 			{
 				// If right overlap and processed
-				bool bFlag = (i->IsFromIllumTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
+				bool bFlag = (i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
 				if(bFlag)
 				{
 					trigOverlapPtrList.push_back(&(*i)); 

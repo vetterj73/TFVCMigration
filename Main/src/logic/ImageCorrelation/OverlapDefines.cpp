@@ -228,17 +228,17 @@ void Overlap::Run()
 	if(_type == Fov_To_Fov)
 	{
 		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
-		int iIllum1, iIllum2, iCam1, iCam2, iTrig1, iTrig2;
-		iIllum1 = pTemp->GetFirstMosaicLayer()->Index();
-		iIllum2 = pTemp->GetSecondMosaicLayer()->Index();
+		int iLayer1, iLayer2, iCam1, iCam2, iTrig1, iTrig2;
+		iLayer1 = pTemp->GetFirstMosaicLayer()->Index();
+		iLayer2 = pTemp->GetSecondMosaicLayer()->Index();
 		iCam1 = pTemp->GetFirstCameraIndex();
 		iCam2 = pTemp->GetSecondCameraIndex();
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 0 && iTrig1 == 7 && iCam1 == 0 &&
-			iIllum2 == 2 && iTrig2 == 7 && iCam2 == 0)
-			iIllum1 = 0;
+		if(iLayer1 == 0 && iTrig1 == 7 && iCam1 == 0 &&
+			iLayer2 == 2 && iTrig2 == 7 && iCam2 == 0)
+			iLayer1 = 0;
 	}//*/
 
 
@@ -329,7 +329,7 @@ void Overlap::Run()
 		i->DoAlignment();
 
 		// Validation check
-		// To prevent wrong correlation results between different illuminaitons to be used
+		// To prevent wrong correlation results between different layers to be used
 		if(bAdjusted) 
 		{
 			bool bValid = true;
@@ -363,16 +363,16 @@ void Overlap::Run()
 	if(_type == Fov_To_Fov)
 	{
 		FovFovOverlap* pTemp =  (FovFovOverlap*)this;
-		int iIllum1, iIllum2, iCam1, iCam2, iTrig1, iTrig2;
-		iIllum1 = pTemp->GetFirstMosaicLayer()->Index();
-		iIllum2 = pTemp->GetSecondMosaicLayer()->Index();
+		int iLayer1, iLayer2, iCam1, iCam2, iTrig1, iTrig2;
+		iLayer1 = pTemp->GetFirstMosaicLayer()->Index();
+		iLayer2 = pTemp->GetSecondMosaicLayer()->Index();
 		iCam1 = pTemp->GetFirstCameraIndex();
 		iCam2 = pTemp->GetSecondCameraIndex();
 		iTrig1 = pTemp->GetFirstTriggerIndex();
 		iTrig2 = pTemp->GetSecondTriggerIndex();
 
-		if(iIllum1 == 2 && iTrig1 == 5 && iCam1 == 0 &&
-			iIllum2 == 3 && iTrig2 == 5 && iCam2 == 0)
+		if(iLayer1 == 2 && iTrig1 == 5 && iCam1 == 0 &&
+			iLayer2 == 3 && iTrig2 == 5 && iCam2 == 0)
 		{
 			DumpOvelapImages();
 			DumpResultImages();
@@ -426,19 +426,19 @@ bool FovFovOverlap::IsReadyToProcess() const
 	return(bFlag);
 }
 
-// Return ture if overlap is from (illum1, iTrig1) and (illum2, iTrig2)
-// reusults for (illum1, iTrig1) and (illum2, iTrig2) in different order are same
-bool FovFovOverlap::IsFromIllumTrigs(
-	unsigned int iLlum1,
+// Return ture if overlap is from (Layer1, iTrig1) and (Layer2, iTrig2)
+// reusults for (Layer1, iTrig1) and (Layer2, iTrig2) in different order are same
+bool FovFovOverlap::IsFromLayerTrigs(
+	unsigned int Layer1,
 	unsigned int iTrig1,
-	unsigned int iLlum2,
+	unsigned int Layer2,
 	unsigned int iTrig2) const
 {
-	if((_pLayer1->Index() == iLlum1 && GetFirstTriggerIndex() == iTrig1 &&
-		_pLayer2->Index() == iLlum2 && GetSecondTriggerIndex() == iTrig2) 
+	if((_pLayer1->Index() == Layer1 && GetFirstTriggerIndex() == iTrig1 &&
+		_pLayer2->Index() == Layer2 && GetSecondTriggerIndex() == iTrig2) 
 		||
-		(_pLayer1->Index() == iLlum2 && GetFirstTriggerIndex() == iTrig2 &&
-		_pLayer2->Index() == iLlum1 && GetSecondTriggerIndex() == iTrig1))
+		(_pLayer1->Index() == Layer2 && GetFirstTriggerIndex() == iTrig2 &&
+		_pLayer2->Index() == Layer1 && GetSecondTriggerIndex() == iTrig1))
 	{
 		return(true);
 	}

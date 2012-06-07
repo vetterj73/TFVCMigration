@@ -19,7 +19,7 @@ public:
 
 	virtual ~RobustSolverCM(void);
 
-	virtual bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
+	virtual bool AddCalibationConstraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		double dXOffset, double dSlope, bool bSlopeOnly=false);
@@ -51,7 +51,7 @@ protected:
 	virtual void			Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
 	void			LstSqFit(double *FidFitA, unsigned int FidFitRows, unsigned int FidFitCols, double *FidFitb, double *FidFitX, double *resid);
 	bool MatchProjeciveTransform(	
-		unsigned int iIlluminationIndex,
+		unsigned int iLayerIndex,
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex, 
 		double dTrans[3][3]) ;

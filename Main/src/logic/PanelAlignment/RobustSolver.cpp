@@ -16,9 +16,9 @@ extern "C" {
 #pragma region Operateors
 bool operator<(const FovIndex& a, const FovIndex& b)
 {
-	if(a.IlluminationIndex < b.IlluminationIndex)
+	if(a.LayerIndex < b.LayerIndex)
 		return (true);
-	else if(a.IlluminationIndex > b.IlluminationIndex)
+	else if(a.LayerIndex > b.LayerIndex)
 		return (false);
 	else
 	{
@@ -40,9 +40,9 @@ bool operator<(const FovIndex& a, const FovIndex& b)
 
 bool operator>(const FovIndex& a, const FovIndex& b)
 {
-	if(a.IlluminationIndex > b.IlluminationIndex)
+	if(a.LayerIndex > b.LayerIndex)
 		return (true);
-	else if(a.IlluminationIndex < b.IlluminationIndex)
+	else if(a.LayerIndex < b.LayerIndex)
 		return(false);
 	else
 	{

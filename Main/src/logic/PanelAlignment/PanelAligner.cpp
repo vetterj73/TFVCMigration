@@ -144,7 +144,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 
 	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
 		
-	// Create solver for all illuminations
+	// Create solver for all layers
 	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
 	bool bUseCameraModelStitch = CorrelationParametersInst.bUseCameraModelStitch;
 	bool bUseCameraModelIterativeStitch = CorrelationParametersInst.bUseCameraModelIterativeStitch;
@@ -181,13 +181,13 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	_iMaskCreationStage = _pOverlapManager->GetMaskCreationStage();
 	if(_iMaskCreationStage >= 1)
 	{
-		unsigned int* piIllumIndices = new unsigned int[_iMaskCreationStage];
+		unsigned int* piLayerIndices = new unsigned int[_iMaskCreationStage];
 		for(int i=0; i<_iMaskCreationStage; i++)
 		{
-			piIllumIndices[i] = i;	
+			piLayerIndices[i] = i;	
 		}
-		CreateImageOrderInSolver(piIllumIndices, _iMaskCreationStage, &_maskMap);
-		delete [] piIllumIndices;
+		CreateImageOrderInSolver(piLayerIndices, _iMaskCreationStage, &_maskMap);
+		delete [] piLayerIndices;
 		iMaxNumCorrelations =  _pOverlapManager->MaxMaskCorrelations();
 		// ************************* TODO TODO **************************
 		// CHANGE TO RobustSolverCM()   ?!?!?!?!?
@@ -218,7 +218,7 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
-	// now added just before AddOverlapResultsForIllum()
+	// now added just before AddOverlapResultsForLayer()
 	//if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
 	//{
 	//	_pSolver->ConstrainZTerms();
@@ -356,7 +356,7 @@ bool PanelAligner::CreateMasks()
 	// Create matrix and vector for solver
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
-		AddOverlapResultsForIllum(_pMaskSolver, i, true); // Use fiducials
+		AddOverlapResultsForLayer(_pMaskSolver, i, true); // Use fiducials
 	}
 	AddSupplementOverlapResults(_pMaskSolver);
 
@@ -374,14 +374,14 @@ bool PanelAligner::CreateMasks()
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
 		// Get calculated transforms
-		MosaicLayer* pMosaic = _pSet->GetLayer(i);
+		MosaicLayer* pLayer = _pSet->GetLayer(i);
 
 		// Create content of mask images
-		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);				
+				Image* maskImg = pLayer->GetMaskImage(iCam, iTrig);				
 				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
 				maskImg->SetTransform(t);
 				
@@ -409,14 +409,14 @@ bool PanelAligner::CreateMasks()
 	for(int i=0; i<_iMaskCreationStage; i++)
 	{
 		// Get calculated transforms
-		MosaicLayer* pMosaic = _pSet->GetLayer(i);
+		MosaicLayer* pLayer = _pSet->GetLayer(i);
 
 		// Create content of mask images
-		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				Image* maskImg = pMosaic->GetMaskImage(iCam, iTrig);				
+				Image* maskImg = pLayer->GetMaskImage(iCam, iTrig);				
 				
 				string s;
 				char cTemp[100];
@@ -450,12 +450,12 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 		_pSolver->ConstrainPerTrig();
 	}
 
-	int iNumIllums = _pSet->GetNumMosaicLayers();
-	for(int i=0; i<iNumIllums; i++)
+	int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumLayer; i++)
 	{
 		// Not use fiducial, not pin panel with calibration 
 		// since panel leading edge will be used
-		AddOverlapResultsForIllum(_pSolver, i, false, false);	
+		AddOverlapResultsForLayer(_pSolver, i, false, false);	
 	}
 	AddSupplementOverlapResults(_pSolver);
 
@@ -486,7 +486,7 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 	_pSolver->SolveXAlgH();
 
 	// Get intermediate result transforms
-	for(int i=0; i<iNumIllums; i++)
+	for(int i=0; i<iNumLayer; i++)
 	{
 		// Get calculated transforms
 		pLayer = _pSet->GetLayer(i);
@@ -646,7 +646,7 @@ bool PanelAligner::CreateTransforms()
 	int iNumSupOverlap = _pOverlapManager->CalSupplementOverlaps();
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms");
-	int iNumIllums = _pSet->GetNumMosaicLayers();
+	int iNumLayer = _pSet->GetNumMosaicLayers();
 
 	_lastProcessedFids.clear();
 
@@ -682,10 +682,10 @@ bool PanelAligner::CreateTransforms()
 		_pSolver->ConstrainPerTrig();
 	}
 	
-	for(int i=0; i<iNumIllums; i++)
+	for(int i=0; i<iNumLayer; i++)
 	{
 		// Use nominal fiducail overlaps if edge info is not available
-		AddOverlapResultsForIllum(_pSolver, i, !bUseEdgeInfo);	
+		AddOverlapResultsForLayer(_pSolver, i, !bUseEdgeInfo);	
 	}
 	AddSupplementOverlapResults(_pSolver);
 	
@@ -700,7 +700,7 @@ bool PanelAligner::CreateTransforms()
 
 	// TODO populate CM version of gettransfrom
 	// For each mosaic image
-	for(int i=0; i<iNumIllums; i++)
+	for(int i=0; i<iNumLayer; i++)
 	{
 		// Get calculated transforms
 		MosaicLayer* pLayer = _pSet->GetLayer(i);
@@ -751,29 +751,29 @@ bool PanelAligner::CreateTransforms()
 	return(true);
 }
 
-// Add overlap results for a certain illumation/mosaic image to solver
-void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanelWithCalibration)
+// Add overlap results for a certain Layer image to solver
+void PanelAligner::AddOverlapResultsForLayer(RobustSolver* solver, unsigned int iLayerIndex, bool bUseFiducials, bool bPinPanelWithCalibration)
 {
 	if(bUseFiducials)
 		bPinPanelWithCalibration = false;
 
-	MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
-	for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+	MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+	for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 	{
-		for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+		for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 		{
 			// Add calibration constraints
 			bool bPinFov = false;
 			if (bPinPanelWithCalibration &&
-				pMosaic->Index() == 0 && iTrig == 1 && iCam == 1)
+				pLayer->Index() == 0 && iTrig == 1 && iCam == 1)
 			{
 				bPinFov = true;
 			}
 
-			solver->AddCalibationConstraints(pMosaic, iCam, iTrig, bPinFov);
+			solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov);
 
 			// Add Fov and Fov overlap results
-			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iIllumIndex, iTrig, iCam);
+			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iLayerIndex, iTrig, iCam);
 			for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
 			{
 				if(ite->IsProcessed() && ite->IsGoodForSolver())
@@ -781,7 +781,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			}
 
 			// Add Cad and Fov overlap results
-			CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iIllumIndex, iTrig, iCam);
+			CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);
 			for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
 			{
 				if(ite->IsProcessed() && ite->IsGoodForSolver())
@@ -791,7 +791,7 @@ void PanelAligner::AddOverlapResultsForIllum(RobustSolver* solver, unsigned int 
 			if(bUseFiducials)
 			{
 				// Add Fiducial and Fov overlap results
-				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iLayerIndex, iTrig, iCam);
 				for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 				{
 					if(ite->IsProcessed() && ite->IsGoodForSolver())
@@ -857,11 +857,11 @@ bool operator<(const TriggerOffsetPair& a, const TriggerOffsetPair& b)
 };
 
 // Create a map between Fov and its order in solver
-// piIllumIndices and iNumIllums: input, illuminations used by solver
+// piLayerIndices and iNumLayer: input, layers used by solver
 // pOrderMap: output, the map between Fov and its order in solver
 bool PanelAligner::CreateImageOrderInSolver(
-	unsigned int* piIllumIndices, 
-	unsigned iNumIllums,
+	unsigned int* piLayerIndices, 
+	unsigned iNumLayer,
 	map<FovIndex, unsigned int>* pOrderMap) const
 {
 	unsigned int i, iTrig;
@@ -869,19 +869,19 @@ bool PanelAligner::CreateImageOrderInSolver(
 	FovList::iterator j;
 	unsigned int SolverTrigIndex(0);
 	// Build trigger offset pair list, 
-	for(i=0; i<iNumIllums; i++) // for each illuminaiton 
+	for(i=0; i<iNumLayer; i++) // for each layer
 	{
 		// Get trigger centers in X
-		unsigned int iIllumIndex = piIllumIndices[i];
-		MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
-		unsigned int iNumTrigs = pMosaic->GetNumberOfTriggers();
+		unsigned int iLayerIndex = piLayerIndices[i];
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		unsigned int iNumTrigs = pLayer->GetNumberOfTriggers();
 		double* dCenX = new double[iNumTrigs];
-		pMosaic->TriggerCentersInX(dCenX);
+		pLayer->TriggerCentersInX(dCenX);
 
 		for(iTrig = 0; iTrig<iNumTrigs; iTrig++) // for each trigger
 		{
 			// Add to the list 
-			FovIndex index(iIllumIndex, iTrig, 0);
+			FovIndex index(iLayerIndex, iTrig, 0);
 			fovList.push_back(pair<FovIndex, double>(index, dCenX[iTrig]));
 		}
 
@@ -897,13 +897,13 @@ bool PanelAligner::CreateImageOrderInSolver(
 	unsigned int iCount = 0;
 	for(k=fovList.rbegin(); k!=fovList.rend(); k++)
 	{
-		unsigned int iIllumIndex = k->first.IlluminationIndex;
+		unsigned int iLayerIndex = k->first.LayerIndex;
 		unsigned int iTrigIndex = k->first.TriggerIndex;
-		MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
-		unsigned int iNumCams = pMosaic->GetNumberOfCameras();
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		unsigned int iNumCams = pLayer->GetNumberOfCameras();
 		for(i=0; i<iNumCams; i++)
 		{
-			FovIndex index(iIllumIndex, iTrigIndex, i);
+			FovIndex index(iLayerIndex, iTrigIndex, i);
 			(*pOrderMap)[index] = iCount;
 			if( !CorrelationParametersInst.bUseCameraModelStitch  && !CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 				iCount++;
@@ -917,18 +917,18 @@ bool PanelAligner::CreateImageOrderInSolver(
 
 bool PanelAligner::CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const
 {
-	unsigned int iNumIllums = _pSet->GetNumMosaicLayers();
-	unsigned int* piIllumIndices = new unsigned int[iNumIllums];
+	unsigned int iNumLayer = _pSet->GetNumMosaicLayers();
+	unsigned int* piLayerIndices = new unsigned int[iNumLayer];
 
-	for(unsigned int i=0; i<iNumIllums; i++)
-		piIllumIndices[i] = i;
+	for(unsigned int i=0; i<iNumLayer; i++)
+		piLayerIndices[i] = i;
 
 	bool bFlag = CreateImageOrderInSolver(
-		piIllumIndices, 
-		iNumIllums,
+		piLayerIndices, 
+		iNumLayer,
 		pOrderMap);
 
-	delete [] piIllumIndices;
+	delete [] piLayerIndices;
 
 	return(bFlag);
 }
@@ -938,11 +938,11 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 {
 	// Create matrix and vector for solver without fiducial information	
 	_pSolver->Reset();
-	int iNumIllums = _pSet->GetNumMosaicLayers();
-	for(int i=0; i<iNumIllums; i++)
+	int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumLayer; i++)
 	{
 		// Not use fiducial but pin panel with calibration
-		AddOverlapResultsForIllum(_pSolver, i, false, true); 
+		AddOverlapResultsForLayer(_pSolver, i, false, true); 
 	}
 	AddSupplementOverlapResults(_pSolver);
 
@@ -1061,21 +1061,21 @@ bool PanelAligner::Save3ChannelImage(string filePath,
 
 void PanelAligner::DisturbFiducialAlignment()
 {
-	unsigned int iNumIllums = _pSet->GetNumMosaicLayers();
+	unsigned int iNumLayer = _pSet->GetNumMosaicLayers();
 	
-	for(unsigned int iIllumIndex=0; iIllumIndex<iNumIllums; iIllumIndex++)
+	for(unsigned int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
 	{
-		MosaicLayer* pMosaic = _pSet->GetLayer(iIllumIndex);
-		for(unsigned iTrig=0; iTrig<pMosaic->GetNumberOfTriggers(); iTrig++)
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 		{
-			for(unsigned iCam=0; iCam<pMosaic->GetNumberOfCameras(); iCam++)
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
 				// Add Fiducial and Fov overlap results
-				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iIllumIndex, iTrig, iCam);
+				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iLayerIndex, iTrig, iCam);
 				for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
 				{
 					// for debug
-					if(iIllumIndex==2 && iTrig==0 && iCam==0)
+					if(iLayerIndex==2 && iTrig==0 && iCam==0)
 					{
 						// Simulate FOV location error
 						CorrelationResult result = ite->GetCoarsePair()->GetCorrelationResult();

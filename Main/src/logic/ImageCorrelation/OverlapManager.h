@@ -93,12 +93,12 @@ protected:
 	void CreateCadFovOverlaps();
 	void CreateFidFovOverlaps(bool bForCurPanel=false, bool bHasEdgeFidInfo = false);
 	
-	bool CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsigned int iIndex2);
+	bool CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsigned int iIndex2);
 
 	void CalMaskCreationStage();
 
-	unsigned int MaxCorrelations(unsigned int* piIllumIndices, unsigned int iNumIllums) const;
-	bool IsFovFovOverlapForIllums(FovFovOverlap* pOverlap, unsigned int* piIllumIndices, unsigned int iNumIllums) const;
+	unsigned int MaxCorrelations(unsigned int* piLayerIndices, unsigned int iNumLayer) const;
+	bool IsFovFovOverlapForLayers(FovFovOverlap* pOverlap, unsigned int* piLayerIndices, unsigned int iNumLayer) const;
 
 	void CreateFiducialImage(
 		Image* pImage, 
@@ -136,7 +136,7 @@ protected:
 		double dSearchExpY,
 		Image* pFidImage);
 
-	bool FovFovAlignConsistCheckForTwoIllum(
+	bool FovFovAlignConsistCheckForTwoLayer(
 		unsigned int iLayer1, unsigned int iLayer2,
 		int* piCoarseInconsistNum, int* piFineInconsistNum);
 

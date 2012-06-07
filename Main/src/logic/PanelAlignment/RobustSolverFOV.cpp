@@ -86,20 +86,20 @@ void RobustSolverFOV::ZeroTheSystem()
 // true for giving bigger weight of equarions of X and Y center to pin FOV on CAD space
 // bIgnoreXOffset: true for ignore equation of X center/offset
 bool RobustSolverFOV::AddCalibationConstraints(
-	MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
+	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 	bool bPinFOV)
 {
 	// Validation check
-	if(iCamIndex>=pMosaic->GetNumberOfCameras() || iTrigIndex>=pMosaic->GetNumberOfTriggers())
+	if(iCamIndex>=pLayer->GetNumberOfCameras() || iTrigIndex>=pLayer->GetNumberOfTriggers())
 		return(false);
 
 	// Fov transform parameter begin position in column
 	// Fov's nominal center
-	FovIndex index(pMosaic->Index(), iTrigIndex, iCamIndex); 
+	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
-	ImgTransform transFov = pMosaic->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
-	unsigned int iCols = pMosaic->GetImage(iCamIndex, iTrigIndex)->Columns();
-	unsigned int iRows = pMosaic->GetImage(iCamIndex, iTrigIndex)->Rows();
+	ImgTransform transFov = pLayer->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
+	unsigned int iCols = pLayer->GetImage(iCamIndex, iTrigIndex)->Columns();
+	unsigned int iRows = pLayer->GetImage(iCamIndex, iTrigIndex)->Rows();
 	double dPixelCenRow = (iRows-1) / 2.0;
 	double dPixelCenCol = (iCols-1) / 2.0;
 	double dFovCalCenX, dFovCalCenY;
@@ -111,10 +111,10 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	int iNextCamFovPos = -1;
 	ImgTransform transNextCamFov;
 	double dNextCamFovCalCenX, dNextCamFovCalCenY;
-	if(index.CameraIndex < pMosaic->GetNumberOfCameras())
+	if(index.CameraIndex < pLayer->GetNumberOfCameras())
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextCamFov = pMosaic->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
+		transNextCamFov = pLayer->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
 		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
@@ -125,10 +125,10 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	int iNextTrigFovPos = -1;
 	ImgTransform transNextTrigFov;
 	double dNextTrigFovCalCenX, dNextTrigFovCalCenY;
-	if(index.TriggerIndex < pMosaic->NumTriggers())
+	if(index.TriggerIndex < pLayer->NumTriggers())
 	{
 		iNextTrigFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextTrigFov = pMosaic->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
+		transNextTrigFov = pLayer->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
 		transNextTrigFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
 	}*/
 
@@ -375,17 +375,17 @@ bool RobustSolverFOV::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// First Fov's information
-	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicLayer()->Index();
+	unsigned int iLayerIndexA = pOverlap->GetFirstMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetFirstTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetFirstCameraIndex();
-	FovIndex index1(iMosicIndexA, iTrigIndexA, iCamIndexA); 
+	FovIndex index1(iLayerIndexA, iTrigIndexA, iCamIndexA); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index1] *_iNumParamsPerFov;
 
 	// Second Fov's information
-	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicLayer()->Index();
+	unsigned int iLayerIndexB = pOverlap->GetSecondMosaicLayer()->Index();
 	unsigned int iTrigIndexB = pOverlap->GetSecondTriggerIndex();
 	unsigned int iCamIndexB = pOverlap->GetSecondCameraIndex();
-	FovIndex index2(iMosicIndexB, iTrigIndexB, iCamIndexB); 
+	FovIndex index2(iLayerIndexB, iTrigIndexB, iCamIndexB); 
 	unsigned int iFOVPosB = (*_pFovOrderMap)[index2] *_iNumParamsPerFov;
 
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
@@ -471,10 +471,10 @@ bool RobustSolverFOV::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
-	unsigned int iMosicIndex= pOverlap->GetMosaicLayer()->Index();
+	unsigned int iLayerIndex= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndex = pOverlap->GetCameraIndex();
-	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 
+	FovIndex index(iLayerIndex, iTrigIndex, iCamIndex); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
 
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
@@ -546,10 +546,10 @@ bool RobustSolverFOV::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// Fov's information
-	unsigned int iMosicIndex= pOverlap->GetMosaicLayer()->Index();
+	unsigned int iLayerIndex= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndex = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndex = pOverlap->GetCameraIndex();
-	FovIndex index(iMosicIndex, iTrigIndex, iCamIndex); 
+	FovIndex index(iLayerIndex, iTrigIndex, iCamIndex); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
 
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
@@ -904,7 +904,7 @@ void RobustSolverFOV::OutputVectorXCSV(string filename) const
 
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
-		of << "I_" << k->first.IlluminationIndex 
+		of << "I_" << k->first.LayerIndex 
 			<< "T_" << k->first.TriggerIndex 
 			<< "C_" << k->first.CameraIndex
 			<< ",";

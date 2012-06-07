@@ -84,8 +84,8 @@ protected:
 
 	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const;
 	bool CreateImageOrderInSolver(
-		unsigned int* piIllumIndices, 
-		unsigned iNumIllums, 
+		unsigned int* piLayerIndices, 
+		unsigned iNumLayer, 
 		map<FovIndex, unsigned int>* pOrderMap) const;
 
 	bool IsReadyToCreateMasks() const;
@@ -93,7 +93,7 @@ protected:
 	bool CreateTransforms();
 	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
 	bool UseEdgeInfomation();
-	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanel=false);
+	void AddOverlapResultsForLayer(RobustSolver* solver, unsigned int iLayerIndex, bool bUseFiducials, bool bPinPanel=false);
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);
 	void AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver* solver, int iIndex);
 	void AddSupplementOverlapResults(RobustSolver* solver);

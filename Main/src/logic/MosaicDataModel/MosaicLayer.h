@@ -51,7 +51,7 @@ namespace MosaicDM
 
 	///
 	///	MosaicLayer is one layer of an MosaicSet.  In the case of SIM (one of the clients), a layer would be
-	/// one illumination (one capture spec's worth of images).
+	/// one Layer (one capture spec's worth of images).
 	///
 	class MosaicLayer
 	{

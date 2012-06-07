@@ -77,7 +77,7 @@ private:
 };
 
 // Overlap between FOV image and FOV image
-// Image with lower illumination index is the first image
+// Image with lower layer index is the first image
 class FovFovOverlap: public Overlap
 {
 public:
@@ -102,10 +102,10 @@ public:
 
 	bool IsReadyToProcess() const;
 
-	bool IsFromIllumTrigs(
-		unsigned int iLlum1,
+	bool IsFromLayerTrigs(
+		unsigned int Layer1,
 		unsigned int iTrig1,
-		unsigned int iLlum2,
+		unsigned int Layer2,
 		unsigned int iTrig2) const;
 
 	bool IsFromSameDevice() const;

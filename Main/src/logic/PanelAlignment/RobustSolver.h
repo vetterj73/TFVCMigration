@@ -21,22 +21,22 @@ class FovIndex
 {
 public:
 	FovIndex(
-		unsigned int iIllumIndex,
+		unsigned int iLayerIndex,
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex)
 	{
-		IlluminationIndex = iIllumIndex;
+		LayerIndex = iLayerIndex;
 		TriggerIndex = iTrigIndex;
 		CameraIndex = iCamIndex;
 	}
 	FovIndex()
 	{
-		IlluminationIndex = 0;
+		LayerIndex = 0;
 		TriggerIndex = 0;
 		CameraIndex = 0;
 	}
-	unsigned int IlluminationIndex;
-	unsigned int TriggerIndex;   // trigger order within Illumination
+	unsigned int LayerIndex;
+	unsigned int TriggerIndex;   // trigger order within Layer
 	unsigned int CameraIndex;	// camera order within trigger
 	// TODO does camera index always start with 0?
 };
@@ -53,7 +53,7 @@ public:
 	~RobustSolver(void);
 
 	virtual bool AddCalibationConstraints(
-		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
+		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		bool bPinFov=false)=0;
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,

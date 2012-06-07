@@ -138,7 +138,7 @@ namespace SIMMosaicUtils
 
                         if ((set.GetNumMosaicLayers() == 1) ||
                             (set.GetNumMosaicLayers() == 2 && ManagedCoreAPI.NumberOfDevices() == 2))
-                            flag.SetTriggerToTrigger(true); // For one illumination for a SIM
+                            flag.SetTriggerToTrigger(true); // For one Layer for a SIM
                         else
                             flag.SetTriggerToTrigger(false);
 
@@ -156,11 +156,11 @@ namespace SIMMosaicUtils
 
                         if ((i == 0 && j == 3) || (i == 3 && j == 0) ||
                              (i == 1 && j == 2) || (i == 2 && j == 1))
-                            flag.SetTriggerToTrigger(false); // For four illuminaitons
+                            flag.SetTriggerToTrigger(false); // For four layers
                         else
                             flag.SetTriggerToTrigger(true);
 
-                        if (Math.Abs((int)i-(int)j)==2) // For four illuminations, (0, 2) and (1,3) are the same illumination type
+                        if (Math.Abs((int)i-(int)j)==2) // For four Layers, (0, 2) and (1,3) are the same Layer type
                             flag.SetApplyCorrelationAreaSizeUpLimit(true);
                     }
 

@@ -208,7 +208,7 @@ unsigned int RobustSolverCM::CountCameras()
 {
 	unsigned int minCameraNum(1000000);
 	unsigned int maxCameraNum(0);
-	// TODO WHAT IF STARTING CAMERA NUMBER VARIES BETWEEN ILLUM?
+	// TODO WHAT IF STARTING CAMERA NUMBER VARIES BETWEEN Layer?
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
 		if (minCameraNum > k->first.CameraIndex )
@@ -252,12 +252,12 @@ void RobustSolverCM::ConstrainPerTrig()
 		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
 		{
 			unsigned int indexID( k->second );
-			unsigned int iIllumIndex( k->first.IlluminationIndex);
+			unsigned int iLayerIndex( k->first.LayerIndex);
 			unsigned int iTrigIndex( k->first.TriggerIndex);
-			unsigned int iCols = _pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
-			unsigned int iRows = _pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+			unsigned int iCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
+			unsigned int iRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
 			TransformCamModel camCal = 
-				 _pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
 			complexd xySensor;
 			xySensor.r = htcorrp(iRows, iCols,
 				dFovOriginU, dFovOriginV,
@@ -274,7 +274,7 @@ void RobustSolverCM::ConstrainPerTrig()
 			begin_pin_in_image_center[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
 			begin_pin_in_image_center[beginIndex+2] = -Weights.wXIndex * xySensor.i;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
-				(_pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2)
+				(_pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2)
 				- xySensor.r);
 
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
@@ -285,7 +285,7 @@ void RobustSolverCM::ConstrainPerTrig()
 			begin_pin_in_image_center[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
 			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex * xySensor.r;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
-				(_pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5)
+				(_pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5)
 				- xySensor.i);
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
 			// constrain theata to zero
@@ -309,9 +309,9 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	// Position of equation in Matirix
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	unsigned int indexID( (*_pFovOrderMap)[index] );
-	unsigned int deviceNum = _pSet->GetLayer(index.IlluminationIndex)->DeviceIndex();
-	unsigned int iCols = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
-	unsigned int iRows = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+	unsigned int deviceNum = _pSet->GetLayer(index.LayerIndex)->DeviceIndex();
+	unsigned int iCols = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
+	unsigned int iRows = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	unsigned int iFOVPosA( indexID * _iNumParamsPerIndex);
 	
@@ -320,7 +320,7 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	// x_trig - s_y * theta_trig = dsx/dz * Z = x_fid - s_x
 	double w = Weights.wXbyEdge;
 	TransformCamModel camCalA = 
-				_pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				_pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
 	double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 					0.0, 0.0, 
 					_iNumBasisFunctions, _iNumBasisFunctions,
@@ -342,8 +342,8 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 					(float*)camCalA.dSdz[CAL_ARRAY_Y],
 					_iNumBasisFunctions);
 	// approximate position of the 0,0 pixel on the surface of the board
-	double boardX = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2);
-	double boardY = _pSet->GetLayer(index.IlluminationIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5);
+	double boardX = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2);
+	double boardY = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5);
 	double* Zpoly;
 	Zpoly = new double[_iNumZTerms];
 	Zpoly[0] = pow(boardX,0) * pow(boardY,0);
@@ -363,7 +363,7 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 			pdRow[ColumnZTerm(j, deviceNum)] = Zpoly[j] * dxSensordzA * w;
 	_dVectorB[_iCurrentRow] = w * (dXOffset - xSensorA);
 	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BoardEdge:%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
-		index.IlluminationIndex,
+		index.LayerIndex,
 		iTrigIndex, iCamIndex,
 		xSensorA, ySensorA, dXOffset, dSlope );
 	_pdWeights[_iCurrentRow] = w;
@@ -380,7 +380,7 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 }
 
 
-bool RobustSolverCM::AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
+bool RobustSolverCM::AddCalibationConstraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
 {
 	// there are no per FOV calib constraints in the camera model fit
 	return true;
@@ -391,20 +391,20 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 
 	// First Fov's information
-	unsigned int iMosicIndexA = pOverlap->GetFirstMosaicLayer()->Index();
+	unsigned int iLayerIndexA = pOverlap->GetFirstMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetFirstTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetFirstCameraIndex();
-	FovIndex index1(iMosicIndexA, iTrigIndexA, iCamIndexA); 
+	FovIndex index1(iLayerIndexA, iTrigIndexA, iCamIndexA); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index1] *_iNumParamsPerIndex;
-	unsigned int deviceNumA = _pSet->GetLayer(index1.IlluminationIndex)->DeviceIndex();
+	unsigned int deviceNumA = _pSet->GetLayer(index1.LayerIndex)->DeviceIndex();
 	
 	// Second Fov's information
-	unsigned int iMosicIndexB = pOverlap->GetSecondMosaicLayer()->Index();
+	unsigned int iLayerIndexB = pOverlap->GetSecondMosaicLayer()->Index();
 	unsigned int iTrigIndexB = pOverlap->GetSecondTriggerIndex();
 	unsigned int iCamIndexB = pOverlap->GetSecondCameraIndex();
-	FovIndex index2(iMosicIndexB, iTrigIndexB, iCamIndexB); 
+	FovIndex index2(iLayerIndexB, iTrigIndexB, iCamIndexB); 
 	unsigned int iFOVPosB = (*_pFovOrderMap)[index2] *_iNumParamsPerIndex;
-	unsigned int deviceNumB = _pSet->GetLayer(index2.IlluminationIndex)->DeviceIndex();
+	unsigned int deviceNumB = _pSet->GetLayer(index2.LayerIndex)->DeviceIndex();
 	
 	double* pdRow;
 
@@ -440,9 +440,9 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		colImgB += offsetCols;
 		// Add a equataions 
 		TransformCamModel camCalA = 
-				 _pSet->GetLayer(iMosicIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
 		TransformCamModel camCalB = 
-				 _pSet->GetLayer(iMosicIndexB)->GetImage(iCamIndexB, iTrigIndexB)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndexB)->GetImage(iCamIndexB, iTrigIndexB)->GetTransformCamCalibration();
 		double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 						colImgA, rowImgA, 
 						_iNumBasisFunctions, _iNumBasisFunctions,
@@ -575,12 +575,12 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	if(!pOverlap->IsProcessed() || !pOverlap->IsGoodForSolver()) return(false);
 	
 	// Fov's information
-	unsigned int iMosicIndexA= pOverlap->GetMosaicLayer()->Index();
+	unsigned int iLayerIndexA= pOverlap->GetMosaicLayer()->Index();
 	unsigned int iTrigIndexA = pOverlap->GetTriggerIndex();
 	unsigned int iCamIndexA = pOverlap->GetCameraIndex();
-	FovIndex index(iMosicIndexA, iTrigIndexA, iCamIndexA); 
+	FovIndex index(iLayerIndexA, iTrigIndexA, iCamIndexA); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerIndex;
-	unsigned int deviceNumA = _pSet->GetLayer(index.IlluminationIndex)->DeviceIndex();
+	unsigned int deviceNumA = _pSet->GetLayer(index.LayerIndex)->DeviceIndex();
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 
 	CorrelationPair* pPair = pOverlap->GetCoarsePair();
@@ -610,7 +610,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	colImgA -= offsetCols;
 	// Add a equataions 
 	TransformCamModel camCalA = 
-				_pSet->GetLayer(iMosicIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
+				_pSet->GetLayer(iLayerIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
 	double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 					colImgA, rowImgA, 
 					_iNumBasisFunctions, _iNumBasisFunctions,
@@ -691,25 +691,25 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	return( true );
 }
 ImgTransform RobustSolverCM::GetResultTransform(
-	unsigned int iIlluminationIndex,
+	unsigned int iLayerIndex,
 	unsigned int iTriggerIndex,
 	unsigned int iCameraIndex)  
 {
 	// Fov transform parameter begin position in column
-	FovIndex fovIndex(iIlluminationIndex, iTriggerIndex, iCameraIndex); 
+	FovIndex fovIndex(iLayerIndex, iTriggerIndex, iCameraIndex); 
 	unsigned int index = (*_pFovOrderMap)[fovIndex] *_iNumParamsPerIndex;
-	unsigned int iImageCols = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
-	unsigned int iImageRows = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
+	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
+	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
 		
 	double t[3][3];
-	MatchProjeciveTransform(iIlluminationIndex, iTriggerIndex, iCameraIndex, t);
+	MatchProjeciveTransform(iLayerIndex, iTriggerIndex, iCameraIndex, t);
 	
 	ImgTransform trans(t);
 
 	// add camModel transform calculation and load....
 	// take set of points in image, set of points in CAD
 	// calc matching transform (pixel to flattenend board surface)
-	TransformCamModel tCamModel = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex,iTriggerIndex)->GetTransformCamModel();
+	TransformCamModel tCamModel = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex,iTriggerIndex)->GetTransformCamModel();
 	tCamModel.Reset();
 	int iNumX = 11;
 	int iNumY = 11;
@@ -725,7 +725,7 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	POINT2D* xy =  new POINT2D[iNumX*iNumY];
 	int i, j, k;
 	//LOG.FireLogEntry(LogTypeSystem, "ResultFOVCamModel m %d, %d, %d",
-	//	iIlluminationIndex, iTriggerIndex, iCameraIndex);
+	//	iLayerIndex, iTriggerIndex, iCameraIndex);
 	for (j=0, i=0; j<iNumY; j++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
 	  for (k=0; k<iNumX; k++) {          /* uv.u value is image COL, parralel to CAD Y*/
 			uv[i].v = (cos(-PI + angleStepX*k) + 1.0 )/2.0; // scaled 0 to 1
@@ -750,14 +750,14 @@ ImgTransform RobustSolverCM::GetResultTransform(
 }
 
 bool RobustSolverCM::MatchProjeciveTransform(	
-	unsigned int iIlluminationIndex,
+	unsigned int iLayerIndex,
 	unsigned int iTriggerIndex,
 	unsigned int iCameraIndex, double dTrans[3][3]) 
 {
-	FovIndex fovIndex(iIlluminationIndex, iTriggerIndex, iCameraIndex); 
-	unsigned int iImageCols = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
-	unsigned int iImageRows = _pSet->GetLayer(iIlluminationIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
-	unsigned int deviceNum = _pSet->GetLayer(fovIndex.IlluminationIndex)->DeviceIndex();
+	FovIndex fovIndex(iLayerIndex, iTriggerIndex, iCameraIndex); 
+	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
+	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
+	unsigned int deviceNum = _pSet->GetLayer(fovIndex.LayerIndex)->DeviceIndex();
 	unsigned int iNumX = 3;  // set to 3 uses corner and centers of edges (along with image center)
 	unsigned int iNumY = 3;  // (the resulting fit is more accurate on the edges)
 	double startX = 0;
@@ -812,7 +812,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	int iFlag = lsqrproj(m, p, q, 1, dTrans, &RMS, resid, &dRcond);
 	/*if (_bVerboseLogging)
 	{
-		LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iIlluminationIndex, iTriggerIndex, iCameraIndex); 
+		LOG.FireLogEntry(LogTypeSystem, "MatchProj index %d, %d, %d",iLayerIndex, iTriggerIndex, iCameraIndex); 
 		LOG.FireLogEntry(LogTypeSystem, "MatchProj p %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
 			p[0].i, p[0].r, p[1].i, p[1].r, p[2].i, p[2].r);
 		LOG.FireLogEntry(LogTypeSystem, "MatchProj q %.4e, %.4e,    %.4e, %.4e,    %.4e, %.4e",
@@ -855,7 +855,7 @@ void RobustSolverCM::OutputVectorXCSV(string filename) const
 		unsigned int iIndexID( k->second );
 		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
 		{
-			of << "I_" << k->first.IlluminationIndex 
+			of << "I_" << k->first.LayerIndex 
 				<< "T_" << k->first.TriggerIndex 
 				<< "C_" << k->first.CameraIndex
 				<< ",";
@@ -997,17 +997,17 @@ void RobustSolverCM::SolveXAlgH()
 
 void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
 {
-	// p2Board translates between a pixel location (for a given illumination, trigger and camera defined by index) to xyBoard location
+	// p2Board translates between a pixel location (for a given Layer, trigger and camera defined by index) to xyBoard location
 	// remember that xyBoard is on a warped surface, so the xy distance between marks is likely to be less than the
 	// CAD distance
 	// Also remember that this board model has not been aligned to CAD
-	unsigned int iIllumIndex( fovindex.IlluminationIndex );
+	unsigned int iLayerIndex( fovindex.LayerIndex );
 	unsigned int iTrigIndex( fovindex.TriggerIndex );
 	unsigned int iCamIndex( fovindex.CameraIndex );
 	unsigned int iVectorXIndex = (*_pFovOrderMap)[fovindex] *_iNumParamsPerIndex;
-	unsigned int deviceNum = _pSet->GetLayer(fovindex.IlluminationIndex)->DeviceIndex();
+	unsigned int deviceNum = _pSet->GetLayer(fovindex.LayerIndex)->DeviceIndex();
 	TransformCamModel camCal = 
-				 _pSet->GetLayer(iIllumIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
 	complexd xySensor;
 	xySensor.r = htcorrp((int)camCal.vMax,(int)camCal.uMax,
 					pix.u, pix.v,
@@ -1117,7 +1117,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 				pix.u = colPeak;  // Pix2Board uses u -> i, v -> r
 				pix.v = rowPeak;
 				FovIndex fovIndex( (*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex() );
-				unsigned int deviceNum = _pSet->GetLayer(fovIndex.IlluminationIndex)->DeviceIndex();
+				unsigned int deviceNum = _pSet->GetLayer(fovIndex.LayerIndex)->DeviceIndex();
 				Pix2Board(pix, fovIndex, &xyBoard);
 					
 				// brdFlat from warpxy
