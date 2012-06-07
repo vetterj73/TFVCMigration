@@ -393,8 +393,8 @@ void Overlap::Run()
 FovFovOverlap::FovFovOverlap(
 	MosaicLayer*	pLayer1,
 	MosaicLayer*	pLayer2,
-	pair<unsigned int, unsigned int> ImgPos1,
-	pair<unsigned int, unsigned int> ImgPos2,
+	TilePosition ImgPos1,
+	TilePosition ImgPos2,
 	DRect validRect,
 	bool bApplyCorrSizeUpLimit,
 	bool bHasMask)
@@ -405,22 +405,22 @@ FovFovOverlap::FovFovOverlap(
 	_imgPos2 = ImgPos2;
 	_bHasMask = bHasMask;
 
-	Image* pImg1 = _pLayer1->GetImage(ImgPos1.first, ImgPos1.second);
-	Image* pImg2 = _pLayer2->GetImage(ImgPos2.first, ImgPos2.second);
+	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
+	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iCamIndex, _imgPos2.iTrigIndex);
 	
 	Image* pMaskImg = NULL;
 	if(bHasMask)
-		pMaskImg = _pLayer1->GetMaskImage(ImgPos1.first, ImgPos1.second);
+		pMaskImg = _pLayer1->GetMaskImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
 	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskImg);
 }
 
 bool FovFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer1->GetTile(_imgPos1.first, _imgPos1.second)->ContainsImage() &&
-		_pLayer1->GetTile(_imgPos1.first, _imgPos1.second)->Added2Aligner() &&
-		_pLayer2->GetTile(_imgPos2.first, _imgPos2.second)->ContainsImage() &&
-		_pLayer2->GetTile(_imgPos2.first, _imgPos2.second)->Added2Aligner() &&
+		_pLayer1->GetTile(_imgPos1.iCamIndex, _imgPos1.iTrigIndex)->ContainsImage() &&
+		_pLayer1->GetTile(_imgPos1.iCamIndex, _imgPos1.iTrigIndex)->Added2Aligner() &&
+		_pLayer2->GetTile(_imgPos2.iCamIndex, _imgPos2.iTrigIndex)->ContainsImage() &&
+		_pLayer2->GetTile(_imgPos2.iCamIndex, _imgPos2.iTrigIndex)->Added2Aligner() &&
 		_bValid;
 
 	return(bFlag);
@@ -481,8 +481,8 @@ bool FovFovOverlap::DumpOvelapImages()
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sFovFov_coarse_I%dT%dC%d_I%dT%dC%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.second, _imgPos1.first,
-		_pLayer2->Index(), _imgPos2.second, _imgPos2.first);
+		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 		
 	s.append(cTemp);
 	_coarsePair.DumpImg(s);
@@ -492,8 +492,8 @@ bool FovFovOverlap::DumpOvelapImages()
 	{
 		sprintf_s(cTemp, 100, "%sFovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d.bmp",  
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.second, _imgPos1.first,
-		_pLayer2->Index(), _imgPos2.second, _imgPos2.first, i->GetIndex());
+		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex, i->GetIndex());
 
 		s.clear();
 		s.append(cTemp);
@@ -514,8 +514,8 @@ bool FovFovOverlap::DumpResultImages()
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_I%dT%dC%d_I%dT%dC%d_Score%dAmbig%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.second, _imgPos1.first,
-		_pLayer2->Index(), _imgPos2.second, _imgPos2.first,
+		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
 		
@@ -527,8 +527,8 @@ bool FovFovOverlap::DumpResultImages()
 	{
 		sprintf_s(cTemp, 100, "%sResult_FovFov_Fine_I%dT%dC%d_I%dT%dC%d_%d_Score%dAmbig%d.bmp",
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.second, _imgPos1.first,
-		_pLayer2->Index(), _imgPos2.second, _imgPos2.first, i->GetIndex(),
+		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex, i->GetIndex(),
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
 		(int)(i->GetCorrelationResult().AmbigScore*100));
 
@@ -548,7 +548,7 @@ bool FovFovOverlap::DumpResultImages()
 
 CadFovOverlap::CadFovOverlap(
 	MosaicLayer* pLayer,
-	pair<unsigned int, unsigned int> ImgPos,
+	TilePosition ImgPos,
 	Image* pCadImg,
 	DRect validRect)
 {
@@ -556,7 +556,7 @@ CadFovOverlap::CadFovOverlap(
 	_imgPos = ImgPos;
 	_pCadImg = pCadImg;
 
-	Image* pImg1 = _pLayer->GetImage(ImgPos.first, ImgPos.second);
+	Image* pImg1 = _pLayer->GetImage(_imgPos.iCamIndex, _imgPos.iTrigIndex);
 
 	config(pImg1, _pCadImg, validRect, Cad_To_Fov, false);
 }
@@ -564,8 +564,8 @@ CadFovOverlap::CadFovOverlap(
 bool CadFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
-		_pLayer->GetTile(_imgPos.first, _imgPos.second)->Added2Aligner() &&
+		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->ContainsImage() &&
+		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->Added2Aligner() &&
 		(_pCadImg != NULL) && (_pCadImg->GetBuffer() != NULL) &&
 		_bValid;
 
@@ -582,7 +582,7 @@ bool CadFovOverlap::DumpOvelapImages()
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sCadFov_I%dT%dC%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer->Index(), _imgPos.second, _imgPos.first);
+		_pLayer->Index(), _imgPos.iTrigIndex, _imgPos.iCamIndex);
 		
 	s.append(cTemp);
 	_coarsePair.DumpImg(s);
@@ -599,7 +599,7 @@ bool CadFovOverlap::DumpResultImages()
 	char cTemp[100];
 	sprintf_s(cTemp, 100, "%sResult_CadFov_I%dT%dC%d_Score%dAmbig%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer->Index(), _imgPos.second, _imgPos.first,
+		_pLayer->Index(), _imgPos.iTrigIndex, _imgPos.iCamIndex,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
 		
@@ -615,7 +615,7 @@ bool CadFovOverlap::DumpResultImages()
 
 FidFovOverlap::FidFovOverlap(
 	MosaicLayer*	pLayer,
-	pair<unsigned int, unsigned int> ImgPos,
+	TilePosition ImgPos,
 	Image* pFidImg,
 	double dCenterX,
 	double dCenterY,
@@ -631,7 +631,7 @@ FidFovOverlap::FidFovOverlap(
 
 	_iFidIndex = iFidIndex;
 
-	Image* pImg1 = _pLayer->GetImage(ImgPos.first, ImgPos.second);
+	Image* pImg1 = _pLayer->GetImage(_imgPos.iCamIndex, _imgPos.iTrigIndex);
 
 	_fidSearchMethod = FIDREGOFF;
 
@@ -653,8 +653,8 @@ void FidFovOverlap::SetNgcFid(unsigned int iTemplateID)
 bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer->GetTile(_imgPos.first, _imgPos.second)->ContainsImage() &&
-		_pLayer->GetTile(_imgPos.first, _imgPos.second)->Added2Aligner() &&
+		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->ContainsImage() &&
+		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->Added2Aligner() &&
 		(_pFidImg != NULL) && (_pFidImg->GetBuffer() != NULL) &&
 		_bValid;
 
@@ -726,7 +726,7 @@ bool FidFovOverlap::DumpOvelapImages()
 	sprintf_s(cTemp, 100, "%sFidFov_#%d_I%dT%dC%d_TID%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_iFidIndex, 
-		_pLayer->Index(), _imgPos.second, _imgPos.first,
+		_pLayer->Index(), _imgPos.iTrigIndex, _imgPos.iCamIndex,
 		_iTemplateID);
 		
 	s.append(cTemp);
@@ -745,7 +745,7 @@ bool FidFovOverlap::DumpResultImages()
 	sprintf_s(cTemp, 100, "%sResult_FidFov_#%d_I%dT%dC%d_TID%d_Score%dAmbig%d%s.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_iFidIndex,
-		_pLayer->Index(), _imgPos.second, _imgPos.first, 
+		_pLayer->Index(), _imgPos.iTrigIndex, _imgPos.iCamIndex, 
 		_iTemplateID,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
 		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100),

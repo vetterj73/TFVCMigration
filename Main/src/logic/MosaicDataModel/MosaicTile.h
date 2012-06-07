@@ -6,6 +6,24 @@ namespace MosaicDM
 {
 	class MosaicLayer;
 
+	struct TilePosition
+	{
+		unsigned int iTrigIndex;
+		unsigned int iCamIndex;
+		
+		TilePosition()
+		{
+			iTrigIndex = -1;
+			iCamIndex = -1;
+		}
+
+		TilePosition(unsigned int iTrig, unsigned int iCam)
+		{
+			iTrigIndex = iTrig;
+			iCamIndex = iCam;
+		}
+	};
+
 	///
 	///	MosaicTile is one tile of a MosaicLayer.  It contains the image and its transforms
 	///

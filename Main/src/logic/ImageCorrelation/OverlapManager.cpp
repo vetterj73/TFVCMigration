@@ -406,10 +406,11 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 					// If FOV are not from the same mosaic image  (avoid the same overlap add two times for a FOV)
 					if(iLeftCamIndex>=0 && iIndex1!= iIndex2)
 					{
+						TilePosition pos1(iTrig1, iCam1), pos2(iTrigIndex, iLeftCamIndex);
 						FovFovOverlap overlap(
 							pLayer1, pLayer2,
-							pair<unsigned int, unsigned int>(iCam1, iTrig1),
-							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
+							pos1,
+							pos2,
 							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
@@ -421,10 +422,11 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 					// Create right overlap and add to list
 					if(iRightCamIndex >= 0)
 					{
+						TilePosition pos1(iTrig1, iCam1), pos2(iTrigIndex, iRightCamIndex);
 						FovFovOverlap overlap(
 							pLayer1, pLayer2,
-							pair<unsigned int, unsigned int>(iCam1, iTrig1),
-							pair<unsigned int, unsigned int>(iRightCamIndex, iTrigIndex),
+							pos1,
+							pos2,
 							_validRect, bApplyCorSizeUpLimit, bMask);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
@@ -474,10 +476,11 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 
 						if(bValid)
 						{
+							TilePosition pos1(iTrig1, iCam1), pos2(iTrig2, iCamIndex);
 							FovFovOverlap overlap(
 								pLayer1, pLayer2,
-								pair<unsigned int, unsigned int>(iCam1, iTrig1),
-								pair<unsigned int, unsigned int>(iCamIndex, iTrig2),
+								pos1,
+								pos2,
 								_validRect, bApplyCorSizeUpLimit, bMask);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
@@ -542,9 +545,10 @@ void OverlapManager::CreateCadFovOverlaps()
 		{
 			for(iCam=0; iCam<iNumCameras; iCam++)
 			{
+				TilePosition pos(iTrig, iCam);
 				CadFovOverlap overlap(
 					pLayer,
-					pair<unsigned int, unsigned int>(iCam, iTrig),
+					pos,
 					_pCadImg,
 					_validRect);
 
@@ -704,9 +708,10 @@ bool OverlapManager::CreateFidOverlapForLayer(
 	{
 		for(unsigned int iCam=0; iCam<iNumCameras; iCam++)
 		{
+			TilePosition pos(iTrig, iCam);
 			FidFovOverlap overlap(
 				pLayer,
-				pair<unsigned int, unsigned int>(iCam, iTrig),
+				pos,
 				pFidImage,
 				pFidImage->CenterX(),
 				pFidImage->CenterY(),
@@ -1980,11 +1985,12 @@ bool OverlapManager::AddSingleSupplementOverlap(
 		return(false);
 
 	// Create supplement overlap
+	TilePosition pos1(iTrigIndex, iCamIndex), pos2(iNextTrig, iCamIndex);
 	FovFovOverlap overlap(
 		pLayer,
 		pLayer,
-		pair<unsigned int, unsigned int>(iCamIndex, iTrigIndex),
-		pair<unsigned int, unsigned int>(iCamIndex, iNextTrig),
+		pos1,
+		pos2,
 		_validRect, false, false);
 
 	// Add supplement overlap if it it is valid
