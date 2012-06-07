@@ -646,7 +646,7 @@ namespace CyberStitchFidTester
                 {
                     for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
                     {
-                        _mosaicSetProcessing.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                        _mosaicSetProcessing.AddRawImage(pLayer.GetTile(k, j).GetImageBuffer(), i, j, k);
                     }
                 }
             }
@@ -665,9 +665,9 @@ namespace CyberStitchFidTester
                         for (uint k = 0; k < pLayer.GetNumberOfTriggers(); k++)
                         {
                             // Convert Bayer to luminance
-                            pLayer.GetTile(j, k).Bayer2Lum(_iBayerType);
+                            pLayer.GetTile(k, j).Bayer2Lum(_iBayerType);
 
-                            _mosaicSetIllum.AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                            _mosaicSetIllum.AddRawImage(pLayer.GetTile(k, j).GetImageBuffer(), i, j, k);
                         }
                     }
                 }

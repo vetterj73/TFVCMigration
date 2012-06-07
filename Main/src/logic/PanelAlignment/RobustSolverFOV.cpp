@@ -97,9 +97,9 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	// Fov's nominal center
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
-	ImgTransform transFov = pLayer->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
-	unsigned int iCols = pLayer->GetImage(iCamIndex, iTrigIndex)->Columns();
-	unsigned int iRows = pLayer->GetImage(iCamIndex, iTrigIndex)->Rows();
+	ImgTransform transFov = pLayer->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform();
+	unsigned int iCols = pLayer->GetImage(iTrigIndex, iCamIndex)->Columns();
+	unsigned int iRows = pLayer->GetImage(iTrigIndex, iCamIndex)->Rows();
 	double dPixelCenRow = (iRows-1) / 2.0;
 	double dPixelCenCol = (iCols-1) / 2.0;
 	double dFovCalCenX, dFovCalCenY;
@@ -114,7 +114,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	if(index.CameraIndex < pLayer->GetNumberOfCameras())
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextCamFov = pLayer->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
+		transNextCamFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetNominalTransform();
 		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
@@ -128,7 +128,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	if(index.TriggerIndex < pLayer->NumTriggers())
 	{
 		iNextTrigFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
-		transNextTrigFov = pLayer->GetImage(index.CameraIndex, index.TriggerIndex)->GetNominalTransform();
+		transNextTrigFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetNominalTransform();
 		transNextTrigFov.Map(dPixelCenRow, dPixelCenCol, &dNextTrigFovCalCenX, &dNextTrigFovCalCenY);
 	}*/
 
@@ -340,7 +340,7 @@ bool RobustSolverFOV::AddPanelEdgeContraints(
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
 	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	
-	ImgTransform trans = pLayer->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform();
+	ImgTransform trans = pLayer->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform();
 	double dNorminalPixelSize = trans.GetItem(0);
 
 	// Position X constraint

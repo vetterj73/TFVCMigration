@@ -66,13 +66,13 @@ namespace MosaicDM
 			///	Get the tile at a given camera and trigger of the mosaic.
 			/// Returns null if this row or column is out of range.
 			///
-			MosaicTile* GetTile(unsigned int cameraIndex, unsigned int triggerIndex);
+			MosaicTile* GetTile(unsigned int triggerIndex, unsigned int cameraIndex);
 
 			///
 			///	Get the Image Subclass at a given camera and trigger of the mosaic.
 			/// Returns null if this row or column is out of range.
 			///
-			Image* GetImage(int cameraIndex, int triggerIndex);
+			Image* GetImage(int triggerIndex, int cameraIndex);
 
 			///
 			///	Returns the number of tiles in this (or any?) layer.

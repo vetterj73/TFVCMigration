@@ -54,9 +54,9 @@ namespace MMosaicDM
 			///
 			///	Gets a tile from the layer.
 			///
-			ManagedMosaicTile^ GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
+			ManagedMosaicTile^ GetTile(unsigned int triggerIndex, unsigned int cameraIndex)
 			{
-				MosaicDM::MosaicTile *pTile = _pMosaicLayer->GetTile(cameraIndex, triggerIndex);
+				MosaicDM::MosaicTile *pTile = _pMosaicLayer->GetTile(triggerIndex, cameraIndex);
 				return pTile == NULL?nullptr:gcnew ManagedMosaicTile(pTile);
 			}
 

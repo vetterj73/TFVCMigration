@@ -494,7 +494,7 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 		{
 			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				Image* img = pLayer->GetImage(iCam, iTrig);
+				Image* img = pLayer->GetImage(iTrig, iCam);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
@@ -708,7 +708,7 @@ bool PanelAligner::CreateTransforms()
 		{
 			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				Image* img = pLayer->GetImage(iCam, iTrig);
+				Image* img = pLayer->GetImage(iTrig, iCam);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
 			}
@@ -1107,7 +1107,7 @@ void PanelAligner::TestGetImagePatch()
 		{
 			for(int iCam = 0; iCam < iNumCam; iCam++) 
 			{
-				Image* pImg = pLayer->GetImage(iCam, iTrig);
+				Image* pImg = pLayer->GetImage(iTrig, iCam);
 				int iStride = pImg->PixelRowStride();
 				int iRows = pImg->Rows();
 				if(iTrig%2==0 && iCam%2==0)

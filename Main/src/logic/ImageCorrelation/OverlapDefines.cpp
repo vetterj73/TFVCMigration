@@ -405,8 +405,8 @@ FovFovOverlap::FovFovOverlap(
 	_imgPos2 = ImgPos2;
 	_bHasMask = bHasMask;
 
-	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
-	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iCamIndex, _imgPos2.iTrigIndex);
+	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iTrigIndex, _imgPos1.iCamIndex);
+	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 	
 	Image* pMaskImg = NULL;
 	if(bHasMask)
@@ -417,10 +417,10 @@ FovFovOverlap::FovFovOverlap(
 bool FovFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer1->GetTile(_imgPos1.iCamIndex, _imgPos1.iTrigIndex)->ContainsImage() &&
-		_pLayer1->GetTile(_imgPos1.iCamIndex, _imgPos1.iTrigIndex)->Added2Aligner() &&
-		_pLayer2->GetTile(_imgPos2.iCamIndex, _imgPos2.iTrigIndex)->ContainsImage() &&
-		_pLayer2->GetTile(_imgPos2.iCamIndex, _imgPos2.iTrigIndex)->Added2Aligner() &&
+		_pLayer1->GetTile(_imgPos1.iTrigIndex, _imgPos1.iCamIndex)->ContainsImage() &&
+		_pLayer1->GetTile(_imgPos1.iTrigIndex, _imgPos1.iCamIndex)->Added2Aligner() &&
+		_pLayer2->GetTile(_imgPos2.iTrigIndex, _imgPos2.iCamIndex)->ContainsImage() &&
+		_pLayer2->GetTile(_imgPos2.iTrigIndex, _imgPos2.iCamIndex)->Added2Aligner() &&
 		_bValid;
 
 	return(bFlag);
@@ -556,7 +556,7 @@ CadFovOverlap::CadFovOverlap(
 	_imgPos = ImgPos;
 	_pCadImg = pCadImg;
 
-	Image* pImg1 = _pLayer->GetImage(_imgPos.iCamIndex, _imgPos.iTrigIndex);
+	Image* pImg1 = _pLayer->GetImage(_imgPos.iTrigIndex, _imgPos.iCamIndex);
 
 	config(pImg1, _pCadImg, validRect, Cad_To_Fov, false);
 }
@@ -564,8 +564,8 @@ CadFovOverlap::CadFovOverlap(
 bool CadFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->ContainsImage() &&
-		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->Added2Aligner() &&
+		_pLayer->GetTile(_imgPos.iTrigIndex, _imgPos.iCamIndex)->ContainsImage() &&
+		_pLayer->GetTile(_imgPos.iTrigIndex, _imgPos.iCamIndex)->Added2Aligner() &&
 		(_pCadImg != NULL) && (_pCadImg->GetBuffer() != NULL) &&
 		_bValid;
 
@@ -631,7 +631,7 @@ FidFovOverlap::FidFovOverlap(
 
 	_iFidIndex = iFidIndex;
 
-	Image* pImg1 = _pLayer->GetImage(_imgPos.iCamIndex, _imgPos.iTrigIndex);
+	Image* pImg1 = _pLayer->GetImage(_imgPos.iTrigIndex, _imgPos.iCamIndex);
 
 	_fidSearchMethod = FIDREGOFF;
 
@@ -653,8 +653,8 @@ void FidFovOverlap::SetNgcFid(unsigned int iTemplateID)
 bool FidFovOverlap::IsReadyToProcess() const
 {
 	bool bFlag =
-		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->ContainsImage() &&
-		_pLayer->GetTile(_imgPos.iCamIndex, _imgPos.iTrigIndex)->Added2Aligner() &&
+		_pLayer->GetTile(_imgPos.iTrigIndex, _imgPos.iCamIndex)->ContainsImage() &&
+		_pLayer->GetTile(_imgPos.iTrigIndex, _imgPos.iCamIndex)->Added2Aligner() &&
 		(_pFidImg != NULL) && (_pFidImg->GetBuffer() != NULL) &&
 		_bValid;
 

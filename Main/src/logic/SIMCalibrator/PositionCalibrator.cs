@@ -403,7 +403,7 @@ namespace SIMCalibrator
                 (int)_mosaicSet.GetImageLengthInPixels(), 0, 0, false);
 
             for (int i = 0; i < _mosaicSet.GetLayer(0).GetNumberOfCameras(); i++)
-                stitcher.AddTile(_mosaicSet.GetLayer(_layerIndex).GetTile((uint) i, 0).GetImageBuffer(), i, 0);
+                stitcher.AddTile(_mosaicSet.GetLayer(_layerIndex).GetTile(0, (uint) i).GetImageBuffer(), i, 0);
 
             return stitcher.CurrentBitmap;
         }

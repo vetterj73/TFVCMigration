@@ -183,14 +183,14 @@ namespace MosaicDM
 				// if more than one trigger, ignore FOV has a little overlap with panel in X
 				if(GetNumberOfTriggers() > 1)
 				{	
-					DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
+					DRect rect = GetImage(iTrig, iCam)->GetBoundBoxInWorld();
 					double dOverlapXMin = rect.xMin > dPanelXMin ? rect.xMin : dPanelXMin;
 					double dOverlapXMax = rect.xMax < dPanelXMax ? rect.xMax : dPanelXMax;
 					if(dOverlapXMax - dOverlapXMin < dMinOverlapInX)
 						continue;
 				}
 
-				pdCenY[iCam] += GetTile(iCam, iTrig)->GetImagPtr()->CenterY();
+				pdCenY[iCam] += GetTile(iTrig, iCam)->GetImagPtr()->CenterY();
 				iCount++;
 			}
 			pdCenY[iCam] /= iCount;
@@ -216,14 +216,14 @@ namespace MosaicDM
 				// if more than one camera, ignore FOV has a little overlap with panel in Y
 				if(GetNumberOfCameras() > 1)
 				{	
-					DRect rect = GetImage(iCam, iTrig)->GetBoundBoxInWorld();
+					DRect rect = GetImage(iTrig, iCam)->GetBoundBoxInWorld();
 					double dOverlapYMin = rect.yMin > dPanelYMin ? rect.yMin : dPanelYMin;
 					double dOverlapYMax = rect.yMax < dPanelYMax ? rect.yMax : dPanelYMax;
 					if(dOverlapYMax - dOverlapYMin < dMinOverlapInY)
 						continue;
 				}
 
-				pdCenX[iTrig] += GetTile(iCam, iTrig)->GetImagPtr()->CenterX();
+				pdCenX[iTrig] += GetTile(iTrig, iCam)->GetImagPtr()->CenterX();
 				iCount++;
 			}
 			pdCenX[iTrig] /= iCount++;
@@ -335,7 +335,7 @@ namespace MosaicDM
 		{
 			for(unsigned int iCam=0; iCam<iNumCams; iCam++)
 			{
-				Image* pFOV = GetImage(iCam, iTrig);
+				Image* pFOV = GetImage(iTrig, iCam);
 
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
@@ -406,7 +406,7 @@ namespace MosaicDM
 			bool bFirstCam = true;
 			for(int iCam=iBeginCam; iCam<=iEndCam; iCam++)
 			{
-				DRect rect = GetImage(iCam, _numTriggers-1-iInvTrig)->GetBoundBoxInWorld();
+				DRect rect = GetImage(_numTriggers-1-iInvTrig, iCam)->GetBoundBoxInWorld();
 				
 				// if more than one camera, ignore FOV has a little overlap with panel in Y
 				if(iBeginCam != iEndCam)
@@ -444,7 +444,7 @@ namespace MosaicDM
 			bool bFirstTrig = true;
 			for(int iTrig=iBeginInvTrig; iTrig<=iEndInvTrig; iTrig++)
 			{
-				DRect rect = GetImage(iCam, _numTriggers-1-iTrig)->GetBoundBoxInWorld();
+				DRect rect = GetImage(_numTriggers-1-iTrig, iCam)->GetBoundBoxInWorld();
 
 				// if more than one trigger, ignore FOV has a little overlap with panel in X
 				if(iBeginInvTrig != iEndInvTrig)
@@ -1162,7 +1162,7 @@ namespace MosaicDM
 				if(roi.LastRow < roi.FirstRow  || roi.LastColumn < roi.FirstColumn)
 					continue;
 
-				Image* pFovImg = GetImage(iCam, _numTriggers-1-iInvTrig);
+				Image* pFovImg = GetImage(_numTriggers-1-iInvTrig, iCam);
 				pImage->MorphFrom(pFovImg, roi, pHeightImage, dHeightResolution, dPupilDistance);
 			}
 		}
@@ -1183,7 +1183,7 @@ namespace MosaicDM
 
 #pragma region FOV  and mask related
 
-	MosaicTile* MosaicLayer::GetTile(unsigned int cameraIndex, unsigned int triggerIndex)
+	MosaicTile* MosaicLayer::GetTile(unsigned int triggerIndex, unsigned int cameraIndex)
 	{
 		if(cameraIndex<0 || cameraIndex>=GetNumberOfCameras() || triggerIndex<0 || triggerIndex>=GetNumberOfTriggers())
 			return NULL;
@@ -1191,9 +1191,9 @@ namespace MosaicDM
 		return &_pTileArray[cameraIndex*GetNumberOfTriggers()+triggerIndex];
 	}
 
-	Image* MosaicLayer::GetImage(int cameraIndex, int triggerIndex)
+	Image* MosaicLayer::GetImage(int triggerIndex, int cameraIndex)
 	{
-		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
+		MosaicTile* pTile = GetTile(triggerIndex, cameraIndex);
 		if(pTile == NULL)
 			return NULL;
 
@@ -1232,7 +1232,7 @@ namespace MosaicDM
 
 	bool MosaicLayer::AddRawImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
-		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
+		MosaicTile* pTile = GetTile(triggerIndex, cameraIndex);
 		if(pTile == NULL)
 			return false;
 
@@ -1241,7 +1241,7 @@ namespace MosaicDM
 
 	bool MosaicLayer::AddYCrCbImage(unsigned char *pBuffer, unsigned int cameraIndex, unsigned int triggerIndex)
 	{
-		MosaicTile* pTile = GetTile(cameraIndex, triggerIndex);
+		MosaicTile* pTile = GetTile(triggerIndex, cameraIndex);
 		if(pTile == NULL)
 			return false;
 

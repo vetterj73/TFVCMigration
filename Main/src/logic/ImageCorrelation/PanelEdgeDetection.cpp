@@ -146,7 +146,7 @@ bool PanelEdgeDetection::Initialization(MosaicLayer *pLayer, DRect panelRoi)
 	}
 		
 	// Validation check (enough gap between nominal panel edge and FOV edge)
-	Image* pImage = pLayer->GetImage(0, _iEdgeTrigIndex);
+	Image* pImage = pLayer->GetImage(_iEdgeTrigIndex, 0);
 	DRect fovRect = pImage->GetBoundBoxInWorld();
 	if(_bConveyorLeft2Right)
 	{	
@@ -175,7 +175,7 @@ bool PanelEdgeDetection::Initialization(MosaicLayer *pLayer, DRect panelRoi)
 	// Left FOV select and setup
 	for(int iCam=0; iCam<iNumCam; iCam++)
 	{
-		Image* pImage = pLayer->GetImage(iCam, _iEdgeTrigIndex);
+		Image* pImage = pLayer->GetImage(_iEdgeTrigIndex, iCam);
 		DRect fovRect = pImage->GetBoundBoxInWorld();
 
 		// Panel edge size suitable for detection
@@ -219,7 +219,7 @@ bool PanelEdgeDetection::Initialization(MosaicLayer *pLayer, DRect panelRoi)
 	// Right FOV select and setup
 	for(int iCam = iNumCam-1; iCam >=0; iCam--)
 	{
-		Image* pImage = pLayer->GetImage(iCam, _iEdgeTrigIndex);
+		Image* pImage = pLayer->GetImage(_iEdgeTrigIndex, iCam);
 		DRect fovRect = pImage->GetBoundBoxInWorld();
 
 		// Panel edge size suitable for detection

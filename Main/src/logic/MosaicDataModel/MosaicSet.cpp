@@ -76,9 +76,10 @@ namespace MosaicDM
 				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
 				return false;
 
-			for(unsigned int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
-				for(unsigned int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
-					GetLayer(i)->GetImage(j,k)->SetTransform(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetTransform());
+			
+			for(unsigned int iTrig=0; iTrig<GetLayer(i)->GetNumberOfTriggers(); iTrig++)
+				for(unsigned int iCam=0; iCam<GetLayer(i)->GetNumberOfCameras(); iCam++)
+					GetLayer(i)->GetImage(iTrig, iCam)->SetTransform(pMosaicSet->GetLayer(i)->GetImage(iTrig,iCam)->GetTransform());
 		}	
 
 		return true;
@@ -97,9 +98,9 @@ namespace MosaicDM
 				GetLayer(i)->GetNumberOfTriggers() != pMosaicSet->GetLayer(i)->GetNumberOfTriggers())
 				return false;
 
-			for(unsigned int j=0; j<GetLayer(i)->GetNumberOfCameras(); j++)
-				for(unsigned int k=0; k<GetLayer(i)->GetNumberOfTriggers(); k++)
-					GetLayer(i)->GetImage(j,k)->SetBuffer(pMosaicSet->GetLayer(i)->GetImage(j,k)->GetBuffer());
+			for(unsigned int iTrig=0; iTrig<GetLayer(i)->GetNumberOfTriggers(); iTrig++)
+				for(unsigned int iCam=0; iCam<GetLayer(i)->GetNumberOfCameras(); iCam++)
+					GetLayer(i)->GetImage(iTrig, iCam)->SetBuffer(pMosaicSet->GetLayer(i)->GetImage(iTrig, iCam)->GetBuffer());
 		}	
 
 		return true;

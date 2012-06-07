@@ -1025,7 +1025,7 @@ bool OverlapManager::DoAlignmentForFov(
 	unsigned int iCamIndex)
 {
 	// Flag that fov is added to alginer
-	_pMosaicSet->GetLayer(iMosaicIndex)->GetTile(iCamIndex, iTrigIndex)->SetAdded2Aligner();
+	_pMosaicSet->GetLayer(iMosaicIndex)->GetTile(iTrigIndex, iCamIndex)->SetAdded2Aligner();
 
 	if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
 	{

@@ -186,9 +186,9 @@ namespace MultiAlignerTester
                                     ManagedMosaicLayer pLayer = _mosaicSetCopys[iIndex].GetLayer(i);
 
                                     if (_bBayerPattern)
-                                        _mosaicSets[iIndex].AddYCrCbImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                        _mosaicSets[iIndex].AddYCrCbImage(pLayer.GetTile(k, j).GetImageBuffer(), i, j, k);
                                     else
-                                        _mosaicSets[iIndex].AddRawImage(pLayer.GetTile(j, k).GetImageBuffer(), i, j, k);
+                                        _mosaicSets[iIndex].AddRawImage(pLayer.GetTile(k, j).GetImageBuffer(), i, j, k);
 
                                 }
                             }

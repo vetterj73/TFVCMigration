@@ -65,7 +65,7 @@ namespace SIMMosaicUtils
                     {
                         uint trigger = (device.ConveyorRtoL) ?
                             (uint)(pSpec.NumberOfTriggers - k - 1) : k;
-                        ManagedMosaicTile mmt = layer.GetTile(j, trigger);
+                        ManagedMosaicTile mmt = layer.GetTile(trigger, j);
 
                         if (mmt == null)
                             throw new ApplicationException("AddDeviceToMosaic - Tile was null - this should never happen");

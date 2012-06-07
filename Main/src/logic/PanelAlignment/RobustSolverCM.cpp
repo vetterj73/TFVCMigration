@@ -254,10 +254,10 @@ void RobustSolverCM::ConstrainPerTrig()
 			unsigned int indexID( k->second );
 			unsigned int iLayerIndex( k->first.LayerIndex);
 			unsigned int iTrigIndex( k->first.TriggerIndex);
-			unsigned int iCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
-			unsigned int iRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+			unsigned int iCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->Columns();
+			unsigned int iRows = _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->Rows();
 			TransformCamModel camCal = 
-				 _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 			complexd xySensor;
 			xySensor.r = htcorrp(iRows, iCols,
 				dFovOriginU, dFovOriginV,
@@ -274,7 +274,7 @@ void RobustSolverCM::ConstrainPerTrig()
 			begin_pin_in_image_center[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
 			begin_pin_in_image_center[beginIndex+2] = -Weights.wXIndex * xySensor.i;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
-				(_pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2)
+				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2)
 				- xySensor.r);
 
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
@@ -285,7 +285,7 @@ void RobustSolverCM::ConstrainPerTrig()
 			begin_pin_in_image_center[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
 			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex * xySensor.r;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
-				(_pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5)
+				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5)
 				- xySensor.i);
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
 			// constrain theata to zero
@@ -310,8 +310,8 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	unsigned int indexID( (*_pFovOrderMap)[index] );
 	unsigned int deviceNum = _pSet->GetLayer(index.LayerIndex)->DeviceIndex();
-	unsigned int iCols = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->Columns();
-	unsigned int iRows = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->Rows();
+	unsigned int iCols = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->Columns();
+	unsigned int iRows = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->Rows();
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	unsigned int iFOVPosA( indexID * _iNumParamsPerIndex);
 	
@@ -320,7 +320,7 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	// x_trig - s_y * theta_trig = dsx/dz * Z = x_fid - s_x
 	double w = Weights.wXbyEdge;
 	TransformCamModel camCalA = 
-				_pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				_pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 	double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 					0.0, 0.0, 
 					_iNumBasisFunctions, _iNumBasisFunctions,
@@ -342,8 +342,8 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 					(float*)camCalA.dSdz[CAL_ARRAY_Y],
 					_iNumBasisFunctions);
 	// approximate position of the 0,0 pixel on the surface of the board
-	double boardX = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(2);
-	double boardY = _pSet->GetLayer(index.LayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetNominalTransform().GetItem(5);
+	double boardX = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2);
+	double boardY = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5);
 	double* Zpoly;
 	Zpoly = new double[_iNumZTerms];
 	Zpoly[0] = pow(boardX,0) * pow(boardY,0);
@@ -440,9 +440,9 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		colImgB += offsetCols;
 		// Add a equataions 
 		TransformCamModel camCalA = 
-				 _pSet->GetLayer(iLayerIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
 		TransformCamModel camCalB = 
-				 _pSet->GetLayer(iLayerIndexB)->GetImage(iCamIndexB, iTrigIndexB)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndexB)->GetImage(iTrigIndexB, iCamIndexB)->GetTransformCamCalibration();
 		double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 						colImgA, rowImgA, 
 						_iNumBasisFunctions, _iNumBasisFunctions,
@@ -610,7 +610,7 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	colImgA -= offsetCols;
 	// Add a equataions 
 	TransformCamModel camCalA = 
-				_pSet->GetLayer(iLayerIndexA)->GetImage(iCamIndexA, iTrigIndexA)->GetTransformCamCalibration();
+				_pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
 	double xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
 					colImgA, rowImgA, 
 					_iNumBasisFunctions, _iNumBasisFunctions,
@@ -698,8 +698,8 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	// Fov transform parameter begin position in column
 	FovIndex fovIndex(iLayerIndex, iTriggerIndex, iCameraIndex); 
 	unsigned int index = (*_pFovOrderMap)[fovIndex] *_iNumParamsPerIndex;
-	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
-	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
+	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Columns();
+	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Rows();
 		
 	double t[3][3];
 	MatchProjeciveTransform(iLayerIndex, iTriggerIndex, iCameraIndex, t);
@@ -709,7 +709,7 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	// add camModel transform calculation and load....
 	// take set of points in image, set of points in CAD
 	// calc matching transform (pixel to flattenend board surface)
-	TransformCamModel tCamModel = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex,iTriggerIndex)->GetTransformCamModel();
+	TransformCamModel tCamModel = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->GetTransformCamModel();
 	tCamModel.Reset();
 	int iNumX = 11;
 	int iNumY = 11;
@@ -755,8 +755,8 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	unsigned int iCameraIndex, double dTrans[3][3]) 
 {
 	FovIndex fovIndex(iLayerIndex, iTriggerIndex, iCameraIndex); 
-	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Columns();
-	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iCameraIndex, iTriggerIndex)->Rows();
+	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Columns();
+	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Rows();
 	unsigned int deviceNum = _pSet->GetLayer(fovIndex.LayerIndex)->DeviceIndex();
 	unsigned int iNumX = 3;  // set to 3 uses corner and centers of edges (along with image center)
 	unsigned int iNumY = 3;  // (the resulting fit is more accurate on the edges)
@@ -1007,7 +1007,7 @@ void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoar
 	unsigned int iVectorXIndex = (*_pFovOrderMap)[fovindex] *_iNumParamsPerIndex;
 	unsigned int deviceNum = _pSet->GetLayer(fovindex.LayerIndex)->DeviceIndex();
 	TransformCamModel camCal = 
-				 _pSet->GetLayer(iLayerIndex)->GetImage(iCamIndex, iTrigIndex)->GetTransformCamCalibration();
+				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 	complexd xySensor;
 	xySensor.r = htcorrp((int)camCal.vMax,(int)camCal.uMax,
 					pix.u, pix.v,

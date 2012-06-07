@@ -113,10 +113,10 @@ namespace ManagedCyberStitchUnitTest
             {
                 Assert.IsTrue(mSet.GetLayer(i).GetTile(0, 0) != null);
                 Assert.IsTrue(mSet.GetLayer(i).GetTile(1, 1) != null);
-                Assert.IsTrue(mSet.GetLayer(i).GetTile(2, 3) != null);
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(3, 2) != null);
 
                 Assert.IsTrue(mSet.GetLayer(i).GetTile(3, 3) == null);
-                Assert.IsTrue(mSet.GetLayer(i).GetTile(2, 4) == null);
+                Assert.IsTrue(mSet.GetLayer(i).GetTile(4, 2) == null);
             }
 
         }
