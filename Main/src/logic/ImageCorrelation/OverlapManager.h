@@ -81,6 +81,10 @@ public:
 
 	bool FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum);
 
+	// for supplement overlaps
+	int CalSupplementOverlaps();
+	FovFovOverlapList* GetSupplementOverlaps();
+
 protected:
 	bool IsCadImageNeeded();
 	bool IsMaskImageNeeded();
@@ -144,10 +148,21 @@ protected:
 	int FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList);
 	int FovFovFineInconsistCheck(list<FovFovOverlap*>* pList);
 
+	// For supplement overlaps
+	bool IsValid4SupplementCheck(FovFovOverlap* pOverlap);
+	bool AddSingleSupplementOverlap(
+		MosaicLayer* pLayer,
+		unsigned int iTrigIndex, 
+		unsigned int iCamIndex,
+		bool bNexTrigIncrease);
+	int AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap);
+	int AddSupplementOverlaps();
+
 private:	
 	MosaicSet *_pMosaicSet;
 	Panel* _pPanel;
 	DRect _validRect;
+	unsigned int _numThreads;
 
 	Image* _pCadImg;
 	Image* _pPanelMaskImg;
@@ -157,8 +172,7 @@ private:
 
 	Image* _pFidImages;
 
-	
-	// A[Mosaic Index][Row(y) Index][Column(x) Index]
+	// A[Layer Index][Trigger Index][Camera Index]
 	FovFovOverlapList*** _fovFovOverlapLists;
 	CadFovOverlapList*** _cadFovOverlapLists;
 	FidFovOverlapList*** _fidFovOverlapLists;
@@ -175,5 +189,8 @@ private:
 	PanelEdgeDetection* _pEdgeDetector;	
 	FidFovOverlapList* _curPanelFidFovOverlapLists;	
 	Image* _pCurPanelFidImages;
+
+	// For supplememt overlaps
+	FovFovOverlapList _supFovFovOvelapList;
 };
 

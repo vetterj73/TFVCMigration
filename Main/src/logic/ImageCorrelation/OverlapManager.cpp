@@ -16,6 +16,7 @@ OverlapManager::OverlapManager(
 	_pJobManager = new CyberJob::JobManager("Overlap", numThreads);
 	_pMosaicSet = pMosaicSet;
 	_pPanel = pPanel;
+	_numThreads = numThreads;
 
 	/*
 	int k=2;
@@ -264,6 +265,9 @@ bool OverlapManager::ResetforNewPanel()
 			_curPanelFidFovOverlapLists[i].clear();
 	}
 
+	// For supplememt overlap 
+	_supFovFovOvelapList.clear();
+
 	return(true);
 }
 
@@ -408,7 +412,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoIllum(unsigned int iIndex1, unsig
 							pair<unsigned int, unsigned int>(iLeftCamIndex, iTrigIndex),
 							_validRect, bApplyCorSizeUpLimit, bMask);
 
-						if(overlap.Columns()>_iMinOverlapSize || overlap.Rows()>_iMinOverlapSize)
+						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
 							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
 							_fovFovOverlapLists[iIndex2][iTrigIndex][iLeftCamIndex].push_back(overlap);
@@ -1896,3 +1900,256 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 }
 
 #pragma endregion
+
+#pragma region SupplementOverlaps
+// Only trigger to trigger Fov to fov overlap will be checked and added
+
+// Check whether FovFov overlap is valid to add supplement overlaps
+bool OverlapManager::IsValid4SupplementCheck(FovFovOverlap* pOverlap)
+{
+	// 1, processed
+	// 2, Fovs from same device but different layers, and from the same camera
+	// 3, the sum weight is small enough
+	// 4, both FOVs have enough overlap with panel
+
+	// If not processed
+	if(!pOverlap->IsProcessed())
+		return(false);
+
+	// If not from a singel Device  
+	if(pOverlap->GetFirstMosaicLayer()->DeviceIndex() != pOverlap->GetSecondMosaicLayer()->DeviceIndex())
+		return(false);
+
+	// If not from different layers 
+	if(pOverlap->GetFirstMosaicLayer()->Index() == pOverlap->GetSecondMosaicLayer()->Index())
+		return(false);
+
+	// If not from single camera 
+	if(pOverlap->GetFirstCameraIndex() != pOverlap->GetSecondCameraIndex())
+		return(false);
+
+	// If Sum of Weight is small enough
+	double dMinSumWeight = Weights.GetFovFovWeight()/8.0;
+	if(pOverlap->CalWeightSum() > dMinSumWeight)
+		return(0);
+
+	double dMinFovPanelOverlapArea = _pMosaicSet->GetImageHeightInPixels() * _pMosaicSet->GetNominalPixelSizeX() 
+		* _pMosaicSet->GetImageWidthInPixels() * _pMosaicSet->GetNominalPixelSizeY() * 0.2;
+
+	// Check overlap between panel and FOV
+	// First image
+	Image* pImage = pOverlap->GetFirstImage();
+	DRect rect = pImage->GetBoundBoxInWorld();
+	DRect fovPanelOverlapRect = rect.OverlapRect(_validRect);
+	// if overlap between panel and FOV is not big enough
+	if(fovPanelOverlapRect.Area() < dMinFovPanelOverlapArea)
+		return(false);
+
+	// Second image
+	pOverlap->GetSecondImage();
+	rect = pImage->GetBoundBoxInWorld();
+	fovPanelOverlapRect = rect.OverlapRect(_validRect);
+	// if overlap between panel and FOV is not big enough
+	if(fovPanelOverlapRect.Area() < dMinFovPanelOverlapArea)
+		return(false);
+
+	return(true);
+}
+
+// Add a FovFov supplement overlap
+bool OverlapManager::AddSingleSupplementOverlap(
+	MosaicLayer* pLayer, 
+	unsigned int iTrigIndex, 
+	unsigned int iCamIndex,
+	bool bNexTrigIncrease)
+{
+	// Whether trig to trig for the same layer already exists
+	unsigned int iLayerIndex = pLayer->Index();
+	bool bTrigTrigFlag = _pMosaicSet->GetCorrelationFlags(iLayerIndex, iLayerIndex)->GetTriggerToTrigger();
+	if(bTrigTrigFlag)
+		return(false);
+
+	// Calcualte next trigger index
+	int iNextTrig = -1;
+	if(bNexTrigIncrease)
+		iNextTrig = iTrigIndex+1;
+	else
+		iNextTrig = iTrigIndex-1;
+
+	if(iNextTrig<0 || iNextTrig>=(int)pLayer->GetNumberOfTriggers())
+		return(false);
+
+	// Create supplement overlap
+	FovFovOverlap overlap(
+		pLayer,
+		pLayer,
+		pair<unsigned int, unsigned int>(iCamIndex, iTrigIndex),
+		pair<unsigned int, unsigned int>(iCamIndex, iNextTrig),
+		_validRect, false, false);
+
+	// Add supplement overlap if it it is valid
+	if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
+	{
+		_supFovFovOvelapList.push_back(overlap);
+		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSingleSupplementOverlap(): supplement overlaps L%dT%dC%d_L%dT%dC%d are added", 
+			overlap.GetFirstMosaicLayer()->Index(), overlap.GetFirstTriggerIndex(), overlap.GetFirstCameraIndex(),
+			overlap.GetSecondMosaicLayer()->Index(), overlap.GetSecondTriggerIndex(), overlap.GetSecondCameraIndex());
+		return(true);
+	}
+	else
+	{
+		return(false);
+	}
+}
+
+// Add supplement overlaps (<=2) for a valid overlap
+int OverlapManager::AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap)
+{	
+	// validation check
+	if(!IsValid4SupplementCheck(pOverlap))
+		return(0);
+
+	MosaicLayer* pLayer1 = pOverlap->GetFirstMosaicLayer();
+	MosaicLayer* pLayer2 = pOverlap->GetSecondMosaicLayer();
+	int iTrig1 = pOverlap->GetFirstTriggerIndex();
+	int iTrig2 = pOverlap->GetSecondTriggerIndex();
+	int iCam1 = pOverlap->GetFirstCameraIndex();
+	int iCam2 = pOverlap->GetSecondCameraIndex();	
+	
+	// Next trigger index for supplement overlap
+	DRect rect1 = pOverlap->GetFirstImage()->GetBoundBoxInWorld();
+	DRect rect2 = pOverlap->GetSecondImage()->GetBoundBoxInWorld();
+	bool bNextTrigIncrease1, bNextTrigIncrease2;
+	if(rect1.CenX() > rect2.CenX())
+	{
+		bNextTrigIncrease1 = true;
+		bNextTrigIncrease2 = false;
+	}
+	else
+	{
+		bNextTrigIncrease1 = false;
+		bNextTrigIncrease2 = true;
+	}
+
+	// Add supplement overlap
+	int iNumAddedOverLaps = 0;
+
+	bool bFlag = AddSingleSupplementOverlap(
+		pLayer1, 
+		iTrig1, 
+		iCam1,
+		bNextTrigIncrease1);
+	if(bFlag)
+		iNumAddedOverLaps++;
+
+	bFlag = AddSingleSupplementOverlap(
+		pLayer2, 
+		iTrig2, 
+		iCam2,
+		bNextTrigIncrease2);
+	if(bFlag)
+		iNumAddedOverLaps++;
+
+	return(iNumAddedOverLaps);
+}
+
+// Add supplement FovFov overlaps to compensate FovFov overlaps with low weight
+int OverlapManager::AddSupplementOverlaps()
+{
+	// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
+	int iMaxSupOverlaps = 20;
+
+	for(unsigned int iLayer=0; iLayer<_pMosaicSet->GetNumMosaicLayers(); iLayer++)
+	{
+		MosaicLayer* pLayer = _pMosaicSet->GetLayer(iLayer);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				FovFovOverlapList* pFovFovList = GetFovFovListForFov(iLayer, iTrig, iCam);
+				
+				for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+				{
+					/* for debug
+					if((ite->GetFirstMosaicLayer()->Index() == 0 &&
+						ite->GetFirstTriggerIndex() == 0 &&
+						ite->GetFirstCameraIndex() == 1 &&
+						ite->GetSecondMosaicLayer()->Index() == 0  &&
+						ite->GetSecondTriggerIndex() == 0 &&
+						ite->GetSecondCameraIndex() == 2) ||
+						(ite->GetFirstMosaicLayer()->Index() == 0 &&
+						ite->GetFirstTriggerIndex() == 0 &&
+						ite->GetFirstCameraIndex() == 2 &&
+						ite->GetSecondMosaicLayer()->Index() == 0  &&
+						ite->GetSecondTriggerIndex() == 0 &&
+						ite->GetSecondCameraIndex() == 1))
+					{
+						int ii= 10;
+					}
+					//*/
+
+					AddSupplementOverlapsforSingleOvelap(&(*ite));
+					
+					// Two many overlaps are added, there should be something wrong
+					if(_supFovFovOvelapList.size() > iMaxSupOverlaps)
+					{
+						LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSupplementOverlaps(): To many supplement overlaps are added");
+						return((int)_supFovFovOvelapList.size());
+					}
+
+				}
+			} // camera
+		} // trigger
+	} // layer
+
+	if(_supFovFovOvelapList.size() > 0)
+		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSupplementOverlaps(): %d supplement overlaps are added", _supFovFovOvelapList.size());
+	
+	return((int)_supFovFovOvelapList.size());
+}
+
+int OverlapManager::CalSupplementOverlaps()
+{
+	LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::CalSupplementOverlaps(): Begin process supplement overlaps");
+
+	// Add supplement overlaps
+	int iNum = AddSupplementOverlaps();
+	if(iNum == 0) 
+	{
+		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::CalSupplementOverlaps(): End process supplement overlaps");
+		return(0);
+	}
+
+	// Process supplement overlaps
+	CyberJob::JobManager jobManager("SupplementOverlap", _numThreads);
+	for(FovFovOverlapListIterator ite = _supFovFovOvelapList.begin(); ite != _supFovFovOvelapList.end(); ite++)
+	{
+		jobManager.AddAJob((CyberJob::Job*)&*ite);
+	}
+
+	// Wait for all job threads to finish...
+	jobManager.MarkAsFinished();
+	while(jobManager.TotalJobs() > 0)
+		Sleep(10);
+
+	LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::CalSupplementOverlaps(): End process supplement overlaps");
+
+	return(iNum);
+}
+
+FovFovOverlapList* OverlapManager::GetSupplementOverlaps()
+{
+	return(&_supFovFovOvelapList);
+}
+
+#pragma endregion
+
+
+
+
+
+
+
+
+
+

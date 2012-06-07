@@ -328,7 +328,8 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 
 #pragma endregion
 
-#pragma region create transforms
+
+#pragma region create Mask
 
 // Flag for create Masks
 bool PanelAligner::IsReadyToCreateMasks() const
@@ -357,6 +358,7 @@ bool PanelAligner::CreateMasks()
 	{
 		AddOverlapResultsForIllum(_pMaskSolver, i, true); // Use fiducials
 	}
+	AddSupplementOverlapResults(_pMaskSolver);
 
 	// Solve transforms
 	_pMaskSolver->SolveXAlgH();
@@ -434,6 +436,10 @@ bool PanelAligner::CreateMasks()
 	return(true);
 }
 
+#pragma endregion
+
+#pragma region Align base on panel edge
+
 // Align panel with panel leading edge information
 bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 {
@@ -449,8 +455,9 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 	{
 		// Not use fiducial, not pin panel with calibration 
 		// since panel leading edge will be used
-		AddOverlapResultsForIllum(_pSolver, i, false, false);
+		AddOverlapResultsForIllum(_pSolver, i, false, false);	
 	}
+	AddSupplementOverlapResults(_pSolver);
 
 	// If fiducial information is available, edge x location is not needed 
 	bool bSlopeOnly = false;
@@ -618,6 +625,10 @@ bool PanelAligner::UseEdgeInfomation()
 	return(bUseEdgeInfo);
 }
 
+#pragma endregion
+
+#pragma region create transforms
+
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
@@ -630,6 +641,9 @@ bool PanelAligner::CreateTransforms()
 		int iCoarseInconsistNum, iFineInconsistNum;
 		_pOverlapManager->FovFovAlignConsistCheckForPanel(&iCoarseInconsistNum, &iFineInconsistNum);
 	}
+
+	// Must after consistent check and before transform calculation
+	int iNumSupOverlap = _pOverlapManager->CalSupplementOverlaps();
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms");
 	int iNumIllums = _pSet->GetNumMosaicLayers();
@@ -667,12 +681,14 @@ bool PanelAligner::CreateTransforms()
 		_pSolver->ConstrainZTerms();
 		_pSolver->ConstrainPerTrig();
 	}
+	
 	for(int i=0; i<iNumIllums; i++)
 	{
 		// Use nominal fiducail overlaps if edge info is not available
-		AddOverlapResultsForIllum(_pSolver, i, !bUseEdgeInfo);
+		AddOverlapResultsForIllum(_pSolver, i, !bUseEdgeInfo);	
 	}
-
+	AddSupplementOverlapResults(_pSolver);
+	
 	// Use current panel fiducial overlaps if edge information is available
 	if(bUseEdgeInfo)
 		AddCurPanelFidOverlapResults(_pSolver);
@@ -815,6 +831,18 @@ void PanelAligner::AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver*
 	}
 }
 
+// Add Supplement overlap results to solver
+void PanelAligner::AddSupplementOverlapResults(RobustSolver* solver)
+{
+	// Add Fov and Fov overlap results
+	FovFovOverlapList* pFovFovList =_pOverlapManager->GetSupplementOverlaps();
+	for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+	{
+		if(ite->IsProcessed() && ite->IsGoodForSolver())
+			solver->AddFovFovOvelapResults(&(*ite));
+	}
+}
+
 FidFovOverlapList* PanelAligner::GetLastProcessedFids()
 {
 	return &_lastProcessedFids;
@@ -916,6 +944,7 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 		// Not use fiducial but pin panel with calibration
 		AddOverlapResultsForIllum(_pSolver, i, false, true); 
 	}
+	AddSupplementOverlapResults(_pSolver);
 
 	// Solve transforms without fiducial information
 	_pSolver->SolveXAlgH();

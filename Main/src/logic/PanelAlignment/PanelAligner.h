@@ -96,6 +96,7 @@ protected:
 	void AddOverlapResultsForIllum(RobustSolver* solver, unsigned int iIllumIndex, bool bUseFiducials, bool bPinPanel=false);
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);
 	void AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver* solver, int iIndex);
+	void AddSupplementOverlapResults(RobustSolver* solver);
 
 	int FiducialAlignmentCheckOnCalibration();
 	bool PickOneAlign4EachPanelFiducial();
