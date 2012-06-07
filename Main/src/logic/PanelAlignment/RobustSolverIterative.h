@@ -3,7 +3,7 @@
 #include "RobustSolverCM.h"
 
 struct fitInfo {
-	int				fitType;		// 0 == not used, 1 == fid to fov, 2 == fov to fov
+	int				fitType;		// 0 == not used, 1 == fid to fov, 2 == fov to fov, 3 == board edge, 4 == board edge slope only
 	FovIndex		fovIndexA;
 	FovIndex		fovIndexB;		// not used in fid to fov 
 	//int				orderedTrigIndexA; // position in overall trigger sequence

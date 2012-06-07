@@ -371,35 +371,39 @@ void RobustSolverIterative::FillMatrixA()
 			_iCurrentRow++;
 		
 		}
-		else if (_fitInfo[i].fitType == 3) // Constrain board edge
+		else if (_fitInfo[i].fitType == 3 || _fitInfo[i].fitType == 4) // Constrain board edge
 		{
 			_iCurrentRow = _fitInfo[i].rowInMatrix;
 			double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			double	dXOffset  = _fitInfo[i].dFidRoiCenX;
 			double	dSlope    = _fitInfo[i].dFidRoiCenY;
+			bool bSlopeOnly( _fitInfo[i].fitType == 4 );  // slope only fit
 			// X direction equations
-			pdRow[iColInMatrixA] += w;
-			pdRow[iColInMatrixA+2] += -ySensorA * w;
-			unsigned int calDriftCol = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
-			pdRow[calDriftCol] = w * cos(_dThetaEst[orderedTrigIndexA]);
-			pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
-			for (unsigned int j(0); j < _iNumZTerms; j++)
-					pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dxSensordzA * w;
-			_dVectorB[_iCurrentRow] = w * (dXOffset 
-				- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
-				+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
-			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BrdEdge:L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
-				_fitInfo[i].fovIndexA.LayerIndex,
-				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
-				xSensorA, ySensorA,dxSensordzA,dySensordzA,dXOffset, dSlope, _dThetaEst[orderedTrigIndexA] );
-			_pdWeights[_iCurrentRow] = w;
-			_iCurrentRow++;
+			if(!bSlopeOnly)
+			{		
+				pdRow[iColInMatrixA] += w;
+				pdRow[iColInMatrixA+2] += -ySensorA * w;
+				unsigned int calDriftCol = _iCalDriftStartCol + (deviceNumA * _iNumCameras + iCamIndexA)  * 2;
+				pdRow[calDriftCol] = w * cos(_dThetaEst[orderedTrigIndexA]);
+				pdRow[calDriftCol+1] = -w * sin(_dThetaEst[orderedTrigIndexA]);
+				for (unsigned int j(0); j < _iNumZTerms; j++)
+						pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dxSensordzA * w;
+				_dVectorB[_iCurrentRow] = w * (dXOffset 
+					- xSensorA * cos(_dThetaEst[orderedTrigIndexA])
+					+ ySensorA * sin(_dThetaEst[orderedTrigIndexA]));
+				_pdWeights[_iCurrentRow] = w;
+				_iCurrentRow++;
+			}
 
 			// constrain theta_trig
 			w = Weights.wRbyEdge; 
 			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			pdRow[iColInMatrixA+2] += w;
 			_dVectorB[_iCurrentRow] = w * (dSlope - _dThetaEst[orderedTrigIndexA]);
+			sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BrdEdge:L%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e,%.4e", 
+				_fitInfo[i].fovIndexA.LayerIndex,
+				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
+				xSensorA, ySensorA,dxSensordzA,dySensordzA,dXOffset, dSlope, _dThetaEst[orderedTrigIndexA] );
 			_pdWeights[_iCurrentRow] = w;
 			_iCurrentRow++;
 			
@@ -966,7 +970,10 @@ bool RobustSolverIterative::AddPanelEdgeContraints(
 	_fitInfo[_iCorrelationNum].boardX = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2);
 	_fitInfo[_iCorrelationNum].boardY = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5);
 	
-	_fitInfo[_iCorrelationNum].fitType=3;
+	if(!bSlopeOnly)
+		_fitInfo[_iCorrelationNum].fitType=3;
+	else
+		_fitInfo[_iCorrelationNum].fitType=4;
 	_fitInfo[_iCorrelationNum].fovIndexA.LayerIndex = index.LayerIndex;
 	_fitInfo[_iCorrelationNum].fovIndexA.TriggerIndex = iTrigIndex;
 	_fitInfo[_iCorrelationNum].fovIndexA.CameraIndex = iCamIndex;

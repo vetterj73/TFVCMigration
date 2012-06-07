@@ -357,23 +357,25 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	Zpoly[8] = pow(boardX,1) * pow(boardY,2);
 	Zpoly[9] = pow(boardX,0) * pow(boardY,3);
 
-	pdRow[iFOVPosA] += w;
-	pdRow[iFOVPosA+2] += -ySensorA * w;
-	for (unsigned int j(0); j < _iNumZTerms; j++)
-			pdRow[ColumnZTerm(j, deviceNum)] = Zpoly[j] * dxSensordzA * w;
-	_dVectorB[_iCurrentRow] = w * (dXOffset - xSensorA);
-	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BoardEdge:%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
-		index.LayerIndex,
-		iTrigIndex, iCamIndex,
-		xSensorA, ySensorA, dXOffset, dSlope );
-	_pdWeights[_iCurrentRow] = w;
-	_iCurrentRow++;
-
+	if(!bSlopeOnly)
+	{
+		pdRow[iFOVPosA] += w;
+		pdRow[iFOVPosA+2] += -ySensorA * w;
+		for (unsigned int j(0); j < _iNumZTerms; j++)
+				pdRow[ColumnZTerm(j, deviceNum)] = Zpoly[j] * dxSensordzA * w;
+		_dVectorB[_iCurrentRow] = w * (dXOffset - xSensorA);
+		_pdWeights[_iCurrentRow] = w;
+		_iCurrentRow++;
+	}
 	// constrain theta_trig
 	w = Weights.wRbyEdge; 
 	pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	pdRow[iFOVPosA+2] += w;
 	_dVectorB[_iCurrentRow] = w * dSlope;
+	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "BoardEdge:%d:T%d:C%d,%.4e,%.4e,%.4e,%.4e", 
+		index.LayerIndex,
+		iTrigIndex, iCamIndex,
+		xSensorA, ySensorA, dXOffset, dSlope );
 	_pdWeights[_iCurrentRow] = w;
 	_iCurrentRow++;
 	return(true);
