@@ -122,18 +122,18 @@ OverlapManager::OverlapManager(
 	}
 
 	// Create 3D arrays for storage of overlaps
-	_fovFovOverlapLists = new list<FovFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
+	_fovFovOverlapPtrLists = new list<FovFovOverlap*>**[_pMosaicSet->GetNumMosaicLayers()];
 	_cadFovOverlapLists = new list<CadFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
 	_fidFovOverlapLists = new list<FidFovOverlap>**[_pMosaicSet->GetNumMosaicLayers()];
 	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
 	{
-		_fovFovOverlapLists[i] = new list<FovFovOverlap>*[_iNumTriggers];
+		_fovFovOverlapPtrLists[i] = new list<FovFovOverlap*>*[_iNumTriggers];
 		_cadFovOverlapLists[i] = new list<CadFovOverlap>*[_iNumTriggers];
 		_fidFovOverlapLists[i] = new list<FidFovOverlap>*[_iNumTriggers];
 
 		for(j=0; j<_iNumTriggers; j++)
 		{
-			_fovFovOverlapLists[i][j] = new list<FovFovOverlap>[_iNumCameras];
+			_fovFovOverlapPtrLists[i][j] = new list<FovFovOverlap*>[_iNumCameras];
 			_cadFovOverlapLists[i][j] = new list<CadFovOverlap>[_iNumCameras];
 			_fidFovOverlapLists[i][j] = new list<FidFovOverlap>[_iNumCameras];
 		}
@@ -184,16 +184,16 @@ OverlapManager::~OverlapManager(void)
 	{
 		for(j=0; j<_iNumTriggers; j++)
 		{
-			delete [] _fovFovOverlapLists[i][j];
+			delete [] _fovFovOverlapPtrLists[i][j];
 			delete [] _cadFovOverlapLists[i][j];
 			delete [] _fidFovOverlapLists[i][j];
 		}
 
-		delete [] _fovFovOverlapLists[i];
+		delete [] _fovFovOverlapPtrLists[i];
 		delete [] _cadFovOverlapLists[i];
 		delete [] _fidFovOverlapLists[i];
 	}
-	delete [] _fovFovOverlapLists;
+	delete [] _fovFovOverlapPtrLists;
 	delete [] _cadFovOverlapLists;
 	delete [] _fidFovOverlapLists;
 
@@ -233,10 +233,10 @@ bool OverlapManager::ResetforNewPanel()
 			for(iCam=0; iCam<_iNumCameras; iCam++)
 			{
 				// Reset Fov and Fov overlap
-				list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[i][iTrig][iCam];
-				for(list<FovFovOverlap>::iterator j=pFovFovList->begin(); j!=pFovFovList->end(); j++)
+				list<FovFovOverlap*>* pFovFovPtrList = &_fovFovOverlapPtrLists[i][iTrig][iCam];
+				for(list<FovFovOverlap*>::iterator j=pFovFovPtrList->begin(); j!=pFovFovPtrList->end(); j++)
 				{
-					j->Reset();
+					(*j)->Reset();
 				}
 
 				// Reset Cad and Fov overlap
@@ -415,8 +415,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
-							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-							_fovFovOverlapLists[iIndex2][iTrigIndex][iLeftCamIndex].push_back(overlap);
+							_fovFovOverlapSet.push_back(overlap);
+							FovFovOverlap* pOverlap = &_fovFovOverlapSet.back();
+							_fovFovOverlapPtrLists[iIndex1][iTrig1][iCam1].push_back(pOverlap);
+							_fovFovOverlapPtrLists[iIndex2][iTrigIndex][iLeftCamIndex].push_back(pOverlap);
 						}
 					}
 					// Create right overlap and add to list
@@ -431,8 +433,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
-							_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-							_fovFovOverlapLists[iIndex2][iTrigIndex][iRightCamIndex].push_back(overlap);
+							_fovFovOverlapSet.push_back(overlap);
+							FovFovOverlap* pOverlap = &_fovFovOverlapSet.back();
+							_fovFovOverlapPtrLists[iIndex1][iTrig1][iCam1].push_back(pOverlap);
+							_fovFovOverlapPtrLists[iIndex2][iTrigIndex][iRightCamIndex].push_back(pOverlap);
 						}
 					}
 				}
@@ -485,8 +489,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
-								_fovFovOverlapLists[iIndex1][iTrig1][iCam1].push_back(overlap);
-								_fovFovOverlapLists[iIndex2][iTrig2][iCamIndex].push_back(overlap);
+								_fovFovOverlapSet.push_back(overlap);
+								FovFovOverlap* pOverlap = &_fovFovOverlapSet.back();
+								_fovFovOverlapPtrLists[iIndex1][iTrig1][iCam1].push_back(pOverlap);
+								_fovFovOverlapPtrLists[iIndex2][iTrig2][iCamIndex].push_back(pOverlap);
 							}
 						}
 					}
@@ -517,12 +523,12 @@ void OverlapManager::CreateFovFovOverlaps()
 }
 
 // Get FovFovOverlap list for certain Fov
-list<FovFovOverlap>* OverlapManager::GetFovFovListForFov(
+list<FovFovOverlap*>* OverlapManager::GetFovFovPtrListForFov(
 	unsigned int iMosaicIndex, 
 	unsigned int iTrigIndex,
 	unsigned int iCamIndex) const
 {
-	return(&_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex]);
+	return(&_fovFovOverlapPtrLists[iMosaicIndex][iTrigIndex][iCamIndex]);
 }
 
 #pragma endregion
@@ -1033,11 +1039,11 @@ bool OverlapManager::DoAlignmentForFov(
 	}
 
 	// process valid FovFov Overlap  
-	list<FovFovOverlap>* pFovFovList = &_fovFovOverlapLists[iMosaicIndex][iTrigIndex][iCamIndex];
-	for(list<FovFovOverlap>::iterator i=pFovFovList->begin(); i!=pFovFovList->end(); i++)
+	list<FovFovOverlap*>* pFovFovPtrList = &_fovFovOverlapPtrLists[iMosaicIndex][iTrigIndex][iCamIndex];
+	for(list<FovFovOverlap*>::iterator i=pFovFovPtrList->begin(); i!=pFovFovPtrList->end(); i++)
 	{
-		if(i->IsReadyToProcess())
-			_pJobManager->AddAJob((CyberJob::Job*)&*i);
+		if((*i)->IsReadyToProcess())
+			_pJobManager->AddAJob((CyberJob::Job*)*i);
 	}
 
 	// Process valid Cad Fov overalp
@@ -1190,7 +1196,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 			for(iCam=0; iCam<_iNumCameras; iCam++)
 			{
 				// FovFov
-				iFovFovCount += (unsigned int)_fovFovOverlapLists[i][iTrig][iCam].size();
+				iFovFovCount += (unsigned int)_fovFovOverlapPtrLists[i][iTrig][iCam].size();
 
 				// CadFov
 				iCadFovCount += (unsigned int)_cadFovOverlapLists[i][iTrig][iCam].size();
@@ -1240,10 +1246,10 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piLayerIndices, unsig
 			for(iCam=0; iCam<_iNumCameras; iCam++)
 			{
 				// FovFov
-				list<FovFovOverlap>* pFovList = &_fovFovOverlapLists[i][iTrig][iCam];
-				for(list<FovFovOverlap>::iterator ite=pFovList->begin(); ite!=pFovList->end(); ite++)
+				list<FovFovOverlap*>* pFovPtrList = &_fovFovOverlapPtrLists[i][iTrig][iCam];
+				for(list<FovFovOverlap*>::iterator ite=pFovPtrList->begin(); ite!=pFovPtrList->end(); ite++)
 				{
-					if(IsFovFovOverlapForLayers(&(*ite), piLayerIndices, iNumLayer))
+					if(IsFovFovOverlapForLayers((*ite), piLayerIndices, iNumLayer))
 					{
 						iFovFovCount++;
 					}
@@ -1595,11 +1601,11 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	for(int iCam=0; iCam<iNumCam; iCam++)
 	{
 		// Get FovFov overlap list for a Fov in first trig
-		FovFovOverlapList* pList = &_fovFovOverlapLists[iLayer1][iTrig1][iCam];
-		for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
+		FovFovOverlapPtrList* pPtrList = &_fovFovOverlapPtrLists[iLayer1][iTrig1][iCam];
+		for(FovFovOverlapPtrList::iterator i = pPtrList->begin(); i != pPtrList->end(); i++)
 		{
 			// If right overlap and processed
-			bool bFlag = (i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed() && i->IsGoodForSolver());
+			bool bFlag = ((*i)->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && (*i)->IsProcessed() && (*i)->IsGoodForSolver());
 			if(bFlag)
 			{
 				bool bInList = false;
@@ -1608,7 +1614,7 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 					// Whether the overlap is in the list
 					for(list<FovFovOverlap*>::iterator j = trigOverlapPtrList.begin(); j != trigOverlapPtrList.end(); j++)
 					{
-						if(&(*i) == *j)
+						if(*i == *j)
 						{
 							bInList = true;
 							break;
@@ -1618,21 +1624,21 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 				
 				// Add to consist check list
 				if(!bInList) 
-					trigOverlapPtrList.push_back(&(*i)); 
+					trigOverlapPtrList.push_back(*i); 
 			}
 		}
 
 		if(!bSameTrig)
 		{
 			// Get FovFov overlap list for a Fov in second trig
-			pList = &_fovFovOverlapLists[iLayer2][iTrig2][iCam];
-			for(FovFovOverlapList::iterator i = pList->begin(); i != pList->end(); i++)
+			pPtrList = &_fovFovOverlapPtrLists[iLayer2][iTrig2][iCam];
+			for(FovFovOverlapPtrList::iterator i = pPtrList->begin(); i != pPtrList->end(); i++)
 			{
 				// If right overlap and processed
-				bool bFlag = (i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed());
+				bool bFlag = ((*i)->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && (*i)->IsProcessed());
 				if(bFlag)
 				{
-					trigOverlapPtrList.push_back(&(*i)); 
+					trigOverlapPtrList.push_back(*i); 
 				}
 			}
 		}
@@ -2065,48 +2071,37 @@ int OverlapManager::AddSupplementOverlaps()
 	// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
 	int iMaxSupOverlaps = 20;
 
-	for(unsigned int iLayer=0; iLayer<_pMosaicSet->GetNumMosaicLayers(); iLayer++)
-	{
-		MosaicLayer* pLayer = _pMosaicSet->GetLayer(iLayer);
-		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-		{
-			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-			{
-				FovFovOverlapList* pFovFovList = GetFovFovListForFov(iLayer, iTrig, iCam);
+	FovFovOverlapList* pFovFovList = GetFovFovOvelapSetPtr();
 				
-				for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
-				{
-					/* for debug
-					if((ite->GetFirstMosaicLayer()->Index() == 0 &&
-						ite->GetFirstTriggerIndex() == 0 &&
-						ite->GetFirstCameraIndex() == 1 &&
-						ite->GetSecondMosaicLayer()->Index() == 0  &&
-						ite->GetSecondTriggerIndex() == 0 &&
-						ite->GetSecondCameraIndex() == 2) ||
-						(ite->GetFirstMosaicLayer()->Index() == 0 &&
-						ite->GetFirstTriggerIndex() == 0 &&
-						ite->GetFirstCameraIndex() == 2 &&
-						ite->GetSecondMosaicLayer()->Index() == 0  &&
-						ite->GetSecondTriggerIndex() == 0 &&
-						ite->GetSecondCameraIndex() == 1))
-					{
-						int ii= 10;
-					}
-					//*/
+	for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+	{
+		/* for debug
+		if((ite->GetFirstMosaicLayer()->Index() == 0 &&
+			ite->GetFirstTriggerIndex() == 0 &&
+			ite->GetFirstCameraIndex() == 1 &&
+			ite->GetSecondMosaicLayer()->Index() == 0  &&
+			ite->GetSecondTriggerIndex() == 0 &&
+			ite->GetSecondCameraIndex() == 2) ||
+			(ite->GetFirstMosaicLayer()->Index() == 0 &&
+			ite->GetFirstTriggerIndex() == 0 &&
+			ite->GetFirstCameraIndex() == 2 &&
+			ite->GetSecondMosaicLayer()->Index() == 0  &&
+			ite->GetSecondTriggerIndex() == 0 &&
+			ite->GetSecondCameraIndex() == 1))
+		{
+			int ii= 10;
+		}
+		//*/
 
-					AddSupplementOverlapsforSingleOvelap(&(*ite));
+		AddSupplementOverlapsforSingleOvelap(&(*ite));
 					
-					// Two many overlaps are added, there should be something wrong
-					if(_supFovFovOvelapList.size() > iMaxSupOverlaps)
-					{
-						LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSupplementOverlaps(): To many supplement overlaps are added");
-						return((int)_supFovFovOvelapList.size());
-					}
-
-				}
-			} // camera
-		} // trigger
-	} // layer
+		// Two many overlaps are added, there should be something wrong
+		if(_supFovFovOvelapList.size() > iMaxSupOverlaps)
+		{
+			LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSupplementOverlaps(): To many supplement overlaps are added");
+			return((int)_supFovFovOvelapList.size());
+		}
+	}
 
 	if(_supFovFovOvelapList.size() > 0)
 		LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::AddSupplementOverlaps(): %d supplement overlaps are added", _supFovFovOvelapList.size());

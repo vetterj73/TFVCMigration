@@ -20,6 +20,8 @@ typedef list<CadFovOverlap> CadFovOverlapList;
 typedef CadFovOverlapList::iterator CadFovOverlapListIterator;
 typedef list<FovFovOverlap> FovFovOverlapList;
 typedef FovFovOverlapList::iterator FovFovOverlapListIterator;
+typedef list<FovFovOverlap*> FovFovOverlapPtrList;
+typedef FovFovOverlapPtrList::iterator FovFovOverlapPtrListIterator;
 typedef list<FidFovOverlap> FidFovOverlapList;
 typedef FidFovOverlapList::iterator FidFovOverlapListIterator;
 
@@ -41,7 +43,7 @@ public:
 
 	bool DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFidInfo=false);
 
-	FovFovOverlapList* GetFovFovListForFov(
+	FovFovOverlapPtrList* GetFovFovPtrListForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
@@ -55,6 +57,8 @@ public:
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
 		unsigned int iCamIndex) const;
+
+	FovFovOverlapList* GetFovFovOvelapSetPtr() {return &_fovFovOverlapSet;};
 
 	FidFovOverlapList* GetCurPanelFidFovList4Fid(
 		unsigned int iFidIndex) const;
@@ -173,7 +177,8 @@ private:
 	Image* _pFidImages;
 
 	// A[Layer Index][Trigger Index][Camera Index]
-	FovFovOverlapList*** _fovFovOverlapLists;
+	FovFovOverlapPtrList*** _fovFovOverlapPtrLists;
+	FovFovOverlapList _fovFovOverlapSet;
 	CadFovOverlapList*** _cadFovOverlapLists;
 	FidFovOverlapList*** _fidFovOverlapLists;
 

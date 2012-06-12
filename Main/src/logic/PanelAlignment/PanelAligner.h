@@ -91,9 +91,9 @@ protected:
 	bool IsReadyToCreateMasks() const;
 	bool CreateMasks();
 	bool CreateTransforms();
+	void AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiducials, bool bPinPanelWithCalibration=false);
 	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
 	bool UseEdgeInfomation();
-	void AddOverlapResultsForLayer(RobustSolver* solver, unsigned int iLayerIndex, bool bUseFiducials, bool bPinPanel=false);
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);
 	void AddCurPanelFidOverlapResultsForPhyiscalFiducial(RobustSolver* solver, int iIndex);
 	void AddSupplementOverlapResults(RobustSolver* solver);

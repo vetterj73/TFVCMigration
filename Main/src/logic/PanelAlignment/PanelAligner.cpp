@@ -353,12 +353,9 @@ bool PanelAligner::CreateMasks()
 	
 	_lastProcessedFids.clear();
 
-	// Create matrix and vector for solver
-	for(int i=0; i<_iMaskCreationStage; i++)
-	{
-		AddOverlapResultsForLayer(_pMaskSolver, i, true); // Use fiducials
-	}
-	AddSupplementOverlapResults(_pMaskSolver);
+	// Create matrix and vector for solver 
+	// Warning, maybe broken
+	AddOverlapResults2Solver(_pSolver, true);
 
 	// Solve transforms
 	_pMaskSolver->SolveXAlgH();
@@ -450,14 +447,9 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 		_pSolver->ConstrainPerTrig();
 	}
 
-	int iNumLayer = _pSet->GetNumMosaicLayers();
-	for(int i=0; i<iNumLayer; i++)
-	{
-		// Not use fiducial, not pin panel with calibration 
-		// since panel leading edge will be used
-		AddOverlapResultsForLayer(_pSolver, i, false, false);	
-	}
-	AddSupplementOverlapResults(_pSolver);
+	// Not use fiducial, not pin panel with calibration 
+	// since panel leading edge will be used
+	AddOverlapResults2Solver(_pSolver, false, false);
 
 	// If fiducial information is available, edge x location is not needed 
 	bool bSlopeOnly = false;
@@ -485,7 +477,8 @@ bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 	// Solve transforms with panel leading edge but without fiducial information
 	_pSolver->SolveXAlgH();
 
-	// Get intermediate result transforms
+	// Get intermediate result transforms	
+	int iNumLayer = _pSet->GetNumMosaicLayers();
 	for(int i=0; i<iNumLayer; i++)
 	{
 		// Get calculated transforms
@@ -622,6 +615,68 @@ bool PanelAligner::UseEdgeInfomation()
 
 #pragma region create transforms
 
+void PanelAligner::AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiducials, bool bPinPanelWithCalibration)
+{
+	int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
+	{
+		if(bUseFiducials)
+			bPinPanelWithCalibration = false;
+
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				// Add calibration constraints
+				bool bPinFov = false;
+				if (bPinPanelWithCalibration &&
+					pLayer->Index() == 0 && iTrig == 1 && iCam == 1)
+				{
+					bPinFov = true;
+				}
+
+				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov);
+
+				// Add Cad and Fov overlap results
+				CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);
+				for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
+				{
+					if(ite->IsProcessed() && ite->IsGoodForSolver())
+						solver->AddCadFovOvelapResults(&(*ite));
+				}
+
+				if(bUseFiducials)
+				{
+					// Add Fiducial and Fov overlap results
+					FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iLayerIndex, iTrig, iCam);
+					for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
+					{
+						if(ite->IsProcessed() && ite->IsGoodForSolver())
+						{
+							solver->AddFidFovOvelapResults(&(*ite));
+
+							// These are used to verify that the last fids actually worked...
+							_lastProcessedFids.push_back(*ite);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Add Fov and Fov overlap results
+	FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovOvelapSetPtr();
+	for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
+	{
+		if(ite->IsProcessed() && ite->IsGoodForSolver())
+		solver->AddFovFovOvelapResults(&(*ite));
+	}
+
+	AddSupplementOverlapResults(_pSolver);
+}
+
+
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
@@ -684,12 +739,8 @@ bool PanelAligner::CreateTransforms()
 		_pSolver->ConstrainPerTrig();
 	}
 	
-	for(int i=0; i<iNumLayer; i++)
-	{
-		// Use nominal fiducail overlaps if edge info is not available
-		AddOverlapResultsForLayer(_pSolver, i, !bUseEdgeInfo);	
-	}
-	AddSupplementOverlapResults(_pSolver);
+	// Use nominal fiducail overlaps if edge info is not available
+	AddOverlapResults2Solver(_pSolver, !bUseEdgeInfo);
 	
 	// Use current panel fiducial overlaps if edge information is available
 	if(bUseEdgeInfo)
@@ -752,63 +803,6 @@ bool PanelAligner::CreateTransforms()
 	}
 	return(true);
 }
-
-// Add overlap results for a certain Layer image to solver
-void PanelAligner::AddOverlapResultsForLayer(RobustSolver* solver, unsigned int iLayerIndex, bool bUseFiducials, bool bPinPanelWithCalibration)
-{
-	if(bUseFiducials)
-		bPinPanelWithCalibration = false;
-
-	MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
-	for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-	{
-		for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-		{
-			// Add calibration constraints
-			bool bPinFov = false;
-			if (bPinPanelWithCalibration &&
-				pLayer->Index() == 0 && iTrig == 1 && iCam == 1)
-			{
-				bPinFov = true;
-			}
-
-			solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov);
-
-			// Add Fov and Fov overlap results
-			FovFovOverlapList* pFovFovList =_pOverlapManager->GetFovFovListForFov(iLayerIndex, iTrig, iCam);
-			for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
-			{
-				if(ite->IsProcessed() && ite->IsGoodForSolver())
-					solver->AddFovFovOvelapResults(&(*ite));
-			}
-
-			// Add Cad and Fov overlap results
-			CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);
-			for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
-			{
-				if(ite->IsProcessed() && ite->IsGoodForSolver())
-					solver->AddCadFovOvelapResults(&(*ite));
-			}
-
-			if(bUseFiducials)
-			{
-				// Add Fiducial and Fov overlap results
-				FidFovOverlapList* pFidFovList =_pOverlapManager->GetFidFovListForFov(iLayerIndex, iTrig, iCam);
-				for(FidFovOverlapListIterator ite = pFidFovList->begin(); ite != pFidFovList->end(); ite++)
-				{
-					if(ite->IsProcessed() && ite->IsGoodForSolver())
-					{
-						solver->AddFidFovOvelapResults(&(*ite));
-
-						// These are used to verify that the last fids actually worked...
-						_lastProcessedFids.push_back(*ite);
-					}
-				}
-			}
-		}
-	}
-}
-
 
 // Add current panel/(not nominal) fiducial overlap results
 void PanelAligner::AddCurPanelFidOverlapResults(RobustSolver* solver)
@@ -940,13 +934,9 @@ int PanelAligner::FiducialAlignmentCheckOnCalibration()
 {
 	// Create matrix and vector for solver without fiducial information	
 	_pSolver->Reset();
-	int iNumLayer = _pSet->GetNumMosaicLayers();
-	for(int i=0; i<iNumLayer; i++)
-	{
-		// Not use fiducial but pin panel with calibration
-		AddOverlapResultsForLayer(_pSolver, i, false, true); 
-	}
-	AddSupplementOverlapResults(_pSolver);
+
+	// Not use fiducial but pin panel with calibration
+	AddOverlapResults2Solver(_pSolver, false, true);
 
 	// Solve transforms without fiducial information
 	_pSolver->SolveXAlgH();
