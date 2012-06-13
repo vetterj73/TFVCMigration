@@ -790,7 +790,7 @@ bool PanelAligner::CreateTransforms()
 	//TestGetImagePatch();
 	//TestSingleImagePatch();
 
-	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
+	//_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
@@ -806,6 +806,11 @@ bool PanelAligner::CreateTransforms()
 		s.clear();
 		s.assign(cTemp);
 		OutputTransforms(s);
+
+		sprintf_s(cTemp, 100, "%sFiducailResults_P%d.csv", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
+		s.clear();
+		s.assign(cTemp);
+		OutputFiducialForSolver(s);
 	}
 	return(true);
 }
@@ -1268,6 +1273,52 @@ void PanelAligner::OutputTransforms(string fileName)
 					of << t.GetItem(j);
 				}
 				of <<  std::endl;
+			}
+		}
+	}
+
+	of.close();
+}
+
+void PanelAligner::OutputFiducialForSolver(string fileName)
+{
+	ofstream of(fileName.c_str());
+	
+	of << "Fiducial ID," 
+		<< "Cad X(mm),"
+		<< "Cad Y(mm),"
+		<< "Layer,"
+		<< "Trigger,"
+		<< "Camera,"
+		<< "Correlation Score,"
+		<< "Ambiguous,"
+		<< "Column Offset (pixel),"
+		<< "Row Offset (pixel)"
+		<< std::endl;
+
+	// Get the fiducial information
+	PanelFiducialResultsSet* pFidResultsSet = GetFidResultsSetPoint();
+	for(int i=0; i<pFidResultsSet->Size(); i++)	// For each panel fiducial 
+	{
+		// Pick one alignment
+		PanelFiducialResults* results = pFidResultsSet ->GetPanelFiducialResultsPtr(i);
+		list<FidFovOverlap*>* resultList = results->GetFidOverlapListPtr();
+		for(list<FidFovOverlap*>::iterator j = resultList->begin(); j != resultList->end(); j++)
+		{
+			if((*j)->IsProcessed() && (*j)->IsGoodForSolver() && (*j)->GetWeightForSolver()>0)
+			{
+				CorrelationResult result = (*j)->GetCoarsePair()->GetCorrelationResult();
+				of << (*j)->GetFiducialIndex() << ","
+					<< (*j)->GetFiducialXPos()*1000 << ","
+					<< (*j)->GetFiducialYPos()*1000 << ","
+					<< (*j)->GetMosaicLayer()->Index() << "," 
+					<< (*j)->GetTriggerIndex() << ","
+					<< (*j)->GetCameraIndex() << ","
+					<< result.CorrCoeff << ","
+					<< result.AmbigScore << ","
+					<< result.CorrCoeff << ","
+					<< result.RowOffset 
+					<< std::endl;
 			}
 		}
 	}
