@@ -110,6 +110,9 @@ public:
 	double dMinLeadingEdgeGap;				// Minimum gap between image edge and nominal panel leading edge
 	double dLeadingEdgeSearchRange;			// Search range for panel leading edge
 	double dConveyorBeltAreaSize;			// The size of conveyor belt area that need to be ignored in leading edge detection
+
+	// for supplement Overlaps	
+	unsigned int iMaxSupOverlaps;			// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
 	
 	// Number of Threads to use for processing
 	unsigned int NumThreads;

@@ -12,8 +12,6 @@ extern "C" {
 #include "ucxform.h"
 }
 
-
-
 #pragma region constructor
 RobustSolverFOV::RobustSolverFOV(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 
@@ -629,7 +627,7 @@ void RobustSolverFOV::SolveXAlgHB()
 	// we built A in row order
 	// the qr factorization method requires column order
 	bool bRemoveEmptyRows = true;
-	bRemoveEmptyRows = false;
+	//bRemoveEmptyRows = false;
 	int* mb = new int[_iMatrixWidth];
 	unsigned int iEmptyRows;
 	unsigned int bw = ReorderAndTranspose(bRemoveEmptyRows, mb, &iEmptyRows);

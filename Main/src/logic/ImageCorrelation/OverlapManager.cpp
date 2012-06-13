@@ -1200,7 +1200,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 		}
 	}
 
-	iFovFovCount = _fovFovOverlapSet.size();
+	iFovFovCount = _fovFovOverlapSet.size() + CorrelationParametersInst.iMaxSupOverlaps + 10;
 
 	// Double check 3*3
 	unsigned int iSum = CorrelationParametersInst.iFineMaxBlocksInRow * CorrelationParametersInst.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
@@ -1217,7 +1217,7 @@ unsigned int OverlapManager::MaxMaskCorrelations() const
 	for(int i=0; i<_iMaskCreationStage; i++)
 		piLayerIndices[i] = i;
 
-	unsigned int iNum =MaxCorrelations(piLayerIndices, _iMaskCreationStage);
+	unsigned int iNum = MaxCorrelations(piLayerIndices, _iMaskCreationStage);
 
 	delete [] piLayerIndices;
 
@@ -1252,6 +1252,8 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piLayerIndices, unsig
 	}
 
 	iFovFovCount /=2;
+
+	iFovFovCount += CorrelationParametersInst.iMaxSupOverlaps + 10;
 
 	// Double check 3*3
 	unsigned int iSum =  CorrelationParametersInst.iFineMaxBlocksInRow * CorrelationParametersInst.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
@@ -2018,7 +2020,7 @@ int OverlapManager::AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap
 int OverlapManager::AddSupplementOverlaps()
 {
 	// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
-	int iMaxSupOverlaps = 20;
+	int iMaxSupOverlaps = CorrelationParametersInst.iMaxSupOverlaps;
 
 	FovFovOverlapList* pFovFovList = GetFovFovOvelapSetPtr();
 				

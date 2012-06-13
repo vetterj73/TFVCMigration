@@ -94,6 +94,9 @@ CorrelationParameters::CorrelationParameters(void)
 	dLeadingEdgeSearchRange = 6e-3;			// Search range for panel leading edge
 	dConveyorBeltAreaSize = 4e-3;			// The size of conveyor belt area that need to be ignored in leading edge detection
 
+	// for supplement Overlaps	
+	iMaxSupOverlaps = 20;					// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
+
 	// Number of Threads to use for processing
 	NumThreads = 8;
 
