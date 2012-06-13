@@ -480,7 +480,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		}
 		of.close();
 	}
-	if(CorrelationParametersInst.bSaveTransformVectors)
+	/*if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
@@ -489,7 +489,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		s.clear();
 		s.assign(cTemp);
 		OutputVectorXCSV(s);
-	}
+	}*/
 	
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverIterative::SolveXAlgH():alg_h returned value of %d", algHRetVal);

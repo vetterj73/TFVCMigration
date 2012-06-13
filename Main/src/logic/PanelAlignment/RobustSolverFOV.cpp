@@ -673,7 +673,7 @@ void RobustSolverFOV::SolveXAlgHB()
 
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():alg_hb returned value of %d", algHRetVal);
-	if(CorrelationParametersInst.bSaveTransformVectors)
+	/*if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
@@ -682,7 +682,7 @@ void RobustSolverFOV::SolveXAlgHB()
 		s.clear();
 		s.assign(cTemp);
 		OutputVectorXCSV(s);
-	}
+	}*/
 
 	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():FINISHED ALG_HB");
 	LOG.FireLogEntry(LogTypeSystem, "RobustSolver::SolveXAlgHB():alg_hb Bandwidth = %d", bw);
@@ -904,12 +904,12 @@ void RobustSolverFOV::OutputVectorXCSV(string filename) const
 
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
-		of << "I_" << k->first.LayerIndex 
-			<< "T_" << k->first.TriggerIndex 
-			<< "C_" << k->first.CameraIndex
+		of << "L" << k->first.LayerIndex 
+			<< "_T" << k->first.TriggerIndex 
+			<< "_C" << k->first.CameraIndex
 			<< ",";
 
-		for(unsigned int j=0; j<_iNumParamsPerFov; ++j)
+		for(unsigned int j=0; j<_iNumParamsPerFov; j++)
 		{
 			if( j!=0 )
 				of << ",";

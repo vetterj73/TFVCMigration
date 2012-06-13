@@ -682,6 +682,7 @@ bool PanelAligner::CreateTransforms()
 {	
 	// for debug
 	_iPanelCount++;
+	LOG.FireLogEntry(LogTypeSystem, "Panel #%d is processing", _iPanelCount);
 
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
@@ -789,17 +790,22 @@ bool PanelAligner::CreateTransforms()
 	//TestGetImagePatch();
 	//TestSingleImagePatch();
 
-	//_pOverlapManager->GetFidResultsSetPoint()->LogResults();
+	_pOverlapManager->GetFidResultsSetPoint()->LogResults();
 	
 	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
 		string s;
-		sprintf_s(cTemp, 100, "%sTransformVectorX.csv", CorrelationParametersInst.sDiagnosticPath.c_str()); 
+		sprintf_s(cTemp, 100, "%sTransformVectorX_P%d.csv", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount); 
 		s.clear();
 		s.assign(cTemp);
 		_pSolver->OutputVectorXCSV(s);
+
+		sprintf_s(cTemp, 100, "%sProjectiveTransform_P%d.csv", CorrelationParametersInst.sDiagnosticPath.c_str(), _iPanelCount);
+		s.clear();
+		s.assign(cTemp);
+		OutputTransforms(s);
 	}
 	return(true);
 }
@@ -1232,6 +1238,41 @@ void PanelAligner::TestSingleImagePatch()
 	pImg->Save( "C:\\Temp\\Patch.bmp");
 
 	delete pImg;
+}
+
+void PanelAligner::OutputTransforms(string fileName)
+{
+	ofstream of(fileName.c_str());
+
+	of << std::scientific;
+
+	unsigned int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(unsigned int iLayer=0; iLayer<iNumLayer; iLayer++)
+	{
+		// Get calculated transforms
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayer);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				of << "L" << iLayer 
+				<< "_T" << iTrig 
+				<< "_C" << iCam
+				<< ",";
+
+				ImgTransform t = pLayer->GetImage(iTrig, iCam)->GetTransform();
+
+				for(int j=0; j<8; j++)
+				{
+					if(j!=0) of << ",";
+					of << t.GetItem(j);
+				}
+				of <<  std::endl;
+			}
+		}
+	}
+
+	of.close();
 }
 
 #pragma endregion

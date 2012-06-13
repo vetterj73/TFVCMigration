@@ -105,6 +105,7 @@ protected:
 	void DisturbFiducialAlignment();
 	void TestGetImagePatch();
 	void TestSingleImagePatch();
+	void OutputTransforms(string fileName);
 
 private:
 	FidFovOverlapList _lastProcessedFids;
