@@ -660,7 +660,6 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	// X direction equations
 	pdRow[iFOVPosA] += w;
 	pdRow[iFOVPosA+2] += -ySensorA * w;
-	// TODO TODO terms 0 and 4 based on SIM number !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	for (unsigned int j(0); j < _iNumZTerms; j++)
 			pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dxSensordzA * w;
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialXPos() - xSensorA);
@@ -675,7 +674,6 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	pdRow[iFOVPosA+1] += w;
 	pdRow[iFOVPosA+2] += +xSensorA * w;
-	// TODO TODO terms 0 and 4 based on SIM number !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	for (unsigned int j(0); j < _iNumZTerms; j++)
 			pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dySensordzA * w;
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
@@ -713,8 +711,8 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	// calc matching transform (pixel to flattenend board surface)
 	TransformCamModel tCamModel = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->GetTransformCamModel();
 	tCamModel.Reset();
-	int iNumX = 11;
-	int iNumY = 11;
+	int iNumX = 5;	// was 11 x 11, reduced size saves time in generating transforms
+	int iNumY = 5;
 	double startX = 0;
 	double stopX = (double)(iImageRows - 1); // x direction is in + row direction
 	double startY = 0;

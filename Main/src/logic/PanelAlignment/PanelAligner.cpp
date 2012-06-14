@@ -752,7 +752,6 @@ bool PanelAligner::CreateTransforms()
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
 
-	// TODO populate CM version of gettransfrom
 	// For each mosaic image
 	for(int i=0; i<iNumLayer; i++)
 	{
