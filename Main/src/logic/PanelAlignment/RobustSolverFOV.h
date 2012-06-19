@@ -13,7 +13,8 @@ class RobustSolverFOV: public RobustSolver
 public:
 	RobustSolverFOV(
 		map<FovIndex, unsigned int>* pFovOrderMap, 
-		unsigned int iMaxNumCorrelations, 
+		unsigned int iMaxNumCorrelations,  
+		MosaicSet* pSet, 
 		bool bProjectiveTrans);
 
 	~RobustSolverFOV(void);
@@ -44,7 +45,14 @@ public:
 protected:
 	void ZeroTheSystem();
 	void SolveXAlgHB();
+	
+	MosaicSet*		_pSet;
+
 private:
-	bool MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const;
+	bool MatchProjeciveTransform(const double pPara[12], 
+		unsigned int iLayerIndex,
+		unsigned int iTriggerIndex,
+		unsigned int iCameraIndex, 
+		double dTrans[3][3]) const;
 
 };

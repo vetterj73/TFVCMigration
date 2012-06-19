@@ -33,7 +33,9 @@ namespace CyberStitchFidTester
     {
         private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
 
-        private const double cPixelSizeInMeters = 1.70e-5;
+        private static double dPixelSizeInMeters = 1.70e-5;
+        private static uint iInputImageColumns = 2592;
+        private static uint iInputImageRows = 1944;
         private static ManagedMosaicSet _mosaicSetSim = null;
         private static ManagedMosaicSet _mosaicSetIllum = null;
         private static ManagedMosaicSet _mosaicSetProcessing = null;
@@ -132,6 +134,8 @@ namespace CyberStitchFidTester
                     dCalScale = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-w")
                     bUseProjective = true;
+                else if (args[i] == "-nw")
+                    bUseProjective = false;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
                 if (args[i] == "-iter")
@@ -144,6 +148,12 @@ namespace CyberStitchFidTester
                     _bDetectPanelEedge = true;
                 else if (args[i] == "-le" && i < args.Length - 1)
                     iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
+                else if (args[i] == "-pixsize" && i < args.Length - 1)
+                    dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-imgcols" && i < args.Length - 1)
+                    iInputImageColumns = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-imgrows" && i < args.Length - 1)
+                    iInputImageRows = Convert.ToUInt32(args[i + 1]);
 
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
@@ -168,7 +178,7 @@ namespace CyberStitchFidTester
 
             if (!bImageOnly && File.Exists(panelFile))
             {
-                _processingPanel = LoadProductionFile(panelFile, cPixelSizeInMeters);
+                _processingPanel = LoadProductionFile(panelFile, dPixelSizeInMeters);
                 if (_processingPanel == null)
                 {
                     Terminate(false);
@@ -188,10 +198,10 @@ namespace CyberStitchFidTester
 
 
             int ifidsNum = 0;
-            double pixelSize = cPixelSizeInMeters;
+            double pixelSize = dPixelSizeInMeters;
             if (File.Exists(fidPanelFile))
             {
-                _fidPanel = LoadProductionFile(fidPanelFile, cPixelSizeInMeters);
+                _fidPanel = LoadProductionFile(fidPanelFile, dPixelSizeInMeters);
                 if (bImageOnly && _fidPanel.GetNumPixelsInY() != inputBmp.Width)
                 {
                     pixelSize = _fidPanel.PanelSizeY/inputBmp.Width;
@@ -810,9 +820,9 @@ namespace CyberStitchFidTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSetSim = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, false, 0); // not bayer pattern
-            _mosaicSetIllum = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, false, false, 0);
-            _mosaicSetProcessing = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, false, false, 0);
+            _mosaicSetSim = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+            _mosaicSetIllum = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+            _mosaicSetProcessing = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
             _mosaicSetSim.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSetSim.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetIllum, bMaskForDiffDevices);
