@@ -93,7 +93,7 @@ for dirName in dirNames: # walk through each regression test (by date)
         resultName = fn[ fn.index("\\")+1 : -4] # remove dirName and '.txt' from the name
         if AllResultNames.count(resultName) < 1:  # a new run?  e.g. add the name '3FidsProjective' to the list
             AllResultNames.append(resultName)
-        Results[resultName] = {"res":[], "summary":[]}
+        Results[resultName] = {"res":[], "summary":[], "times":[]}
         temp = lines.pop(0) # remove first two lines
         temp = lines.pop(0)
         sectionOne = True
@@ -123,22 +123,29 @@ for dirName in dirNames: # walk through each regression test (by date)
                       and row[1].find("Panel Processing end time: ") == 0 ): 
                         Results["panelsPerRun"] += 1
                         # parse out the end time, remove leading space
-                        t = time.strptime(row[1][26:].strip(),"%m/%d/%Y %I:%M:%S %p")
-                        Results[resultName]["endTime"] = time.mktime(t)
+                        tEnd = time.strptime(row[1][26:].strip(),"%m/%d/%Y %I:%M:%S %p")
+                        tStart = time.strptime(row[0][25:].strip(),"%m/%d/%Y %I:%M:%S %p")
+                        Results[resultName]["endTime"] = time.mktime(tEnd)  # this will finish with the last end time
+                        Results[resultName]["times"].append( [tStart, tEnd] )
                         if not Results[resultName].has_key("startTime"):
-                            t = time.strptime(row[0][25:].strip(),"%m/%d/%Y %I:%M:%S %p")
-                            Results[resultName]["startTime"] = time.mktime(t)
+                            Results[resultName]["startTime"] = time.mktime(tStart) # only save the first start time
             else:
                 # into the summary section, this is where most of the plot data is found
                 if line.find("Xoffset RMS:") > 0:
                     XOffsetStart = line.find("Xoffset RMS:")+ len("Xoffset RMS:")
                     XOffsetEnd = line.find(",", XOffsetStart)
                     #Results[resultName]["summary"].append( float( line[XOffsetStart:XOffsetEnd] ) )
-                    Results[resultName]["summary"].append( sqrt(xSquaredSum / numFidsFound) )
+                    if numFidsFound >= 1:
+                        Results[resultName]["summary"].append( sqrt(xSquaredSum / numFidsFound) )
+                    else:
+                        Results[resultName]["summary"].append(0.)
                     YOffsetStart = line.find("Yoffset RMS:")+ len("Yoffset RMS:")
                     YOffsetEnd = line.find(",", YOffsetStart)
                     #Results[resultName]["summary"].append( float( line[YOffsetStart:YOffsetEnd] ) )
-                    Results[resultName]["summary"].append( sqrt(ySquaredSum / numFidsFound) )
+                    if numFidsFound >= 1:
+                        Results[resultName]["summary"].append( sqrt(ySquaredSum / numFidsFound) )
+                    else:
+                        Results[resultName]["summary"].append(0.)
                     Results[resultName]["summary"].append( sqrt(Results[resultName]["summary"][0]**2 + Results[resultName]["summary"][1]**2) )
                     Results[resultName]["summary"].append( worstFid )
                 if line.find("Average Offset:") == 0:
