@@ -14,10 +14,12 @@ namespace CyberStitchTester
 {
     class Program
     {
-        private const double cPixelSizeInMeters = 1.70e-5;
+        private static double dPixelSizeInMeters = 1.70e-5;
+        private static uint iInputImageColumns = 2592;
+        private static uint iInputImageRows = 1944;
         private static ManagedMosaicSet _mosaicSet = null;
         private static ManagedMosaicSet _mosaicSetCopy = null;
-        private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters); 
+        private static CPanel _panel = new CPanel(0, 0, dPixelSizeInMeters, dPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
@@ -73,6 +75,8 @@ namespace CyberStitchTester
                     _bBayerPattern = true;
                 else if (args[i] == "-w")
                     bUseProjective = true;
+                else if (args[i] == "-nw")
+                    bUseProjective = false;
                 else if (args[i] == "-nh")
                     bAdjustForHeight = false;
                 else if (args[i] == "-cammod")
@@ -93,6 +97,12 @@ namespace CyberStitchTester
                     panelFile = args[i + 1];
                 else if (args[i] == "-sps")
                     bSeperateProcessStages = true;
+                else if (args[i] == "-pixsize" && i < args.Length - 1)
+                    dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-imgcols" && i < args.Length - 1)
+                    iInputImageColumns = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-imgrows" && i < args.Length - 1)
+                    iInputImageRows = Convert.ToUInt32(args[i + 1]);
             }
 
             // Setup the panel based on panel file
@@ -410,13 +420,13 @@ namespace CyberStitchTester
                 {
                     if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _panel = SRFToPanel.parseSRF(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        _panel = SRFToPanel.parseSRF(panelFile, dPixelSizeInMeters, dPixelSizeInMeters);
                         if (_panel == null)
                             throw new ApplicationException("Could not parse the SRF panel file");
                     }
                     else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        _panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, dPixelSizeInMeters, dPixelSizeInMeters);
                         if (_panel == null)
                             throw new ApplicationException("Could not convert xml panel file");
                     }
@@ -447,8 +457,8 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+            _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);

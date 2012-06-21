@@ -172,7 +172,8 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():State of bUseCameraModelStitch False, %d", bUseCameraModelStitch);
 		_pSolver = new RobustSolverFOV(	
 						&_solverMap, 
-						iMaxNumCorrelations, 
+						iMaxNumCorrelations,
+						_pSet,
 						bProjectiveTrans);
 	}
 
@@ -202,6 +203,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 			_pMaskSolver = new RobustSolverFOV(
 				&_maskMap, 
 				iMaxNumCorrelations, 
+				_pSet,
 				bProjectiveTrans);
 	}
 
@@ -764,6 +766,7 @@ bool PanelAligner::CreateTransforms()
 				Image* img = pLayer->GetImage(iTrig, iCam);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
+				img->CalInverseTransform();
 			}
 		}
 	}

@@ -15,9 +15,11 @@ extern "C" {
 #pragma region constructor
 RobustSolverFOV::RobustSolverFOV(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 
-	unsigned int iMaxNumCorrelations, 
+	unsigned int iMaxNumCorrelations,  
+	MosaicSet* pSet,
 	bool bProjectiveTrans): 	RobustSolver( pFovOrderMap)
 {	
+	_pSet = pSet;
 	_bProjectiveTrans = bProjectiveTrans;
 	if(_bProjectiveTrans)	// For projective transform
 	{		
@@ -721,7 +723,7 @@ ImgTransform RobustSolverFOV::GetResultTransform(
 	else
 	{
 		// Create matching projetive transform
-		MatchProjeciveTransform(&_dVectorX[index], t);
+		MatchProjeciveTransform(&_dVectorX[index], iLlluminationIndex, iTriggerIndex, iCameraIndex, t);
 	}
 
 	ImgTransform trans(t);
@@ -730,13 +732,19 @@ ImgTransform RobustSolverFOV::GetResultTransform(
 }
 
 //*/ From 12 calcualted parameters to match a projecive transform
-bool RobustSolverFOV::MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const
+bool RobustSolverFOV::MatchProjeciveTransform(const double pPara[12], 
+	unsigned int iLayerIndex,
+	unsigned int iTriggerIndex,
+	unsigned int iCameraIndex,  
+	double dTrans[3][3]) const
 {
 	int iNumX = 10;
 	int iNumY = 10;
-	// TODO TODO  hard coded image size
-	int iStepX = (1944-1)/(iNumX-1);  // Rows
-	int iStepY = (2592-1)/(iNumY-1);  // Columes
+	unsigned int iImageCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Columns();
+	unsigned int iImageRows = _pSet->GetLayer(iLayerIndex)->GetImage(iTriggerIndex, iCameraIndex)->Rows();
+	
+	int iStepX = (iImageRows-1)/(iNumX-1);  // Rows
+	int iStepY = (iImageCols-1)/(iNumY-1);  // Columes
 	double* pRow = new double[iNumX*iNumY];
 	double* pCol = new double[iNumX*iNumY];
 	double* pX	 = new double[iNumX*iNumY];

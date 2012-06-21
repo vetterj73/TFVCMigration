@@ -22,6 +22,10 @@ public:
 		double dTranslateX,
 		double dTranslateY);
 
+	ImgTransform( 
+		double dScaleX, 
+		double dScaleY);
+
 	ImgTransform(const ImgTransform& b);
 
 	void operator=(const ImgTransform& b);
@@ -48,14 +52,13 @@ public:
 	void GetInvertMatrix(double dInvT[3][3]);
 	
 	ImgTransform Inverse();
+	void CalInverse();
 
 	//Map and inverse map
 	void Map(double dx, double dy, double* pdu, double* pdv) const;
 	void InverseMap(double du, double dv, double* pdx, double* pdy);
 
-private: 
-	void CalInverse();
-
+private: 	
 	bool _bHasInverse;	// if the inverse transform Maxtric is valid
 
 	double _dT[9];
@@ -63,4 +66,3 @@ private:
 };
 
 ImgTransform operator*(const ImgTransform& left, const ImgTransform& right);
-

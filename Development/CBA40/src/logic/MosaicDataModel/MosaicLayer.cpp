@@ -162,6 +162,7 @@ namespace MosaicDM
 		unsigned int iNumCols = _pMosaicSet->GetObjectLengthInPixels();
 
 		_pStitchedImage->Configure(iNumCols, iNumRows, iNumCols, inputTransform, inputTransform, true);
+		_pStitchedImage->CalInverseTransform();
 	}
 
 	// Camera centers in Y of world space

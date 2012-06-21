@@ -13,8 +13,8 @@ namespace PanelAlignM {
 	ManagedPanelAlignment::ManagedPanelAlignment()
 	{
 		_pAligner = new PanelAligner();
-		_pixelSizeX=1.70e-5;
-		_pixelSizeY=1.70e-5;
+		_pixelSizeX=0; // avoid hard coded values, caller must initialize
+		_pixelSizeY=0;
 		SetLoggableObject((System::IntPtr)(void*)_pAligner->GetLogger());
 
 		_alignmentDoneDelegate = gcnew AlignmentDoneDelegate(this, &ManagedPanelAlignment::RaiseAlignmentDone); 

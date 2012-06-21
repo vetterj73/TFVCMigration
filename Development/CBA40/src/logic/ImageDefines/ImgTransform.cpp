@@ -23,11 +23,15 @@ ImgTransform::ImgTransform(void)
 
 ImgTransform::ImgTransform(const double dT[9])
 {
+	_bHasInverse = false;
+
 	SetMatrix(dT);
 }
 
 ImgTransform::ImgTransform(const double dT[3][3])
 {
+	_bHasInverse = false;
+
 	SetMatrix(dT);
 }
 
@@ -44,6 +48,15 @@ ImgTransform::ImgTransform(
 		dRotation, 
 		dTranslateX,
 		dTranslateY);
+}
+
+ImgTransform::ImgTransform( 
+	double dScaleX, 
+	double dScaleY)
+{
+	Config(	
+		dScaleX, 
+		dScaleY);
 }
 
 
@@ -93,6 +106,8 @@ void ImgTransform::Config(
 
 void ImgTransform::Config(double dScaleX, double dScaleY)
 {
+	_bHasInverse = false;
+
 	_dT[0] = dScaleX;
 	_dT[1] = 0;
 	_dT[2] = 0;
@@ -200,6 +215,9 @@ void ImgTransform::InverseMap(double du, double dv, double* pdx, double* pdy)
 
 void ImgTransform::CalInverse()
 {
+	if(_bHasInverse)
+		return;
+
 	// Calculate inverse
 	inverse(_dT, _dInvT, 3, 3);
 
