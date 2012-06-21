@@ -766,6 +766,7 @@ bool PanelAligner::CreateTransforms()
 				Image* img = pLayer->GetImage(iTrig, iCam);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
+				img->CalInverseTransform();
 			}
 		}
 	}

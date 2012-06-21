@@ -67,6 +67,8 @@ public:
 	void				SetTransformCamCalibrationVMax(double val){	_tCamCalibration.vMax = val;};
 	void				ResetTransformCamCalibration(){ _tCamCalibration.Reset();};
 	void				ResetTransformCamModel(){ _tCamModelToWorld.Reset();};
+
+	void				CalInverseTransform() {_thisToWorld.CalInverse();};
 	
 
 	unsigned char*		GetBuffer() const {return _buffer;};	
