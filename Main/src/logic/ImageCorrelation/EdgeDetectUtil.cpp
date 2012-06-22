@@ -1,5 +1,8 @@
 #include "EdgeDetectUtil.h"
 #include <math.h>
+#include <fstream>
+
+using namespace std;
 
 // Find panel leading edge in a FOV image
 // pImage: input, color or grayscal FOV image
@@ -331,4 +334,23 @@ bool PixelLineFit(
 	*pdOffset = (sum_Y-(*pdSlope)*sum_X)/iNum;
 
 	return(true);
+}
+
+
+// For debug
+void LogMessage(char* pMessage)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	
+	ofstream of("C:\\Temp\\PanelDetectionUnitTestLog.txt", ios_base::app);
+
+	of << st.wHour << ":"
+		<< st.wMinute << ":" 
+		<< st.wSecond << ":" 
+		<< st.wMilliseconds << "::" 
+		<< pMessage
+		<< endl;  
+
+	of.close();
 }

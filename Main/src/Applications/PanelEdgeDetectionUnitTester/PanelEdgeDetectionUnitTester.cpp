@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include <iostream>
 #include "opencv\cv.h"
 #include "opencv\highgui.h"
 #include "EdgeDetectUtil.h"
@@ -64,8 +63,8 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 int wmain(int argc, char* argv[])
 {
 	// Test image folder 
-	//char folder[] = "D:\\JukiSim\\PanelEdgeTest\\";
-	char folder[] = "D:\\JukiSim\\PanelEdgeSamples\\";
+	char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeTest\\";
+	//char folder[] = "D:\\JukiSim\\PanelEdgeSamples\\";
 	//char folder[] = "D:\\JukiSim\\TempTest\\";
    	WIN32_FIND_DATA ffd;
 	char find[MAX_PATH];
@@ -74,14 +73,7 @@ int wmain(int argc, char* argv[])
 	strncat_s(find, "*.png", MAX_PATH);
 
 	// Log file
-	FILE * fp;
 	char cLogBuf[MAX_PATH];
-	fopen_s(&fp, "C:\\Temp\\PanelDetectionUnitTestLog.txt", "w");
-	if(fp == NULL)
-	{
-		printf("Could not create log file");
-		return 1;
-	}
 
 	int iCount = 0;
 	int iErrorCount = 0;
@@ -106,15 +98,15 @@ int wmain(int argc, char* argv[])
 
 		iCount++;
 		printf("#%d: %s\n", iCount, ffd.cFileName);
-		//sprintf_s(cLogBuf, "#%d: %s\n", iCount, ffd.cFileName);
-		//fprintf(fp, cLogBuf);
+		sprintf_s(cLogBuf, "#%d: %s\n", iCount, ffd.cFileName);
+		LogMessage(cLogBuf);
 
 		// Log failure case
 		if(!bFlag)
 		{
 			printf("Failed to detect leading edge\n");
 			sprintf_s(cLogBuf, "#%d: %s Failed to detect leading edge\n", iCount, ffd.cFileName);
-			fprintf(fp, cLogBuf);
+			LogMessage(cLogBuf);
 			iErrorCount++;
 			//cvWaitKey(0);
 		}
@@ -129,12 +121,10 @@ int wmain(int argc, char* argv[])
 	printf("%d out of %d leading edge are missed!\n", iErrorCount, iCount);
 	printf("Took %f second\n", (iEnd-iStart)/1000.);
 	sprintf_s(cLogBuf, "%d out of %d leading edge are missed!\n", iErrorCount, iCount);
-	fprintf(fp, cLogBuf);
+	LogMessage(cLogBuf);
 	sprintf_s(cLogBuf, "Took %f second\n", (iEnd-iStart)/1000.);
-	fprintf(fp, cLogBuf);
+	LogMessage(cLogBuf);
 	printf("Done!");
-
-	fclose(fp);
 
 	return 0;
 }
