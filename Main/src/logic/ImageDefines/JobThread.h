@@ -17,9 +17,10 @@ namespace CyberJob
 	};
 
 	///
-	///	The purpose of this job is clear the queue for a job thread.  
+	///	The purpose of this job is to clear the queue for a job thread.  
 	/// i.e. - After all legitimate jobs are added, add a LastJob to the queue.
-	/// When the queue is empty, you know the thread is not processing anything meaningful.
+	/// When the queue is empty, you know the thread is not processing anything meaningful.  If the queue 
+	/// is not empty, (at least one legitimate job is being processing).
 	///
 	class LastJob : public Job
 	{
