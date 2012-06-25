@@ -56,6 +56,8 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 		}
 	}
 
+	//LogMessage("Begin prepare image");
+
 	// ROI image
 	IplImage* pROIImg =  cvCreateImageHeader(cvSize(iWidth, iHeight), IPL_DEPTH_8U, pImage->nChannels);
 	pROIImg->widthStep = pImage->widthStep;
@@ -89,17 +91,23 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 			pProcImg = pDecim4;
 		}
 	}
+	//LogMessage("End prepare image");
 
+	//LogMessage("Begin smooth");
 	// Smooth
 	IplImage* pSmoothImg = cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvSmooth(pProcImg, pSmoothImg, CV_BILATERAL, 9,9,50,50);
 	//cvSaveImage("c:\\Temp\\Smooth.png", pSmoothImg);
+	//LogMessage("End smooth");
 
+	//LogMessage("Begin edge detection");
 	// Edge detection
 	IplImage* pEdgeImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvCanny( pSmoothImg, pEdgeImg, 20, 10);
 	//cvSaveImage("c:\\Temp\\edge.png", pEdgeImg);
+	//LogMessage("End edge detection");
 
+	//LogMessage("Begin dilation");
 	// Edge dilation for hough
 	int iDilateSize = 2;
 	IplConvKernel* pDilateSE = cvCreateStructuringElementEx( 
@@ -110,14 +118,17 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	IplImage* pDilateImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvDilate( pEdgeImg, pDilateImg, pDilateSE); 
 	//cvSaveImage("c:\\Temp\\DilatedEdge.png", pDilateImg);
+	//LogMessage("End dilation");
 
+	//LogMessage("Begin Hough");
 	// Hough transform
 	CvMemStorage* storage = cvCreateMemStorage(0);
 	CvSeq* lines = 0;
 	// Pick potential candidate hough line
 	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width/ptParam->iDecim);
 	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
-	
+	//LogMessage("End Hough\n");
+
 	// Pick the right hough lines
 	bool bFirst = true;
 	int iSelectIndex = -1;

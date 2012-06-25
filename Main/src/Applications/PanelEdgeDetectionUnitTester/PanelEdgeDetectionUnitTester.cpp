@@ -52,8 +52,8 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
     //cvShowImage( "Hough", pImage );
 
 	// Save result image
-	cvSaveImage(Name, pImage);
-	cvReleaseImage(&pImage);
+	//cvSaveImage(Name, pImage);
+	//cvReleaseImage(&pImage);
 	//*/
 
 	return(bFlag);
@@ -63,8 +63,8 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 int wmain(int argc, char* argv[])
 {
 	// Test image folder 
-	char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeTest\\";
-	//char folder[] = "D:\\JukiSim\\PanelEdgeSamples\\";
+	//char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeTest\\";
+	char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeSamples\\";
 	//char folder[] = "D:\\JukiSim\\TempTest\\";
    	WIN32_FIND_DATA ffd;
 	char find[MAX_PATH];
@@ -91,15 +91,15 @@ int wmain(int argc, char* argv[])
 	while(!bDone)
 	{
 		strncpy_s(filePath, folder, MAX_PATH);
-		strncat_s(filePath, ffd.cFileName, MAX_PATH);
+		strncat_s(filePath, ffd.cFileName, MAX_PATH);		
+		
+		iCount++;
+		printf("#%d: %s\n", iCount, ffd.cFileName);
+		sprintf_s(cLogBuf, "#%d: %s", iCount, ffd.cFileName);
+		LogMessage(cLogBuf);
 
 		// Front edge detection
 		bool bFlag = DetectPanelFrontEdge(filePath, ffd.cFileName);
-
-		iCount++;
-		printf("#%d: %s\n", iCount, ffd.cFileName);
-		sprintf_s(cLogBuf, "#%d: %s\n", iCount, ffd.cFileName);
-		LogMessage(cLogBuf);
 
 		// Log failure case
 		if(!bFlag)
