@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-	A Rectangle in Unsinged int
+	A Rectangle in Unsigned int
 */
 
 class UIRect
@@ -34,7 +34,7 @@ public:
 };
 
 /*
-	A Rectnagle in double
+	A Rectangle in double
 */
 struct DRect
 {
