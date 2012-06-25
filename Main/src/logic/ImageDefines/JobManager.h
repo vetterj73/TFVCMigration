@@ -47,7 +47,6 @@ namespace CyberJob
 		///	Count of all jobs currently waiting or in process.  When this is 0, we
 		/// are done.
 		///
-
 		unsigned int TotalJobs();
 
 	private:
