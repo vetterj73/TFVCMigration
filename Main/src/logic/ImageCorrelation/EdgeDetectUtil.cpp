@@ -1,6 +1,7 @@
 #include "EdgeDetectUtil.h"
 #include <math.h>
 #include <fstream>
+#include "hough_custom.h"
 
 using namespace std;
 
@@ -126,7 +127,8 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	CvSeq* lines = 0;
 	// Pick potential candidate hough line
 	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width/ptParam->iDecim);
-	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
+	//lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
+	lines = cvHoughLines2_P_Custom(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
 	//LogMessage("End Hough\n");
 
 	// Pick the right hough lines
