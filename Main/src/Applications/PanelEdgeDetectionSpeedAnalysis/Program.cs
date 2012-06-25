@@ -137,7 +137,6 @@ namespace PanelEdgeDetectionSpeedAnalysis
                         if (s.Contains("Begin"))
                         {
                             dBeginTimes[i] = GetTimeInSecond(s);
-                            bValid[i] = false;
                         }
                         else if (s.Contains("End"))
                         {
@@ -167,6 +166,7 @@ namespace PanelEdgeDetectionSpeedAnalysis
                         double dTime = dEndTimes[i] - dBeginTimes[i];
                         dSumTimes[i] += dTime;
                         sLine += dTime.ToString() + ',';
+                        bValid[i] = false;
                     }
                     writer.WriteLine(sLine);
                 }
