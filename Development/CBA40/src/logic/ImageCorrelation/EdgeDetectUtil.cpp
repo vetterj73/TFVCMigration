@@ -1,5 +1,9 @@
 #include "EdgeDetectUtil.h"
 #include <math.h>
+#include <fstream>
+#include "hough_custom.h"
+
+using namespace std;
 
 // Find panel leading edge in a FOV image
 // pImage: input, color or grayscal FOV image
@@ -53,6 +57,8 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 		}
 	}
 
+	//LogMessage("Begin prepare image");
+
 	// ROI image
 	IplImage* pROIImg =  cvCreateImageHeader(cvSize(iWidth, iHeight), IPL_DEPTH_8U, pImage->nChannels);
 	pROIImg->widthStep = pImage->widthStep;
@@ -86,17 +92,23 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 			pProcImg = pDecim4;
 		}
 	}
+	//LogMessage("End prepare image");
 
+	//LogMessage("Begin smooth");
 	// Smooth
 	IplImage* pSmoothImg = cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvSmooth(pProcImg, pSmoothImg, CV_BILATERAL, 9,9,50,50);
 	//cvSaveImage("c:\\Temp\\Smooth.png", pSmoothImg);
+	//LogMessage("End smooth");
 
+	//LogMessage("Begin edge detection");
 	// Edge detection
 	IplImage* pEdgeImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvCanny( pSmoothImg, pEdgeImg, 20, 10);
 	//cvSaveImage("c:\\Temp\\edge.png", pEdgeImg);
+	//LogMessage("End edge detection");
 
+	//LogMessage("Begin dilation");
 	// Edge dilation for hough
 	int iDilateSize = 2;
 	IplConvKernel* pDilateSE = cvCreateStructuringElementEx( 
@@ -107,14 +119,20 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	IplImage* pDilateImg =  cvCreateImage(cvSize(iProcW, iProcH), IPL_DEPTH_8U, 1);
 	cvDilate( pEdgeImg, pDilateImg, pDilateSE); 
 	//cvSaveImage("c:\\Temp\\DilatedEdge.png", pDilateImg);
+	//LogMessage("End dilation");
 
+	//LogMessage("Begin Hough");
 	// Hough transform
 	CvMemStorage* storage = cvCreateMemStorage(0);
 	CvSeq* lines = 0;
 	// Pick potential candidate hough line
 	int iThresh = (int)(ptParam->dMinLineLengthRatio * pROIImg->width/ptParam->iDecim);
-	lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
-	
+	//lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
+	double dStartAngle = (90 - ptParam->dAngleRange)*CV_PI/180, dEndAngle = (90 + ptParam->dAngleRange)*CV_PI/180;
+	//double dStartAngle = (90-50)*CV_PI/180, dEndAngle = (90+50)*CV_PI/180;
+	lines = cvHoughLines2_P_Custom(pDilateImg, storage, 1, dStartAngle, dEndAngle, CV_PI/180/8, iThresh,  iThresh, 10);
+	//LogMessage("End Hough\n");
+
 	// Pick the right hough lines
 	bool bFirst = true;
 	int iSelectIndex = -1;
@@ -331,4 +349,23 @@ bool PixelLineFit(
 	*pdOffset = (sum_Y-(*pdSlope)*sum_X)/iNum;
 
 	return(true);
+}
+
+
+// For debug
+void LogMessage(char* pMessage)
+{
+	SYSTEMTIME st;
+	GetLocalTime(&st);
+	
+	ofstream of("C:\\Temp\\PanelDetectionUnitTestLog.txt", ios_base::app);
+
+	of << st.wHour << ":"
+		<< st.wMinute << ":" 
+		<< st.wSecond << ":" 
+		<< st.wMilliseconds << "::" 
+		<< pMessage
+		<< endl;  
+
+	of.close();
 }

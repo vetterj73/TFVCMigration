@@ -13,10 +13,18 @@ extern "C" {
 }
 
 #pragma region constructor
+/// <summary>
+/// Constructor for RobustSolverFOV
+/// </summary>
+/// <param name="pFovOrderMap"></param>
+/// <param name="iMaxNumCorrelations"></param>
+/// <param name="pSet"></param>
+/// <param name="bProjectiveTrans">Align FOVs with a Projective Transform (3x3) if true, else use affine transform (2x3)</param>
+/// create new arrays for solver, initialize paramters, zero out the arrays
 RobustSolverFOV::RobustSolverFOV(		
 	map<FovIndex, unsigned int>* pFovOrderMap, 
 	unsigned int iMaxNumCorrelations,  
-	MosaicSet* pSet,
+	MosaicSet* pSet,   //Mosaic set, convienent way to pass in misc. information e.g. image sizes
 	bool bProjectiveTrans): 	RobustSolver( pFovOrderMap)
 {	
 	_pSet = pSet;
@@ -85,6 +93,14 @@ void RobustSolverFOV::ZeroTheSystem()
 // bPinFOV: valid when bIgnoreXOffset=false, 
 // true for giving bigger weight of equarions of X and Y center to pin FOV on CAD space
 // bIgnoreXOffset: true for ignore equation of X center/offset
+/// <summary>
+/// Add fitting constraints based on sensor and SIM mounting calibration
+/// </summary>
+/// <param name="pLayer">Identify FOV to constrain</param>
+/// <param name="iCamIndex">Identify FOV to constrain</param>
+/// <param name="iTrigIndex">Identify FOV to constrain</param>
+/// <param name="bPinFOV">Used when no fiducials are found, 'pin' this FOV location to CAD location</param>
+/// 
 bool RobustSolverFOV::AddCalibationConstraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 	bool bPinFOV)

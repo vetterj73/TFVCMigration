@@ -362,8 +362,8 @@ namespace MultiAlignerTester
             }
             for(int i=0; i<iNumAligner; i++)
             {
-                _mosaicSets[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-                _mosaicSetCopys[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 2592, 1944, 2592, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+                _mosaicSets[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 752, 582, 752, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+                _mosaicSetCopys[i] = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, 752, 582, 752, cPixelSizeInMeters, cPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
                 _mosaicSets[i].OnLogEntry += OnLogEntryFromMosaic;
                 _mosaicSets[i].SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
                 SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSets[i], bMaskForDiffDevices);

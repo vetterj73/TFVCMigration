@@ -131,6 +131,13 @@ void PanelAligner::CleanUp()
 }
 
 // Change production
+///<summary>
+///Change Product, delete old solvers and create new solvers 
+///</summary>
+/// <param name="pSet"></param>
+/// <param name="pPanel"></param>
+/// Creates a new solver (of type slected in CorrelationParametersInst) for panel and (if needed) panel mask
+
 bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
@@ -157,7 +164,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		_pSolver = new RobustSolverIterative(	
 						&_solverMap, 
 						iMaxNumCorrelations,
-						_pSet);  // TODO Is it wise to send _pSet to solver??????????????????????????????????????
+						_pSet);  
 	}
 	else if (bUseCameraModelStitch)
 	{
@@ -165,7 +172,7 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		_pSolver = new RobustSolverCM(	
 						&_solverMap, 
 						iMaxNumCorrelations,
-						_pSet);  // TODO Is it wise to send _pSet to solver??????????????????????????????????????
+						_pSet);  
 	}
 	else
 	{
@@ -190,8 +197,13 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 		CreateImageOrderInSolver(piLayerIndices, _iMaskCreationStage, &_maskMap);
 		delete [] piLayerIndices;
 		iMaxNumCorrelations =  _pOverlapManager->MaxMaskCorrelations();
-		// ************************* TODO TODO **************************
-		// CHANGE TO RobustSolverCM()   ?!?!?!?!?
+		if (bUseCameraModelIterativeStitch)
+		{
+			_pMaskSolver = new RobustSolverIterative(	
+							&_maskMap, 
+							iMaxNumCorrelations,
+							_pSet);  
+		}
 		if (bUseCameraModelStitch)
 		{
 			_pMaskSolver = new RobustSolverCM(	

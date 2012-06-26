@@ -74,7 +74,7 @@ CorrelationParameters::CorrelationParameters(void)
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 
 	// Whether use projective transform
-	bUseProjectiveTransform = true;
+	bUseProjectiveTransform = false;
 	bUseCameraModelStitch = false;
 	bUseCameraModelIterativeStitch = false;
 	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
@@ -102,8 +102,8 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// debug flags
 	bSaveFiducialOverlaps = false;
-	bSaveOverlaps = false;
-	bSaveTransformVectors = false;
+	bSaveOverlaps = true;
+	bSaveTransformVectors = true;
 	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";

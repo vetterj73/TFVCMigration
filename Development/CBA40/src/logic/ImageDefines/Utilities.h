@@ -8,6 +8,9 @@
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row
 // rows and cols: size of matrix 
+void inverse3x3(	
+	const double* inMatrix,
+	double* outMatrix);
 void inverse(	
 	const double* inMatrix,
 	double* outMatrix,

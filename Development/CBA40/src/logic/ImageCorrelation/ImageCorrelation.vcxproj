@@ -173,6 +173,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="EdgeDetectUtil.h" />
     <ClInclude Include="FeatureLocationCheck.h" />
     <ClInclude Include="FiducialResult.h" />
+    <ClInclude Include="hough_custom.h" />
     <ClInclude Include="OverlapDefines.h" />
     <ClInclude Include="OverlapManager.h" />
     <ClInclude Include="PanelEdgeDetection.h" />
@@ -185,6 +186,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="EdgeDetectUtil.cpp" />
     <ClCompile Include="FeatureLocationCheck.cpp" />
     <ClCompile Include="FiducialResult.cpp" />
+    <ClCompile Include="hough_custom.cpp" />
     <ClCompile Include="OverlapDefines.cpp" />
     <ClCompile Include="OverlapManager.cpp" />
     <ClCompile Include="PanelEdgeDetection.cpp" />

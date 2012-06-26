@@ -30,7 +30,7 @@ struct StPanelEdgeInImage
 	{
 		iDecim= 2;
 		dMinLineLengthRatio = 0.5;
-		dAngleRange = 3;
+		dAngleRange = 2;
 		
 		Reset();
 	}

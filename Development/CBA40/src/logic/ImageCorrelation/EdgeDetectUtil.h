@@ -19,3 +19,6 @@ bool RobustPixelLineFit(
 bool PixelLineFit(
 	const list<int>* pSetX, const list<int>* pSetY, 
 	double* pdSlope, double* pdOffset);
+
+// For debug
+void LogMessage(char* pMessage);
