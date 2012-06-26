@@ -34,6 +34,7 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 	if(!bFlag)
 	{
 		cvSaveImage(Name, pImage);
+
 		cvReleaseImage(&pImage);
 		return(false);
 	}
@@ -53,9 +54,8 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 
 	// Save result image
 	//cvSaveImage(Name, pImage);
-	//cvReleaseImage(&pImage);
-	//*/
-
+	
+	cvReleaseImage(&pImage);
 	return(bFlag);
 }
 
@@ -65,7 +65,7 @@ int wmain(int argc, char* argv[])
 	// Test image folder 
 	//char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeTest\\";
 	char folder[] = "D:\\JukiSim\\Panel Edege detection\\PanelEdgeSamples\\";
-	//char folder[] = "D:\\JukiSim\\TempTest\\";
+	//char folder[] = "D:\\JukiSim\\Panel Edege detection\\TestSet1\\";
    	WIN32_FIND_DATA ffd;
 	char find[MAX_PATH];
 	char filePath[MAX_PATH];

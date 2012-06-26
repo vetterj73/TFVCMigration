@@ -39,8 +39,10 @@
 //
 //M*/
 
-//#include "precomp.hpp"
-//#include "_list.h"
+/*////////////////////////////////////////////
+// This modified version is to support angle range of search
+// It doesn't reduce the memeory usage for a angle range smaller than PI
+//*/
 
 #include "opencv\cv.h"
 #include "opencv\cxcore.h"
@@ -64,10 +66,11 @@
 \****************************************************************************************/
 
 static void
-icvHoughLinesProbabalistic_custom( CvMat* image,
-                            float rho, float theta, int threshold,
-                            int lineLength, int lineGap,
-                            CvSeq *lines, int linesMax )
+icvHoughLinesProbabalistic_custom( 
+	CvMat* image, float rho, 
+	float fStartAngle, float fEndAngle, float theta, 
+	int threshold, int lineLength, int lineGap,
+    CvSeq *lines, int linesMax )
 {
     cv::Mat accum, mask;
     cv::vector<float> trigtab;
@@ -93,12 +96,17 @@ icvHoughLinesProbabalistic_custom( CvMat* image,
     numangle = cvRound(CV_PI / theta);
     numrho = cvRound(((width + height) * 2 + 1) / rho);
 
+	// custom
+	int iStartIndex = (int)(fStartAngle/theta-0.5);
+	int iEndIndex = (int)(fEndAngle/theta+0.5);
+
     accum.create( numangle, numrho, CV_32SC1 );
     mask.create( height, width, CV_8UC1 );
     trigtab.resize(numangle*2);
     accum = cv::Scalar(0);
 
-    for( ang = 0, n = 0; n < numangle; ang += theta, n++ )
+    //for( ang = 0, n = 0; n < numangle; ang += theta, n++ )
+	for( ang = iStartIndex*theta, n = iStartIndex; n < iEndIndex+1; ang += theta, n++ )
     {
         trigtab[n*2] = (float)(cos(ang) * irho);
         trigtab[n*2+1] = (float)(sin(ang) * irho);
@@ -153,7 +161,9 @@ icvHoughLinesProbabalistic_custom( CvMat* image,
             continue;
 
         // update accumulator, find the most probable line
-        for( n = 0; n < numangle; n++, adata += numrho )
+        //for( n = 0; n < numangle; n++, adata += numrho )
+		adata += numrho*iStartIndex;		// custom
+		for( n = iStartIndex; n < iEndIndex+1; n++, adata += numrho ) // custom
         {
             r = cvRound( j * ttab[n*2] + i * ttab[n*2+1] );
             r += (numrho - 1) / 2;
@@ -300,9 +310,10 @@ icvHoughLinesProbabalistic_custom( CvMat* image,
 }
 
 /* Wrapper function for standard hough transform */
-CV_IMPL CvSeq* cvHoughLines2_P_Custom( CvArr* src_image, void* lineStorage, int method,
-               double rho, double theta, int threshold,
-               double param1, double param2 )
+CV_IMPL CvSeq* cvHoughLines2_P_Custom( 
+	CvArr* src_image, void* lineStorage, double rho, 
+	double dStartAngle, double dEndAngle, double theta, 
+	int threshold, int iMinLength, int iMaxGap)
 {
     CvSeq* result = 0;
 
@@ -326,16 +337,8 @@ CV_IMPL CvSeq* cvHoughLines2_P_Custom( CvArr* src_image, void* lineStorage, int 
     if( rho <= 0 || theta <= 0 || threshold <= 0 )
         CV_Error( CV_StsOutOfRange, "rho, theta and threshold must be positive" );
 
-    if( method != CV_HOUGH_PROBABILISTIC )
-    {
-        lineType = CV_32FC2;
-        elemSize = sizeof(float)*2;
-    }
-    else
-    {
-        lineType = CV_32SC4;
-        elemSize = sizeof(int)*4;
-    }
+    lineType = CV_32SC4;
+    elemSize = sizeof(int)*4;
 
     if( CV_IS_STORAGE( lineStorage ))
     {
@@ -360,12 +363,11 @@ CV_IMPL CvSeq* cvHoughLines2_P_Custom( CvArr* src_image, void* lineStorage, int 
     }
     else
         CV_Error( CV_StsBadArg, "Destination is not CvMemStorage* nor CvMat*" );
-    
-    iparam1 = cvRound(param1);
-    iparam2 = cvRound(param2);
 
-    icvHoughLinesProbabalistic_custom( img, (float)rho, (float)theta,
-                threshold, iparam1, iparam2, lines, linesMax );
+    icvHoughLinesProbabalistic_custom( 
+		img, (float)rho, 
+		(float)dStartAngle, (float)dEndAngle, (float)theta,
+        threshold, iMinLength, iMaxGap, lines, linesMax );
 
     if( mat )
     {
