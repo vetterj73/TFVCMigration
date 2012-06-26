@@ -219,7 +219,8 @@ void ImgTransform::CalInverse()
 		return;
 
 	// Calculate inverse
-	inverse(_dT, _dInvT, 3, 3);
+	//inverse(_dT, _dInvT, 3, 3);
+	inverse3x3(_dT, _dInvT);
 
 	// Normalization
 	for(int i=0; i<9; i++)

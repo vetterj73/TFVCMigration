@@ -4,6 +4,29 @@
 #include "morpho.h"
 #include <string.h>
 
+// Inverse 3x3 matrix
+void inverse3x3(	
+	const double* inMatrix,
+	double* outMatrix)
+{
+	// hard coded inverse for a 3x3 array (fed in as a [9] vector)
+	// non-working starting point found on website 'stackoverflow.com/questions/983999/simple-3x3-matrix-inverse-code-c'
+	// Does not check for singular input matrix (will generate a divide by 0)
+	double determinant =    +inMatrix[0]*(inMatrix[4]*inMatrix[8]-inMatrix[7]*inMatrix[5])
+                        -inMatrix[1]*(inMatrix[3]*inMatrix[8]-inMatrix[5]*inMatrix[6])
+                        +inMatrix[2]*(inMatrix[3]*inMatrix[7]-inMatrix[4]*inMatrix[6]);
+	double invdet = 1/determinant;
+	outMatrix[0] =  (inMatrix[4]*inMatrix[8]-inMatrix[7]*inMatrix[5])*invdet;
+	outMatrix[1] = -(inMatrix[1]*inMatrix[8]-inMatrix[2]*inMatrix[7])*invdet;
+	outMatrix[2] =  (inMatrix[1]*inMatrix[5]-inMatrix[2]*inMatrix[4])*invdet;
+	outMatrix[3] = -(inMatrix[3]*inMatrix[8]-inMatrix[5]*inMatrix[6])*invdet;
+	outMatrix[4] =  (inMatrix[0]*inMatrix[8]-inMatrix[2]*inMatrix[6])*invdet;
+	outMatrix[5] = -(inMatrix[0]*inMatrix[5]-inMatrix[3]*inMatrix[2])*invdet;
+	outMatrix[6] =  (inMatrix[3]*inMatrix[7]-inMatrix[6]*inMatrix[4])*invdet;
+	outMatrix[7] = -(inMatrix[0]*inMatrix[7]-inMatrix[6]*inMatrix[1])*invdet;
+	outMatrix[8] =  (inMatrix[0]*inMatrix[4]-inMatrix[3]*inMatrix[1])*invdet;
+}
+
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row

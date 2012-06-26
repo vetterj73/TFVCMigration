@@ -14,7 +14,27 @@ extern "C" {
 
 #define CorrelationParametersInst CorrelationParameters::Instance() 
 
+/*
+	Camera Model version of RobustSolver
+	Solves for a smaller number of unknows than the FOV version
+	
+	Expectation is that the board is a rigid object which translates only in X, Y, Theta_Z as it goes under each SIM
+	
+	Each SIM may be at its own Z position and have its rotation around X, but the board will not bounce up and down randomly 
+	during the scan
 
+	Given these assumptions we solve for
+	per trigger X, Y, Theta (3 terms per trigger)
+	per board Z shape (10 terms per board)
+	per SIM Z and theta_X (first SIM has these included in Z shape, following SIMs have 2 additional terms per SIM)
+*/
+/// <summary>
+/// Constructor for RobustSolverCM
+/// </summary>
+/// <param name="pFovOrderMap"></param>
+/// <param name="iMaxNumCorrelations"></param>
+/// <param name="pSet"></param>
+/// create new arrays for solver, initialize paramters, zero out the arrays
 RobustSolverCM::RobustSolverCM(
 		map<FovIndex, unsigned int>* pFovOrderMap, 
 		unsigned int iMaxNumCorrelations,
@@ -22,10 +42,10 @@ RobustSolverCM::RobustSolverCM(
 {
 	// constructor, matrix size is changed, setup up all of the same variables
 	_iNumBasisFunctions = 4;
-	_iNumZTerms = 10;		// Z terms
-	_iNumParamsPerIndex = 3;
+	_iNumZTerms = 10;		// Z terms -- 3rd order bi-variate polynomial
+	_iNumParamsPerIndex = 3;  // per trigger X, Y, theta_Z values
 	_pSet = pSet;
-	_iNumCameras = CountCameras();
+	_iNumCameras = CountCameras();  // number per SIM, must be the same for All SIMs
 	_iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
 	_iMaxNumCorrelations = iMaxNumCorrelations;
 	
@@ -41,7 +61,7 @@ RobustSolverCM::RobustSolverCM(
 	if (_iNumDevices > 3)
 			LOG.FireLogEntry(LogTypeError, "More than 3 SIMs");	
 	_iNumCalDriftTerms = _iNumDevices * _iNumCameras * 2;
-	// adapt to SIM to SIM mounting differences TODO TODO// TODO TODO terms 0 and 4 based on SIM number !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// adapt to SIM to SIM mounting differences 
 	// width needed for CM fit
 	_iStartColZTerms = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
 	_iMatrixWidth = _iStartColZTerms + _iNumZTerms + (_iNumDevices-1)*2;// additional width needed for Z mount differences
@@ -209,6 +229,7 @@ unsigned int RobustSolverCM::CountCameras()
 	unsigned int minCameraNum(1000000);
 	unsigned int maxCameraNum(0);
 	// TODO WHAT IF STARTING CAMERA NUMBER VARIES BETWEEN Layer?
+	// Other failure conditions?
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
 		if (minCameraNum > k->first.CameraIndex )
@@ -222,8 +243,9 @@ unsigned int RobustSolverCM::CountCameras()
 unsigned int RobustSolverCM::ColumnZTerm(unsigned int term, unsigned int deviceNum)
 {
 	// calculate which column a particular Z term is in based on term number and devcie number
-	// order is
+	// order is.  Used to allow different SIMs to be mounted at different height and theta_X positions.
 	// sim0 a0 - a9, sim1 a0, sim1 a4, sim2 a0, sim2 a4 etc.
+	// 
 	unsigned int col;
 	if (deviceNum == 0 || term != 0 && term !=4)
 	{
@@ -236,7 +258,10 @@ unsigned int RobustSolverCM::ColumnZTerm(unsigned int term, unsigned int deviceN
 		return col;
 	}
 }
-
+/// <summary>
+/// Add contraints for panel X, Y, theta for each trigger
+/// </summary>
+/// Each trigger is constrained toward 0 angle and X and Y locations that match the expected locations.
 void RobustSolverCM::ConstrainPerTrig()
 {
 	// add constraints for each trigger  
@@ -690,6 +715,10 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	delete [] Zpoly;
 	return( true );
 }
+/// <summary>
+/// return image to CAD space transform (projective 3x3 array) for selected FOV
+///</summary>
+/// Also calculates the distortion model (camera calibration model) mapping FOV to/from CAD
 ImgTransform RobustSolverCM::GetResultTransform(
 	unsigned int iLayerIndex,
 	unsigned int iTriggerIndex,
@@ -748,7 +777,10 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	delete [] xy;
 	return(trans);
 }
-
+/// <summary>
+/// Calculate the FOV to CAD space transform (projective 3x3 array) for selected FOV
+///</summary>
+/// 
 bool RobustSolverCM::MatchProjeciveTransform(	
 	unsigned int iLayerIndex,
 	unsigned int iTriggerIndex,
@@ -994,6 +1026,12 @@ void RobustSolverCM::SolveXAlgH()
 	}
 	iFileSaveIndex++;
 }
+/// <summary>
+/// Calculates the xyBoard position (in meters) given a pixel location and FOV identifier
+///</summary>
+/// <param name="pix"></param>
+/// <param name="fovindex"></param>
+/// <param name="xyBoard">Board pos (meters)</param>
 
 void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
 {
@@ -1050,6 +1088,11 @@ void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoar
 	xyBoard->y = _dVectorX[iVectorXIndex+2] * xySensor.r  +                1 * xySensor.i             + _dVectorX[iVectorXIndex+1];
 
 }
+/// <summary>
+/// Determines affine transform to map surface (of a warped panel) to CAD space
+///</summary>
+/// The fiducials found on the warped panel are first flattened to a plane,
+/// these planer locations are then mapped to CAD locations by an affine transform
 void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 {
 	// translate the fiducial locations on the board down to a nominal height plane
@@ -1337,8 +1380,15 @@ void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols,
 }
 
 
-//  transpose Matrix A for banded solver
+//  transpose Matrix A for solver
 // Don't reorder for this solver, only transpose to _iCurrentRow if bRemoveEmptyRows
+///<summary>
+///Transpose the A matrix, remove empty rows if requrested
+///</summary>
+/// <param name="bRemoveEmptyRows"></param>
+///Name doesn't match function as this routine no longer reorders matrix (not needed in Camera Model solver)
+/// Transpose is still needed for call to solver
+
 void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 {
 	string fileName;
@@ -1409,7 +1459,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 	}
 	
 	
-	// Reorder and transpose
+	// Transpose
 	double* workspace = new double[_iMatrixSize];
 	//double* dCopyB = new double[_iMatrixHeight];
 	for (unsigned int i(0); i<_iMatrixSize; i++)

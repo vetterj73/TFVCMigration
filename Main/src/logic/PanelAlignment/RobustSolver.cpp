@@ -64,10 +64,15 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 #pragma endregion
 
 #pragma region constructor
+/// <summary>
+/// Constructor for RobustSolver -- a base class for FOV, CM, and Iterative solvers
+/// </summary>
+/// <param name="pFovOrderMap"></param>
 
 RobustSolver::RobustSolver(		
 	map<FovIndex, unsigned int>* pFovOrderMap)
 {
+	
 	_pFovOrderMap = pFovOrderMap;
 	_bSaveMatrixCSV=false;
 	_bVerboseLogging = false;
@@ -108,6 +113,12 @@ bool operator<(const LeftIndex& a, const LeftIndex& b)
 // bRemoveEmptyRows, flag for removing empty equations from Matrix A
 // piCounts: output, # rows in block i for banded solver
 // piEmptyRows: output, number of empty equations in Matrix A
+///<summary>
+///Transpose the A matrix, reorder for banding (needed by RobustSolverFOV), remove empty rows if requrested
+///</summary>
+/// <param name="bRemoveEmptyRows"></param>
+/// <param name="piCounts">vector of widths of each block (for banded solver)</param>
+/// <param name="piEmptyRows">Scaler, number of empty rows</param>
 unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows)
 {
 	string fileName;
