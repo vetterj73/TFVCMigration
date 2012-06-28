@@ -42,6 +42,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	unsigned int iCamIndex)
 {
 	// The image is suppose to enter one by one
+	//@todo - add a timeout
 	WaitForSingleObject(_queueMutex, INFINITE);
 
 	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
@@ -56,8 +57,6 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	// The assumption being that masks are not needed for the first set...
 	if(_iMaskCreationStage>0 && !_bMasksCreated)
 	{
-		if(iTrigIndex == 9 && iCamIndex == 5)
-			iTrigIndex = 9;
 		// Wait all current overlap jobs done, then create mask
 		if(IsReadyToCreateMasks())
 		{
@@ -67,7 +66,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 					_bMasksCreated= true;
 				else
 				{
-					//log fatal error
+					//@todo - log an error
 				}
 			}
 		}
@@ -399,6 +398,7 @@ bool PanelAligner::CreateMasks()
 				//UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
 				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
 
+				// @todo - Why are these dynamically allocated?  Clean up!!
 				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
 					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
 				jm.AddAJob((CyberJob::Job*)pJob);
