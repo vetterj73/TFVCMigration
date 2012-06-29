@@ -118,9 +118,9 @@ int wmain(int argc, char* argv[])
 	FindClose(hFind);
 
 	// Log result 
-	printf("%d out of %d leading edge are missed!\n", iErrorCount, iCount);
+	printf("\n%d out of %d leading edge are missed!\n", iErrorCount, iCount);
 	printf("Took %f second\n", (iEnd-iStart)/1000.);
-	sprintf_s(cLogBuf, "%d out of %d leading edge are missed!\n", iErrorCount, iCount);
+	sprintf_s(cLogBuf, "\n%d out of %d leading edge are missed!\n", iErrorCount, iCount);
 	LogMessage(cLogBuf);
 	sprintf_s(cLogBuf, "Took %f second\n", (iEnd-iStart)/1000.);
 	LogMessage(cLogBuf);

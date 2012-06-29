@@ -131,7 +131,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 	//lines = cvHoughLines2(pDilateImg, storage, CV_HOUGH_PROBABILISTIC, 1, CV_PI/180/5, iThresh,  iThresh, 10);
 	double dStartAngle = (90 - ptParam->dAngleRange)*CV_PI/180, dEndAngle = (90 + ptParam->dAngleRange)*CV_PI/180;
 	//double dStartAngle = (90-50)*CV_PI/180, dEndAngle = (90+50)*CV_PI/180;
-	lines = cvHoughLines2_P_Custom(pDilateImg, storage, 1, dStartAngle, dEndAngle, CV_PI/180/8, iThresh,  iThresh, 10);
+	lines = cvHoughLines2_P_Custom(pDilateImg, storage, 1, dStartAngle, dEndAngle, CV_PI/180/10, iThresh,  iThresh, 10);
 	//LogMessage("End Hough\n");
 
 	// Pick the right hough lines
