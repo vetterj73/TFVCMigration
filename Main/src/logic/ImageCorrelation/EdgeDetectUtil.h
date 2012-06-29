@@ -20,5 +20,7 @@ bool PixelLineFit(
 	const list<int>* pSetX, const list<int>* pSetY, 
 	double* pdSlope, double* pdOffset);
 
+void jrhFastBWBilateral(IplImage* img, IplImage* bf);
+
 // For debug
 void LogMessage(char* pMessage);
