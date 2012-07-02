@@ -2,6 +2,23 @@
 
 #include "CorrelationFlags.h"
 
+public ref class ManagedMaskInfo
+{
+public:
+	ManagedMaskInfo();
+
+	ManagedMaskInfo(
+		bool bMask, 
+		double dMinHeight,
+		bool bMaskFirstLayer,
+		bool bOnlyCalOveralpWithMask);
+
+	bool _bMask;
+	double _dMinHeight;
+	bool _bMaskFirstLayer;
+	bool _bOnlyCalOveralpWithMask;
+};
+
 public ref class ManagedCorrelationFlags
 {
 public:
@@ -30,15 +47,9 @@ public:
 		_pCorrelationFlags->SetCameraToCamera(cameraToCamera);
 	}	
 
-	bool GetMaskNeeded()
-	{
-		return _pCorrelationFlags->GetMaskNeeded();
-	}
+	ManagedMaskInfo^ GetMaskInfo();
 	
-	void SetMaskNeeded(bool maskNeeded)
-	{
-		_pCorrelationFlags->SetMaskNeeded(maskNeeded);
-	}
+	void SetMaskInfo(ManagedMaskInfo^ infoM);
 
 	// When ApplyCorrelationAreaSizeUpLimit == true; (default = false)
 	// If the size of correlation pair is bigger than an internal defined size,

@@ -164,12 +164,19 @@ namespace SIMMosaicUtils
                             flag.SetApplyCorrelationAreaSizeUpLimit(true);
                     }
 
-                    flag.SetMaskNeeded(false);
                     if (bMaskForDiffDevices)
                     {
-                        if(Math.Abs(i-j)>=2)    // For layrer in difference device
-                            flag.SetMaskNeeded(true);
-                    }   
+                        if (Math.Abs(i - j) >= 2)    // For layrer in difference device
+                        {
+                            bool bMask = true; 
+		                    double dMinHeight = 0;
+		                    bool bMaskFirstLayer = true;
+		                    bool bOnlyCalOveralpWithMask = true;
+                            ManagedMaskInfo maskInfo = new ManagedMaskInfo(
+                                bMask, dMinHeight, bMaskFirstLayer, bOnlyCalOveralpWithMask);
+                            flag.SetMaskInfo(maskInfo);   
+                        }
+                    } 
                 }
             }
         }
@@ -183,7 +190,6 @@ namespace SIMMosaicUtils
                     ManagedCorrelationFlags flag = set.GetCorrelationSet(i, j);
                     flag.SetCameraToCamera(false);
                     flag.SetTriggerToTrigger(false);
-                    flag.SetMaskNeeded(false);
                 }
             }
         }

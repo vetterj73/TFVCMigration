@@ -275,7 +275,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(iIndex1, iIndex2);
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
-	bool bMask = pFlags->GetMaskNeeded();
+	bool bMask = pFlags->GetMaskInfo()._bMask;
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
