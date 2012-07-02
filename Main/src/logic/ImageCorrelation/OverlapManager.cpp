@@ -62,7 +62,7 @@ OverlapManager::OverlapManager(
 	_validRect.xMax = pPanel->xLength();
 	_validRect.yMax = pPanel->yLength();
 
-	// Create Cad and Mask images if their buffers are provided
+	// Create Cad image if their buffers are provided
 	unsigned int iNumRows = pPanel->GetNumPixelsInX();
 	unsigned int iNumCols = pPanel->GetNumPixelsInY();
 	bool bCreateOwnBuf = false;
@@ -89,19 +89,6 @@ OverlapManager::OverlapManager(
 			_pCadImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
 				trans, trans, bCreateOwnBuf, _pPanel->GetCadBuffer());
 			//_pCadImg->Save("C:\\Temp\\cad.bmp");
-		}
-	}
-
-	// Create Panel Mask image
-	_pPanelMaskImg = NULL;
-	if(IsMaskImageNeeded())
-	{
-		unsigned char* pMaskBuf = _pPanel->GetMaskBuffer(CorrelationParametersInst.iMaskExpansionFromCad);
-		if(pMaskBuf != NULL)
-		{
-			_pPanelMaskImg = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-				trans, trans, bCreateOwnBuf, pMaskBuf);
-			//_pPanelMaskImg->Save("C:\\Temp\\mask.bmp");
 		}
 	}
 
@@ -158,9 +145,6 @@ OverlapManager::OverlapManager(
 	_pFidImages = NULL;
 	CreateFidFovOverlaps();
 
-	// Decide the stage to calculate mask
-	CalMaskCreationStage();
-
 	// For panel edge detection;
 	_pEdgeDetector = NULL;
 	_pCurPanelFidImages = NULL;
@@ -205,9 +189,6 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pCadImg != NULL)
 		delete _pCadImg;
-
-	if(_pPanelMaskImg != NULL)
-		delete _pPanelMaskImg;
 
 	if(_pEdgeDetector != NULL)
 		delete _pEdgeDetector;
@@ -281,24 +262,6 @@ bool OverlapManager::IsCadImageNeeded()
 
 	return(false); //If not use Cad
 }
-
-// Whether mask image is needed
-bool OverlapManager::IsMaskImageNeeded()
-{
-	unsigned int i, j;
-	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
-	{
-		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
-		{
-			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
-			if(pFlags->GetMaskNeeded())	// If use mask
-				return(true);
-		}
-	}
-
-	return(false);	// If not use mask
-}
-
 #pragma endregion
 
 #pragma region FovFovOverlaps
@@ -313,8 +276,6 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
 	bool bMask = pFlags->GetMaskNeeded();
-	if(bMask) 		// Prepare mask images
-		pLayer1->PrepareMaskImages();
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
@@ -1149,35 +1110,6 @@ bool OverlapManager::DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFid
 #pragma endregion
 
 #pragma region Solver setup
-// Decide after what layer is completed, mask images need to be created
-void OverlapManager::CalMaskCreationStage()
-{
-	unsigned int i, j;
-	unsigned iMin = _pMosaicSet->GetNumMosaicLayers()+10;
-	for(i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
-	{
-		for(j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
-		{
-			if(_pMosaicSet->GetCorrelationFlags(i, j)->GetMaskNeeded())
-			{
-				if(i>j)
-				{
-					if(iMin>i) iMin = i;
-				}
-				else
-				{
-					if(iMin>j) iMin = j;
-				}
-			}
-		}
-	}
-
-	if(iMin > _pMosaicSet->GetNumMosaicLayers())
-		_iMaskCreationStage = -1;
-	else
-		_iMaskCreationStage = iMin;
-}
-
 unsigned int OverlapManager::MaxCorrelations() const
 {
 	unsigned int iFovFovCount = 0;
@@ -1205,23 +1137,6 @@ unsigned int OverlapManager::MaxCorrelations() const
 	// Double check 3*3
 	unsigned int iSum = CorrelationParametersInst.iFineMaxBlocksInRow * CorrelationParametersInst.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
 	return(iSum);
-}
-
-//Report possible Maximum correlation will be used by solver to create mask
-unsigned int OverlapManager::MaxMaskCorrelations() const
-{
-	if(_iMaskCreationStage<=0)
-		return(0);
-
-	unsigned int* piLayerIndices = new unsigned int[_iMaskCreationStage];
-	for(int i=0; i<_iMaskCreationStage; i++)
-		piLayerIndices[i] = i;
-
-	unsigned int iNum = MaxCorrelations(piLayerIndices, _iMaskCreationStage);
-
-	delete [] piLayerIndices;
-
-	return(iNum);
 }
 
 //Report possible maximum corrleaiton will be used by solver to create transforms

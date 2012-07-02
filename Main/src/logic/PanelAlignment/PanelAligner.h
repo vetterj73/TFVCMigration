@@ -88,8 +88,6 @@ protected:
 		unsigned iNumLayer, 
 		map<FovIndex, unsigned int>* pOrderMap) const;
 
-	bool IsReadyToCreateMasks() const;
-	bool CreateMasks();
 	bool CreateTransforms();
 	void AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiducials, bool bPinPanelWithCalibration=false);
 	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
@@ -121,12 +119,8 @@ private:
 	MosaicSet* _pSet;		
 	Panel* _pPanel;
 	OverlapManager* _pOverlapManager;
-	int _iMaskCreationStage;
 	RobustSolver* _pSolver;
 	map<FovIndex, unsigned int> _solverMap;
-	RobustSolver* _pMaskSolver;
-	map<FovIndex, unsigned int> _maskMap;
-	bool _bMasksCreated;
 	bool _bResultsReady;
 
 	int _iNumFovProced;

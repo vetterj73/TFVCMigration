@@ -81,9 +81,6 @@ public:
 	// IPC-D-300G which allows a stretch of 200 um over 300 mm or 0.067%
 	double dAlignBoardSkewLimit;			// units meter / meter maximum skew of board (in affine transform)
 
-	// Expansion from Cad image to create mask image in pixels
-	int iMaskExpansionFromCad;
-
 	// Whether use projective transform
 	bool bUseProjectiveTransform;
 	

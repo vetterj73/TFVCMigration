@@ -53,25 +53,6 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	// Release mutex
 	ReleaseMutex(_queueMutex);
 	
-	// Masks are created after the first layer is aligned...
-	// The assumption being that masks are not needed for the first set...
-	if(_iMaskCreationStage>0 && !_bMasksCreated)
-	{
-		// Wait all current overlap jobs done, then create mask
-		if(IsReadyToCreateMasks())
-		{
-			if(_pOverlapManager->FinishOverlaps())
-			{
-				if(CreateMasks())
-					_bMasksCreated= true;
-				else
-				{
-					//@todo - log an error
-				}
-			}
-		}
-	}
-
 	// If we are all done with alignment, create the transforms...
 	if(_pSet->NumberOfImageTiles()==_iNumFovProced)
 	{
@@ -89,7 +70,6 @@ PanelAligner::PanelAligner(void)
 {
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
-	_pMaskSolver = NULL;
 
 	_registeredAlignmentDoneCallback = NULL;
 	_pCallbackContext = NULL;
@@ -119,12 +99,8 @@ void PanelAligner::CleanUp()
 	if(_pSolver != NULL) 
 		delete _pSolver;
 
-	if(_pMaskSolver != NULL) 
-		delete _pMaskSolver;
-
 	_pOverlapManager = NULL;
 	_pSolver = NULL;
-	_pMaskSolver = NULL;
 
 	_iNumFovProced = 0;
 }
@@ -184,41 +160,6 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	}
 
 	// Creat solver for mask creation if it is necessary
-	_pMaskSolver = NULL;
-	_iMaskCreationStage = _pOverlapManager->GetMaskCreationStage();
-	if(_iMaskCreationStage >= 1)
-	{
-		unsigned int* piLayerIndices = new unsigned int[_iMaskCreationStage];
-		for(int i=0; i<_iMaskCreationStage; i++)
-		{
-			piLayerIndices[i] = i;	
-		}
-		CreateImageOrderInSolver(piLayerIndices, _iMaskCreationStage, &_maskMap);
-		delete [] piLayerIndices;
-		iMaxNumCorrelations =  _pOverlapManager->MaxMaskCorrelations();
-		if (bUseCameraModelIterativeStitch)
-		{
-			_pMaskSolver = new RobustSolverIterative(	
-							&_maskMap, 
-							iMaxNumCorrelations,
-							_pSet);  
-		}
-		if (bUseCameraModelStitch)
-		{
-			_pMaskSolver = new RobustSolverCM(	
-							&_maskMap, 
-							iMaxNumCorrelations,
-							_pSet);  
-		}
-		else
-			_pMaskSolver = new RobustSolverFOV(
-				&_maskMap, 
-				iMaxNumCorrelations, 
-				_pSet,
-				bProjectiveTrans);
-	}
-
-	_bMasksCreated = false;
 	_bResultsReady = false;
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction(): End panel change over");
@@ -231,17 +172,7 @@ void PanelAligner::ResetForNextPanel()
 	_pOverlapManager->ResetforNewPanel();
 
 	_pSolver->Reset();
-	// now added just before AddOverlapResultsForLayer()
-	//if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
-	//{
-	//	_pSolver->ConstrainZTerms();
-	//	_pSolver->ConstrainPerTrig();
-	//}
 
-	if(_pMaskSolver != NULL)
-		_pMaskSolver->Reset();
-
-	_bMasksCreated = false;
 	_bResultsReady = false;
 
 	_iNumFovProced = 0;
@@ -343,109 +274,6 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 
 
 #pragma region create Mask
-
-// Flag for create Masks
-bool PanelAligner::IsReadyToCreateMasks() const
-{
-	if(_iMaskCreationStage <= 0)
-		return(false);
-
-	for(int i=0; i<_iMaskCreationStage; i++)
-	{
-		if(!_pSet->GetLayer(i)->HasAllImages())
-			return(false);
-	}
-
-	return(true);
-}
-
-// Creat Masks
-bool PanelAligner::CreateMasks()
-{
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateMasks():begin to create mask");
-	
-	_lastProcessedFids.clear();
-
-	// Create matrix and vector for solver 
-	// Warning, maybe broken
-	AddOverlapResults2Solver(_pSolver, true);
-
-	// Solve transforms
-	_pMaskSolver->SolveXAlgH();
-	//if camera model, must flatten fiducials
-	_pMaskSolver->FlattenFiducials( GetFidResultsSetPoint() );
-
-
-	// Create job manager for mask morpho
-	CyberJob::JobManager jm("MaskMorpho", CorrelationParametersInst.NumThreads);
-	vector<MorphJob*> morphJobs;
-
-	// For each mosaic image
-	for(int i=0; i<_iMaskCreationStage; i++)
-	{
-		// Get calculated transforms
-		MosaicLayer* pLayer = _pSet->GetLayer(i);
-
-		// Create content of mask images
-		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-		{
-			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-			{
-				Image* maskImg = pLayer->GetMaskImage(iCam, iTrig);				
-				ImgTransform t = _pMaskSolver->GetResultTransform(i, iTrig, iCam);
-				maskImg->SetTransform(t);
-				
-				//UIRect rect(0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
-				//maskImg->MorphFrom(_pOverlapManager->GetPanelMaskImage(), rect);
-
-				// @todo - Why are these dynamically allocated?  Clean up!!
-				MorphJob *pJob = new MorphJob(maskImg, _pOverlapManager->GetPanelMaskImage(),
-					0, 0, maskImg->Columns()-1, maskImg->Rows()-1);
-				jm.AddAJob((CyberJob::Job*)pJob);
-				morphJobs.push_back(pJob);
-			}
-		}
-	}
-
-	// Wait until it is complete...
-	jm.MarkAsFinished();
-	while(jm.TotalJobs() > 0)
-		Sleep(10);
-
-	for(unsigned int i=0; i<morphJobs.size(); i++)
-		delete morphJobs[i];
-	morphJobs.clear();
-
-	/*/ For Debug
-	for(int i=0; i<_iMaskCreationStage; i++)
-	{
-		// Get calculated transforms
-		MosaicLayer* pLayer = _pSet->GetLayer(i);
-
-		// Create content of mask images
-		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-		{
-			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-			{
-				Image* maskImg = pLayer->GetMaskImage(iCam, iTrig);				
-				
-				string s;
-				char cTemp[100];
-				sprintf_s(cTemp, 100, "%sMaskL%dT%dC%d.bmp", 
-					CorrelationParametersInst.GetOverlapPath().c_str(),
-					i, iTrig, iCam);
-				s.append(cTemp);
-				
-				maskImg->Save(s);
-				
-			}
-		}
-	}//*/
-
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateMasks():Mask images are created");
-
-	return(true);
-}
 
 #pragma endregion
 

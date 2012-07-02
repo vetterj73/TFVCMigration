@@ -65,11 +65,7 @@ CorrelationParameters::CorrelationParameters(void)
 	dAlignBoardStretchLimit = 0.00067 * 3;			// units meter / meter   maximum that the panel can shrink stretch
 	// IPC-D-300G which allows a stretch of 200 um over 300 mm or 0.067%
 	dAlignBoardSkewLimit = 0.00067 * 1.5;			// units meter / meter maximum skew of board (in affine transform)
-
-
-	// Expansion from Cad image to create mask image in pixels
-	iMaskExpansionFromCad = 10;			
-
+	
 	// Overlap
 	iMinOverlapSize =100;				// Minimum overlap size for FovFov and FovCad
 

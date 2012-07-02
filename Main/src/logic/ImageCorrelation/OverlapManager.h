@@ -63,9 +63,7 @@ public:
 	FidFovOverlapList* GetCurPanelFidFovList4Fid(
 		unsigned int iFidIndex) const;
 
-	int GetMaskCreationStage() {return _iMaskCreationStage;};
 	unsigned int MaxCorrelations() const;
-	unsigned int MaxMaskCorrelations() const;
 	unsigned int MaxNumTriggers() {return(_iNumTriggers);};
 	unsigned int MaxNumCameras() {return(_iNumCameras);};
 
@@ -74,7 +72,6 @@ public:
 	double GetCadImageResolution() {return _pPanel->GetPixelSizeX();};
 
 	Image* GetCadImage() {return _pCadImg;};
-	Image* GetPanelMaskImage() {return _pPanelMaskImg;};
 	MosaicSet *GetMosaicSet(){return _pMosaicSet;};
 	PanelEdgeDetection* GetEdgeDetector() {return _pEdgeDetector;};
 
@@ -91,15 +88,12 @@ public:
 
 protected:
 	bool IsCadImageNeeded();
-	bool IsMaskImageNeeded();
 
 	void CreateFovFovOverlaps();	
 	void CreateCadFovOverlaps();
 	void CreateFidFovOverlaps(bool bForCurPanel=false, bool bHasEdgeFidInfo = false);
 	
 	bool CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsigned int iIndex2);
-
-	void CalMaskCreationStage();
 
 	unsigned int MaxCorrelations(unsigned int* piLayerIndices, unsigned int iNumLayer) const;
 	bool IsFovFovOverlapForLayers(FovFovOverlap* pOverlap, unsigned int* piLayerIndices, unsigned int iNumLayer) const;
@@ -169,7 +163,6 @@ private:
 	unsigned int _numThreads;
 
 	Image* _pCadImg;
-	Image* _pPanelMaskImg;
 
 	unsigned int _iNumCameras;
 	unsigned int _iNumTriggers;
@@ -183,8 +176,6 @@ private:
 	FidFovOverlapList*** _fidFovOverlapLists;
 
 	unsigned int _iMinOverlapSize;
-
-	int _iMaskCreationStage;
 
 	CyberJob::JobManager *_pJobManager;
 
