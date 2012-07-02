@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C71CA433-5C57-43DB-BA7E-1F4CBB229951}</ProjectGuid>
+    <SccProjectName>SAK</SccProjectName>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProvider>SAK</SccProvider>
+    <RootNamespace>PanelAlignment</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\..\..\pub\lib\$(PlatformName)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Debug</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Ruddd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
+    <Lib>
+      <AdditionalDependencies>Ruddd.lib;CyberNgc.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\CyberNgc\lib\X64_Debug</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Rudd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\ImageDefines;..\ImageCorrelation;..\MosaicDataModel;..\TransformsCreator;..\Panel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>mkdir ..\..\..\pub\include
+copy *.h ..\..\..\pub\include</Command>
+    </PostBuildEvent>
+    <Lib>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\CyberNgc\lib\X64_Release</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Rudd.lib;CyberNgc.lib</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="EquationWeights.h" />
+    <ClInclude Include="Logger.h" />
+    <ClInclude Include="PanelAligner.h" />
+    <ClInclude Include="RobustSolver.h" />
+    <ClInclude Include="RobustSolverCM.h" />
+    <ClInclude Include="RobustSolverFOV.h" />
+    <ClInclude Include="RobustSolverIterative.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="EquationWeights.cpp" />
+    <ClCompile Include="Logger.cpp" />
+    <ClCompile Include="PanelAligner.cpp" />
+    <ClCompile Include="RobustSolver.cpp" />
+    <ClCompile Include="RobustSolverCM.cpp" />
+    <ClCompile Include="RobustSolverFOV.cpp" />
+    <ClCompile Include="RobustSolverIterative.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImageCorrelation\ImageCorrelation.vcxproj">
+      <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\MosaicDataModel\MosaicDataModel.vcxproj">
+      <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Panel\Panel.vcxproj">
+      <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
