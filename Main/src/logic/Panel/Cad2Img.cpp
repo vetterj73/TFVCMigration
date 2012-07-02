@@ -10,6 +10,8 @@ bool Cad2Img::DrawCAD(Panel* pPanel, unsigned char* cadBuffer, bool DrawCADROI)
 	double resolutionY = pPanel->GetPixelSizeY();
 	ImgTransform imgTransform(resolutionX, resolutionY, 0, 0, 0);
 	cadImage.Configure(pPanel->GetNumPixelsInY(), pPanel->GetNumPixelsInX(), pPanel->GetNumPixelsInY(), imgTransform, imgTransform, false, cadBuffer);
+	
+	cadImage.ZeroBuffer();
 
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
@@ -42,6 +44,8 @@ bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* heightBuffer, double
 	double resolutionY = pPanel->GetPixelSizeY();
 	ImgTransform imgTransform(resolutionX, resolutionY, 0, 0, 0);
 	heightImage.Configure(pPanel->GetNumPixelsInY(), pPanel->GetNumPixelsInX(), pPanel->GetNumPixelsInY(), imgTransform, imgTransform, false, heightBuffer);
+	
+	heightImage.ZeroBuffer();
 
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
@@ -77,8 +81,11 @@ bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* heightBuffer, double
 	return(true);
 }
 
-
-// pPanel
+// pPanel: input, panel description
+// pMaskBuf: inout, mask image buffer
+// iStride: mask image stride
+// dMinHeight: only component higher than minimum height will be masked
+// dPixelExpansion: pixel expansion from CAD area to create mask
 bool Cad2Img::DrawMaskImage(Panel* pPanel, unsigned char* pMaskBuf, int iStride, double dMinHeight, double dPixelExpansion)
 {
 	Image maskImage;
@@ -86,6 +93,8 @@ bool Cad2Img::DrawMaskImage(Panel* pPanel, unsigned char* pMaskBuf, int iStride,
 	double resolutionY = pPanel->GetPixelSizeY();
 	ImgTransform imgTransform(resolutionX, resolutionY, 0, 0, 0);
 	maskImage.Configure(pPanel->GetNumPixelsInY(), pPanel->GetNumPixelsInX(), iStride, imgTransform, imgTransform, false, pMaskBuf);
+
+	maskImage.ZeroBuffer();
 
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
@@ -122,6 +131,8 @@ bool Cad2Img::DrawAperatures(Panel* pPanel, unsigned short* aptBuffer, bool Draw
 	ImgTransform imgTransform(resolutionX, resolutionY, 0, 0, 0);
 	aptImage.Configure(pPanel->GetNumPixelsInY(), pPanel->GetNumPixelsInX(), pPanel->GetNumPixelsInY(), imgTransform, imgTransform, false, (unsigned char*)aptBuffer);
 	
+	aptImage.ZeroBuffer();
+
 	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
 	{
 		RenderFeature(&aptImage, feature->second);
