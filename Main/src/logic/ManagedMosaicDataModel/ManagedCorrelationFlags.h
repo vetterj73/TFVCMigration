@@ -2,6 +2,9 @@
 
 #include "CorrelationFlags.h"
 
+namespace MMosaicDM 
+{
+
 public ref class ManagedMaskInfo
 {
 public:
@@ -69,4 +72,6 @@ public:
 private:
 	MosaicDM::CorrelationFlags *_pCorrelationFlags;
 };
+
+}
 

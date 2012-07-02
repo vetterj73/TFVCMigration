@@ -1,6 +1,8 @@
 #include "StdAfx.h"
 #include "ManagedCorrelationFlags.h"
 
+namespace MMosaicDM 
+{
 	ManagedMaskInfo::ManagedMaskInfo()
 	{
 		_bMask = false;
@@ -44,3 +46,4 @@
 
 		return(infoM);
 	}
+}
