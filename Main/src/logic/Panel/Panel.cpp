@@ -51,7 +51,6 @@ Panel::Panel(double lengthX, double lengthY, double pixelSizeX, double pixelSize
 	_padInspectionAreaShort = 1.20;
 	_cadBuffer = NULL;
 	_heightImageBuffer = NULL;
-	_maskBuffer = NULL;
 	_aperatureBuffer = NULL;
 
 	_dHeightResolution = -1;
@@ -70,12 +69,6 @@ void Panel::ClearBuffers()
 	{
 		delete[] _aperatureBuffer;
 		_aperatureBuffer = NULL;
-	}
-
-	if(_maskBuffer != NULL)
-	{
-		delete[] _maskBuffer;
-		_maskBuffer = NULL;
 	}
 
 	if(_heightImageBuffer != NULL)
@@ -354,24 +347,9 @@ unsigned char* Panel::GetHeightImageBuffer(bool bSmooth)
 	return _heightImageBuffer;
 }
 
-unsigned char* Panel::GetMaskBuffer(int iCadExpansion)
+bool Panel::CreateMaskBuffer(unsigned char* pMaskBuf, int iStride, double dMinHeight, int iCadExpansion)
 {
-	/// @todo !!!!!!!!!!!!!!!!!!
-	/// Not quite sure how to handle this yet... what if we want different scaled masks
-	//return NULL;
-
-	if(_maskBuffer == NULL)
-	{
-		_maskBuffer = new unsigned char[GetNumPixelsInX()*GetNumPixelsInY()];
-		memset(_maskBuffer, 0, GetNumPixelsInX()*GetNumPixelsInY());	
-		Cad2Img::DrawCAD(this, _maskBuffer, false);
-		Morpho_2D(_maskBuffer, GetNumPixelsInY(),		// buffer and stride
-			0, 0, GetNumPixelsInY(), GetNumPixelsInX(), // Roi
-			iCadExpansion*2+1, iCadExpansion*2+1,		// Kernael size
-			DILATE);									// Type
-	}
-
-	return _maskBuffer;
+	return (Cad2Img::DrawMaskImage(this, pMaskBuf, iStride, dMinHeight, (double)iCadExpansion));
 }
 
 unsigned short* Panel::GetAperatureBuffer()

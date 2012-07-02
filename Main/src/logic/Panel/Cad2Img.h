@@ -39,5 +39,5 @@ public:
 	///
 	///	DrawMask - Draws cad with scaling (used to mask areas of images that may be cad).
 	///
-	static bool DrawMask(Panel* pPanel,	unsigned short* maskBuffer, double scale); 
+	static bool DrawMaskImage(Panel* pPanel, unsigned char* pMaskBuf, int iStride, double dMinHeight, double dPixelExpansion);
 };

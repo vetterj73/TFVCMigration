@@ -78,6 +78,41 @@ bool Cad2Img::DrawHeightImage(Panel* pPanel, unsigned char* heightBuffer, double
 }
 
 
+// pPanel
+bool Cad2Img::DrawMaskImage(Panel* pPanel, unsigned char* pMaskBuf, int iStride, double dMinHeight, double dPixelExpansion)
+{
+	Image maskImage;
+	double resolutionX = pPanel->GetPixelSizeX();
+	double resolutionY = pPanel->GetPixelSizeY();
+	ImgTransform imgTransform(resolutionX, resolutionY, 0, 0, 0);
+	maskImage.Configure(pPanel->GetNumPixelsInY(), pPanel->GetNumPixelsInX(), iStride, imgTransform, imgTransform, false, pMaskBuf);
+
+	for(FeatureListIterator feature = pPanel->beginFeatures(); feature!=pPanel->endFeatures(); ++feature)
+	{
+		// only consider rectangle feature
+		if(feature->second->GetShape() != Feature::SHAPE_RECTANGLE)
+			continue;
+		
+		// Min height check
+		double 	dHeight = ((RectangularFeature*)(feature->second))->GetSizeZ();
+		if(dHeight < dMinHeight)
+			continue;
+
+		RectangularFeature* pRect = (RectangularFeature*)feature->second;
+		RectangularFeature expRect(0, pRect->GetCadX(), pRect->GetCadY(), pRect->GetRotation(),
+			pRect->GetSizeX()+dPixelExpansion*resolutionX, pRect->GetSizeY()+dPixelExpansion*resolutionY, pRect->GetSizeZ());
+		
+		int iAntiAlias = 0;
+		int iGreyLevel = 255;
+		RenderRectangle(maskImage, &expRect, iGreyLevel, iAntiAlias);
+	}
+
+	// For debug
+	// maskImage.Save("C:\\Temp\\Mask.bmp");
+
+	return(true);
+}
+
 
 bool Cad2Img::DrawAperatures(Panel* pPanel, unsigned short* aptBuffer, bool DrawCADROI)
 {

@@ -86,11 +86,10 @@ public:
 	unsigned char* GetCadBuffer();
 	unsigned char* GetHeightImageBuffer(double dHeightResolution, bool bSmooth);
 	unsigned char* GetHeightImageBuffer(bool bSmooth);
-	unsigned char* GetMaskBuffer(int iCadExpansion);
+	bool CreateMaskBuffer(unsigned char* pMaskBuf, int iStride, double dMinHeight, int iCadExpansion);
 	unsigned short* GetAperatureBuffer();
 	bool HasCadBuffer(){return _cadBuffer!=NULL;};
 	bool HasHeightImageBuffer(){return _heightImageBuffer!=NULL;}
-	bool HasMaskBuffer(){return _maskBuffer!=NULL;};
 	bool HasAperatureBuffer(){return _aperatureBuffer!=NULL;};
 
 	double GetMaxComponentHeight();
@@ -99,7 +98,6 @@ public:
 private:
 	unsigned char* _cadBuffer;
 	unsigned char* _heightImageBuffer;
-	unsigned char* _maskBuffer;
 	unsigned short* _aperatureBuffer;
 
 	double _dHeightResolution;
