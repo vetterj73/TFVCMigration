@@ -6,9 +6,12 @@ namespace MosaicDM
 	MaskInfo::MaskInfo()
 	{
 		_bMask = false;
-		_dMinHeight = 0;
+		_dMinHeight = -1;
 		_bMaskFirstLayer = true;
 		_bOnlyCalOveralpWithMask = false;
+
+		_iPanelMaskIndex = -1;
+		_pPanelMaskImage = NULL;
 	}
 
 	MaskInfo::MaskInfo(
@@ -21,6 +24,9 @@ namespace MosaicDM
 		_dMinHeight = dMinHeight;
 		_bMaskFirstLayer = bMaskFirstLayer;
 		_bOnlyCalOveralpWithMask = bOnlyCalOveralpWithMask;
+
+		_iPanelMaskIndex = -1;
+		_pPanelMaskImage = NULL;
 	}
 
 	CorrelationFlags::CorrelationFlags(void)

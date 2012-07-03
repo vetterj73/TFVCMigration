@@ -17,6 +17,8 @@ namespace MosaicDM
 		double _dMinHeight;
 		bool _bMaskFirstLayer;
 		bool _bOnlyCalOveralpWithMask;
+		int _iPanelMaskIndex;
+		Image* _pPanelMaskImage;
 	};
 
 	///

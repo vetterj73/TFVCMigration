@@ -409,8 +409,8 @@ FovFovOverlap::FovFovOverlap(
 	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 	
 	Image* pMaskImg = NULL;
-	if(bHasMask)
-		pMaskImg = _pLayer1->GetMaskImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
+	//if(bHasMask)
+	//	pMaskImg = _pLayer1->GetMaskImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
 	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskImg);
 }
 

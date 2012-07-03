@@ -16,13 +16,12 @@ namespace MosaicDM
 	{
 		_pMosaicSet = NULL;
 		_pTileArray = NULL;
-		_maskImages = NULL;
+		_maskLayerMap.clear();
 		_pStitchedImage = NULL;
 		_numCameras = 0;
 		_numTriggers = 0;
 		_bAlignWithCAD = false;
 		_bAlignWithFiducial = true;
-		_bIsMaskImgValid = false;
 		_stitchedImageValid = false;
 
 		_piStitchGridRows = NULL;
@@ -43,8 +42,14 @@ namespace MosaicDM
 	{
 		if(_pTileArray != NULL) 
 			delete[] _pTileArray;
-		if(_maskImages != NULL) 
-			delete [] _maskImages;
+
+		for(map<int, Image*>::iterator i = _maskLayerMap.begin(); i!= _maskLayerMap.end(); i++)
+		{
+			if(i->second != NULL) 
+				delete [] i->second;
+		}
+		_maskLayerMap.clear();
+
 		if(_pStitchedImage != NULL)
 			delete _pStitchedImage;
 		
@@ -91,7 +96,6 @@ namespace MosaicDM
 
 		unsigned int numTiles = GetNumberOfTiles();
 		_pTileArray = new MosaicTile[numTiles];
-		_maskImages = new Image[numTiles];
 
 		_piStitchGridRows = new int[_numTriggers+1];
 		_piStitchGridCols = new int[_numCameras+1]; 
@@ -103,10 +107,6 @@ namespace MosaicDM
 		{
 			// @todo - set X/Y center offsets nominally...
 			_pTileArray[i].Initialize(this, 0.0, 0.0);
-
-			_maskImages[i].Configure(_pMosaicSet->GetImageWidthInPixels(), 
-				_pMosaicSet->GetImageHeightInPixels(), _pMosaicSet->GetImageStrideInPixels(), 
-				false);
 		}
 	}
 
@@ -1224,9 +1224,10 @@ namespace MosaicDM
 			_pTileArray[i].ClearImageBuffer();
 			if(_pTileArray[i].GetImagPtr() != NULL)
 				_pTileArray[i].GetImagPtr()->SetTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
-			_maskImages[i].SetTransform(_maskImages[i].GetNominalTransform());
+
+			for(map<int, Image*>::iterator j = _maskLayerMap.begin(); j!= _maskLayerMap.end(); j++)
+				j->second[i].SetTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
 		}	
-		_bIsMaskImgValid = false;
 		_stitchedImageValid = false;
 		_bGridBoundaryValid = false;
 	}
@@ -1250,32 +1251,36 @@ namespace MosaicDM
 	}
 
 	// Prepare Mask images to use (validate mask images)
-	bool MosaicLayer::PrepareMaskImages()
+	bool MosaicLayer::AddMaskLayer(int iPanelMaskID)
 	{
-		// Validation check
-		//if(!HasAllImages()) return(false);
+		// Whether mask layer is already added
+		if(_maskLayerMap.find(iPanelMaskID) != _maskLayerMap.end())
+			return(false);
+
+		Image* maskImages = new Image[GetNumberOfTiles()];
 
 		for(unsigned int i=0 ; i<GetNumberOfTiles(); i++)
 		{
-			_maskImages[i].SetTransform(_pTileArray[i].GetImagPtr()->GetTransform());
-			_maskImages[i].CreateOwnBuffer();
+			maskImages[i].SetTransform(_pTileArray[i].GetImagPtr()->GetTransform());
+			maskImages[i].SetNorminalTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
+			maskImages[i].CreateOwnBuffer();
 		}
 
-		_bIsMaskImgValid = true;
+		_maskLayerMap.insert(pair<int, Image*>(iPanelMaskID, maskImages));
 
 		return true;
 	}
 
 	// Get a mask image point in certain position
 	// return NULL if it is not valid
-	Image* MosaicLayer::GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex) 
+	Image* MosaicLayer::GetMaskImage(int iPanelMaskID, unsigned int iCamIndex, unsigned int iTrigIndex) 
 	{
-		// Validation check
-		//if(!_bIsMaskImgValid)
-			//return NULL;
+		// Whether the mask layer exists
+		if(_maskLayerMap.find(iPanelMaskID) == _maskLayerMap.end())
+			return(NULL);
 
 		unsigned int iPos = iTrigIndex* GetNumberOfCameras() + iCamIndex;
-		return(&_maskImages[iPos]);
+		return(&_maskLayerMap[iPanelMaskID][iPos]);
 	}
 
 #pragma endregion

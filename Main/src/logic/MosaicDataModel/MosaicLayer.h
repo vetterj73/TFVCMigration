@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Image.h"
+#include <map>
+using std::map;
 
 namespace MosaicDM 
 {
@@ -114,8 +116,8 @@ namespace MosaicDM
 			void CameraCentersInY(double* pdCenY);
 			void TriggerCentersInX(double* pdCenX);
 
-			Image* GetMaskImage(unsigned int iCamIndex, unsigned int iTrigIndex);
-			bool PrepareMaskImages();
+			Image* GetMaskImage(int iPanelMaskID, unsigned int iCamIndex, unsigned int iTrigIndex);
+			bool AddMaskLayer(int iPanelMaskID);
 
 			///
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
@@ -216,8 +218,7 @@ namespace MosaicDM
 			unsigned int _numCameras;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
-			Image* _maskImages;				// An array fo mask images 
-			bool _bIsMaskImgValid;			// Flag of whether mask images are valid to use
+			map<int, Image*> _maskLayerMap;		// An map fo mask images 
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 			bool _bFiducialBrighterThanBackground;
