@@ -198,6 +198,14 @@ OverlapManager::~OverlapManager(void)
 
 	if(_pCurPanelFidImages != NULL)
 		delete [] _pCurPanelFidImages;
+
+	for(map<int, MaskImageInfo>::iterator i = _panelMaskImageMap.begin(); i != _panelMaskImageMap.end(); i++)
+	{	
+		if(!i->second._bPassedIn)
+			delete i->second._pMaskImage;
+	}
+
+	_panelMaskImageMap.clear();
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
@@ -1132,7 +1140,7 @@ unsigned int OverlapManager::MaxCorrelations() const
 		}
 	}
 
-	iFovFovCount = _fovFovOverlapSet.size() + CorrelationParametersInst.iMaxSupOverlaps + 10;
+	iFovFovCount = (unsigned int)_fovFovOverlapSet.size() + CorrelationParametersInst.iMaxSupOverlaps + 10;
 
 	// Double check 3*3
 	unsigned int iSum = CorrelationParametersInst.iFineMaxBlocksInRow * CorrelationParametersInst.iFineMaxBlocksInCol * iFovFovCount+iCadFovCount+iFidFovCount;
@@ -1155,7 +1163,7 @@ unsigned int OverlapManager::MaxCorrelations(unsigned int* piLayerIndices, unsig
 			{
 				// FovFov
 				list<FovFovOverlap*>* pFovPtrList = &_fovFovOverlapPtrLists[i][iTrig][iCam];
-				iFovFovCount += pFovPtrList->size();
+				iFovFovCount += (unsigned int)pFovPtrList->size();
 
 				// CadFov
 				iCadFovCount += (unsigned int)_cadFovOverlapLists[i][iTrig][iCam].size();
@@ -2008,6 +2016,124 @@ FovFovOverlapList* OverlapManager::GetSupplementOverlaps()
 {
 	return(&_supFovFovOvelapList);
 }
+
+#pragma endregion
+
+#pragma region Mask
+
+// Create Fov and Fov overlaps
+void OverlapManager::CreatePanelMaskImageMap()
+{
+	// Add existing mask image into map
+	for(unsigned int i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
+	{
+		for(unsigned int j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
+		{
+			// for each flag;
+			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
+
+			// If need mask and mask image exists
+			if(pFlags->GetMaskInfo()._bMask && pFlags->GetMaskInfo()._pPanelMaskImage != NULL)
+			{	
+				// Add mask layer into mosaic layer
+				if(pFlags->GetMaskInfo()._bMaskFirstLayer)
+					_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+				else
+					_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+				
+				// If already has been added into map
+				if(_panelMaskImageMap.find(pFlags->GetMaskInfo()._iPanelMaskIndex) != _panelMaskImageMap.end())
+					continue;
+
+				// Add into map
+				MaskImageInfo maskImageInfo(pFlags->GetMaskInfo()._pPanelMaskImage, true);
+				_panelMaskImageMap.insert(pair<int, MaskImageInfo>(pFlags->GetMaskInfo()._iPanelMaskIndex, maskImageInfo));
+			}
+		}
+	}
+
+	// Create not existing mask image and add into map
+	unsigned int iNumRows = _pPanel->GetNumPixelsInX();
+	unsigned int iNumCols = _pPanel->GetNumPixelsInY();
+	unsigned int iBufSize = iNumRows * iNumCols;
+
+	int iCount = 0;
+	map<double, int> heightMap;
+	for(unsigned int i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
+	{
+		for(unsigned int j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
+		{
+			// for each Flag
+			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
+
+			// Need mask and mask image not exist
+			if(pFlags->GetMaskInfo()._bMask && pFlags->GetMaskInfo()._pPanelMaskImage == NULL)
+			{
+				// If already has been added into map
+				MaskInfo maskInfo = pFlags->GetMaskInfo();
+				if(heightMap.find(maskInfo._dMinHeight) != heightMap.end())
+				{
+					// Update flag
+					maskInfo._iPanelMaskIndex = heightMap[maskInfo._dMinHeight];
+					maskInfo._pPanelMaskImage = _panelMaskImageMap[maskInfo._iPanelMaskIndex]._pMaskImage;
+					pFlags->SetMaskInfo(maskInfo);
+
+					// Add mask layer into mosaic layer
+					if(pFlags->GetMaskInfo()._bMaskFirstLayer)
+						_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+					else
+						_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+
+					continue;
+				}
+
+				// create image transform
+				double t[3][3];
+				t[0][0] = _pPanel->GetPixelSizeX();
+				t[0][1] = 0;
+				t[0][2] = _validRect.xMin;
+				t[1][0] = 0;
+				t[1][1] = _pPanel->GetPixelSizeX();
+				t[1][2] = _validRect.yMin;
+				t[2][0] = 0;
+				t[2][1] = 0;
+				t[2][2] = 1;
+				ImgTransform trans(t);
+
+				// Create buffer
+				unsigned char* pMaskBuf = new unsigned char[iBufSize];
+				_pPanel->CreateMaskBuffer(pMaskBuf, iNumCols, maskInfo._dMinHeight, 5);
+
+				// Create image
+				int iBytePerPixel = 1;
+				bool bCreateOwnBuf = false;
+				Image* pMaskImage = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+					trans, trans, bCreateOwnBuf, pMaskBuf);
+				//pMaskImage->Save("C:\\Temp\\mask.bmp");
+
+				// Decide Index
+				while(_panelMaskImageMap.find(iCount) != _panelMaskImageMap.end())
+					iCount++;
+
+				// Add to map
+				MaskImageInfo maskImageInfo(pMaskImage, false);
+				_panelMaskImageMap.insert(pair<int, MaskImageInfo>(iCount, maskImageInfo));
+
+				// Update flag
+				maskInfo._iPanelMaskIndex = iCount;
+				maskInfo._pPanelMaskImage = pMaskImage;
+				pFlags->SetMaskInfo(maskInfo);
+
+				// Add mask layer into mosaic layer
+				if(pFlags->GetMaskInfo()._bMaskFirstLayer)
+					_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+				else
+					_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
+			}
+		}
+	}
+}
+
 
 #pragma endregion
 

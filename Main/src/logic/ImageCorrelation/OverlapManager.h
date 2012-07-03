@@ -25,6 +25,24 @@ typedef FovFovOverlapPtrList::iterator FovFovOverlapPtrListIterator;
 typedef list<FidFovOverlap> FidFovOverlapList;
 typedef FidFovOverlapList::iterator FidFovOverlapListIterator;
 
+
+struct MaskImageInfo
+{
+	Image* _pMaskImage;
+	bool _bPassedIn;
+	MaskImageInfo()
+	{
+		_pMaskImage = NULL;
+		_bPassedIn = false;
+	}
+	MaskImageInfo(Image* pMaskImage, bool bPassedIn)
+	{
+		_pMaskImage = pMaskImage;
+		_bPassedIn = bPassedIn;
+	}
+};
+
+
 class OverlapManager
 {
 public:
@@ -156,6 +174,9 @@ protected:
 	int AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap);
 	int AddSupplementOverlaps();
 
+	// For mask
+	void CreatePanelMaskImageMap();
+
 private:	
 	MosaicSet *_pMosaicSet;
 	Panel* _pPanel;
@@ -188,5 +209,8 @@ private:
 
 	// For supplememt overlaps
 	FovFovOverlapList _supFovFovOvelapList;
+
+	// For mask
+	map<int, MaskImageInfo> _panelMaskImageMap;
 };
 
