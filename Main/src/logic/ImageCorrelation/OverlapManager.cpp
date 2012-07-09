@@ -91,6 +91,10 @@ OverlapManager::OverlapManager(
 			//_pCadImg->Save("C:\\Temp\\cad.bmp");
 		}
 	}
+	
+	// Create Map for Panel mask image
+	// Must before FovFov overlap creation
+	CreatePanelMaskImageMap();
 
 	// Control parameter
 	_iMinOverlapSize = CorrelationParametersInst.iMinOverlapSize;
@@ -376,7 +380,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, maskInfo);
+							_validRect, bApplyCorSizeUpLimit, &maskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -394,7 +398,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, maskInfo);
+							_validRect, bApplyCorSizeUpLimit, &maskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -450,7 +454,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pos1,
 								pos2,
-								_validRect, bApplyCorSizeUpLimit, maskInfo);
+								_validRect, bApplyCorSizeUpLimit, &maskInfo);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
@@ -1872,7 +1876,7 @@ bool OverlapManager::AddSingleSupplementOverlap(
 		pLayer,
 		pos1,
 		pos2,
-		_validRect, false, maskInfo);
+		_validRect, false, &maskInfo);
 
 	// Add supplement overlap if it it is valid
 	if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)

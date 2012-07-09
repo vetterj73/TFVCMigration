@@ -367,6 +367,118 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	return(true);
 }
+
+
+// Fast version of morph for grayscale image and use Nearest neightborhood
+bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3])
+{
+	// Sanity check
+	if( iOutROIStartX+iOutROIWidth > iOutSpan || iInWidth > iInSpan
+		|| iInWidth < 2 || iInHeight < 2
+		|| iOutROIWidth <= 0 || iOutROIHeight <= 0)
+		return(false);
+
+	unsigned int iY, iX;
+
+	// Whether it is an affine transform
+	bool bAffine;
+	if(dInvTrans[2][0] == 0 &&
+		dInvTrans[2][1] == 0 &&
+		dInvTrans[2][2] == 1)
+		bAffine = true;
+	else
+		bAffine = false;
+
+	unsigned char* pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
+	int iInSpanP1 = iInSpan+1;
+
+	int iflrdX, iflrdY;
+	//int iPixDiff10;
+	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
+	double dIX, dIY, dX, dY, dDiffX, dDiffY;
+	double dVal;
+	
+	unsigned char* pInCh = pInBuf + iInSpan*iInHeight;
+ 
+	double dDividedPupilDistrance=0;
+	if(bAffine)
+	{
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dX = dInvTrans[0][0]*dIX + dT01__dIY_T02;
+				dY = dInvTrans[1][0]*dIX + dT11__dIY_T12;
+
+			  /* Check if back projection is outside of the input image range. Note that
+				 2x2 interpolation touches the pixel to the right and below right,
+				 so right and bottom checks are pulled in a pixel. */
+				if ((dX < 0) || (dY < 0) ||
+				  (dX >= iInWidth-1) || (dY >= iInHeight-1)) 
+				{
+					pOutLine[iX] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+						/* Compute fractional differences */
+						iflrdX =(int)dX;
+						iflrdY = (int)dY;
+			    
+						unsigned char* pbPixPtr = pInCh + iflrdX + iflrdY * iInSpan;
+						pOutLine[iX] = *pbPixPtr;
+				}
+			} //ix
+			pOutLine += iOutSpan;		/* Next line in the output buffer */
+		} // iy
+	}
+	else 
+	{	/* Perspective transform: Almost identical to the above. */
+		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
+		{
+			dIY = (double) iY;
+			dT01__dIY_T02 = dInvTrans[0][1] * dIY + dInvTrans[0][2];
+			dT11__dIY_T12 = dInvTrans[1][1] * dIY + dInvTrans[1][2];
+			dT21__dIY_T22 = dInvTrans[2][1] * dIY + dInvTrans[2][2];
+
+			for (iX=iOutROIStartX; iX<iOutROIStartX+iOutROIWidth; ++iX) 
+			{
+				dIX = (double) iX;
+				dVal = 1.0 / (dInvTrans[2][0]*dIX + dT21__dIY_T22);
+				dX = (dInvTrans[0][0]*dIX + dT01__dIY_T02) * dVal;
+				dY = (dInvTrans[1][0]*dIX + dT11__dIY_T12) * dVal;
+
+				if ((dX < 0) | (dY < 0) |
+					(dX >= iInWidth-1) | (dY >= iInHeight-1)) 
+				{
+					pOutLine[iX] = 0x00;	/* Clipped */
+				}
+				else 
+				{
+					/* Compute fractional differences */
+					iflrdX =(int)dX;
+					iflrdY = (int)dY;
+			    
+					unsigned char* pbPixPtr = pInCh + iflrdX + iflrdY * iInSpan;
+					pOutLine[iX] = *pbPixPtr;
+				}
+			} // ix
+			pOutLine += iOutSpan;
+		} // iy
+    } // else
+
+	return(true);
+}
+
   
 int GetNumPixels(double sizeInMeters, double pixelSize)
 {

@@ -14,6 +14,8 @@ Overlap::Overlap()
 	// For mask
 	_bUseMask = false;
 	_bSkipCoarseAlign = false; 
+	_pMaskImg = NULL;
+	_pMaskInfo = NULL; 
 }
 
 Overlap::Overlap(const Overlap& overlap) 
@@ -39,6 +41,8 @@ void Overlap::operator=(const Overlap& b)
 	// For mask
 	_bUseMask = b._bUseMask;
 	_bSkipCoarseAlign = b._bSkipCoarseAlign; 
+	_pMaskImg = b._pMaskImg;
+	_pMaskInfo = b._pMaskInfo; 
 
 	//** Warning Coarse pair need to point to different parents,
 	_coarsePair = b._coarsePair;
@@ -46,12 +50,13 @@ void Overlap::operator=(const Overlap& b)
 	_coarsePair.SetOverlapPtr(this);
 }
 
-void Overlap::config(
+void Overlap::Config(
 	Image* pImg1, 
 	Image* pImg2,
 	DRect validRect,
 	OverlapType type,
-	bool bApplyCorrSizeUpLimit)
+	bool bApplyCorrSizeUpLimit,
+	MaskInfo* pMaskInfo)
 {
 	_pImg1 = pImg1; 
 	_pImg2 = pImg2;
@@ -68,12 +73,20 @@ void Overlap::config(
 
 	_bUseMask = false;
 	_bSkipCoarseAlign = false; 
+	_pMaskImg = NULL;
+	_pMaskInfo = pMaskInfo;
 
 	if(_bValid)
 	{
 		_iColumns = _coarsePair.Columns();
 		_iRows	  = _coarsePair.Rows();
 	}
+}
+
+Overlap::~Overlap()
+{
+	if(_pMaskImg !=NULL)
+		delete _pMaskImg;
 }
 
 // Reset to status to before alignment
@@ -369,9 +382,30 @@ void Overlap::Run()
 		iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
 		&_finePairList);
 
+	// If mask is used
+	bool bUseMask = _bUseMask && 
+		_pMaskImg != NULL && 
+		_pMaskImg->GetBuffer() != NULL && 
+		_pMaskInfo->_pPanelMaskImage != NULL &&
+		_pMaskInfo->_bMask == true;
+
+	if(bUseMask)
+	{
+		_pMaskImg->ZeroBuffer();
+		_pMaskImg->SetTransform(_pImg1->GetTransform());
+	}
+
 	// Do fine correlation
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
+		// Set for mask
+		if(bUseMask)
+		{
+			i->SetMaskImg(_pMaskImg);
+			i->UseMask(true);
+			_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
+		}
+
 		i->DoAlignment();
 
 		// Validation check
@@ -443,25 +477,31 @@ FovFovOverlap::FovFovOverlap(
 	TilePosition ImgPos2,
 	DRect validRect,
 	bool bApplyCorrSizeUpLimit,
-	MaskInfo maskInfo)
+	MaskInfo* pMaskInfo)
 {
 	_pLayer1 = pLayer1;
 	_pLayer2 = pLayer2;
 	_imgPos1 = ImgPos1;
 	_imgPos2 = ImgPos2;
-	_maskInfo= maskInfo;
+	_pMaskInfo= pMaskInfo;
 
 	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iTrigIndex, _imgPos1.iCamIndex);
 	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
-	
-	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
 
-	_pMaskImg = NULL;
-	if(maskInfo._bMask)
+	Config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
+
+	// Must after config();
+	if(_pMaskInfo != NULL &&  pMaskInfo->_bMask)
 	{
-		_pMaskImg = new Image(*pImg1);
-		_pMaskImg->CreateOwnBuffer();
-		
+		_pMaskImg = new Image(
+			pImg1->Columns(),
+			pImg1->Rows(),
+			pImg1->Columns(),
+			1,
+			pImg1->GetNominalTransform(),
+			pImg1->GetTransform(),
+			true);
+
 		_coarsePair.SetMaskImg(_pMaskImg);
 	}
 }
@@ -610,7 +650,7 @@ CadFovOverlap::CadFovOverlap(
 
 	Image* pImg1 = _pLayer->GetImage(_imgPos.iTrigIndex, _imgPos.iCamIndex);
 
-	config(pImg1, _pCadImg, validRect, Cad_To_Fov, false);
+	Config(pImg1, _pCadImg, validRect, Cad_To_Fov, false);
 }
 
 bool CadFovOverlap::IsReadyToProcess() const
@@ -687,7 +727,7 @@ FidFovOverlap::FidFovOverlap(
 
 	_fidSearchMethod = FIDREGOFF;
 
-	config(pImg1, _pFidImg, validRect, Fid_To_Fov, false);
+	Config(pImg1, _pFidImg, validRect, Fid_To_Fov, false);
 }
 
 void FidFovOverlap::SetVsFinder(unsigned int iTemplateID)

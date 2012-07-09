@@ -42,6 +42,14 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	double dHeightResolution=0, double dPupilDistance=0,
 	double dPerpendicalPixelX=0, double dPerpendicalPixelY=0);
 
+// Fast version of morph for grayscale image and use Nearest neightborhood
+bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan, 
+	unsigned int iInWidth, unsigned int iInHeight, 
+	unsigned char* pOutBuf, unsigned int iOutSpan,
+	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
+	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
+	double dInvTrans[3][3]);
+
 // 
 //	This will give the number of pixels in a common way...
 //

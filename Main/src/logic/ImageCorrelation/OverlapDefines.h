@@ -22,12 +22,15 @@ public:
 	Overlap(const Overlap& b);
 	void operator=(const Overlap& b);
 
-	void config(
+	~Overlap();
+
+	void Config(
 		Image* pImg1, 
 		Image* pImg2,
 		DRect validRect,
 		OverlapType type,	
-		bool bApplyCorrSizeUpLimit);
+		bool bApplyCorrSizeUpLimit,
+		MaskInfo* pMaskInfo = NULL);
 
 	// Get/set
 	Image* GetFirstImage() const {return _pImg1;};
@@ -65,7 +68,8 @@ protected:
 	
 	//For mask
 	Image* _pMaskImg;
-
+	MaskInfo* _pMaskInfo;
+	
 	virtual bool DumpOvelapImages()=0;
 	virtual bool DumpResultImages()=0;
 
@@ -83,7 +87,6 @@ private:
 	// For Mask
 	bool _bUseMask;
 	bool _bSkipCoarseAlign; 
-	
 };
 
 // Overlap between FOV image and FOV image
@@ -98,7 +101,7 @@ public:
 		TilePosition ImgPos2,
 		DRect validRect,
 		bool bApplyCorrSizeUpLimit,
-		MaskInfo maskInfo);
+		MaskInfo* pMaskInfo);
 
 	MosaicLayer* GetFirstMosaicLayer() const {return _pLayer1;};
 	unsigned int GetFirstTriggerIndex() const {return _imgPos1.iTrigIndex;};
@@ -135,7 +138,6 @@ private:
 	MosaicLayer*	_pLayer2;
 	TilePosition _imgPos1;
 	TilePosition _imgPos2;
-	MaskInfo _maskInfo;
 
 	bool _bAdjustedBaseOnCoarse;  // Status 
 };
