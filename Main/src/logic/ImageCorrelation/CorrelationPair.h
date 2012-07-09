@@ -75,6 +75,8 @@ public:
 	UIRect GetSecondRoi() const {return _roi2;};
 
 	Image* GetMaskImg() const {return _pMaskImg;};
+	void SetMaskImg(Image* pMaskImg) {_pMaskImg = pMaskImg;};
+	void UseMask(bool bValue) { _bUseMask = bValue;};
 
 	void SetCorrlelationResult(CorrelationResult result);
 
@@ -136,6 +138,7 @@ private:
 	Overlap* _pOverlap;
 	int _iIndex;
 
+	bool _bUseMask;
 	bool _bIsProcessed;
 	bool _bGood4Solver;
 	bool _bUsedNgc;	// Ngc is used for calcaulation

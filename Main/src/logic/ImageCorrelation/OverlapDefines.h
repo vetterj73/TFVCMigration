@@ -11,6 +11,7 @@
 #include "CyberNgcFiducialCorrelation.h"
 #include "JobThread.h"
 #include "CorrelationParameters.h"
+#include "CorrelationFlags.h"
 using namespace MosaicDM;
 
 // Base class for overlap between image and image
@@ -26,8 +27,7 @@ public:
 		Image* pImg2,
 		DRect validRect,
 		OverlapType type,	
-		bool bApplyCorrSizeUpLimit,
-		Image* pMaskImg = NULL);
+		bool bApplyCorrSizeUpLimit);
 
 	// Get/set
 	Image* GetFirstImage() const {return _pImg1;};
@@ -46,6 +46,9 @@ public:
 
 	OverlapType GetOverlapType() {return _type;};
 
+	void UseMask(bool bValue);
+	void SkipCoarseAlign(bool bValue) {_bSkipCoarseAlign = bValue;};
+
 	// Do alignment and reset
 	void Run();
 	bool Reset();
@@ -59,6 +62,9 @@ protected:
 
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;
+	
+	//For mask
+	Image* _pMaskImg;
 
 	virtual bool DumpOvelapImages()=0;
 	virtual bool DumpResultImages()=0;
@@ -69,12 +75,15 @@ private:
 	DRect _validRect;
 	OverlapType _type;
 
-	Image* _pMaskImg;
-
 	unsigned int _iColumns;
 	unsigned int _iRows;
 
 	bool _bApplyCorrSizeUpLimit;
+
+	// For Mask
+	bool _bUseMask;
+	bool _bSkipCoarseAlign; 
+	
 };
 
 // Overlap between FOV image and FOV image
@@ -89,7 +98,7 @@ public:
 		TilePosition ImgPos2,
 		DRect validRect,
 		bool bApplyCorrSizeUpLimit,
-		bool bHasMask);
+		MaskInfo maskInfo);
 
 	MosaicLayer* GetFirstMosaicLayer() const {return _pLayer1;};
 	unsigned int GetFirstTriggerIndex() const {return _imgPos1.iTrigIndex;};
@@ -119,14 +128,14 @@ public:
 	// For debug
 	bool DumpOvelapImages();
 	bool DumpResultImages();
-	bool HasMask() {return _bHasMask;};
+	//bool HasMask() {return _maskInfo.;};
 
 private:
 	MosaicLayer*	_pLayer1;
 	MosaicLayer*	_pLayer2;
 	TilePosition _imgPos1;
 	TilePosition _imgPos2;
-	bool _bHasMask;
+	MaskInfo _maskInfo;
 
 	bool _bAdjustedBaseOnCoarse;  // Status 
 };

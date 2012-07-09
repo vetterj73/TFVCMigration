@@ -61,6 +61,7 @@ CorrelationPair::CorrelationPair()
 	_pOverlap = NULL;
 	_iIndex  = -1;
 
+	_bUseMask = false;
 	_bIsProcessed = false;
 	_bGood4Solver = true;
 
@@ -95,6 +96,7 @@ CorrelationPair::CorrelationPair(
 	_pOverlap = pOverlap;
 	_iIndex  = -1;
 
+	_bUseMask = false;
 	_bIsProcessed = false;
 	_bGood4Solver = true;
 
@@ -128,6 +130,7 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 
 	_iIndex = b._iIndex;
 
+	_bUseMask = b._bUseMask;
 	_bIsProcessed = b._bIsProcessed;
 	_bGood4Solver = b._bGood4Solver;
 
@@ -171,6 +174,7 @@ OverlapType CorrelationPair::GetOverlapType()
 // Reset to the satus before doing alignment
 bool CorrelationPair::Reset()
 {
+	_bUseMask = false;
 	_bIsProcessed = false;
 	_bGood4Solver = true;
 
@@ -189,7 +193,8 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 	_bUsedNgc = false;
 
 	// Check the mask area to decide whehter need to use NGC
-	if(_pMaskImg != NULL && _pMaskImg->GetBuffer() != NULL)
+	bool bUseMask = _bUseMask && _pMaskImg != NULL && _pMaskImg->GetBuffer() != NULL;
+	if(bUseMask)
 	{
 		unsigned int iCount = 0;
 		unsigned char* pLineBuf = _pMaskImg->GetBuffer() + 
@@ -711,57 +716,49 @@ void CorrelationPair::NorminalCenterInWorld(double* pdx, double* pdy)
 // For Debug
 void CorrelationPair::DumpImg(string sFileName) const
 {
-	// For debug
-	//if(!_bUsedNgc) return;
-
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
 		+ _roi1.FirstColumn;
 
-	/* for debug
-	Bitmap *grey1 = Bitmap::NewBitmapFromBuffer( 
-		_roi1.Rows(), 
-		_roi1.Columns(),
-		_pImg1->PixelRowStride(),
-		pcBuf1,
-		8);
-	grey1->write(sFileName);
-	delete grey1;
-	//*/
-
 	unsigned char* pcBuf2 = _pImg2->GetBuffer() 
 		+ _pImg2->PixelRowStride()*_roi2.FirstRow
 		+ _roi2.FirstColumn;
+	
+	Bitmap* rgb; 
+	if(!_bUsedNgc)
+	{
+		rgb = Bitmap::New2ChannelBitmap( 
+			_roi1.Rows(), 
+			_roi1.Columns(),
+			pcBuf1, 
+			pcBuf2,
+			_pImg1->PixelRowStride(),
+			_pImg2->PixelRowStride() );
+	}
+	else
+	{
+		unsigned char* pcBuf3 = _pMaskImg->GetBuffer()
+			+ _pMaskImg->PixelRowStride()*_roi1.FirstRow
+			+ _roi1.FirstColumn;
 
-	Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-		_roi1.Rows(), 
-		_roi1.Columns(),
-		pcBuf1, 
-		pcBuf2,
-		_pImg1->PixelRowStride(),
-		_pImg2->PixelRowStride() );
+		rgb = Bitmap::New3ChannelBitmap(
+			_roi1.Rows(), 
+			_roi1.Columns(),
+			pcBuf1, 
+			pcBuf2,
+			pcBuf3,
+			_pImg1->PixelRowStride(),
+			_pImg2->PixelRowStride(),
+			_pMaskImg->PixelRowStride());
+	}
 
-	/* for debug
-	Bitmap *grey2 = Bitmap::NewBitmapFromBuffer( 
-		_roi2.Rows(), 
-		_roi2.Columns(),
-		_pImg2->PixelRowStride(),
-		pcBuf2,
-		8);
-	grey2->write(sFileName);
-	delete grey2;
-	//*/
+	rgb->write(sFileName);
 
-	rbg->write(sFileName);
-
-	delete rbg;
+	delete rgb;
 }
 
 bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
-	// For debug
-	//if(!_bUsedNgc) return(false);
-
 	if(!_bIsProcessed) return(false);
 
 // For first channel
@@ -776,7 +773,7 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 	int ix, iy;
 
 	// Draw mask if the mask is available
-	if(_pMaskImg != NULL)
+	if(_bUsedNgc && _bUseMask && _pMaskImg != NULL)
 	{
 		pcTempBuf1 = new Byte[iWidth*iHeight];
 		unsigned char* pcBufMask = _pMaskImg->GetBuffer() 

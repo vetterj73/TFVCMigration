@@ -283,7 +283,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(iIndex1, iIndex2);
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
-	bool bMask = pFlags->GetMaskInfo()._bMask;
+	MaskInfo maskInfo = pFlags->GetMaskInfo();
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
@@ -376,7 +376,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, bMask);
+							_validRect, bApplyCorSizeUpLimit, maskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -394,7 +394,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, bMask);
+							_validRect, bApplyCorSizeUpLimit, maskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -450,7 +450,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pos1,
 								pos2,
-								_validRect, bApplyCorSizeUpLimit, bMask);
+								_validRect, bApplyCorSizeUpLimit, maskInfo);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
@@ -1866,12 +1866,13 @@ bool OverlapManager::AddSingleSupplementOverlap(
 
 	// Create supplement overlap
 	TilePosition pos1(iTrigIndex, iCamIndex), pos2(iNextTrig, iCamIndex);
+	MaskInfo maskInfo = _pMosaicSet->GetCorrelationFlags(pLayer->Index(), pLayer->Index())->GetMaskInfo();
 	FovFovOverlap overlap(
 		pLayer,
 		pLayer,
 		pos1,
 		pos2,
-		_validRect, false, false);
+		_validRect, false, maskInfo);
 
 	// Add supplement overlap if it it is valid
 	if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)

@@ -10,6 +10,10 @@ Overlap::Overlap()
 	_bValid = false;
 	_bProcessed = false;
 	_bGood4Solver = true;
+
+	// For mask
+	_bUseMask = false;
+	_bSkipCoarseAlign = false; 
 }
 
 Overlap::Overlap(const Overlap& overlap) 
@@ -21,7 +25,6 @@ void Overlap::operator=(const Overlap& b)
 {
 	_pImg1 = b._pImg1; 
 	_pImg2 = b._pImg2;
-	_pMaskImg = b._pMaskImg;
 
 	_validRect = b._validRect;
 
@@ -32,6 +35,10 @@ void Overlap::operator=(const Overlap& b)
 	_bValid = b._bValid;
 	_bProcessed = b._bProcessed;
 	_bGood4Solver = b._bGood4Solver;
+
+	// For mask
+	_bUseMask = b._bUseMask;
+	_bSkipCoarseAlign = b._bSkipCoarseAlign; 
 
 	//** Warning Coarse pair need to point to different parents,
 	_coarsePair = b._coarsePair;
@@ -44,12 +51,10 @@ void Overlap::config(
 	Image* pImg2,
 	DRect validRect,
 	OverlapType type,
-	bool bApplyCorrSizeUpLimit,
-	Image* pMaskImg)
+	bool bApplyCorrSizeUpLimit)
 {
 	_pImg1 = pImg1; 
 	_pImg2 = pImg2;
-	_pMaskImg = pMaskImg;
 
 	_validRect = validRect;
 
@@ -60,6 +65,9 @@ void Overlap::config(
 	_bValid = CalCoarseCorrPair();
 	_bProcessed = false;
 	_bGood4Solver = true;
+
+	_bUseMask = false;
+	_bSkipCoarseAlign = false; 
 
 	if(_bValid)
 	{
@@ -80,6 +88,10 @@ bool Overlap::Reset()
 	// Reset processed flag 
 	_bProcessed = false;
 	_bGood4Solver = true;
+	
+	// for mask
+	_bUseMask = false;
+	_bSkipCoarseAlign = false; 
 
 	return(true);
 }
@@ -177,7 +189,7 @@ bool Overlap::CalCoarseCorrPair()
 		_pImg1, _pImg2, 
 		roi1, pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
 		iDecim, iColSearchExpansion, iRowSearchExpansion,
-		this, _pMaskImg);
+		this, NULL);
 
 	if(!coarsePair.IsValid())
 		return(false);
@@ -185,6 +197,19 @@ bool Overlap::CalCoarseCorrPair()
 	_coarsePair = coarsePair;
 
 	return(true);
+}
+
+void Overlap::UseMask(bool bValue)
+{
+	if(bValue == _bUseMask)
+		return;
+	
+	_bUseMask = bValue;
+	
+	_coarsePair.UseMask(_bUseMask);
+
+	for(list<CorrelationPair>::iterator i = _finePairList.begin(); i != _finePairList.end(); i++)
+		i->UseMask(_bUseMask);
 }
 
 void Overlap::Run()
@@ -242,39 +267,41 @@ void Overlap::Run()
 	}//*/
 
 
-	// Do coarse correlation
-	bool bCorrSizeReduced = false;
-	_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
-
-	// If the Roi size is reduced in correlation
-	double dCoarseReliableScore = 0;
-	if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
-	{	//If the correlation result is not good enough
-		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-		if(dCoarseReliableScore < CorrelationParametersInst.dCoarseResultReliableTh ||
-			result.AmbigScore > CorrelationParametersInst.dCoarseResultAmbigTh )
-		{
-			// try again without ROI reduce
-			_coarsePair.Reset();
-			_coarsePair.DoAlignment();
-		}
-	}
-
-	if(_type != Fov_To_Fov)
+	if(!_bSkipCoarseAlign)
 	{
-		_bProcessed = true;
+		// Do coarse correlation
+		bool bCorrSizeReduced = false;
+		_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
 
-		if(CorrelationParametersInst.bSaveOverlaps || 
-			(_type == Fid_To_Fov && CorrelationParametersInst.bSaveFiducialOverlaps))
-		{
-			DumpOvelapImages();
-			DumpResultImages();
+		// If the Roi size is reduced in correlation
+		double dCoarseReliableScore = 0;
+		if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
+		{	//If the correlation result is not good enough
+			CorrelationResult result= _coarsePair.GetCorrelationResult();
+			dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+			if(dCoarseReliableScore < CorrelationParametersInst.dCoarseResultReliableTh ||
+				result.AmbigScore > CorrelationParametersInst.dCoarseResultAmbigTh )
+			{
+				// try again without ROI reduce
+				_coarsePair.Reset();
+				_coarsePair.DoAlignment();
+			}
 		}
 
-		return;
-	}
+		if(_type != Fov_To_Fov)
+		{
+			_bProcessed = true;
 
+			if(CorrelationParametersInst.bSaveOverlaps || 
+				(_type == Fid_To_Fov && CorrelationParametersInst.bSaveFiducialOverlaps))
+			{
+				DumpOvelapImages();
+				DumpResultImages();
+			}
+
+			return;
+		}
+	}
 // Fine alignemt (only for Fov and Fov)
 	// Clean fine correlation pair list
 	_finePairList.clear();
@@ -282,13 +309,32 @@ void Overlap::Run()
 	// Adjust ROI base on the coarse results
 	bool bAdjusted = false;
 	CorrelationPair tempPair = _coarsePair;
-	dCoarseReliableScore = 0;
-	if(_coarsePair.IsProcessed())
+	double dCoarseReliableScore = 0;
+	if(!_bSkipCoarseAlign)
 	{
-		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
-			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+		if(_coarsePair.IsProcessed())
+		{
+			CorrelationResult result= _coarsePair.GetCorrelationResult();
+			dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+			if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
+				bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+		}
+	}
+	else
+	{
+		// Set (not calculate) coarse result base on image transform
+		double dx1, dy1, dx2, dy2;
+		_pImg1->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter(), &dx1, &dy1);
+		_pImg2->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter(), &dx2, &dy2);
+		// Warning:: the direction need to be check
+		double dRowOffset = (dx2 - dx1)*2/(_pImg1->PixelSizeX()+_pImg2->PixelSizeX());
+		double dColOffset = (dy2 - dy1)*2/(_pImg1->PixelSizeY()+_pImg2->PixelSizeY());
+		CorrelationResult result(dRowOffset, dColOffset, 1, 0);
+		_coarsePair.SetCorrlelationResult(result);
+
+		// Adjust ROI base on the coarse results
+		dCoarseReliableScore = 1;
+		bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
 	}
 
 	// Set status
@@ -397,21 +443,27 @@ FovFovOverlap::FovFovOverlap(
 	TilePosition ImgPos2,
 	DRect validRect,
 	bool bApplyCorrSizeUpLimit,
-	bool bHasMask)
+	MaskInfo maskInfo)
 {
 	_pLayer1 = pLayer1;
 	_pLayer2 = pLayer2;
 	_imgPos1 = ImgPos1;
 	_imgPos2 = ImgPos2;
-	_bHasMask = bHasMask;
+	_maskInfo= maskInfo;
 
 	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iTrigIndex, _imgPos1.iCamIndex);
 	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 	
-	Image* pMaskImg = NULL;
-	//if(bHasMask)
-	//	pMaskImg = _pLayer1->GetMaskImage(_imgPos1.iCamIndex, _imgPos1.iTrigIndex);
-	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskImg);
+	config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
+
+	_pMaskImg = NULL;
+	if(maskInfo._bMask)
+	{
+		_pMaskImg = new Image(*pImg1);
+		_pMaskImg->CreateOwnBuffer();
+		
+		_coarsePair.SetMaskImg(_pMaskImg);
+	}
 }
 
 bool FovFovOverlap::IsReadyToProcess() const

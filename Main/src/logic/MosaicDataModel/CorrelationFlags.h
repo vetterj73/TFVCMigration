@@ -10,13 +10,13 @@ namespace MosaicDM
 		MaskInfo(
 			bool bMask, 
 			double dMinHeight,
-			bool bMaskFirstLayer,
-			bool bOnlyCalOveralpWithMask);
+			bool bMaskFirstLayer = true,		
+			bool bOnlyCalOveralpWithMask = false);
 
 		bool _bMask;
 		double _dMinHeight;
-		bool _bMaskFirstLayer;
-		bool _bOnlyCalOveralpWithMask;
+		bool _bMaskFirstLayer;			// Not support yet, always true
+		bool _bOnlyCalOveralpWithMask;	// Not support yet, always false
 		int _iPanelMaskIndex;
 		Image* _pPanelMaskImage;
 	};
