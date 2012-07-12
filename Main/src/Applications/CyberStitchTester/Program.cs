@@ -15,6 +15,15 @@ namespace CyberStitchTester
     class Program
     {
         private static double dPixelSizeInMeters = 1.70e-5;
+
+        // for live mode image capture setup
+        //start
+        private static double dTriggerOverlapInM = 0.004; //Image capture overlap setup
+        private static int iBrightField = 31; // Bright field intensity setup(0-31)
+        private static int iDarkField = 31; // Dark field intensity setup(0-31)
+        private static double dTriggerStartOffsetInMCS1 = -0.0185; //before sim start offset setup 
+        private static double dTriggerStartOffsetInMCS2 = -0.004; //after sim start offset setup
+        //end
         private static uint iInputImageColumns = 2592;
         private static uint iInputImageRows = 1944;
         private static ManagedMosaicSet _mosaicSet = null;
@@ -30,6 +39,7 @@ namespace CyberStitchTester
         private static bool _bDetectPanelEedge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
+        private static bool _bUseDualIllumination = true;// default use dual illumination for live mode
 
         // For debug
         private static int _iBufCount = 0;
@@ -103,6 +113,18 @@ namespace CyberStitchTester
                     iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
                     iInputImageRows = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-overlap" && i < args.Length - 1)
+                    dTriggerOverlapInM = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-sillu")
+                    _bUseDualIllumination = false;
+                else if (args[i] == "-brightfield" && i < args.Length - 1)
+                    iBrightField = Convert.ToUInt16(args[i + 1]);
+                else if (args[i] == "-darkfield" && i < args.Length - 1)
+                    iDarkField = Convert.ToUInt16(args[i + 1]);
+                else if (args[i] == "-sim1startoffset" && i < args.Length - 1)
+                   dTriggerStartOffsetInMCS1 = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-sim2startoffset" && i < args.Length - 1)
+                    dTriggerStartOffsetInMCS2 = Convert.ToDouble(args[i + 1]);
             }
 
             // Setup the panel based on panel file
@@ -255,32 +277,36 @@ namespace CyberStitchTester
                             Output("Could not save mosaic images");
                         */
                     }
-
+                   
                     _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
                         _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
                         _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
                         _panel.GetCADBuffer(), //heightBuf,
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                    //*
-                    _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
-                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
-                        _panel.GetCADBuffer(), //heightBuf,
-                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                    _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
-                        _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
-                        _panel.GetCADBuffer(), //heightBuf,
-                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                    _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
-                        _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
-                        _panel.GetCADBuffer(), //heightBuf,
+                    if (_bUseDualIllumination)
+                    {
+                        //*
+                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
+                         _panel.GetCADBuffer(), //heightBuf,
                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                    //*/
+
+                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                         _mosaicSet.GetLayer(iLayerIndex1).GetGreyStitchedBuffer(),
+                         _panel.GetCADBuffer(), //heightBuf,
+                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
+                         _mosaicSet.GetLayer(iLayerIndex2).GetGreyStitchedBuffer(),
+                         _panel.GetCADBuffer(), //heightBuf,
+                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                     //*/
+                    }
+                     
 
                     // Get fiducial information
                     ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
@@ -328,6 +354,7 @@ namespace CyberStitchTester
         {
             if (!_bSimulating)
             {
+                
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
@@ -335,6 +362,8 @@ namespace CyberStitchTester
                     if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                         return false;
                 }
+             
+                
             }
             else
             {   // launch device one by one in simulation case
@@ -381,7 +410,7 @@ namespace CyberStitchTester
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
                 {
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                    int bufferCount = 128;// (triggerCount + 1) * GetNumberOfEnabledCameras(0) * 2;
+                    int bufferCount = 256;// (triggerCount + 1) * GetNumberOfEnabledCameras(0) * 2;
                     int desiredCount = bufferCount;
                     d.AllocateFrameBuffers(ref bufferCount);
 
@@ -400,11 +429,26 @@ namespace CyberStitchTester
                         d.FixedRearRail = true;
                     }
 
-                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
+                    d.RemoveCaptureSpecs();
+                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, dTriggerStartOffsetInMCS1, dTriggerOverlapInM);
                     if (cs1 == null)
                     {
                         Output("Could not create capture spec.");
                         return false;
+                    }
+
+                    cs1.GetIllumination().BrightFieldIntensity(iBrightField);
+                    if (!_bUseDualIllumination)
+                    {
+                        cs1.GetIllumination().DarkFieldIntensity(iDarkField);
+                    }
+                    else
+                    {
+                        cs1.GetIllumination().DarkFieldIntensity(0);
+
+                        ManagedSIMCaptureSpec cs2 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, dTriggerStartOffsetInMCS2, dTriggerOverlapInM);
+                        cs2.GetIllumination().BrightFieldIntensity(0);
+                        cs2.GetIllumination().DarkFieldIntensity(iDarkField);
                     }
                 }
             }
