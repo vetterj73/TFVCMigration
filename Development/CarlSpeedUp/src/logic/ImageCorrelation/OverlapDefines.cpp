@@ -32,6 +32,7 @@ void Overlap::operator=(const Overlap& b)
 	_bValid = b._bValid;
 	_bProcessed = b._bProcessed;
 	_bGood4Solver = b._bGood4Solver;
+	_bUseForCoarseAlign = b._bUseForCoarseAlign;;
 
 	//** Warning Coarse pair need to point to different parents,
 	_coarsePair = b._coarsePair;
@@ -194,7 +195,7 @@ void Overlap::Run()
 		return;
 
 	// Special process for fiducial use vsfinder 
-	if(_type == Fid_To_Fov)
+	if(_type == Fid_To_Fov)    //@todo don't do on 2nd pass if 2 pass
 	{
 		FidFovOverlap* pTemp =  (FidFovOverlap*)this;
 		if(pTemp->GetFiducialSearchMethod() == FIDVSFINDER)
@@ -240,123 +241,138 @@ void Overlap::Run()
 			iLayer2 == 2 && iTrig2 == 7 && iCam2 == 0)
 			iLayer1 = 0;
 	}//*/
-
-
-	// Do coarse correlation
-	bool bCorrSizeReduced = false;
-	_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
-
-	// If the Roi size is reduced in correlation
-	double dCoarseReliableScore = 0;
-	if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
-	{	//If the correlation result is not good enough
-		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-		if(dCoarseReliableScore < CorrelationParametersInst.dCoarseResultReliableTh ||
-			result.AmbigScore > CorrelationParametersInst.dCoarseResultAmbigTh )
-		{
-			// try again without ROI reduce
-			_coarsePair.Reset();
-			_coarsePair.DoAlignment();
-		}
-	}
-
-	if(_type != Fov_To_Fov)
+	bool temp = _bUseForCoarseAlign;
+	if (  !CorrelationParametersInst.bUseTwoPassStitch || !CorrelationParametersInst.bCoarsePassDone && _bUseForCoarseAlign  )  
 	{
-		_bProcessed = true;
+		// Do coarse correlation
+		bool bCorrSizeReduced = false;
+		_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
 
-		if(CorrelationParametersInst.bSaveOverlaps || 
-			(_type == Fid_To_Fov && CorrelationParametersInst.bSaveFiducialOverlaps))
-		{
-			DumpOvelapImages();
-			DumpResultImages();
+		// If the Roi size is reduced in correlation
+		double dCoarseReliableScore = 0;
+		if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
+		{	//If the correlation result is not good enough
+			CorrelationResult result= _coarsePair.GetCorrelationResult();
+			dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+			if(dCoarseReliableScore < CorrelationParametersInst.dCoarseResultReliableTh ||
+				result.AmbigScore > CorrelationParametersInst.dCoarseResultAmbigTh )
+			{
+				// try again without ROI reduce
+				_coarsePair.Reset();
+				_coarsePair.DoAlignment();
+			}
 		}
 
-		return;
-	}
+		if(_type != Fov_To_Fov)
+		{
+			_bProcessed = true;
 
+			if(CorrelationParametersInst.bSaveOverlaps || 
+				(_type == Fid_To_Fov && CorrelationParametersInst.bSaveFiducialOverlaps))
+			{
+				DumpOvelapImages();
+				DumpResultImages();
+			}
+
+			return;
+		}
+	}
 // Fine alignemt (only for Fov and Fov)
 	// Clean fine correlation pair list
 	_finePairList.clear();
-
-	// Adjust ROI base on the coarse results
-	bool bAdjusted = false;
-	CorrelationPair tempPair = _coarsePair;
-	dCoarseReliableScore = 0;
-	if(_coarsePair.IsProcessed())
+	if ( !(CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone) )  // skip ONLY if two pass flag AND NOT coarse already done
 	{
-		CorrelationResult result= _coarsePair.GetCorrelationResult();
-		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
-			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
-	}
-
-	// Set status
-	if(_type == Fov_To_Fov)
-		((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
-	
-	// Create fine correlation pair list
-	unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
-	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
-	if(iNumBlockX > CorrelationParametersInst.iFineMaxBlocksInCol) iNumBlockX = CorrelationParametersInst.iFineMaxBlocksInCol;
-	if(iNumBlockX < 1) iNumBlockX = 1;
-	if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
-
-	unsigned int iBlockHeight = CorrelationParametersInst.iFineBlockHeight;
-	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
-	if(iNumBlockY > CorrelationParametersInst.iFineMaxBlocksInRow) iNumBlockY = CorrelationParametersInst.iFineMaxBlocksInRow;
-	if(iNumBlockY < 1) iNumBlockY = 1;
-	if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
-
-	unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
-	unsigned int iBlockColSearchExpansion = CorrelationParametersInst.iFineColSearchExpansion;
-	unsigned int iBlockRowSearchExpansion = CorrelationParametersInst.iFineRowSearchExpansion;
-	if(!bAdjusted)
-	{
-		iBlockColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
-		iBlockRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
-	}
-
-	tempPair.ChopCorrPair(
-		iNumBlockX, iNumBlockY,
-		iBlockWidth, iBlockHeight,
-		iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
-		&_finePairList);
-
-	// Do fine correlation
-	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
-	{
-		i->DoAlignment();
-
-		// Validation check
-		// To prevent wrong correlation results between different layers to be used
-		if(bAdjusted) 
+		// Adjust ROI base on the coarse results
+		bool bAdjusted = false;
+		CorrelationPair tempPair = _coarsePair;
+		double dCoarseReliableScore = 0;
+		if( !CorrelationParametersInst.bUseTwoPassStitch &&_coarsePair.IsProcessed() )
 		{
-			bool bValid = true;
-			CorrelationResult result = i->GetCorrelationResult();;
-			if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion ||
-				fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion)
-			{ // If the offset is too big
-				bValid = false;
-			}
-			else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColSearchExpansion ||
-				fabs(result.RowOffset) > CorrelationParametersInst.iFineColSearchExpansion)
-			{	// If offset is big
-				if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
-				{	// If fine result is less reliable than coarse one 
+			CorrelationResult result= _coarsePair.GetCorrelationResult();
+			dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+			if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
+				bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+		}
+		if( CorrelationParametersInst.bUseTwoPassStitch )		// use the coarse align step adjust the images
+		{
+			CorrelationResult result;
+			// this is a bit of a kludge, make a fake correlation result using the transforms
+			result.AmbigScore = 0.0;
+			result.CorrCoeff  = 1.0;
+			pair<double, double> roi1Center = _coarsePair.GetFirstImg()->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter());
+			pair<double, double> roi2Center = _coarsePair.GetSecondImg()->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter());
+			result.RowOffset = (roi1Center.first - roi2Center.first)/_coarsePair.GetFirstImg()->PixelSizeX();
+			result.ColOffset = (roi1Center.second - roi2Center.second)/_coarsePair.GetFirstImg()->PixelSizeY();
+			tempPair.SetCorrlelationResult(result);
+			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);
+		}
+
+		// Set status
+		if(_type == Fov_To_Fov)
+			((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
+	
+		// Create fine correlation pair list
+		unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
+		unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
+		if(iNumBlockX > CorrelationParametersInst.iFineMaxBlocksInCol) iNumBlockX = CorrelationParametersInst.iFineMaxBlocksInCol;
+		if(iNumBlockX < 1) iNumBlockX = 1;
+		if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
+
+		unsigned int iBlockHeight = CorrelationParametersInst.iFineBlockHeight;
+		unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
+		if(iNumBlockY > CorrelationParametersInst.iFineMaxBlocksInRow) iNumBlockY = CorrelationParametersInst.iFineMaxBlocksInRow;
+		if(iNumBlockY < 1) iNumBlockY = 1;
+		if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
+
+		unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
+		unsigned int iBlockColSearchExpansion = CorrelationParametersInst.iFineColSearchExpansion;
+		unsigned int iBlockRowSearchExpansion = CorrelationParametersInst.iFineRowSearchExpansion;
+		if(!bAdjusted)
+		{
+			iBlockColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
+			iBlockRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
+		}
+
+		tempPair.ChopCorrPair(
+			iNumBlockX, iNumBlockY,
+			iBlockWidth, iBlockHeight,
+			iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
+			&_finePairList);
+
+		// Do fine correlation
+		for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+		{
+			i->DoAlignment();
+
+			// Validation check
+			// To prevent wrong correlation results between different layers to be used
+			if(bAdjusted) 
+			{
+				bool bValid = true;
+				CorrelationResult result = i->GetCorrelationResult();;
+				if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion ||
+					fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion)
+				{ // If the offset is too big
 					bValid = false;
 				}
-			}
+				else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColSearchExpansion ||
+					fabs(result.RowOffset) > CorrelationParametersInst.iFineColSearchExpansion)
+				{	// If offset is big
+					if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
+					{	// If fine result is less reliable than coarse one 
+						bValid = false;
+					}
+				}
 
-			// If fine result is not valid, ignore this result by set a faiure one
-			if(bValid == false)
-			{
-				CorrelationResult failureResult;			// Default result is a failure result;
-				i->SetCorrlelationResult(failureResult);	
+				// If fine result is not valid, ignore this result by set a faiure one
+				if(bValid == false)
+				{
+					CorrelationResult failureResult;			// Default result is a failure result;
+					i->SetCorrlelationResult(failureResult);	
+				}
 			}
-		}
-	}	
-	
+		}	
+	}
 	_bProcessed = true;
 
 	/*/ for debug

@@ -87,6 +87,8 @@ public:
 	// Whether use camera model image stitching
 	bool bUseCameraModelStitch;
 	bool bUseCameraModelIterativeStitch;
+	bool bUseTwoPassStitch;					// do complete alignement based on coarse overlaps then chop fine overlaps
+	bool bCoarsePassDone;
 
 	unsigned int iSolverMaxIterations;
 	
@@ -121,6 +123,9 @@ public:
 	bool bSavePanelEdgeDebugImages;
 	string sDiagnosticPath;
 	string GetOverlapPath();
+
+	void SetCoarsePassDone(bool temp);
+	bool GetCoarsePassDone();
 
 private:
 	string sOverlapPath;

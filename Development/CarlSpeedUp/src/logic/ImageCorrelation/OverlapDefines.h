@@ -40,6 +40,9 @@ public:
 	bool IsProcessed() const {return _bProcessed;};
 	bool IsGoodForSolver() const {return _bGood4Solver;};
 	void SetIsGoodForSolver(bool bValue) {_bGood4Solver = bValue;};
+	bool UseForCoarseAlign() const {return _bUseForCoarseAlign;};
+	void SetUseForCoarseAlign(bool bValue) {_bUseForCoarseAlign = bValue;};
+	
 
 	CorrelationPair* GetCoarsePair() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
@@ -56,6 +59,7 @@ protected:
 	bool _bValid;
 	bool _bProcessed;	
 	bool _bGood4Solver;
+	bool _bUseForCoarseAlign;
 
 	CorrelationPair _coarsePair;
 	list<CorrelationPair> _finePairList;

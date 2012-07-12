@@ -434,10 +434,23 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	unsigned int deviceNumB = _pSet->GetLayer(index2.LayerIndex)->DeviceIndex();
 	
 	double* pdRow;
+	list<CorrelationPair> pCoarsePairList;
+	list<CorrelationPair>* pPairList; 
+	pCoarsePairList.clear();
+	if (CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone) //@todo AND first time through......
+	{
+		pCoarsePairList.push_back(*pOverlap->GetCoarsePair());
+		pPairList = &pCoarsePairList;
+	}
+	else
+		pPairList = pOverlap->GetFinePairListPtr();
 
-	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
+	
+
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
+		// only use coarse align overlap for fit
+		//CorrelationPair* i = pOverlap->GetCoarsePair();  
 		// Skip any fine that is not processed or not good
 		if(!i->IsProcessed() || !i->IsGoodForSolver())
 			continue;
@@ -978,7 +991,7 @@ void RobustSolverCM::SolveXAlgH()
 		}
 		of.close();
 	}
-	/*if(CorrelationParametersInst.bSaveTransformVectors)
+	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
@@ -987,7 +1000,7 @@ void RobustSolverCM::SolveXAlgH()
 		s.clear();
 		s.assign(cTemp);
 		OutputVectorXCSV(s);
-	}*/
+	}
 	
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_h returned value of %d", algHRetVal);

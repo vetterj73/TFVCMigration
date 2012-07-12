@@ -78,6 +78,7 @@ PanelAligner::PanelAligner(void)
 	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
 
 	_iNumFovProced = 0;
+	CorrelationParametersInst.bCoarsePassDone = false; // which construct to use?????
 
 	// for debug
 	_iPanelCount = 0;
@@ -591,6 +592,15 @@ bool PanelAligner::CreateTransforms()
 
 	// Solve transforms
 	_pSolver->SolveXAlgH();
+
+	// if two pass camera model (coarse then fine) 
+	// we have only done a rough alignment, must now fix any problems in the coarse align and
+	// chop for fine align
+	//
+	//@todo fix up any problems with the coarse align
+	//
+	// 
+
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
 
@@ -611,6 +621,60 @@ bool PanelAligner::CreateTransforms()
 		}
 	}
 
+	if(CorrelationParametersInst.bUseTwoPassStitch && 
+		(CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
+	{
+		CorrelationParametersInst.bCoarsePassDone = true;
+		// transforms from coarse align are loaded, ready to chop up fine aligns
+		// calculate all fine overlaps
+		for(int i=0; i<iNumLayer; i++)
+		{
+			// Get calculated transforms
+			MosaicLayer* pLayer = _pSet->GetLayer(i);
+			for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+			{
+				for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+				{
+					_pOverlapManager->DoAlignmentForFov(i, iTrig, iCam);
+				}
+			}
+		}
+		_pSolver->Reset();
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+		_pOverlapManager->FinishOverlaps();
+		AddOverlapResults2Solver(_pSolver, true);  // default to use fiducials instead of edge or calculated positions?
+		// Solve transforms
+		_pSolver->SolveXAlgH();
+
+		// if two pass camera model (coarse then fine) 
+		// we have only done a rough alignment, must now fix any problems in the coarse align and
+		// chop for fine align
+		//
+		//@todo fix up any problems with the coarse align
+		//
+		// 
+
+		//if camera model, must flatten fiducials
+		_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
+
+		// For each mosaic image
+		for(int i=0; i<iNumLayer; i++)
+		{
+			// Get calculated transforms
+			MosaicLayer* pLayer = _pSet->GetLayer(i);
+			for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+			{
+				for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+				{
+					Image* img = pLayer->GetImage(iTrig, iCam);
+					ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
+					img->SetTransform(t);
+					img->CalInverseTransform();
+				}
+			}
+		}
+	}
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 
 	// Log fiducial confidence

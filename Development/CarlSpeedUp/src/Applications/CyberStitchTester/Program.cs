@@ -24,7 +24,7 @@ namespace CyberStitchTester
         private static int numAcqsComplete = 0;
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread logger = new LoggingThread(null);
-        private static uint _numThreads = 8;
+        private static uint _numThreads = 1;
         private static int _cycleCount = 0;
 
         private static bool _bDetectPanelEedge = false;

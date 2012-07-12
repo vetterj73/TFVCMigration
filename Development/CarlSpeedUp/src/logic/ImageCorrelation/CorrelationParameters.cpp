@@ -73,6 +73,8 @@ CorrelationParameters::CorrelationParameters(void)
 	bUseProjectiveTransform = true;
 	bUseCameraModelStitch = false;
 	bUseCameraModelIterativeStitch = false;
+	bUseTwoPassStitch = true;
+	bCoarsePassDone = false;
 	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
 
 	// Adjust morph to create stitched image for component height
@@ -91,15 +93,15 @@ CorrelationParameters::CorrelationParameters(void)
 	dConveyorBeltAreaSize = 4e-3;			// The size of conveyor belt area that need to be ignored in leading edge detection
 
 	// for supplement Overlaps	
-	iMaxSupOverlaps = 20;					// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
+	iMaxSupOverlaps = 0;					// Maximum supplememt overlaps to prevent add supplement overlaps for a messed up panel
 
 	// Number of Threads to use for processing
 	NumThreads = 8;
 
 	// debug flags
-	bSaveFiducialOverlaps = false;
-	bSaveOverlaps = false;
-	bSaveTransformVectors = false;
+	bSaveFiducialOverlaps = true;
+	bSaveOverlaps = true;
+	bSaveTransformVectors = true;
 	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";
@@ -112,4 +114,13 @@ CorrelationParameters::~CorrelationParameters(void)
 string CorrelationParameters::GetOverlapPath()
 {
 	return sOverlapPath;
+}
+
+void CorrelationParameters::SetCoarsePassDone(bool temp)
+{
+	bCoarsePassDone = temp;
+}
+bool CorrelationParameters::GetCoarsePassDone()
+{
+	return bCoarsePassDone ;
 }

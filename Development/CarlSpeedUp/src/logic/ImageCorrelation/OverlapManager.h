@@ -156,6 +156,8 @@ protected:
 	int AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap);
 	int AddSupplementOverlaps();
 
+	void CalcFirstLastCamera(MosaicLayer *pLayer1, MosaicLayer *pLayer2, int *iFirstCamera, int *iLastCamera);
+
 private:	
 	MosaicSet *_pMosaicSet;
 	Panel* _pPanel;
@@ -188,5 +190,6 @@ private:
 
 	// For supplememt overlaps
 	FovFovOverlapList _supFovFovOvelapList;
+
 };
 
