@@ -177,8 +177,8 @@ void PanelAligner::ResetForNextPanel()
 	_bResultsReady = false;
 
 	_iNumFovProced = 0;
-
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
+	_StartTime = clock();
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel(), time = %f",  (float)_StartTime/CLOCKS_PER_SEC);
 }
 
 #pragma endregion
@@ -525,7 +525,7 @@ bool PanelAligner::CreateTransforms()
 {	
 	// for debug
 	_iPanelCount++;
-	LOG.FireLogEntry(LogTypeSystem, "Panel #%d is processing", _iPanelCount);
+	LOG.FireLogEntry(LogTypeSystem, "Panel #%d is processing, time = %f", _iPanelCount, (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
@@ -537,7 +537,7 @@ bool PanelAligner::CreateTransforms()
 	// Must after consistent check and before transform calculation
 	int iNumSupOverlap = _pOverlapManager->CalSupplementOverlaps();
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Begin to create transforms, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 	int iNumLayer = _pSet->GetNumMosaicLayers();
 
 	_lastProcessedFids.clear();
@@ -603,6 +603,7 @@ bool PanelAligner::CreateTransforms()
 
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Flatten Done, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	// For each mosaic image
 	for(int i=0; i<iNumLayer; i++)
@@ -620,13 +621,21 @@ bool PanelAligner::CreateTransforms()
 			}
 		}
 	}
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	if(CorrelationParametersInst.bUseTwoPassStitch && 
 		(CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
 	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Start 2nd Pass Align, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 		CorrelationParametersInst.bCoarsePassDone = true;
 		// transforms from coarse align are loaded, ready to chop up fine aligns
 		// calculate all fine overlaps
+		/*FovFovOverlapList* pfovFovOverlapSet = _pOverlapManager->GetFovFovOvelapSetPtr();
+		for(FovFovOverlapList::iterator i = pfovFovOverlapSet->begin(); i != pfovFovOverlapSet->end(); i++)
+		{
+			_pJobManager->AddAJob((CyberJob::Job*)*i);  // 
+		}*/
+
 		for(int i=0; i<iNumLayer; i++)
 		{
 			// Get calculated transforms
@@ -645,6 +654,7 @@ bool PanelAligner::CreateTransforms()
 		_pOverlapManager->FinishOverlaps();
 		AddOverlapResults2Solver(_pSolver, true);  // default to use fiducials instead of edge or calculated positions?
 		// Solve transforms
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():2nd Pass Align call ALG_H, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 		_pSolver->SolveXAlgH();
 
 		// if two pass camera model (coarse then fine) 
@@ -657,7 +667,7 @@ bool PanelAligner::CreateTransforms()
 
 		//if camera model, must flatten fiducials
 		_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
-
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Flatten Done, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 		// For each mosaic image
 		for(int i=0; i<iNumLayer; i++)
 		{
@@ -675,7 +685,7 @@ bool PanelAligner::CreateTransforms()
 			}
 		}
 	}
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	// Log fiducial confidence
 	int iNumDevice = _pSet->GetNumDevice();

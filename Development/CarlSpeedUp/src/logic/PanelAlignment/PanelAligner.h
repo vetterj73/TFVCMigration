@@ -13,6 +13,8 @@
 #include "OverlapManager.h"
 using std::map;
 
+#include <ctime>
+
 using namespace MosaicDM;
 
 typedef void (*ALIGNMENTDONE_CALLBACK)(bool status);
@@ -127,6 +129,7 @@ private:
 
 	// for debug
 	int _iPanelCount;
+	clock_t _StartTime;
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 

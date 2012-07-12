@@ -89,6 +89,7 @@ public:
 	bool bUseCameraModelIterativeStitch;
 	bool bUseTwoPassStitch;					// do complete alignement based on coarse overlaps then chop fine overlaps
 	bool bCoarsePassDone;
+	bool bCoarseOnly;
 
 	unsigned int iSolverMaxIterations;
 	

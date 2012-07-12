@@ -247,7 +247,7 @@ void Overlap::Run()
 		// Do coarse correlation
 		bool bCorrSizeReduced = false;
 		_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
-
+		_bProcessed = true;
 		// If the Roi size is reduced in correlation
 		double dCoarseReliableScore = 0;
 		if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
@@ -263,7 +263,7 @@ void Overlap::Run()
 			}
 		}
 
-		if(_type != Fov_To_Fov)
+		if(_type != Fov_To_Fov)  // when is this code ever reached????  CAD align??
 		{
 			_bProcessed = true;
 
@@ -303,10 +303,11 @@ void Overlap::Run()
 			pair<double, double> roi2Center = _coarsePair.GetSecondImg()->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter());
 			result.RowOffset = (roi1Center.first - roi2Center.first)/_coarsePair.GetFirstImg()->PixelSizeX();
 			result.ColOffset = (roi1Center.second - roi2Center.second)/_coarsePair.GetFirstImg()->PixelSizeY();
-			tempPair.SetCorrlelationResult(result);
+			_coarsePair.SetCorrlelationResult(result);
+			tempPair = _coarsePair;   // re-copy to use new results.
 			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);
 		}
-
+		_bProcessed = true;
 		// Set status
 		if(_type == Fov_To_Fov)
 			((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
@@ -373,7 +374,7 @@ void Overlap::Run()
 			}
 		}	
 	}
-	_bProcessed = true;
+	
 
 	/*/ for debug
 	if(_type == Fov_To_Fov)
@@ -490,19 +491,21 @@ double FovFovOverlap::CalWeightSum()
 // For Debug 
 bool FovFovOverlap::DumpOvelapImages()
 {
-	if(!IsReadyToProcess())
+	if(!IsReadyToProcess() || !_bProcessed)
 		return(false);
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sFovFov_coarse_L%dT%dC%d_L%dT%dC%d.bmp", 
-		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
-		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
+	if (!CorrelationParametersInst.bUseTwoPassStitch || CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
+	{
+		sprintf_s(cTemp, 100, "%sFovFov_coarse_L%dT%dC%d_L%dT%dC%d.bmp", 
+			CorrelationParametersInst.GetOverlapPath().c_str(),
+			_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+			_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 		
-	s.append(cTemp);
-	_coarsePair.DumpImg(s);
-
+		s.append(cTemp);
+		_coarsePair.DumpImg(s);
+	}
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
@@ -528,16 +531,18 @@ bool FovFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
-		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
-		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex,
-		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
-		(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
+	if (!CorrelationParametersInst.bUseTwoPassStitch || CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
+	{
+		sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
+			CorrelationParametersInst.GetOverlapPath().c_str(),
+			_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+			_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex,
+			(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
+			(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
 		
-	s.append(cTemp);
-	_coarsePair.DumpImgWithResult(s);
-
+		s.append(cTemp);
+		_coarsePair.DumpImgWithResult(s);
+	}
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
