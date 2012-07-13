@@ -116,9 +116,6 @@ namespace MosaicDM
 			void CameraCentersInY(double* pdCenY);
 			void TriggerCentersInX(double* pdCenX);
 
-			Image* GetMaskImage(int iPanelMaskID, unsigned int iCamIndex, unsigned int iTrigIndex);
-			bool AddMaskLayer(int iPanelMaskID);
-
 			///
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
 			///
@@ -218,7 +215,6 @@ namespace MosaicDM
 			unsigned int _numCameras;
 			MosaicSet *_pMosaicSet;
 			MosaicTile *_pTileArray;
-			map<int, Image*> _maskLayerMap;		// An map fo mask images 
 			bool _bAlignWithCAD;
 			bool _bAlignWithFiducial;
 			bool _bFiducialBrighterThanBackground;

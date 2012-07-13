@@ -16,7 +16,6 @@ namespace MosaicDM
 	{
 		_pMosaicSet = NULL;
 		_pTileArray = NULL;
-		_maskLayerMap.clear();
 		_pStitchedImage = NULL;
 		_numCameras = 0;
 		_numTriggers = 0;
@@ -42,13 +41,6 @@ namespace MosaicDM
 	{
 		if(_pTileArray != NULL) 
 			delete[] _pTileArray;
-
-		for(map<int, Image*>::iterator i = _maskLayerMap.begin(); i!= _maskLayerMap.end(); i++)
-		{
-			if(i->second != NULL) 
-				delete [] i->second;
-		}
-		_maskLayerMap.clear();
 
 		if(_pStitchedImage != NULL)
 			delete _pStitchedImage;
@@ -1224,9 +1216,6 @@ namespace MosaicDM
 			_pTileArray[i].ClearImageBuffer();
 			if(_pTileArray[i].GetImagPtr() != NULL)
 				_pTileArray[i].GetImagPtr()->SetTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
-
-			for(map<int, Image*>::iterator j = _maskLayerMap.begin(); j!= _maskLayerMap.end(); j++)
-				j->second[i].SetTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
 		}	
 		_stitchedImageValid = false;
 		_bGridBoundaryValid = false;
@@ -1248,39 +1237,6 @@ namespace MosaicDM
 			return false;
 
 		return pTile->SetYCrCbImageBuffer(pBuffer);
-	}
-
-	// Prepare Mask images to use (validate mask images)
-	bool MosaicLayer::AddMaskLayer(int iPanelMaskID)
-	{
-		// Whether mask layer is already added
-		if(_maskLayerMap.find(iPanelMaskID) != _maskLayerMap.end())
-			return(false);
-
-		Image* maskImages = new Image[GetNumberOfTiles()];
-
-		for(unsigned int i=0 ; i<GetNumberOfTiles(); i++)
-		{
-			maskImages[i].SetTransform(_pTileArray[i].GetImagPtr()->GetTransform());
-			maskImages[i].SetNorminalTransform(_pTileArray[i].GetImagPtr()->GetNominalTransform());
-			maskImages[i].CreateOwnBuffer();
-		}
-
-		_maskLayerMap.insert(pair<int, Image*>(iPanelMaskID, maskImages));
-
-		return true;
-	}
-
-	// Get a mask image point in certain position
-	// return NULL if it is not valid
-	Image* MosaicLayer::GetMaskImage(int iPanelMaskID, unsigned int iCamIndex, unsigned int iTrigIndex) 
-	{
-		// Whether the mask layer exists
-		if(_maskLayerMap.find(iPanelMaskID) == _maskLayerMap.end())
-			return(NULL);
-
-		unsigned int iPos = iTrigIndex* GetNumberOfCameras() + iCamIndex;
-		return(&_maskLayerMap[iPanelMaskID][iPos]);
 	}
 
 #pragma endregion

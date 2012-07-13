@@ -2040,12 +2040,6 @@ void OverlapManager::CreatePanelMaskImageMap()
 			// If need mask and mask image exists
 			if(pFlags->GetMaskInfo()._bMask && pFlags->GetMaskInfo()._pPanelMaskImage != NULL)
 			{	
-				// Add mask layer into mosaic layer
-				if(pFlags->GetMaskInfo()._bMaskFirstLayer)
-					_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
-				else
-					_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
-				
 				// If already has been added into map
 				if(_panelMaskImageMap.find(pFlags->GetMaskInfo()._iPanelMaskIndex) != _panelMaskImageMap.end())
 					continue;
@@ -2082,12 +2076,6 @@ void OverlapManager::CreatePanelMaskImageMap()
 					maskInfo._iPanelMaskIndex = heightMap[maskInfo._dMinHeight];
 					maskInfo._pPanelMaskImage = _panelMaskImageMap[maskInfo._iPanelMaskIndex]._pMaskImage;
 					pFlags->SetMaskInfo(maskInfo);
-
-					// Add mask layer into mosaic layer
-					if(pFlags->GetMaskInfo()._bMaskFirstLayer)
-						_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
-					else
-						_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
 
 					continue;
 				}
@@ -2128,12 +2116,6 @@ void OverlapManager::CreatePanelMaskImageMap()
 				maskInfo._iPanelMaskIndex = iCount;
 				maskInfo._pPanelMaskImage = pMaskImage;
 				pFlags->SetMaskInfo(maskInfo);
-
-				// Add mask layer into mosaic layer
-				if(pFlags->GetMaskInfo()._bMaskFirstLayer)
-					_pMosaicSet->GetLayer(i)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
-				else
-					_pMosaicSet->GetLayer(j)->AddMaskLayer(pFlags->GetMaskInfo()._iPanelMaskIndex);
 			}
 		}
 	}
