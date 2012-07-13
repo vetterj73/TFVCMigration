@@ -425,7 +425,7 @@ namespace CyberStitchFidTester
                     Output("Panel dPanelXscale is: " + set.dPanelXscale);
                     Output("Panel dPanelYscale is: " + set.dPanelYscale);
 
-                    if (bSaveStitchedResultsImage)
+                    if (bSaveStitchedResultsImage && ManagedCoreAPI.NumberOfDevices()>1)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
                                                _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
