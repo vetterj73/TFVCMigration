@@ -109,7 +109,7 @@ bool Cad2Img::DrawMaskImage(Panel* pPanel, unsigned char* pMaskBuf, int iStride,
 
 		RectangularFeature* pRect = (RectangularFeature*)feature->second;
 		RectangularFeature expRect(0, pRect->GetCadX(), pRect->GetCadY(), pRect->GetRotation(),
-			pRect->GetSizeX()+dPixelExpansion*resolutionX, pRect->GetSizeY()+dPixelExpansion*resolutionY, pRect->GetSizeZ());
+			pRect->GetSizeX()+dPixelExpansion*2*resolutionX, pRect->GetSizeY()+dPixelExpansion*2*resolutionY, pRect->GetSizeZ());
 		
 		int iAntiAlias = 0;
 		int iGreyLevel = 255;

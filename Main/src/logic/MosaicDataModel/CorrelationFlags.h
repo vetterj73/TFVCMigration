@@ -35,7 +35,7 @@ namespace MosaicDM
 		bool GetTriggerToTrigger(){return _triggerToTrigger;};
 		void SetTriggerToTrigger(bool tTot){_triggerToTrigger = tTot;};		
 		
-		MaskInfo GetMaskInfo(){return _maskInfo;};
+		MaskInfo* GetMaskInfo(){return &_maskInfo;};
 		void SetMaskInfo(MaskInfo maskInfo){_maskInfo = maskInfo;};
 
 		bool GetApplyCorrelationAreaSizeUpLimit(){return _applyCorrelationAreaSizeUpLimit;};

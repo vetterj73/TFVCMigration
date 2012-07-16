@@ -207,12 +207,10 @@ OverlapManager::~OverlapManager(void)
 	if(_pCurPanelFidImages != NULL)
 		delete [] _pCurPanelFidImages;
 
-	for(map<int, MaskImageInfo>::iterator i = _panelMaskImageMap.begin(); i != _panelMaskImageMap.end(); i++)
+	for(map<int, Image*>::iterator i = _panelMaskImageMap.begin(); i != _panelMaskImageMap.end(); i++)
 	{	
-		if(!i->second._bPassedIn)
-			delete i->second._pMaskImage;
+		delete i->second;
 	}
-
 	_panelMaskImageMap.clear();
 }
 
@@ -291,7 +289,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(iIndex1, iIndex2);
 	bool bCamCam = pFlags->GetCameraToCamera();
 	bool bTrigTrig = pFlags->GetTriggerToTrigger();
-	MaskInfo maskInfo = pFlags->GetMaskInfo();
+	MaskInfo* pMaskInfo = pFlags->GetMaskInfo();
 	bool bApplyCorSizeUpLimit = pFlags->GetApplyCorrelationAreaSizeUpLimit();
 	
 	// Camera centers in Y of world space and trigger centers in X of world space 
@@ -384,7 +382,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, &maskInfo);
+							_validRect, bApplyCorSizeUpLimit, pMaskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -402,7 +400,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pLayer1, pLayer2,
 							pos1,
 							pos2,
-							_validRect, bApplyCorSizeUpLimit, &maskInfo);
+							_validRect, bApplyCorSizeUpLimit, pMaskInfo);
 
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
@@ -458,7 +456,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 								pLayer1, pLayer2,
 								pos1,
 								pos2,
-								_validRect, bApplyCorSizeUpLimit, &maskInfo);
+								_validRect, bApplyCorSizeUpLimit, pMaskInfo);
 
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
@@ -1874,13 +1872,13 @@ bool OverlapManager::AddSingleSupplementOverlap(
 
 	// Create supplement overlap
 	TilePosition pos1(iTrigIndex, iCamIndex), pos2(iNextTrig, iCamIndex);
-	MaskInfo maskInfo = _pMosaicSet->GetCorrelationFlags(pLayer->Index(), pLayer->Index())->GetMaskInfo();
+	MaskInfo* pMaskInfo = _pMosaicSet->GetCorrelationFlags(pLayer->Index(), pLayer->Index())->GetMaskInfo();
 	FovFovOverlap overlap(
 		pLayer,
 		pLayer,
 		pos1,
 		pos2,
-		_validRect, false, &maskInfo);
+		_validRect, false, pMaskInfo);
 
 	// Add supplement overlap if it it is valid
 	if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
@@ -2033,54 +2031,31 @@ FovFovOverlapList* OverlapManager::GetSupplementOverlaps()
 // Create panel mask image map
 void OverlapManager::CreatePanelMaskImageMap()
 {
-	// Add existing mask image into map
-	for(unsigned int i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
-	{
-		for(unsigned int j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
-		{
-			// for each flag;
-			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
-
-			// If need mask and mask image exists
-			if(pFlags->GetMaskInfo()._bMask && pFlags->GetMaskInfo()._pPanelMaskImage != NULL)
-			{	
-				// If already has been added into map
-				if(_panelMaskImageMap.find(pFlags->GetMaskInfo()._iPanelMaskIndex) != _panelMaskImageMap.end())
-					continue;
-
-				// Add into map
-				MaskImageInfo maskImageInfo(pFlags->GetMaskInfo()._pPanelMaskImage, true);
-				_panelMaskImageMap.insert(pair<int, MaskImageInfo>(pFlags->GetMaskInfo()._iPanelMaskIndex, maskImageInfo));
-			}
-		}
-	}
-
-	// Create not existing mask image and add into map
+	// Create not existing mask image and add into map	
+	unsigned int iNumLayers = _pMosaicSet->GetNumMosaicLayers();
 	unsigned int iNumRows = _pPanel->GetNumPixelsInX();
 	unsigned int iNumCols = _pPanel->GetNumPixelsInY();
 	unsigned int iBufSize = iNumRows * iNumCols;
 
 	int iCount = 0;
 	map<double, int> heightMap;
-	for(unsigned int i=0; i<_pMosaicSet->GetNumMosaicLayers(); i++)
+	for(unsigned int i=0; i<iNumLayers; i++)
 	{
-		for(unsigned int j=i; j<_pMosaicSet->GetNumMosaicLayers(); j++)
+		for(unsigned int j=i; j<iNumLayers; j++)
 		{
 			// for each Flag
-			CorrelationFlags *pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
+			CorrelationFlags* pFlags = _pMosaicSet->GetCorrelationFlags(i, j);
+			MaskInfo* pMaskInfo = _pMosaicSet->GetCorrelationFlags(i, j)->GetMaskInfo();
 
 			// Need mask and mask image not exist
-			if(pFlags->GetMaskInfo()._bMask && pFlags->GetMaskInfo()._pPanelMaskImage == NULL)
+			if(pMaskInfo->_bMask && pMaskInfo->_pPanelMaskImage == NULL)
 			{
 				// If already has been added into map
-				MaskInfo maskInfo = pFlags->GetMaskInfo();
-				if(heightMap.find(maskInfo._dMinHeight) != heightMap.end())
+				if(heightMap.find(pMaskInfo->_dMinHeight) != heightMap.end())
 				{
 					// Update flag
-					maskInfo._iPanelMaskIndex = heightMap[maskInfo._dMinHeight];
-					maskInfo._pPanelMaskImage = _panelMaskImageMap[maskInfo._iPanelMaskIndex]._pMaskImage;
-					pFlags->SetMaskInfo(maskInfo);
-
+					pMaskInfo->_iPanelMaskIndex = heightMap[pMaskInfo->_dMinHeight];
+					pMaskInfo->_pPanelMaskImage = _panelMaskImageMap[pMaskInfo->_iPanelMaskIndex];
 					continue;
 				}
 
@@ -2090,36 +2065,36 @@ void OverlapManager::CreatePanelMaskImageMap()
 				t[0][1] = 0;
 				t[0][2] = _validRect.xMin;
 				t[1][0] = 0;
-				t[1][1] = _pPanel->GetPixelSizeX();
+				t[1][1] = _pPanel->GetPixelSizeY();
 				t[1][2] = _validRect.yMin;
 				t[2][0] = 0;
 				t[2][1] = 0;
 				t[2][2] = 1;
 				ImgTransform trans(t);
 
-				// Create buffer
-				unsigned char* pMaskBuf = new unsigned char[iBufSize];
-				_pPanel->CreateMaskBuffer(pMaskBuf, iNumCols, maskInfo._dMinHeight, 5);
-
-				// Create image
+				// Create empty image with buffer
 				int iBytePerPixel = 1;
-				bool bCreateOwnBuf = false;
+				bool bCreateOwnBuf = true;
 				Image* pMaskImage = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-					trans, trans, bCreateOwnBuf, pMaskBuf);
+					trans, trans, bCreateOwnBuf);
+				pMaskImage->ZeroBuffer();
+
+				// Create mask image
+				int iCadExpansion = 5; // Expansion for all 4 directions
+				_pPanel->CreateMaskBuffer(pMaskImage->GetBuffer(), iNumCols, pMaskInfo->_dMinHeight, iCadExpansion);
+
+				// For debug
 				//pMaskImage->Save("C:\\Temp\\mask.bmp");
 
-				// Decide Index
-				while(_panelMaskImageMap.find(iCount) != _panelMaskImageMap.end())
-					iCount++;
-
 				// Add to map
-				MaskImageInfo maskImageInfo(pMaskImage, false);
-				_panelMaskImageMap.insert(pair<int, MaskImageInfo>(iCount, maskImageInfo));
+				_panelMaskImageMap.insert(pair<int, Image*>(iCount, pMaskImage));
+				heightMap.insert(pair<double, int>(pMaskInfo->_dMinHeight, iCount));
 
 				// Update flag
-				maskInfo._iPanelMaskIndex = iCount;
-				maskInfo._pPanelMaskImage = pMaskImage;
-				pFlags->SetMaskInfo(maskInfo);
+				pMaskInfo->_iPanelMaskIndex = iCount;
+				pMaskInfo->_pPanelMaskImage = pMaskImage;
+
+				iCount++;
 			}
 		}
 	}

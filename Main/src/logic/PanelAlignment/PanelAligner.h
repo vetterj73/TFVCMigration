@@ -104,7 +104,7 @@ protected:
 	bool PickOneAlign4EachPanelFiducial();
 
 	// For mask
-	void CalTransformWithMask();
+	void CalTransformsWithMask();
 
 	// For debug
 	void DisturbFiducialAlignment();

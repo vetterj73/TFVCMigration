@@ -276,8 +276,10 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 #pragma region create Mask
 
 
-void PanelAligner::CalTransformWithMask()
+void PanelAligner::CalTransformsWithMask()
 {
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin Mask");
+
 	_pOverlapManager->AlignFovFovOverlapWithMask();
 
 	// Reset solver
@@ -323,6 +325,8 @@ void PanelAligner::CalTransformWithMask()
 			}
 		}
 	}
+
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask");
 
 	// Reset solver
 	_pSolver->Reset();
@@ -673,7 +677,7 @@ bool PanelAligner::CreateTransforms()
 
 	// If mask is needed
 	if(bMaskNeeded)
-		CalTransformWithMask();
+		CalTransformsWithMask();
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 

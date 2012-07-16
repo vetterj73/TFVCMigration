@@ -26,23 +26,6 @@ typedef list<FidFovOverlap> FidFovOverlapList;
 typedef FidFovOverlapList::iterator FidFovOverlapListIterator;
 
 
-struct MaskImageInfo
-{
-	Image* _pMaskImage;
-	bool _bPassedIn;
-	MaskImageInfo()
-	{
-		_pMaskImage = NULL;
-		_bPassedIn = false;
-	}
-	MaskImageInfo(Image* pMaskImage, bool bPassedIn)
-	{
-		_pMaskImage = pMaskImage;
-		_bPassedIn = bPassedIn;
-	}
-};
-
-
 class OverlapManager
 {
 public:
@@ -219,7 +202,7 @@ private:
 
 	// For mask
 	bool _bNeedMask;
-	map<int, MaskImageInfo> _panelMaskImageMap;
+	map<int, Image*> _panelMaskImageMap;
 	FovFovOverlapPtrList _maskFovFovOverlapPtrSet;
 };
 

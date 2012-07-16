@@ -166,12 +166,14 @@ namespace SIMMosaicUtils
 
                     if (bMaskForDiffDevices)
                     {
-                        if (Math.Abs(i - j) >= 2)    // For layrer in difference device
+                        int iValue = (int)Math.Abs((int)i - (int)j);
+                        if (Math.Abs((int)i - (int)j) >= 2 // For layrer in difference device
+                            || (i>=2 && j>=2))   
                         {
                             bool bMask = true; 
 		                    double dMinHeight = 0;
 		                    bool bMaskFirstLayer = true;
-		                    bool bOnlyCalOveralpWithMask = true;
+		                    bool bOnlyCalOveralpWithMask = false;
                             ManagedMaskInfo maskInfo = new ManagedMaskInfo(
                                 bMask, dMinHeight, bMaskFirstLayer, bOnlyCalOveralpWithMask);
                             flag.SetMaskInfo(maskInfo);   

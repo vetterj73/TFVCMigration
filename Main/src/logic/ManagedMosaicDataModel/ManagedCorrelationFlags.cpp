@@ -36,13 +36,13 @@ namespace MMosaicDM
 
 	ManagedMaskInfo^ ManagedCorrelationFlags::GetMaskInfo()
 	{
-		MosaicDM::MaskInfo maskInfo = _pCorrelationFlags->GetMaskInfo();
+		MosaicDM::MaskInfo* pMaskInfo = _pCorrelationFlags->GetMaskInfo();
 
 		ManagedMaskInfo^ infoM = gcnew ManagedMaskInfo() ;
-		infoM->_bMask = maskInfo._bMask;
-		infoM->_dMinHeight = maskInfo._dMinHeight;
-		infoM->_bMaskFirstLayer = maskInfo._bMaskFirstLayer;
-		infoM->_bOnlyCalOveralpWithMask = maskInfo._bOnlyCalOveralpWithMask;
+		infoM->_bMask = pMaskInfo->_bMask;
+		infoM->_dMinHeight = pMaskInfo->_dMinHeight;
+		infoM->_bMaskFirstLayer = pMaskInfo->_bMaskFirstLayer;
+		infoM->_bOnlyCalOveralpWithMask = pMaskInfo->_bOnlyCalOveralpWithMask;
 
 		return(infoM);
 	}
