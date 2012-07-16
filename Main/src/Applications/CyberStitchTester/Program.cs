@@ -60,7 +60,7 @@ namespace CyberStitchTester
             string simulationFile = "";
             string panelFile="";
             bool bContinuous = false;
-            bool bOwnBuffers = false;
+            bool bOwnBuffers = true; /// Must be true because we are release buffers immediately.
             bool bMaskForDiffDevices = false;
             bool bAdjustForHeight = true;
             bool bUseProjective = true;
@@ -73,9 +73,7 @@ namespace CyberStitchTester
 
             for(int i=0; i<args.Length; i++)
             {
-                if (args[i] == "-b")
-                    bOwnBuffers = true;
-                else if (args[i] == "-c")
+                if (args[i] == "-c")
                     bContinuous = true;
                 else if (args[i] == "-n" && i < args.Length - 1)
                     numberToRun = Convert.ToInt16(args[i + 1]);
@@ -241,7 +239,7 @@ namespace CyberStitchTester
                 _aligner.ResetForNextPanel();
                
                 _mosaicSet.ClearAllImages();
-                Output("Begin stitch cycle");
+                Output("Begin stitch cycle...");
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -522,7 +520,7 @@ namespace CyberStitchTester
             // lauch next device in simulation case
             if (_bSimulating && numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
             {
-                //Thread.Sleep(10000);
+//                Thread.Sleep(10000);
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(numAcqsComplete);
                 Output("Begin SIM" + numAcqsComplete + " acquisition");
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
@@ -540,8 +538,8 @@ namespace CyberStitchTester
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
-           // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
-           //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
+            //Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
+             //   pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
             _iBufCount++; // for debug
 
             int device = pframe.DeviceIndex();
@@ -552,6 +550,9 @@ namespace CyberStitchTester
                         pframe.CaptureSpecIndex());
 
             _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
+
+            ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+            d.ReleaseFrameBuffer(pframe);
         }
 
         private static void Output(string str)
