@@ -407,11 +407,17 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 }
 
 
-bool RobustSolverCM::AddCalibationConstraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials)
+bool RobustSolverCM::AddCalibationConstraints(
+	MosaicLayer* pLayer, 
+	unsigned int iCamIndex, 
+	unsigned int iTrigIndex, 		
+	bool bPinFov, 
+	bool bUseOrgTransform)
 {
 	// there are no per FOV calib constraints in the camera model fit
 	return true;
 }
+
 bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {
 	// Validation check for overlap

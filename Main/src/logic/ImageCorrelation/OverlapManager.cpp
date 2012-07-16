@@ -160,6 +160,10 @@ OverlapManager::OverlapManager(
 		if(iLayerIndex > (int)_pMosaicSet->GetNumMosaicLayers()-1) iLayerIndex = _pMosaicSet->GetNumMosaicLayers()-1;
 		_pEdgeDetector->Initialization(_pMosaicSet->GetLayer(iLayerIndex), _validRect);
 	}
+
+	// For Mask
+	// Mask after CreateFovFovOverlaps()
+	CreateMaskOverlapPtrSet();
 }
 
 OverlapManager::~OverlapManager(void)
@@ -2026,7 +2030,7 @@ FovFovOverlapList* OverlapManager::GetSupplementOverlaps()
 
 #pragma region Mask
 
-// Create Fov and Fov overlaps
+// Create panel mask image map
 void OverlapManager::CreatePanelMaskImageMap()
 {
 	// Add existing mask image into map
@@ -2121,6 +2125,40 @@ void OverlapManager::CreatePanelMaskImageMap()
 	}
 }
 
+// Create a set that hold all FovFov Overlaps that need mask
+bool OverlapManager::CreateMaskOverlapPtrSet()
+{
+	_bNeedMask = false;
+	_maskFovFovOverlapPtrSet.clear();
+
+	for(FovFovOverlapList::iterator i = _fovFovOverlapSet.begin(); i != _fovFovOverlapSet.end(); i++)
+	{
+		if(i->HasMaskPanelImage())
+		{
+			_maskFovFovOverlapPtrSet.push_back(&(*i));
+			_bNeedMask = true;
+		}
+	}
+
+	return(_bNeedMask);
+}
+
+
+// Align FovFov overlap with mask 
+void OverlapManager::AlignFovFovOverlapWithMask()
+{
+	if(!_bNeedMask)
+		return;
+
+	for(FovFovOverlapPtrList::iterator i = _maskFovFovOverlapPtrSet.begin(); i != _maskFovFovOverlapPtrSet.end(); i++)
+	{
+		(*i)->SetUseMask(true);		// Let overlap use mask
+
+		_pJobManager->AddAJob((CyberJob::Job*)*i);
+	}
+
+	FinishOverlaps();
+}
 
 #pragma endregion
 

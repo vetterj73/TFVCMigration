@@ -212,7 +212,15 @@ bool Overlap::CalCoarseCorrPair()
 	return(true);
 }
 
-void Overlap::UseMask(bool bValue)
+bool Overlap::HasMaskPanelImage()
+{
+	return(_pMaskInfo != NULL &&
+		_pMaskInfo->_bMask && 
+		_pMaskInfo->_pPanelMaskImage != NULL &&
+		_pMaskInfo->_pPanelMaskImage->GetBuffer() != NULL);
+}
+
+void Overlap::SetUseMask(bool bValue)
 {
 	if(bValue == _bUseMask)
 		return;

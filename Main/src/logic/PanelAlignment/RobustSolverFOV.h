@@ -20,8 +20,11 @@ public:
 	~RobustSolverFOV(void);
 
 	bool AddCalibationConstraints(
-		MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false);
+		MosaicLayer* pLayer, 
+		unsigned int iCamIndex, 
+		unsigned int iTrigIndex, 
+		bool bPinFov=false, 
+		bool bUseNorminalTransform=true);
 	bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		double dXOffset, double dSlope, bool bSlopeOnly=false);

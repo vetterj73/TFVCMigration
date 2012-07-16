@@ -104,6 +104,12 @@ public:
 	int CalSupplementOverlaps();
 	FovFovOverlapList* GetSupplementOverlaps();
 
+	// for Mask
+	bool IsMaskNeeded() {return _bNeedMask;};
+	FovFovOverlapPtrList* GetMaskFovFovPtrSet() {return &_maskFovFovOverlapPtrSet;};
+	void AlignFovFovOverlapWithMask();
+
+
 protected:
 	bool IsCadImageNeeded();
 
@@ -176,6 +182,7 @@ protected:
 
 	// For mask
 	void CreatePanelMaskImageMap();
+	bool CreateMaskOverlapPtrSet();
 
 private:	
 	MosaicSet *_pMosaicSet;
@@ -211,6 +218,8 @@ private:
 	FovFovOverlapList _supFovFovOvelapList;
 
 	// For mask
+	bool _bNeedMask;
 	map<int, MaskImageInfo> _panelMaskImageMap;
+	FovFovOverlapPtrList _maskFovFovOverlapPtrSet;
 };
 

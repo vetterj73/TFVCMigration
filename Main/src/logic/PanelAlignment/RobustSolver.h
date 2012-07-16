@@ -53,8 +53,11 @@ public:
 	~RobustSolver(void);
 
 	virtual bool AddCalibationConstraints(
-		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
-		bool bPinFov=false)=0;
+		MosaicLayer* pLayer, 
+		unsigned int iCamIndex, 
+		unsigned int iTrigIndex, 
+		bool bPinFov=false, 
+		bool bUseNorminalTransform=true)=0;
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope, bool bSlopeOnly=false)=0;

@@ -89,7 +89,11 @@ protected:
 		map<FovIndex, unsigned int>* pOrderMap) const;
 
 	bool CreateTransforms();
-	void AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiducials, bool bPinPanelWithCalibration=false);
+	void AddOverlapResults2Solver(
+		RobustSolver* solver, 
+		bool bUseFiducials, 
+		bool bPinPanelWithCalibration=false,
+		bool bUseNorminalTransform=true);
 	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
 	bool UseEdgeInfomation();
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);
@@ -98,6 +102,9 @@ protected:
 
 	int FiducialAlignmentCheckOnCalibration();
 	bool PickOneAlign4EachPanelFiducial();
+
+	// For mask
+	void CalTransformWithMask();
 
 	// For debug
 	void DisturbFiducialAlignment();

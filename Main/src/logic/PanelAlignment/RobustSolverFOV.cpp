@@ -102,8 +102,11 @@ void RobustSolverFOV::ZeroTheSystem()
 /// <param name="bPinFOV">Used when no fiducials are found, 'pin' this FOV location to CAD location</param>
 /// 
 bool RobustSolverFOV::AddCalibationConstraints(
-	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
-	bool bPinFOV)
+	MosaicLayer* pLayer, 
+	unsigned int iCamIndex, 
+	unsigned int iTrigIndex,	
+	bool bPinFov, 
+	bool bUseNorminalTransform)
 {
 	// Validation check
 	if(iCamIndex>=pLayer->GetNumberOfCameras() || iTrigIndex>=pLayer->GetNumberOfTriggers())
@@ -114,6 +117,8 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
 	ImgTransform transFov = pLayer->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform();
+	if(!bUseNorminalTransform) 
+		transFov = pLayer->GetImage(iTrigIndex, iCamIndex)->GetTransform();
 	unsigned int iCols = pLayer->GetImage(iTrigIndex, iCamIndex)->Columns();
 	unsigned int iRows = pLayer->GetImage(iTrigIndex, iCamIndex)->Rows();
 	double dPixelCenRow = (iRows-1) / 2.0;
@@ -131,6 +136,8 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
 		transNextCamFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetNominalTransform();
+		if(!bUseNorminalTransform)
+			transNextCamFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetTransform();
 		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
 	
@@ -208,7 +215,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	// Use FOV center instread of (0,0) is to add more constraint for projective transform
 	double dTempWeight = Weights.wYcent;
 	// If fiducial information is not used, one FOV will have high weight
-	if(bPinFOV)
+	if(bPinFov)
 		dTempWeight = Weights.wYcentNoFid;
 	pdRowBegin[iFOVPos+3] = dTempWeight * dPixelCenRow;
 	pdRowBegin[iFOVPos+4] = dTempWeight * dPixelCenCol;
@@ -227,7 +234,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	// Use FOV center instread of (0,0) is to add more constraint for projective transform
 	dTempWeight = Weights.wXcent;
 	// If fiducial information is not used, one FOV will have high weight
-	if(bPinFOV)
+	if(bPinFov)
 		dTempWeight = Weights.wXcentNoFid;
 	pdRowBegin[iFOVPos+0] = dTempWeight * dPixelCenRow;
 	pdRowBegin[iFOVPos+1] = dTempWeight * dPixelCenCol;

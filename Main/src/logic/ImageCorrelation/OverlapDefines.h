@@ -49,7 +49,8 @@ public:
 
 	OverlapType GetOverlapType() {return _type;};
 
-	void UseMask(bool bValue);
+	bool HasMaskPanelImage();
+	void SetUseMask(bool bValue);
 	void SkipCoarseAlign(bool bValue) {_bSkipCoarseAlign = bValue;};
 
 	// Do alignment and reset

@@ -19,7 +19,12 @@ public:
 
 	virtual ~RobustSolverCM(void);
 
-	virtual bool AddCalibationConstraints(MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
+	virtual bool AddCalibationConstraints(
+		MosaicLayer* pLayer, 
+		unsigned int iCamIndex, 
+		unsigned int iTrigIndex,	
+		bool bPinFov=false, 
+		bool bUseNorminalTransform=true);
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		double dXOffset, double dSlope, bool bSlopeOnly=false);

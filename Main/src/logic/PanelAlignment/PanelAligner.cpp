@@ -275,6 +275,59 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 
 #pragma region create Mask
 
+
+void PanelAligner::CalTransformWithMask()
+{
+	_pOverlapManager->AlignFovFovOverlapWithMask();
+
+	// Reset solver
+	_pSolver->Reset();
+
+	// Create matrix and vector for solver
+	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch)
+	{
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+	}
+
+	// Fill the solver
+	bool bUseFiducials = true; 
+	bool bPinPanelWithCalibration = false;
+	bool bUseNorminalTransform = false;
+	AddOverlapResults2Solver(
+		_pSolver,
+		bUseFiducials, 
+		bPinPanelWithCalibration,
+		bUseNorminalTransform);
+
+	// Solve transforms with panel leading edge but without fiducial information
+	_pSolver->SolveXAlgH();
+	//if camera model, must flatten fiducials
+	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
+
+	// Set transform tos Fov images
+	// For each mosaic image
+	int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(int i=0; i<iNumLayer; i++)
+	{
+		// Get calculated transforms
+		MosaicLayer* pLayer = _pSet->GetLayer(i);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				Image* img = pLayer->GetImage(iTrig, iCam);
+				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
+				img->SetTransform(t);
+				img->CalInverseTransform();
+			}
+		}
+	}
+
+	// Reset solver
+	_pSolver->Reset();
+}
+
 #pragma endregion
 
 #pragma region Align base on panel edge
@@ -457,7 +510,11 @@ bool PanelAligner::UseEdgeInfomation()
 
 #pragma region create transforms
 
-void PanelAligner::AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiducials, bool bPinPanelWithCalibration)
+void PanelAligner::AddOverlapResults2Solver(
+	RobustSolver* solver, 
+	bool bUseFiducials, 
+	bool bPinPanelWithCalibration,
+	bool bUseNorminalTransform)
 {
 	int iNumLayer = _pSet->GetNumMosaicLayers();
 	for(int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
@@ -478,7 +535,7 @@ void PanelAligner::AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiduc
 					bPinFov = true;
 				}
 
-				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov);
+				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov, bUseNorminalTransform);
 
 				// Add Cad and Fov overlap results
 				CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);
@@ -594,6 +651,8 @@ bool PanelAligner::CreateTransforms()
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
 
+	bool bMaskNeeded = _pOverlapManager->IsMaskNeeded();
+
 	// For each mosaic image
 	for(int i=0; i<iNumLayer; i++)
 	{
@@ -606,10 +665,15 @@ bool PanelAligner::CreateTransforms()
 				Image* img = pLayer->GetImage(iTrig, iCam);
 				ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 				img->SetTransform(t);
-				img->CalInverseTransform();
+				if(!bMaskNeeded)
+					img->CalInverseTransform();
 			}
 		}
 	}
+
+	// If mask is needed
+	if(bMaskNeeded)
+		CalTransformWithMask();
 
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
 
