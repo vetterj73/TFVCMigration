@@ -491,15 +491,14 @@ FovFovOverlap::FovFovOverlap(
 	_pLayer2 = pLayer2;
 	_imgPos1 = ImgPos1;
 	_imgPos2 = ImgPos2;
-	_pMaskInfo= pMaskInfo;
 
 	Image* pImg1 = _pLayer1->GetImage(_imgPos1.iTrigIndex, _imgPos1.iCamIndex);
 	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 
-	Config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit);
+	Config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskInfo);
 
 	// Must after config();
-	if(_pMaskInfo != NULL &&  pMaskInfo->_bMask)
+	if(HasMaskPanelImage())
 	{
 		_pMaskImg = new Image(
 			pImg1->Columns(),
