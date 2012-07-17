@@ -51,7 +51,7 @@ public:
 
 	bool HasMaskPanelImage();
 	void SetUseMask(bool bValue);
-	void SkipCoarseAlign(bool bValue) {_bSkipCoarseAlign = bValue;};
+	void SetSkipCoarseAlign(bool bValue) {_bSkipCoarseAlign = bValue;};
 
 	// Do alignment and reset
 	void Run();
@@ -68,7 +68,7 @@ protected:
 	list<CorrelationPair> _finePairList;
 	
 	//For mask
-	Image* _pMaskImg;
+	Image* _pMaskImg;	// Mask image is with first Fov/image
 	MaskInfo* _pMaskInfo;
 	
 	virtual bool DumpOvelapImages()=0;

@@ -196,6 +196,7 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 	bool bUseMask = _bUseMask && _pMaskImg != NULL && _pMaskImg->GetBuffer() != NULL;
 	if(bUseMask)
 	{
+		// Count pixels for mask
 		unsigned int iCount = 0;
 		unsigned char* pLineBuf = _pMaskImg->GetBuffer() + 
 			_roi1.FirstRow*_pMaskImg->PixelRowStride();
@@ -210,8 +211,16 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 			pLineBuf += _pMaskImg->PixelRowStride();
 		}
 
-		if(iCount*100/_roi1.Rows()/_roi1.Columns() > CorrelationParametersInst.dMaskAreaRatioTh*100)
+		// Mask area ratio
+		double dRate = (double)iCount/(double)_roi1.Rows()/(double)_roi1.Columns();
+
+		// If ratio > Threshold, use NGC
+		if( dRate > CorrelationParametersInst.dMaskAreaRatioTh*100)
 			bSRC = false;
+
+		// If ratio is too big, ignore
+		if( dRate > 0.95)
+			return(false);
 	}
 
 	if(bSRC)

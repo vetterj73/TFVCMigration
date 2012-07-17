@@ -67,14 +67,23 @@ void Overlap::Config(
 
 	_bApplyCorrSizeUpLimit = bApplyCorrSizeUpLimit;
 
+	// For mask
+	_pMaskInfo = pMaskInfo;
+	if(HasMaskPanelImage())
+	{
+		_pMaskImg = new Image(
+			pImg1->Columns(),
+			pImg1->Rows(),
+			pImg1->Columns(),
+			1,
+			pImg1->GetNominalTransform(),
+			pImg1->GetTransform(),
+			true);	// Mask image is with first Fov
+	}
+
 	_bValid = CalCoarseCorrPair();
 	_bProcessed = false;
 	_bGood4Solver = true;
-
-	_bUseMask = false;
-	_bSkipCoarseAlign = false; 
-	_pMaskImg = NULL;
-	_pMaskInfo = pMaskInfo;
 
 	if(_bValid)
 	{
@@ -202,7 +211,7 @@ bool Overlap::CalCoarseCorrPair()
 		_pImg1, _pImg2, 
 		roi1, pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
 		iDecim, iColSearchExpansion, iRowSearchExpansion,
-		this, NULL);
+		this, _pMaskImg);
 
 	if(!coarsePair.IsValid())
 		return(false);
@@ -287,8 +296,8 @@ void Overlap::Run()
 			iLayer1 = 0;
 	}//*/
 
-
-	if(!_bSkipCoarseAlign)
+	// If not skip coarse alignment or not FovFov overlap
+	if(!_bSkipCoarseAlign || _type != Fov_To_Fov)
 	{
 		// Do coarse correlation
 		bool bCorrSizeReduced = false;
@@ -323,16 +332,17 @@ void Overlap::Run()
 			return;
 		}
 	}
+
 // Fine alignemt (only for Fov and Fov)
 	// Clean fine correlation pair list
 	_finePairList.clear();
 
-	// Adjust ROI base on the coarse results
+	// Adjust ROI based on coarse results or current image transforms
 	bool bAdjusted = false;
 	CorrelationPair tempPair = _coarsePair;
 	double dCoarseReliableScore = 0;
 	if(!_bSkipCoarseAlign)
-	{
+	{	// Based on coarse results
 		if(_coarsePair.IsProcessed())
 		{
 			CorrelationResult result= _coarsePair.GetCorrelationResult();
@@ -343,7 +353,7 @@ void Overlap::Run()
 	}
 	else
 	{
-		// Set (not calculate) coarse result base on image transform
+		// Based on current image transforms
 		double dx1, dy1, dx2, dy2;
 		_pImg1->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter(), &dx1, &dy1);
 		_pImg2->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter(), &dx2, &dy2);
@@ -400,7 +410,7 @@ void Overlap::Run()
 	if(bUseMask)
 	{
 		_pMaskImg->ZeroBuffer();
-		_pMaskImg->SetTransform(_pImg1->GetTransform());
+		_pMaskImg->SetTransform(_pImg1->GetTransform()); 
 	}
 
 	// Do fine correlation
@@ -409,7 +419,6 @@ void Overlap::Run()
 		// Set for mask
 		if(bUseMask)
 		{
-			i->SetMaskImg(_pMaskImg);
 			i->UseMask(true);
 			_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
 		}
@@ -496,21 +505,6 @@ FovFovOverlap::FovFovOverlap(
 	Image* pImg2 = _pLayer2->GetImage(_imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 
 	Config(pImg1, pImg2, validRect, Fov_To_Fov, bApplyCorrSizeUpLimit, pMaskInfo);
-
-	// Must after config();
-	if(HasMaskPanelImage())
-	{
-		_pMaskImg = new Image(
-			pImg1->Columns(),
-			pImg1->Rows(),
-			pImg1->Columns(),
-			1,
-			pImg1->GetNominalTransform(),
-			pImg1->GetTransform(),
-			true);
-
-		_coarsePair.SetMaskImg(_pMaskImg);
-	}
 }
 
 bool FovFovOverlap::IsReadyToProcess() const

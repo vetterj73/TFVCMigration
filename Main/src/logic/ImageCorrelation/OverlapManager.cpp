@@ -2127,7 +2127,8 @@ void OverlapManager::AlignFovFovOverlapWithMask()
 
 	for(FovFovOverlapPtrList::iterator i = _maskFovFovOverlapPtrSet.begin(); i != _maskFovFovOverlapPtrSet.end(); i++)
 	{
-		(*i)->SetUseMask(true);		// Let overlap use mask
+		(*i)->SetUseMask(true);				// Use mask
+		(*i)->SetSkipCoarseAlign(true);		// Skip coarse alignment
 
 		_pJobManager->AddAJob((CyberJob::Job*)*i);
 	}
