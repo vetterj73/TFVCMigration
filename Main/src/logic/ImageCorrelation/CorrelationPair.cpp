@@ -215,7 +215,7 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 		double dRate = (double)iCount/(double)_roi1.Rows()/(double)_roi1.Columns();
 
 		// If ratio > Threshold, use NGC
-		if( dRate > CorrelationParametersInst.dMaskAreaRatioTh*100)
+		if( dRate > CorrelationParametersInst.dMaskAreaRatioTh)
 			bSRC = false;
 
 		// If ratio is too big, ignore
@@ -725,6 +725,9 @@ void CorrelationPair::NorminalCenterInWorld(double* pdx, double* pdy)
 // For Debug
 void CorrelationPair::DumpImg(string sFileName) const
 {
+	// for debug
+	//if(!_bUsedNgc) return;
+
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
 		+ _roi1.FirstColumn;
@@ -768,6 +771,9 @@ void CorrelationPair::DumpImg(string sFileName) const
 
 bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
+	// For debug	
+	//if(!_bUsedNgc) return(false);
+
 	if(!_bIsProcessed) return(false);
 
 // For first channel
@@ -782,7 +788,7 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 	int ix, iy;
 
 	// Draw mask if the mask is available
-	if(_bUsedNgc && _bUseMask && _pMaskImg != NULL)
+	if(_bUsedNgc)
 	{
 		pcTempBuf1 = new Byte[iWidth*iHeight];
 		unsigned char* pcBufMask = _pMaskImg->GetBuffer() 
@@ -835,14 +841,14 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 		_roi1.Columns(),
 		pcTempBuf1, 
 		pcTempBuf2,
-		_pMaskImg== NULL ? _pImg1->PixelRowStride() : iWidth,
+		_bUsedNgc ? iWidth : _pImg1->PixelRowStride(),
 		iWidth );
 
 	rbg->write(sFileName);
 
 	delete rbg;
 
-	if(_pMaskImg != NULL) delete [] pcTempBuf1;
+	if(_bUsedNgc) delete [] pcTempBuf1;
 	delete [] pcTempBuf2;
 
 	return(true);

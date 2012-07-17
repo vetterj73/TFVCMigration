@@ -367,8 +367,8 @@ void Overlap::Run()
 		_pImg1->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter(), &dx1, &dy1);
 		_pImg2->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter(), &dx2, &dy2);
 		// Warning:: the direction need to be check
-		double dRowOffset = (dx2 - dx1)*2/(_pImg1->PixelSizeX()+_pImg2->PixelSizeX());
-		double dColOffset = (dy2 - dy1)*2/(_pImg1->PixelSizeY()+_pImg2->PixelSizeY());
+		double dRowOffset = (dx1 - dx2)*2/(_pImg1->PixelSizeX()+_pImg2->PixelSizeX());
+		double dColOffset = (dy1 - dy2)*2/(_pImg1->PixelSizeY()+_pImg2->PixelSizeY());
 		CorrelationResult result(dRowOffset, dColOffset, 1, 0);
 		_coarsePair.SetCorrlelationResult(result);
 
@@ -420,6 +420,12 @@ void Overlap::Run()
 	{
 		_pMaskImg->ZeroBuffer();
 		_pMaskImg->SetTransform(_pImg1->GetTransform()); 
+
+		// for debug
+		//_pMaskInfo->_pPanelMaskImage->Save("C:\\Temp\\PanelMaskFov.bmp");
+		//UIRect roi(0, 0, _pMaskImg->Columns()-1, _pMaskImg->Rows()-1);
+		//_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, roi);
+		//_pMaskImg->Save("C:\\Temp\\MaskFov.bmp");
 	}
 
 	// Do fine correlation
@@ -585,7 +591,7 @@ bool FovFovOverlap::DumpOvelapImages()
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
-		
+
 	s.append(cTemp);
 	_coarsePair.DumpImg(s);
 
