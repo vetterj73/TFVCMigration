@@ -398,13 +398,9 @@ bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	int iInSpanP1 = iInSpan+1;
 
 	int iflrdX, iflrdY;
-	//int iPixDiff10;
 	double dT01__dIY_T02, dT11__dIY_T12, dT21__dIY_T22;
-	double dIX, dIY, dX, dY, dDiffX, dDiffY;
-	double dVal;
-	
-	unsigned char* pInCh = pInBuf + iInSpan*iInHeight;
- 
+	double dIX, dIY, dX, dY, dVal;
+	 
 	double dDividedPupilDistrance=0;
 	if(bAffine)
 	{
@@ -430,12 +426,11 @@ bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 				}
 				else 
 				{
-						/* Compute fractional differences */
-						iflrdX =(int)dX;
-						iflrdY = (int)dY;
+					iflrdX =(int)dX;
+					iflrdY = (int)dY;
 			    
-						unsigned char* pbPixPtr = pInCh + iflrdX + iflrdY * iInSpan;
-						pOutLine[iX] = *pbPixPtr;
+					unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
+					pOutLine[iX] = *pbPixPtr;
 				}
 			} //ix
 			pOutLine += iOutSpan;		/* Next line in the output buffer */
@@ -468,7 +463,7 @@ bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 					iflrdX =(int)dX;
 					iflrdY = (int)dY;
 			    
-					unsigned char* pbPixPtr = pInCh + iflrdX + iflrdY * iInSpan;
+					unsigned char* pbPixPtr = pInBuf + iflrdX + iflrdY * iInSpan;
 					pOutLine[iX] = *pbPixPtr;
 				}
 			} // ix
