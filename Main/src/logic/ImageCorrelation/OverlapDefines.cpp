@@ -41,13 +41,19 @@ void Overlap::operator=(const Overlap& b)
 	// For mask
 	_bUseMask = b._bUseMask;
 	_bSkipCoarseAlign = b._bSkipCoarseAlign; 
-	_pMaskImg = b._pMaskImg;
-	_pMaskInfo = b._pMaskInfo; 
+	_pMaskInfo = b._pMaskInfo; 	
+		// Create own mask image if not NULL
+	if(b._pMaskImg == NULL)
+		_pMaskImg = NULL;
+	else
+		_pMaskImg = new Image(*b._pMaskImg);
 
 	//** Warning Coarse pair need to point to different parents,
 	_coarsePair = b._coarsePair;
 	// Override the parent point
 	_coarsePair.SetOverlapPtr(this);
+	// Override mask image
+	_coarsePair.SetMaskImg(_pMaskImg);
 }
 
 void Overlap::Config(
@@ -248,6 +254,9 @@ void Overlap::Run()
 	if(!_bValid)
 		return;
 
+	if(HasMaskPanelImage())
+		int iH = 10;
+
 	// Special process for fiducial use vsfinder 
 	if(_type == Fid_To_Fov)
 	{
@@ -405,7 +414,7 @@ void Overlap::Run()
 		_pMaskImg != NULL && 
 		_pMaskImg->GetBuffer() != NULL && 
 		_pMaskInfo->_pPanelMaskImage != NULL &&
-		_pMaskInfo->_bMask == true;
+		_pMaskInfo->_bMask;
 
 	if(bUseMask)
 	{
