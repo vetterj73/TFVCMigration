@@ -284,6 +284,14 @@ void PanelAligner::CalTransformsWithMask()
 	_pOverlapManager->AlignFovFovOverlapWithMask();
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask ovelap calculation");
 
+	// Consist check for FovFov alignment of each trigger
+	if(CorrelationParametersInst.bFovFovAlignCheck)
+	{
+		bool bTrustCoarse = true;
+		int iCoarseInconsistNum, iFineInconsistNum;
+		_pOverlapManager->FovFovAlignConsistCheckForPanel(bTrustCoarse, &iCoarseInconsistNum, &iFineInconsistNum);
+	}
+
 	// Reset solver
 	_pSolver->Reset();
 
@@ -592,8 +600,9 @@ bool PanelAligner::CreateTransforms()
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
 	{
+		bool bTrustCoarse = false;
 		int iCoarseInconsistNum, iFineInconsistNum;
-		_pOverlapManager->FovFovAlignConsistCheckForPanel(&iCoarseInconsistNum, &iFineInconsistNum);
+		_pOverlapManager->FovFovAlignConsistCheckForPanel(bTrustCoarse, &iCoarseInconsistNum, &iFineInconsistNum);
 	}
 
 	// Must after consistent check and before transform calculation

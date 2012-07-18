@@ -81,7 +81,7 @@ public:
 	PanelFiducialResultsSet* GetFidResultsSetPoint() { return _pFidResultsSet;};
 	void CreateFiducialResultSet(bool bCurPanel);
 
-	bool FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum);
+	bool FovFovAlignConsistCheckForPanel(bool bTrustCoarse, int* piCoarseInconsistNum, int* piFineInconsistNum);
 
 	// for supplement overlaps
 	int CalSupplementOverlaps();
@@ -143,15 +143,17 @@ protected:
 
 	bool FovFovAlignConsistCheckForTwoLayer(
 		unsigned int iLayer1, unsigned int iLayer2,
+		bool bTrustCoarse,
 		int* piCoarseInconsistNum, int* piFineInconsistNum);
 
 	bool FovFovAlignConsistChekcForTwoTrig(
 		unsigned int iLayer1, unsigned int iTrig1,
 		unsigned int iLayer2, unsigned int iTrig2,
+		bool bTrustCoarse,
 		int* piCoarseInconsistNum, int* piFineInconsistNum);
 
 	int FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList);
-	int FovFovFineInconsistCheck(list<FovFovOverlap*>* pList);
+	int FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool bTrustCoarse);
 
 	// For supplement overlaps
 	bool IsValid4SupplementCheck(FovFovOverlap* pOverlap);

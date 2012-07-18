@@ -1431,7 +1431,7 @@ bool CalInconsistBasedOnLine(
 // Check inconsist of Fov to Fov overlap reults for a panel
 // piCoarseInconsistNum: output, number of carse alignmemt failed in check
 // piFineInconsistNum: output, number of fine alignmemt failed in check
-bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, int* piFineInconsistNum)
+bool OverlapManager::FovFovAlignConsistCheckForPanel(bool bTrustCoarse, int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
 	*piCoarseInconsistNum = 0;
 	*piFineInconsistNum = 0;
@@ -1441,7 +1441,7 @@ bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, 
 		for(int j=i; j<iNumLayer; j++)
 		{
 			int iCoarseNum, iFineNum;
-			if(FovFovAlignConsistCheckForTwoLayer(i, j, &iCoarseNum, &iFineNum))
+			if(FovFovAlignConsistCheckForTwoLayer(i, j, bTrustCoarse, &iCoarseNum, &iFineNum))
 			{
 				*piCoarseInconsistNum += iCoarseNum;
 				*piFineInconsistNum += iFineNum;
@@ -1457,6 +1457,7 @@ bool OverlapManager::FovFovAlignConsistCheckForPanel(int* piCoarseInconsistNum, 
 // piFineInconsistNum: output, number of fine alignmemt failed in check
 bool OverlapManager::FovFovAlignConsistCheckForTwoLayer(
 	unsigned int iLayer1, unsigned int iLayer2,
+	bool bTrustCoarse,
 	int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
 	*piCoarseInconsistNum = 0;
@@ -1483,6 +1484,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoLayer(
 			if(FovFovAlignConsistChekcForTwoTrig(
 				iLayer1, iTrig1,
 				iLayer2, iTrig2,
+				bTrustCoarse,
 				&iCoarseNum, &iFineNum))
 			{
 				*piCoarseInconsistNum += iCoarseNum;
@@ -1500,6 +1502,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoLayer(
 bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	unsigned int iLayer1, unsigned int iTrig1,
 	unsigned int iLayer2, unsigned int iTrig2,
+	bool bTrustCoarse,
 	int* piCoarseInconsistNum, int* piFineInconsistNum)
 {
 	// Whether overlaps are for the same trigger
@@ -1525,8 +1528,10 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	}
 
 	// Coarse should in front of fine
-	*piCoarseInconsistNum = FovFovCoarseInconsistCheck(&trigOverlapPtrList);
-	*piFineInconsistNum = FovFovFineInconsistCheck(&trigOverlapPtrList);
+	if(!bTrustCoarse)
+		*piCoarseInconsistNum = FovFovCoarseInconsistCheck(&trigOverlapPtrList);
+
+	*piFineInconsistNum = FovFovFineInconsistCheck(&trigOverlapPtrList, bTrustCoarse);
 
 	return(true);
 }
@@ -1649,7 +1654,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 // All fine alignments with zero weight in solver will be skipped
 // pList: list of the overlaps for check
 // Return number of fine alignment failed in check
-int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
+int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool bTrustCoarse)
 {
 	list<double> rowOffsetList, colOffsetList, norminalXList, norminalYList;
 	list<CorrelationPair*> pairList;
@@ -1660,12 +1665,12 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList)
 	for(list<FovFovOverlap*>::iterator j = pList->begin(); j != pList->end(); j++)
 	{
 		// Skip overlap with coarse alignment no good for solver
-		if(!(*j)->IsGoodForSolver()) continue; 
+		if(!(*j)->IsGoodForSolver() && !bTrustCoarse) continue; 
 
 		// Coarse offset that affect fine alignment
 		double dCoarseRowOffset = 0;
 		double dCoarseColOffset = 0;
-		if((*j)->IsAdjustedBasedOnCoarseAlignment())
+		if((*j)->IsAdjustedBasedOnCoarseAlignment() || bTrustCoarse)
 		{
 			dCoarseRowOffset = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
 			dCoarseColOffset = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
