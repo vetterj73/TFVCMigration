@@ -202,7 +202,7 @@ private:
 
 	// For mask
 	bool _bNeedMask;
-	map<int, Image*> _panelMaskImageMap;
+	map<double, unsigned char*> _panelMaskBufHeightMap;
 	FovFovOverlapPtrList _maskFovFovOverlapPtrSet;
 };
 

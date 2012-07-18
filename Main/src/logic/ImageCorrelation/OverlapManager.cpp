@@ -207,11 +207,11 @@ OverlapManager::~OverlapManager(void)
 	if(_pCurPanelFidImages != NULL)
 		delete [] _pCurPanelFidImages;
 
-	for(map<int, Image*>::iterator i = _panelMaskImageMap.begin(); i != _panelMaskImageMap.end(); i++)
+	for(map<double, unsigned char*>::iterator i = _panelMaskBufHeightMap.begin(); i != _panelMaskBufHeightMap.end(); i++)
 	{	
-		delete i->second;
+		delete [] i->second;
 	}
-	_panelMaskImageMap.clear();
+	_panelMaskBufHeightMap.clear();
 }
 
 // Reset mosaic images and overlaps for new panel inspection 
@@ -2036,9 +2036,10 @@ void OverlapManager::CreatePanelMaskImageMap()
 	unsigned int iNumRows = _pPanel->GetNumPixelsInX();
 	unsigned int iNumCols = _pPanel->GetNumPixelsInY();
 	unsigned int iBufSize = iNumRows * iNumCols;
-
+	int iBytePerPixel = 1;
+	bool bCreateOwnBuf = false;
+	
 	int iCount = 0;
-	map<double, int> heightMap;
 	for(unsigned int i=0; i<iNumLayers; i++)
 	{
 		for(unsigned int j=i; j<iNumLayers; j++)
@@ -2050,15 +2051,6 @@ void OverlapManager::CreatePanelMaskImageMap()
 			// Need mask and mask image not exist
 			if(pMaskInfo->_bMask && pMaskInfo->_pPanelMaskImage == NULL)
 			{
-				// If already has been added into map
-				if(heightMap.find(pMaskInfo->_dMinHeight) != heightMap.end())
-				{
-					// Update flag
-					pMaskInfo->_iPanelMaskIndex = heightMap[pMaskInfo->_dMinHeight];
-					pMaskInfo->_pPanelMaskImage = _panelMaskImageMap[pMaskInfo->_iPanelMaskIndex];
-					continue;
-				}
-
 				// create image transform
 				double t[3][3];
 				t[0][0] = _pPanel->GetPixelSizeX();
@@ -2072,29 +2064,30 @@ void OverlapManager::CreatePanelMaskImageMap()
 				t[2][2] = 1;
 				ImgTransform trans(t);
 
-				// Create empty image with buffer
-				int iBytePerPixel = 1;
-				bool bCreateOwnBuf = true;
-				Image* pMaskImage = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
-					trans, trans, bCreateOwnBuf);
-				pMaskImage->ZeroBuffer();
+				// If already has been added into map
+				if(_panelMaskBufHeightMap.find(pMaskInfo->_dMinHeight) != _panelMaskBufHeightMap.end())
+				{
+					// Update flag
+					pMaskInfo->_pPanelMaskImage = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+						trans, trans, bCreateOwnBuf, _panelMaskBufHeightMap[pMaskInfo->_dMinHeight]);
+					continue;
+				}
+
+				// Create mask buffer
+				unsigned char* pMaskBuf = new unsigned char[iNumCols* iNumRows];
+				pMaskInfo->_pPanelMaskImage = new Image(iNumCols, iNumRows, iNumCols, iBytePerPixel, 
+					trans, trans, bCreateOwnBuf, pMaskBuf);
+				pMaskInfo->_pPanelMaskImage->ZeroBuffer();
 
 				// Create mask image
 				int iCadExpansion = 5; // Expansion for all 4 directions
-				_pPanel->CreateMaskBuffer(pMaskImage->GetBuffer(), iNumCols, pMaskInfo->_dMinHeight, iCadExpansion);
+				_pPanel->CreateMaskBuffer(pMaskInfo->_pPanelMaskImage->GetBuffer(), iNumCols, pMaskInfo->_dMinHeight, iCadExpansion);
 
 				// For debug
-				//pMaskImage->Save("C:\\Temp\\mask.bmp");
+				//pMaskInfo->_pPanelMaskImage->Save("C:\\Temp\\mask.bmp");
 
 				// Add to map
-				_panelMaskImageMap.insert(pair<int, Image*>(iCount, pMaskImage));
-				heightMap.insert(pair<double, int>(pMaskInfo->_dMinHeight, iCount));
-
-				// Update flag
-				pMaskInfo->_iPanelMaskIndex = iCount;
-				pMaskInfo->_pPanelMaskImage = pMaskImage;
-
-				iCount++;
+				_panelMaskBufHeightMap.insert(pair<double, unsigned char*>(pMaskInfo->_dMinHeight, pMaskInfo->_pPanelMaskImage->GetBuffer()));
 			}
 		}
 	}

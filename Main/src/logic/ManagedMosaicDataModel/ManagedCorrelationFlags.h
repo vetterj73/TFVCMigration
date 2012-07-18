@@ -12,14 +12,10 @@ public:
 
 	ManagedMaskInfo(
 		bool bMask, 
-		double dMinHeight,
-		bool bMaskFirstLayer,
-		bool bOnlyCalOveralpWithMask);
+		double dMinHeight);
 
 	bool _bMask;
 	double _dMinHeight;
-	bool _bMaskFirstLayer;
-	bool _bOnlyCalOveralpWithMask;
 };
 
 public ref class ManagedCorrelationFlags

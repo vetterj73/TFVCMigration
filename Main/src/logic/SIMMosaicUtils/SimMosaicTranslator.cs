@@ -172,10 +172,8 @@ namespace SIMMosaicUtils
                         {
                             bool bMask = true; 
 		                    double dMinHeight = 0;
-		                    bool bMaskFirstLayer = true;
-		                    bool bOnlyCalOveralpWithMask = false;
                             ManagedMaskInfo maskInfo = new ManagedMaskInfo(
-                                bMask, dMinHeight, bMaskFirstLayer, bOnlyCalOveralpWithMask);
+                                bMask, dMinHeight);
                             flag.SetMaskInfo(maskInfo);   
                         }
                     } 
