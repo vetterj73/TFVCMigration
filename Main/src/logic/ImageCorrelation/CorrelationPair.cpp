@@ -515,8 +515,8 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
 	tCorrelate.dGainTolerance			= 0.5;	// This is ridiciously high, but seems working in this way
-	tCorrelate.dLoResMinScore			= 0.3;	// Intentionally low these two value for ambiguous check
-    tCorrelate.dHiResMinScore			= 0.3;
+	tCorrelate.dLoResMinScore			= 0.25;	// Intentionally low these two value for ambiguous check
+    tCorrelate.dHiResMinScore			= 0.25;
     tCorrelate.iMaxResultPoints			= 2;
 	// Flat peak check
 	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
@@ -537,7 +537,7 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 		vsDispose2DCorrelate(&tCorrelate);
 		return(0);
 	}
-	if(tCorrelate.ptCPoint[0].dScore < 0.7) // Match is too low
+	if(tCorrelate.ptCPoint[0].dScore < 0.5) // Match is too low
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);
