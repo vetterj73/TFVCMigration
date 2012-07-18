@@ -242,10 +242,10 @@ void Overlap::SetUseMask(bool bValue)
 	
 	_bUseMask = bValue;
 	
-	_coarsePair.UseMask(_bUseMask);
+	_coarsePair.SetUseMask(_bUseMask);
 
 	for(list<CorrelationPair>::iterator i = _finePairList.begin(); i != _finePairList.end(); i++)
-		i->UseMask(_bUseMask);
+		i->SetUseMask(_bUseMask);
 }
 
 void Overlap::Run()
@@ -434,7 +434,7 @@ void Overlap::Run()
 		// Set for mask
 		if(bUseMask)
 		{
-			i->UseMask(true);
+			i->SetUseMask(true);
 			_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
 		}
 
@@ -587,8 +587,9 @@ bool FovFovOverlap::DumpOvelapImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sFovFov_coarse_L%dT%dC%d_L%dT%dC%d.bmp", 
+	sprintf_s(cTemp, 100, "%s%sFovFov_coarse_L%dT%dC%d_L%dT%dC%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		_coarsePair.IsUseNgc() ? "NGC_" : "",
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 
@@ -598,8 +599,9 @@ bool FovFovOverlap::DumpOvelapImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "%sFovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d.bmp",  
+		sprintf_s(cTemp, 100, "%s%sFovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d.bmp",  
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		i->IsUseNgc() ? "NGC_" : "",
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex, i->GetIndex());
 
@@ -620,8 +622,9 @@ bool FovFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
+	sprintf_s(cTemp, 100, "%s%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		_coarsePair.IsUseNgc() ? "NGC_" : "",
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex,
 		(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
@@ -633,8 +636,9 @@ bool FovFovOverlap::DumpResultImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "%sResult_FovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d_Score%dAmbig%d.bmp",
+		sprintf_s(cTemp, 100, "%s%sResult_FovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d_Score%dAmbig%d.bmp",
 		CorrelationParametersInst.GetOverlapPath().c_str(),
+		i->IsUseNgc() ? "NGC_" : "",
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex, i->GetIndex(),
 		(int)(i->GetCorrelationResult().CorrCoeff*100),

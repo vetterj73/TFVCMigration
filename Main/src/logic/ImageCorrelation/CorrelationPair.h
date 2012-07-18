@@ -76,7 +76,9 @@ public:
 
 	Image* GetMaskImg() const {return _pMaskImg;};
 	void SetMaskImg(Image* pMaskImg) {_pMaskImg = pMaskImg;};
-	void UseMask(bool bValue) { _bUseMask = bValue;};
+	void SetUseMask(bool bValue) { _bUseMask = bValue;};
+
+	bool IsUseNgc() {return _bUsedNgc;};
 
 	void SetCorrlelationResult(CorrelationResult result);
 

@@ -2125,11 +2125,14 @@ void OverlapManager::AlignFovFovOverlapWithMask()
 	if(!_bNeedMask)
 		return;
 
+	//CorrelationParametersInst.bSaveOverlaps = true;
 	for(FovFovOverlapPtrList::iterator i = _maskFovFovOverlapPtrSet.begin(); i != _maskFovFovOverlapPtrSet.end(); i++)
 	{
+		(*i)->Reset();
 		(*i)->SetUseMask(true);				// Use mask
 		(*i)->SetSkipCoarseAlign(true);		// Skip coarse alignment
 
+		//(*i)->Run();
 		_pJobManager->AddAJob((CyberJob::Job*)*i);
 	}
 

@@ -773,38 +773,17 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 {
 	// For debug	
 	//if(!_bUsedNgc) return(false);
-
-	if(!_bIsProcessed) return(false);
+	
+	if(!_bIsProcessed) return(false);	
 
 // For first channel
 	unsigned char* pcBuf1 = _pImg1->GetBuffer() 
 		+ _pImg1->PixelRowStride()*_roi1.FirstRow
 		+ _roi1.FirstColumn;	
-	
-	unsigned char* pcTempBuf1 = pcBuf1;
 
 	int iWidth = _roi1.Columns();
 	int iHeight = _roi1.Rows();
 	int ix, iy;
-
-	// Draw mask if the mask is available
-	if(_bUsedNgc)
-	{
-		pcTempBuf1 = new Byte[iWidth*iHeight];
-		unsigned char* pcBufMask = _pMaskImg->GetBuffer() 
-			+ _pMaskImg->PixelRowStride()*_roi1.FirstRow
-			+ _roi1.FirstColumn;	
-		for(iy=0; iy<iHeight; iy++)
-		{
-			for(ix=0; ix<iWidth; ix++)
-			{
-				if(pcBufMask[iy*_pMaskImg->PixelRowStride()+ ix]>0) // masked
-					pcTempBuf1[iy*iWidth+ ix]=0;
-				else
-					pcTempBuf1[iy*iWidth+ ix] = pcBuf1[iy*_pImg1->PixelRowStride()+ ix];
-			}
-		}
-	}
 
 // For second channel
 	unsigned char* pcBuf2 = _pImg2->GetBuffer() 
@@ -836,19 +815,38 @@ bool CorrelationPair::DumpImgWithResult(string sFileName) const
 	}
 
 // Create bmp
-	Bitmap* rbg = Bitmap::New2ChannelBitmap( 
-		_roi1.Rows(), 
-		_roi1.Columns(),
-		pcTempBuf1, 
-		pcTempBuf2,
-		_bUsedNgc ? iWidth : _pImg1->PixelRowStride(),
-		iWidth );
+	Bitmap* rgb;
+	if(!_bUsedNgc)
+	{
+		rgb = Bitmap::New2ChannelBitmap( 
+			_roi1.Rows(), 
+			_roi1.Columns(),
+			pcBuf1, 
+			pcTempBuf2,
+			_pImg1->PixelRowStride(),
+			iWidth );
+	}
+	else
+	{
+		unsigned char* pcBuf3 = _pMaskImg->GetBuffer()
+			+ _pMaskImg->PixelRowStride()*_roi1.FirstRow
+			+ _roi1.FirstColumn;
 
-	rbg->write(sFileName);
+		rgb = Bitmap::New3ChannelBitmap(
+			_roi1.Rows(), 
+			_roi1.Columns(),
+			pcBuf1, 
+			pcTempBuf2,
+			pcBuf3,
+			_pImg1->PixelRowStride(),
+			iWidth,
+			_pMaskImg->PixelRowStride());
+	}
 
-	delete rbg;
 
-	if(_bUsedNgc) delete [] pcTempBuf1;
+	rgb->write(sFileName);
+
+	delete rgb;
 	delete [] pcTempBuf2;
 
 	return(true);

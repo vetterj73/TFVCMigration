@@ -278,9 +278,11 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 
 void PanelAligner::CalTransformsWithMask()
 {
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin Mask");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin solver on Mask");
 
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin Mask ovelap calculation");
 	_pOverlapManager->AlignFovFovOverlapWithMask();
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask ovelap calculation");
 
 	// Reset solver
 	_pSolver->Reset();
@@ -326,7 +328,7 @@ void PanelAligner::CalTransformsWithMask()
 		}
 	}
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End solver on Mask");
 
 	// Reset solver
 	_pSolver->Reset();
