@@ -31,8 +31,8 @@ CorrelationParameters::CorrelationParameters(void)
 	iFineMaxBlocksInRow = 3;			// Max Number of blocks in row direction for fine correlation
 
 	iFineDecim = 2;						// Decimatin for fine correlation
-	iFineColSearchExpansion = 15;		// Search expansion in cols for fine correlation if coarse correlation is successed
-	iFineRowSearchExpansion = 15;		// Search expansion in rows for fine correlation if coarse correlation is successed
+	iFineColSearchExpansion = 30;		// Search expansion in cols for fine correlation if coarse correlation is successed
+	iFineRowSearchExpansion = 30;		// Search expansion in rows for fine correlation if coarse correlation is successed
 
 	// Fiducail search
 	fidSearchMethod = FIDVSFINDER;		// Search method for fiducial
