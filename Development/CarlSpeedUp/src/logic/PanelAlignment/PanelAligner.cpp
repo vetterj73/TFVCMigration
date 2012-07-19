@@ -239,13 +239,15 @@ void PanelAligner::UseProjectiveTransform(bool bValue)
 
 void PanelAligner::UseCameraModelStitch(bool bValue)
 {
-	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelStitch = bValue;
 }
 void PanelAligner::UseCameraModelIterativeStitch(bool bValue)
 {
-	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelIterativeStitch = bValue;
+}
+void PanelAligner::SetUseTwoPassStitch(bool bValue)
+{
+	CorrelationParametersInst.bUseTwoPassStitch = bValue;
 }
 
 void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
@@ -513,7 +515,7 @@ void PanelAligner::AddOverlapResults2Solver(RobustSolver* solver, bool bUseFiduc
 	for(FovFovOverlapListIterator ite = pFovFovList->begin(); ite != pFovFovList->end(); ite++)
 	{
 		if(ite->IsProcessed() && ite->IsGoodForSolver())
-		solver->AddFovFovOvelapResults(&(*ite));
+			solver->AddFovFovOvelapResults(&(*ite));
 	}
 
 	AddSupplementOverlapResults(_pSolver);

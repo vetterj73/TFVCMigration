@@ -98,6 +98,7 @@ namespace CyberStitchFidTester
             bool bUseCameraModel = false;
             bool bSaveStitchedResultsImage = false;
             bool bUseIterativeCameraModel = false;
+            bool bUseTwoPassStitch = false;
             int numberToRun = 1;
             string unitTestFolder="";
             double dCalScale = 1.0;
@@ -154,6 +155,8 @@ namespace CyberStitchFidTester
                     iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
                     iInputImageRows = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-twopass")
+                    bUseTwoPassStitch = true;
 
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
@@ -306,7 +309,9 @@ namespace CyberStitchFidTester
                     _aligner.UseProjectiveTransform(bUseProjective);
                     if (dCalScale != 1.0)
                         _aligner.SetCalibrationWeight(dCalScale);
-
+                    
+                    if (bUseTwoPassStitch)
+                        _aligner.SetUseTwoPassStitch(true);
                     if (bUseCameraModel)
                     {
                         _aligner.UseCameraModelStitch(true);

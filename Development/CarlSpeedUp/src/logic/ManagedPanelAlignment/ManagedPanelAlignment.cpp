@@ -187,6 +187,10 @@ namespace PanelAlignM {
 	{
 		_pAligner->UseCameraModelIterativeStitch(bValue);
 	}
+	void ManagedPanelAlignment::SetUseTwoPassStitch(bool bValue)
+	{
+		_pAligner->SetUseTwoPassStitch(bValue);
+	}
 
 	void ManagedPanelAlignment::UseProjectiveTransform(bool bValue)
 	{

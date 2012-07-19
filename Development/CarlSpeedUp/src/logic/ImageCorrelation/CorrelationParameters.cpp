@@ -73,7 +73,7 @@ CorrelationParameters::CorrelationParameters(void)
 	bUseProjectiveTransform = true;
 	bUseCameraModelStitch = false;
 	bUseCameraModelIterativeStitch = false;
-	bUseTwoPassStitch = true;
+	bUseTwoPassStitch = false;
 	bCoarsePassDone = false;
 	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
 

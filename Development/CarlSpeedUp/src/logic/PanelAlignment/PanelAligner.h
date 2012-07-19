@@ -63,6 +63,7 @@ public:
 	void UseProjectiveTransform(bool bValue);
 	void UseCameraModelStitch(bool bValue);
 	void UseCameraModelIterativeStitch(bool bValue);
+	void SetUseTwoPassStitch(bool bValue);
 	void EnableFiducialAlignmentCheck(bool bValue);
 	void SetPanelEdgeDetection(
 		bool bDetectPanelEdge, 
