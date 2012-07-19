@@ -19,8 +19,8 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// Coarse correlation
 	iCoarseMinDecim = 2;				// Minimum decimatin for coarse correlation
-	iCoarseColSearchExpansion = 50;		// Search expansion in cols for coarse correlation
-	iCoarseRowSearchExpansion = 300;	// Search expansion in rows for coarse correlation
+	iCoarseNgcColSearchExpansion = 50;	// Ngc Search expansion in cols for coarse correlation
+	iCoarseNgcRowSearchExpansion = 300;	// NgcSearch expansion in rows for coarse correlation
 	dCoarseResultReliableTh = 0.03;		// Threshold to decide whether coarse correlaiton result is reliable
 	dCoarseResultAmbigTh = 0.8;			// Threshold to decide whehter coarse correlation ambiugous is too high
 
@@ -31,9 +31,10 @@ CorrelationParameters::CorrelationParameters(void)
 	iFineMaxBlocksInRow = 3;			// Max Number of blocks in row direction for fine correlation
 
 	iFineDecim = 2;						// Decimatin for fine correlation
-	iFineColSearchExpansion = 30;		// Search expansion in cols for fine correlation if coarse correlation is successed
-	iFineRowSearchExpansion = 30;		// Search expansion in rows for fine correlation if coarse correlation is successed
-
+	iFineColOffsetTh = 30;				// For fine result check
+	iFineRowOffsetTh = 30;				// For fine result check
+	iFineNgcColSearchExpansion = 15;	// NGC Search expansion in cols for fine correlation if coarse correlation is successed
+	iFineNgcRowSearchExpansion = 15;	// NGC Search expansion in rows for fine correlation if coarse correlation is successed
 	// Fiducail search
 	fidSearchMethod = FIDVSFINDER;		// Search method for fiducial
 	//fidSearchMethod = FIDCYBERNGC;		// Search method for fiducial
@@ -95,6 +96,9 @@ CorrelationParameters::CorrelationParameters(void)
 
 	// Number of Threads to use for processing
 	NumThreads = 8;
+
+	// For Mask
+	dCadExpansion = 1.7e-4;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
 	// debug flags
 	bSaveFiducialOverlaps = false;

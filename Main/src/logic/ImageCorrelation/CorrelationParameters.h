@@ -35,8 +35,8 @@ public:
 
 	// Coarse correlation
 	unsigned int iCoarseMinDecim;			// Minimum decimatin for coarse correlation
-	unsigned int iCoarseColSearchExpansion; // Search expansion in cols for coarse correlation
-	unsigned int iCoarseRowSearchExpansion; // Search expansion in rows for coarse correlation
+	unsigned int iCoarseNgcColSearchExpansion;	// NgcSearch expansion in cols for coarse correlation
+	unsigned int iCoarseNgcRowSearchExpansion;	// Ngc Search expansion in rows for coarse correlation
 	double dCoarseResultReliableTh;			// Threshold to decide whether coarse correlaiton result is reliable
 	double dCoarseResultAmbigTh;			// Threshold to decide whehter coarse correlation ambiugous is too high
 
@@ -47,8 +47,10 @@ public:
 	unsigned int iFineMaxBlocksInRow;		// Max Number of blocks in row direction for fine correlation
 	
 	unsigned int iFineDecim;				// Decimatin for fine correlation
-	unsigned int iFineColSearchExpansion;	// Search expansion in cols for fine correlation if coarse correlation is successed
-	unsigned int iFineRowSearchExpansion;	// Search expansion in rows for fine correlation if coarse correlation is successed
+	unsigned int iFineColOffsetTh;			// For fine result check
+	unsigned int iFineRowOffsetTh;			// For fine result check
+	unsigned int iFineNgcColSearchExpansion;// NGC Search expansion in cols for fine correlation if coarse correlation is successed
+	unsigned int iFineNgcRowSearchExpansion;// NGC Search expansion in rows for fine correlation if coarse correlation is successed
 
 	// Fiducail search
 	FiducialSearchMethod fidSearchMethod;	// Search method for fiducial
@@ -113,6 +115,9 @@ public:
 	
 	// Number of Threads to use for processing
 	unsigned int NumThreads;
+
+	// For Mask
+	double dCadExpansion;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
 	// debug flage
 	bool bSaveFiducialOverlaps;

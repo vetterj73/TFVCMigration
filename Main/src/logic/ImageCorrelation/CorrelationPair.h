@@ -59,8 +59,8 @@ public:
 		UIRect roi1, 
 		pair<unsigned int, unsigned int> topLeftCorner2,  // (column row)
 		unsigned int iDecim,
-		unsigned int iColSearchExpansion,
-		unsigned int iRowSearchExpansion,
+		unsigned int iNgcColSearchExpansion,
+		unsigned int iNgcRowSearchExpansion,
 		Overlap* _pOverlap,
 		Image* pMaskImage = NULL);
 
@@ -145,8 +145,8 @@ private:
 	bool _bGood4Solver;
 	bool _bUsedNgc;	// Ngc is used for calcaulation
 	unsigned int _iDecim;	// For regoff
-	unsigned int _iColSearchExpansion; // For NGC
-	unsigned int _iRowSearchExpansion;
+	unsigned int _iNgcColSearchExpansion; // For NGC
+	unsigned int _iNgcRowSearchExpansion;
 
 	CorrelationResult _result;
 };

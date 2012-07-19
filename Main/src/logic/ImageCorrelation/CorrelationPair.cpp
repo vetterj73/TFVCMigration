@@ -74,8 +74,8 @@ CorrelationPair::CorrelationPair(
 	UIRect roi1, 
 	pair<unsigned int, unsigned int> topLeftCorner2, // (column row)
 	unsigned int iDecim,
-	unsigned int iColSearchExpansion,
-	unsigned int iRowSearchExpansion,
+	unsigned int iNgcColSearchExpansion,
+	unsigned int iNgcRowSearchExpansion,
 	Overlap* pOverlap,
 	Image* pMaskImg)
 {
@@ -90,8 +90,8 @@ CorrelationPair::CorrelationPair(
 	_roi2.LastRow = _roi2.FirstRow + _roi1.Rows() -1;
 
 	_iDecim = iDecim;
-	_iColSearchExpansion = iColSearchExpansion;
-	_iRowSearchExpansion = iRowSearchExpansion;
+	_iNgcColSearchExpansion = iNgcColSearchExpansion;
+	_iNgcRowSearchExpansion = iNgcRowSearchExpansion;
 
 	_pOverlap = pOverlap;
 	_iIndex  = -1;
@@ -122,8 +122,8 @@ void CorrelationPair::operator=(const CorrelationPair& b)
 	_roi2 = b._roi2;
 
 	_iDecim = b._iDecim;
-	_iColSearchExpansion = b._iColSearchExpansion;
-	_iRowSearchExpansion = b._iRowSearchExpansion;
+	_iNgcColSearchExpansion = b._iNgcColSearchExpansion;
+	_iNgcRowSearchExpansion = b._iNgcRowSearchExpansion;
 
 	//** Warning, two objects point to the same parents  
 	_pOverlap = b._pOverlap;
@@ -236,8 +236,8 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 	else	// Use Ngc
 	{	
 		// Mask sure ROI size is bigger enough for search
-		if(_roi1.Columns() < 2*_iColSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize ||
-			_roi1.Rows() < 2*_iRowSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize)
+		if(_roi1.Columns() < 2*_iNgcColSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize ||
+			_roi1.Rows() < 2*_iNgcRowSearchExpansion+CorrelationParametersInst.iCorrPairMinRoiSize)
 			return(false);
 
 		_bUsedNgc = true;
@@ -430,10 +430,10 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 	}
 
 	UIRect tempRect;
-	tempRect.FirstColumn = iFirstCol1 + _iColSearchExpansion;
-	tempRect.LastColumn = iLastCol1 - _iColSearchExpansion;
-	tempRect.FirstRow = iFirstRow1 + _iRowSearchExpansion;
-	tempRect.LastRow = iLastRow1 - _iRowSearchExpansion;
+	tempRect.FirstColumn = iFirstCol1 + _iNgcColSearchExpansion;
+	tempRect.LastColumn = iLastCol1 - _iNgcColSearchExpansion;
+	tempRect.FirstRow = iFirstRow1 + _iNgcRowSearchExpansion;
+	tempRect.LastRow = iLastRow1 - _iNgcRowSearchExpansion;
 
 	if(!tempRect.IsValid() || 
 		tempRect.Columns() < CorrelationParametersInst.iCorrPairMinRoiSize ||

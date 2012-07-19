@@ -2085,7 +2085,7 @@ void OverlapManager::CreatePanelMaskImageMap()
 				pMaskInfo->_pPanelMaskImage->ZeroBuffer();
 
 				// Create mask image
-				int iCadExpansion = 5; // Expansion for all 4 directions
+				int iCadExpansion = (int)(CorrelationParametersInst.dCadExpansion/_pPanel->GetPixelSizeX() + 0.5); // Expansion for all 4 directions
 				_pPanel->CreateMaskBuffer(pMaskInfo->_pPanelMaskImage->GetBuffer(), iNumCols, pMaskInfo->_dMinHeight, iCadExpansion);
 
 				// For debug

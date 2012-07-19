@@ -205,8 +205,8 @@ bool Overlap::CalCoarseCorrPair()
 
 	// create coarse correlation pair
 	unsigned int iDecim = CorrelationParametersInst.iCoarseMinDecim;
-	unsigned int iColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
-	unsigned int iRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
+	unsigned int iNgcColSearchExpansion = CorrelationParametersInst.iCoarseNgcColSearchExpansion;
+	unsigned int iNgcRowSearchExpansion = CorrelationParametersInst.iCoarseNgcRowSearchExpansion;
 	if(_type != Fid_To_Fov)
 	{
 		if(roi1.Columns()>500 && roi1.Rows()>500)
@@ -216,7 +216,7 @@ bool Overlap::CalCoarseCorrPair()
 	CorrelationPair coarsePair(
 		_pImg1, _pImg2, 
 		roi1, pair<unsigned int, unsigned int>(roi2.FirstColumn, roi2.FirstRow), // (column row)
-		iDecim, iColSearchExpansion, iRowSearchExpansion,
+		iDecim, iNgcColSearchExpansion, iNgcRowSearchExpansion,
 		this, _pMaskImg);
 
 	if(!coarsePair.IsValid())
@@ -395,18 +395,18 @@ void Overlap::Run()
 	if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
 
 	unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
-	unsigned int iBlockColSearchExpansion = CorrelationParametersInst.iFineColSearchExpansion;
-	unsigned int iBlockRowSearchExpansion = CorrelationParametersInst.iFineRowSearchExpansion;
+	unsigned int iBlockNgcColSearchExpansion = CorrelationParametersInst.iFineNgcColSearchExpansion;
+	unsigned int iBlockNgcRowSearchExpansion = CorrelationParametersInst.iFineNgcRowSearchExpansion;
 	if(!bAdjusted)
 	{
-		iBlockColSearchExpansion = CorrelationParametersInst.iCoarseColSearchExpansion;
-		iBlockRowSearchExpansion = CorrelationParametersInst.iCoarseRowSearchExpansion;
+		iBlockNgcColSearchExpansion = CorrelationParametersInst.iCoarseNgcColSearchExpansion;
+		iBlockNgcRowSearchExpansion = CorrelationParametersInst.iCoarseNgcRowSearchExpansion;
 	}
 
 	tempPair.ChopCorrPair(
 		iNumBlockX, iNumBlockY,
 		iBlockWidth, iBlockHeight,
-		iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
+		iBlockDecim, iBlockNgcColSearchExpansion, iBlockNgcRowSearchExpansion,
 		&_finePairList);
 
 	// If mask is used
@@ -446,13 +446,13 @@ void Overlap::Run()
 		{
 			bool bValid = true;
 			CorrelationResult result = i->GetCorrelationResult();;
-			if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion ||
-				fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineColSearchExpansion)
+			if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColOffsetTh ||
+				fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineRowOffsetTh)
 			{ // If the offset is too big
 				bValid = false;
 			}
-			else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColSearchExpansion ||
-				fabs(result.RowOffset) > CorrelationParametersInst.iFineColSearchExpansion)
+			else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColOffsetTh ||
+				fabs(result.RowOffset) > CorrelationParametersInst.iFineRowOffsetTh)
 			{	// If offset is big
 				if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
 				{	// If fine result is less reliable than coarse one 
