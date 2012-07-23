@@ -417,7 +417,6 @@ bool RobustSolverCM::AddCalibationConstraints(
 	// there are no per FOV calib constraints in the camera model fit
 	return true;
 }
-
 bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {
 	// Validation check for overlap
@@ -440,8 +439,19 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	unsigned int deviceNumB = _pSet->GetLayer(index2.LayerIndex)->DeviceIndex();
 	
 	double* pdRow;
+	list<CorrelationPair> pCoarsePairList;
+	list<CorrelationPair>* pPairList; 
+	pCoarsePairList.clear();
+	if (CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone) //@todo AND first time through......
+	{
+		pCoarsePairList.push_back(*pOverlap->GetCoarsePair());
+		pPairList = &pCoarsePairList;
+	}
+	else
+		pPairList = pOverlap->GetFinePairListPtr();
 
-	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
+	
+
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
 		// Skip any fine that is not processed or not good
@@ -578,12 +588,13 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumB)] += Zpoly[j] * (-dySensordzB)* w;
 		}
 		_dVectorB[_iCurrentRow] = -w * (ySensorA - ySensorB);
-		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d_%d,%.2e,%.2e,%.4e,%.4e", 
+		sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FovFovCorr:L%d:T%d:C%d_L%d:T%d:C%d_%d,%.2e,%.2e,%.2e,%.2e,%.4e,%.4e", 
 			pOverlap->GetFirstMosaicLayer()->Index(),
 			pOverlap->GetFirstTriggerIndex(), pOverlap->GetFirstCameraIndex(),
 			pOverlap->GetSecondMosaicLayer()->Index(),
 			pOverlap->GetSecondTriggerIndex(), pOverlap->GetSecondCameraIndex(),
 			i->GetIndex(),
+			offsetRows, offsetCols,
 			i->GetCorrelationResult().CorrCoeff, i->GetCorrelationResult().AmbigScore,
 			boardX,boardY);
 		_pdWeights[_iCurrentRow] = w;
@@ -709,9 +720,10 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 			pdRow[ColumnZTerm(j, deviceNumA)] = Zpoly[j] * dySensordzA * w;
 	//_dVectorB[_iCurrentRow] = w * (pOverlap->GetFiducialYPos() - ySensorA);
 	_dVectorB[_iCurrentRow] = w * (dFidRoiCenY - ySensorA);
-	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:L%d:T%d:C%d,%.2e,%.2e,%.4e,%.4e", 
+	sprintf_s(_pcNotes[_iCurrentRow], _iLengthNotes, "Y_FidCorr:L%d:T%d:C%d,%.2e,%.2e,%.2e,%.2e,%.4e,%.4e", 
 		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
+		offsetRows, offsetCols,
 		pPair->GetCorrelationResult().CorrCoeff, pPair->GetCorrelationResult().AmbigScore,
 		boardX,boardY);
 	_pdWeights[_iCurrentRow] = w;
@@ -984,7 +996,7 @@ void RobustSolverCM::SolveXAlgH()
 		}
 		of.close();
 	}
-	/*if(CorrelationParametersInst.bSaveTransformVectors)
+	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
@@ -993,7 +1005,7 @@ void RobustSolverCM::SolveXAlgH()
 		s.clear();
 		s.assign(cTemp);
 		OutputVectorXCSV(s);
-	}*/
+	}
 	
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::SolveXAlgH():alg_h returned value of %d", algHRetVal);

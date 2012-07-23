@@ -13,6 +13,8 @@
 #include "OverlapManager.h"
 using std::map;
 
+#include <ctime>
+
 using namespace MosaicDM;
 
 typedef void (*ALIGNMENTDONE_CALLBACK)(bool status);
@@ -61,6 +63,7 @@ public:
 	void UseProjectiveTransform(bool bValue);
 	void UseCameraModelStitch(bool bValue);
 	void UseCameraModelIterativeStitch(bool bValue);
+	void SetUseTwoPassStitch(bool bValue);
 	void EnableFiducialAlignmentCheck(bool bValue);
 	void SetPanelEdgeDetection(
 		bool bDetectPanelEdge, 
@@ -134,6 +137,7 @@ private:
 
 	// for debug
 	int _iPanelCount;
+	clock_t _StartTime;
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 

@@ -67,6 +67,7 @@ namespace CyberStitchTester
             bool bUseCameraModel = false;
             bool bUseIterativeCameraModel = false;
             bool bSeperateProcessStages = false;
+            bool bUseTwoPassStitch = false;
             
             int numberToRun = 1;
             int iLayerIndex4Edge = 0;
@@ -111,7 +112,9 @@ namespace CyberStitchTester
                     iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
                     iInputImageRows = Convert.ToUInt32(args[i + 1]);
-                else if (args[i] == "-overlap" && i < args.Length - 1)
+                else if (args[i] == "-twopass")
+                    bUseTwoPassStitch = true;
+				else if (args[i] == "-overlap" && i < args.Length - 1)
                     dTriggerOverlapInM = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-sillu")
                     _bUseDualIllumination = false;
@@ -161,6 +164,8 @@ namespace CyberStitchTester
                 //_aligner.UseCyberNgc4Fiducial();
                 //_aligner.LogPanelEdgeDebugImages(true);
                 _aligner.UseProjectiveTransform(bUseProjective);
+                if (bUseTwoPassStitch)
+                    _aligner.SetUseTwoPassStitch(true);
                 if (bUseCameraModel)
                 {
                     _aligner.UseCameraModelStitch(true);

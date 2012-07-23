@@ -74,6 +74,8 @@ CorrelationParameters::CorrelationParameters(void)
 	bUseProjectiveTransform = true;
 	bUseCameraModelStitch = false;
 	bUseCameraModelIterativeStitch = false;
+	bUseTwoPassStitch = false;
+	bCoarsePassDone = false;
 	iSolverMaxIterations = 3;  // set to 2 or 3 once confident (large number now to catch convergence issues)
 
 	// Adjust morph to create stitched image for component height
@@ -101,9 +103,9 @@ CorrelationParameters::CorrelationParameters(void)
 	dCadExpansion = 1.7e-4;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
 	// debug flags
-	bSaveFiducialOverlaps = false;
-	bSaveOverlaps = false;
-	bSaveTransformVectors = false;
+	bSaveFiducialOverlaps = true;
+	bSaveOverlaps = true;
+	bSaveTransformVectors = true;
 	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";

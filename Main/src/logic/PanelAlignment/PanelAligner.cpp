@@ -78,6 +78,7 @@ PanelAligner::PanelAligner(void)
 	_queueMutex = CreateMutex(0, FALSE, NULL); // Mutex is not owned
 
 	_iNumFovProced = 0;
+	CorrelationParametersInst.bCoarsePassDone = false;
 
 	// for debug
 	_iPanelCount = 0;
@@ -176,8 +177,8 @@ void PanelAligner::ResetForNextPanel()
 	_bResultsReady = false;
 
 	_iNumFovProced = 0;
-
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel()");
+	_StartTime = clock();
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel(), time = %f",  (float)_StartTime/CLOCKS_PER_SEC);
 }
 
 #pragma endregion
@@ -238,13 +239,15 @@ void PanelAligner::UseProjectiveTransform(bool bValue)
 
 void PanelAligner::UseCameraModelStitch(bool bValue)
 {
-	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelStitch = bValue;
 }
 void PanelAligner::UseCameraModelIterativeStitch(bool bValue)
 {
-	// set some useful value.....
 	CorrelationParametersInst.bUseCameraModelIterativeStitch = bValue;
+}
+void PanelAligner::SetUseTwoPassStitch(bool bValue)
+{
+	CorrelationParametersInst.bUseTwoPassStitch = bValue;
 }
 
 void PanelAligner::EnableFiducialAlignmentCheck(bool bValue)
@@ -665,7 +668,7 @@ bool PanelAligner::CreateTransforms()
 	_pSolver->SolveXAlgH();
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
-
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Flatten Done, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 	bool bMaskNeeded = _pOverlapManager->IsMaskNeeded();
 
 	// For each mosaic image
@@ -685,12 +688,72 @@ bool PanelAligner::CreateTransforms()
 			}
 		}
 	}
-
 	// If mask is needed
 	if(bMaskNeeded)
 		CalTransformsWithMask();
+	if(CorrelationParametersInst.bUseTwoPassStitch && 
+		(CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
+	{
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Start 2nd Pass Align, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
+		CorrelationParametersInst.bCoarsePassDone = true;
+		// transforms from coarse align are loaded, ready to chop up fine aligns
+		// calculate all fine overlaps
+		/*FovFovOverlapList* pfovFovOverlapSet = _pOverlapManager->GetFovFovOvelapSetPtr();
+		for(FovFovOverlapList::iterator i = pfovFovOverlapSet->begin(); i != pfovFovOverlapSet->end(); i++)
+		{
+			_pJobManager->AddAJob((CyberJob::Job*)*i);  // 
+		}*/
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created");
+		for(int i=0; i<iNumLayer; i++)
+		{
+			// Get calculated transforms
+			MosaicLayer* pLayer = _pSet->GetLayer(i);
+			for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+			{
+				for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+				{
+					_pOverlapManager->DoAlignmentForFov(i, iTrig, iCam);
+				}
+			}
+		}
+		_pSolver->Reset();
+		_pSolver->ConstrainZTerms();
+		_pSolver->ConstrainPerTrig();
+		_pOverlapManager->FinishOverlaps();
+		AddOverlapResults2Solver(_pSolver, true);  // default to use fiducials instead of edge or calculated positions?
+		// Solve transforms
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():2nd Pass Align call ALG_H, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
+		_pSolver->SolveXAlgH();
+
+		// if two pass camera model (coarse then fine) 
+		// we have only done a rough alignment, must now fix any problems in the coarse align and
+		// chop for fine align
+		//
+		//@todo fix up any problems with the coarse align
+		//
+		// 
+
+		//if camera model, must flatten fiducials
+		_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Flatten Done, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
+		// For each mosaic image
+		for(int i=0; i<iNumLayer; i++)
+		{
+			// Get calculated transforms
+			MosaicLayer* pLayer = _pSet->GetLayer(i);
+			for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+			{
+				for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+				{
+					Image* img = pLayer->GetImage(iTrig, iCam);
+					ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
+					img->SetTransform(t);
+					img->CalInverseTransform();
+				}
+			}
+		}
+	}
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	// Log fiducial confidence
 	int iNumDevice = _pSet->GetNumDevice();

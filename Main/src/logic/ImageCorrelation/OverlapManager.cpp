@@ -301,6 +301,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	double* pdCenY1 = new double[iNumCams1];
 	pLayer1->TriggerCentersInX(pdCenX1);
 	pLayer1->CameraCentersInY(pdCenY1);
+	unsigned int iDeviceIndex1 = pLayer1->DeviceIndex();
 	double dSpanTrig;
 	if(iNumTrigs1 > 1)
 		dSpanTrig = (pdCenX1[0] - pdCenX1[iNumTrigs1-1])/(iNumTrigs1-1);
@@ -311,6 +312,9 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 		dSpanCam = (pdCenY1[iNumCams1-1] - pdCenY1[0])/(iNumCams1-1);
 	else
 		dSpanCam = _pPanel->yLength();
+
+	unsigned int iNumLayers = _pMosaicSet->GetNumMosaicLayers();
+	
 	
 	unsigned int iNumTrigs2 = pLayer2->GetNumberOfTriggers();
 	unsigned int iNumCams2 = pLayer2->GetNumberOfCameras();
@@ -318,7 +322,14 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 	double* pdCenY2 = new double[iNumCams2];
 	pLayer2->TriggerCentersInX(pdCenX2);
 	pLayer2->CameraCentersInY(pdCenY2);
+	unsigned int iDeviceIndex2 = pLayer2->DeviceIndex();
 
+	// when doing sparse coarse aligns need to use first and last camera with adaquate width
+	// the first trigger will use all cameras, but the calculation of overlaps allows finding out which cameras 
+	// to use
+	int iFirstCamera(0);  // first camera wide enough
+	int iLastCamera(0);  // last camera
+	CalcFirstLastCamera(pLayer1, pLayer2, &iFirstCamera, &iLastCamera);
 	// For each image in first layer
 	unsigned int iCam1, iTrig1;
 	int iCam2, iTrig2; // Must be integer to avoid for cycle error
@@ -327,6 +338,22 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 		for(iCam1 = 0; iCam1<iNumCams1; iCam1++)
 		{
 			// Cam to cam (Col to col) overlap
+			//@todo add param for sparse coarse align
+			bool bUseForCoarse(false);
+			if (!CorrelationParametersInst.bUseTwoPassStitch)
+				bUseForCoarse = true;
+			// use the same sampling density regardless of the number of layers (don't sample the same spot many times on a 4 layer data set)
+			else if (iNumCams1 <= 3)			// narrow board do all cameras
+				bUseForCoarse = true;
+			else if (iNumLayers == 1)			// single layer do all
+				bUseForCoarse = true;
+			else if (iNumLayers == 2 && (iIndex1 + iTrig1 + iCam1)%2 ==0) // a checker board 
+				bUseForCoarse = true;
+			else if (iNumLayers == 3 && (iIndex1 + iTrig1 + iCam1)%3 ==0) // a 33% filled sparse checker board 
+				bUseForCoarse = true;
+			else if (iNumLayers >= 4 && (iIndex1 + iTrig1 + iCam1)%4 ==0) // a 25% filled sparse checker board 
+				bUseForCoarse = true;
+			
 			if(bCamCam)
 			{			
 				// The nearest trigger
@@ -401,7 +428,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							pos1,
 							pos2,
 							_validRect, bApplyCorSizeUpLimit, pMaskInfo);
-
+						overlap.SetUseForCoarseAlign(bUseForCoarse);
 						if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 						{
 							_fovFovOverlapSet.push_back(overlap);
@@ -414,7 +441,17 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 			} //if(bCamCam)
 
 			// Trig to trig (Row to row) overlap
-			if(bTrigTrig)
+			// is this the first or last camera (with a useful amount of area)?
+			bUseForCoarse = false;
+			if (!CorrelationParametersInst.bUseTwoPassStitch)
+				bUseForCoarse = true;
+			else if (iFirstCamera == -1)	// first or last camera not found
+				bUseForCoarse = true;
+			else if (iCam1==iFirstCamera)
+				bUseForCoarse = true;
+			else if (iCam1==iLastCamera)
+				bUseForCoarse = true;
+			if(bTrigTrig) 
 			{
 				// Find the nearest camera
 				int iCamIndex = -1;
@@ -448,7 +485,10 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 							if(pdCenX1[iTrig1]>pdCenX2[iTrig2] && dis<1.2*dSpanTrig && dis>0.8*dSpanTrig)
 								bValid = true;
 						}
-
+						//@todo add param for sparse coarse align
+						// disable every other dev. to dev if sparse 
+						if ( iDeviceIndex1 != iDeviceIndex2 && (iTrig1 + iDeviceIndex1)%2 == 1)
+							bValid = false;
 						if(bValid)
 						{
 							TilePosition pos1(iTrig1, iCam1), pos2(iTrig2, iCamIndex);
@@ -458,6 +498,7 @@ bool OverlapManager::CreateFovFovOverlapsForTwoLayer(unsigned int iIndex1, unsig
 								pos2,
 								_validRect, bApplyCorSizeUpLimit, pMaskInfo);
 
+							overlap.SetUseForCoarseAlign(bUseForCoarse);
 							if(overlap.IsValid() && overlap.Columns()>_iMinOverlapSize && overlap.Rows()>_iMinOverlapSize)
 							{
 								_fovFovOverlapSet.push_back(overlap);
@@ -500,6 +541,48 @@ list<FovFovOverlap*>* OverlapManager::GetFovFovPtrListForFov(
 	unsigned int iCamIndex) const
 {
 	return(&_fovFovOverlapPtrLists[iMosaicIndex][iTrigIndex][iCamIndex]);
+}
+
+void OverlapManager::CalcFirstLastCamera(
+	MosaicLayer *pLayer1, 
+	MosaicLayer *pLayer2, 
+	int *iFirstCamera, 
+	int *iLastCamera)
+{
+	unsigned int iNumCams1 = pLayer1->GetNumberOfCameras();
+	unsigned int iNumCams2 = pLayer2->GetNumberOfCameras();
+	unsigned int iImageCols = pLayer1->GetImage(0,0)->Columns();
+	double x,y,row,colMin1, colMax1,colMin2, colMax2;
+	// find last valid camera
+	*iFirstCamera = -1;
+	*iLastCamera = -1;
+	for(int iCam1 = 0; iCam1<iNumCams1; iCam1++)
+	{
+		// valid region in camera
+		DRect rectWorld1 = pLayer1->GetImage(0,iCam1)->GetBoundBoxInWorld();
+		for(int iCam2 = 0; iCam2<iNumCams2; iCam2++)
+		{
+			// below copied from OverlDefines.cpp     bool Overlap::CalCoarseCorrPair()
+			DRect rectWorld2 = pLayer2->GetImage(0,iCam2)->GetBoundBoxInWorld();
+			DRect overlapWorld;
+			//overlapWorld.xMin = rectWorld1.xMin>rectWorld2.xMin ? rectWorld1.xMin : rectWorld2.xMin;
+			//overlapWorld.xMax = rectWorld1.xMax<rectWorld2.xMax ? rectWorld1.xMax : rectWorld2.xMax;
+	
+			overlapWorld.yMin = rectWorld1.yMin>rectWorld2.yMin ? rectWorld1.yMin : rectWorld2.yMin;
+			overlapWorld.yMax = rectWorld1.yMax<rectWorld2.yMax ? rectWorld1.yMax : rectWorld2.yMax;
+
+			//if(overlapWorld.xMin < _validRect.xMin) overlapWorld.xMin = _validRect.xMin;
+			//if(overlapWorld.xMax > _validRect.xMax) overlapWorld.xMax = _validRect.xMax;
+			if(overlapWorld.yMin < _validRect.yMin) overlapWorld.yMin = _validRect.yMin;
+			if(overlapWorld.yMax > _validRect.yMax) overlapWorld.yMax = _validRect.yMax;
+			int iCols = (unsigned int)((overlapWorld.yMax - overlapWorld.yMin)/pLayer1->GetImage(0,iCam1)->PixelSizeY());
+
+			if (iCols > 0.5*iImageCols && *iFirstCamera == -1)
+				*iFirstCamera = iCam1;
+			if (iCols > 0.5*iImageCols)
+				*iLastCamera = iCam1;
+		}
+	}
 }
 
 #pragma endregion
@@ -1497,7 +1580,7 @@ bool OverlapManager::FovFovAlignConsistCheckForTwoLayer(
 }
 
 // Check FovFov overlap alignment results for two triggers
-// piCoarseInconsistNum: output, number of carse alignmemt failed in check
+// piCoarseInconsistNum: output, number of coarse alignmemt failed in check
 // piFineInconsistNum: output, number of fine alignmemt failed in check
 bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	unsigned int iLayer1, unsigned int iTrig1,
@@ -1809,6 +1892,8 @@ bool OverlapManager::IsValid4SupplementCheck(FovFovOverlap* pOverlap)
 	// 4, both FOVs have enough overlap with panel
 
 	// If not processed
+	if (CorrelationParametersInst.bUseTwoPassStitch)
+		return(false);		//@todo When should supplemental be added in two pass alg?
 	if(!pOverlap->IsProcessed())
 		return(false);
 
@@ -1827,7 +1912,7 @@ bool OverlapManager::IsValid4SupplementCheck(FovFovOverlap* pOverlap)
 	// If Sum of Weight is small enough
 	double dMinSumWeight = Weights.GetFovFovWeight()/8.0;
 	if(pOverlap->CalWeightSum() > dMinSumWeight)
-		return(0);
+		return(false);
 
 	double dMinFovPanelOverlapArea = _pMosaicSet->GetImageHeightInPixels() * _pMosaicSet->GetNominalPixelSizeX() 
 		* _pMosaicSet->GetImageWidthInPixels() * _pMosaicSet->GetNominalPixelSizeY() * 0.2;

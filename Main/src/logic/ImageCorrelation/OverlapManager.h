@@ -165,6 +165,8 @@ protected:
 	int AddSupplementOverlapsforSingleOvelap(FovFovOverlap* pOverlap);
 	int AddSupplementOverlaps();
 
+	void CalcFirstLastCamera(MosaicLayer *pLayer1, MosaicLayer *pLayer2, int *iFirstCamera, int *iLastCamera);
+	
 	// For mask
 	void CreatePanelMaskImageMap();
 	bool CreateMaskOverlapPtrSet();

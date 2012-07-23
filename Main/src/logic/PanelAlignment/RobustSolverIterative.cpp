@@ -136,8 +136,10 @@ void RobustSolverIterative::SolveXAlgH()
 		_dThetaEst[i]=0;
 	//for(i =0; i<_iNumCalDriftTerms; i++)
 	//	_dCalDriftEst[i]=0;
-
-	for (_iIterationNumber=0; _iIterationNumber< _iMaxIterations; _iIterationNumber++)
+	int iMaxIter = _iMaxIterations; // local copy
+	if (CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
+		iMaxIter = 1;			// first time through two pass align (the coarse pass), only one iteration
+	for (_iIterationNumber=0; _iIterationNumber< iMaxIter; _iIterationNumber++)
 	{
 		// zero out A, b, x, and notes
 		_iCurrentRow = 0;
@@ -480,7 +482,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		}
 		of.close();
 	}
-	/*if(CorrelationParametersInst.bSaveTransformVectors)
+	if(CorrelationParametersInst.bSaveTransformVectors)
 	{
 		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
 		char cTemp[255];
@@ -489,7 +491,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		s.clear();
 		s.assign(cTemp);
 		OutputVectorXCSV(s);
-	}*/
+	}
 	
 	if( algHRetVal<0 )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverIterative::SolveXAlgH():alg_h returned value of %d", algHRetVal);
@@ -728,8 +730,17 @@ bool RobustSolverIterative::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	FovIndex index2(iLayerIndexB, iTrigIndexB, iCamIndexB); 
 	
 	//double* pdRow;
+	list<CorrelationPair> pCoarsePairList;
+	list<CorrelationPair>* pPairList; 
+	pCoarsePairList.clear();
+	if (CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone) //@todo AND first time through......
+	{
+		pCoarsePairList.push_back(*pOverlap->GetCoarsePair());
+		pPairList = &pCoarsePairList;
+	}
+	else
+		pPairList = pOverlap->GetFinePairListPtr();
 
-	list<CorrelationPair>* pPairList = pOverlap->GetFinePairListPtr();
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
 		// Skip any fine that is not processed or not good
