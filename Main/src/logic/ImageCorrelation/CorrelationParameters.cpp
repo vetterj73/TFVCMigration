@@ -103,9 +103,9 @@ CorrelationParameters::CorrelationParameters(void)
 	dCadExpansion = 1.7e-4;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
 	// debug flags
-	bSaveFiducialOverlaps = true;
-	bSaveOverlaps = true;
-	bSaveTransformVectors = true;
+	bSaveFiducialOverlaps = false;
+	bSaveOverlaps = false;
+	bSaveTransformVectors = false;
 	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";
 	sOverlapPath = sDiagnosticPath + "Overlaps\\";
