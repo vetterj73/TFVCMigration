@@ -73,6 +73,10 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 
 	bool bAdjustForHeight = !(pHeightImage==NULL);
 
+	// If pupil distance less than 0.1mm, return false
+	if(bAdjustForHeight &&  dPupilDistance < 1e-4)
+		return(false);
+			
 	unsigned int iY, iX;
 
 	// Whether it is an affine transform
@@ -102,7 +106,8 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	double dVal;
  
 	double dDividedPupilDistrance=0;
-	if(bAdjustForHeight) dDividedPupilDistrance = 1.0/dPupilDistance;
+	if(bAdjustForHeight) 
+		dDividedPupilDistrance = 1.0/dPupilDistance;
 	if(bAffine)
 	{
 		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 
@@ -467,7 +472,7 @@ void BayerLum(						// Bayer interpolation
    unsigned char  bayer[],			// Input 8-bit Bayer image
    int            bstride,			// Addressed as bayer[col + row*bstride]  
    BayerType      order,			// Bayer pattern order; use the enums in bayer.h
-   unsigned char  out[],			// Output 24-bit BGR/YCrCb image
+   unsigned char  out[],			// In/Out 24-bit BGR/YCrCb image, allocated outside and filled inside of function
    int            ostride,			// Addressed as out[col + row*ostride]
    COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate)	// true, the channel stored seperated

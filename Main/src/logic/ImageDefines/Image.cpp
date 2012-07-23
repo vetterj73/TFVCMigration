@@ -193,7 +193,7 @@ bool Image::Bayer2Lum(BayerType type)
 		_buffer,			// Input 8-bit Bayer image
 		ByteRowStride(),	// Addressed as bayer[col + row*bstride]  
 		type,				// Bayer pattern order; use the enums in bayer.h
-		pTempBuf ,			// Output YCrCb image
+		pTempBuf ,			// In/Out 24-bit YCrCb image, allocated outside and filled inside of function
 		ByteRowStride(),	// Addressed as out[col + row*ostride]
 		YONLY,				// Type of color BGR/YCrCb/Y
 		false);				// true, the channel stored seperated
