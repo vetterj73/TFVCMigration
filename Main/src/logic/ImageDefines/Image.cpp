@@ -23,7 +23,7 @@ Image::Image(
 		bool bCreateOwnBuffer,
 		unsigned char *buffer)
 {
-	// To avoid crash ins some scenarios
+	// Default to false - this will get set in Configure
 	_IOwnMyOwnBuffer = false;
 	_buffer = 0;
 
@@ -193,7 +193,7 @@ bool Image::Bayer2Lum(BayerType type)
 		_buffer,			// Input 8-bit Bayer image
 		ByteRowStride(),	// Addressed as bayer[col + row*bstride]  
 		type,				// Bayer pattern order; use the enums in bayer.h
-		pTempBuf ,			// Output 24-bit BGR/YCrCb image
+		pTempBuf ,			// Output YCrCb image
 		ByteRowStride(),	// Addressed as out[col + row*ostride]
 		YONLY,				// Type of color BGR/YCrCb/Y
 		false);				// true, the channel stored seperated
