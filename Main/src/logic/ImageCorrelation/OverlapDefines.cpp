@@ -425,10 +425,16 @@ void Overlap::Run()
 			//_pMaskImg->Save("C:\\Temp\\MaskFov.bmp");
 		}	
 
-
 		// Do fine correlation
 		for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 		{
+			// Set for mask
+			if(bUseMask)
+			{
+				i->SetUseMask(true);
+				_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
+			}
+
 			i->DoAlignment();
 
 			if(bAdjusted) 
