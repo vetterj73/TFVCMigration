@@ -67,7 +67,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D52CAE91-2B4B-4061-BD21-1C9F39426386}"
 	ProjectSection(SolutionItems) = preProject
 		CyberStitchTester1.vsmdi = CyberStitchTester1.vsmdi
-		Local.testsettings = Local.testsettings
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
