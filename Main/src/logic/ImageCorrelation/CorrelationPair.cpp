@@ -469,11 +469,32 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	templateRect.lYMin = tempRoi.FirstRow;
 	templateRect.lYMax = tempRoi.LastRow;
 	
-	int iDepth = 5;
+	// Calculate depth based on template size
+		// In width
+	int iW = templateRect.Width();
+	int iWCount = 0;
+	while(iW>2)
+	{
+		iW /= 2;
+		iWCount++;
+	}
+		// In height
+	int iH = templateRect.Height();
+	int iHCount = 0;
+	while(iH>2)
+	{
+		iH /= 2;
+		iHCount++;
+	}
+		// Pick the smaller on with some offset
+	int iDepth = iWCount<iHCount ? iWCount : iHCount;
+	iDepth -= 2;
+	if(iDepth<1) iDepth = 1; // The minimum depth is 1
 	
 	VsStCTemplate tTemplate;
 	int iFlag = vsCreate2DTemplate(&oTempImage, templateRect, iDepth, &tTemplate);
-	if(iFlag<0) return(-1);
+	if(iFlag<0) 
+		return(-1);	
 
 	// Add mask
 	unsigned char* pMaskLine = NULL;
