@@ -206,6 +206,7 @@ namespace CyberStitchTester
                 case 1:
                     iLayerIndex1 = 0;
                     iLayerIndex2 = 0;
+                    _bUseDualIllumination = false;    // Single layer case
                     break;
 
                 case 2:

@@ -168,7 +168,8 @@ namespace SIMMosaicUtils
                     {
                         int iValue = (int)Math.Abs((int)i - (int)j);
                         if (Math.Abs((int)i - (int)j) >= 2 // For layrer in difference device
-                            || (i>=2 && j>=2))   
+                            || (i>=2 && j>=2)
+                            || set.GetNumMosaicLayers() == 1)   // For single layer case
                         {
                             bool bMask = true; 
 		                    double dMinHeight = 0;
