@@ -435,13 +435,13 @@ void Overlap::Run()
 			{
 				bool bValid = true;
 				CorrelationResult result = i->GetCorrelationResult();;
-				if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineNgcColSearchExpansion ||
-					fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineNgcRowSearchExpansion)
+				if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColOffsetTh||
+					fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineRowOffsetTh)
 				{ // If the offset is too big
 					bValid = false;
 				}
-				else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineNgcColSearchExpansion ||
-					fabs(result.RowOffset) > CorrelationParametersInst.iFineNgcRowSearchExpansion)
+				else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColOffsetTh||
+					fabs(result.RowOffset) > CorrelationParametersInst.iFineRowOffsetTh)
 				{	// If offset is big
 					if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
 					{	// If fine result is less reliable than coarse one 
