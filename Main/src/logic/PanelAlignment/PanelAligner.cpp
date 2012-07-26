@@ -46,6 +46,8 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	WaitForSingleObject(_queueMutex, INFINITE);
 
 	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
+	if(iLayerIndex == 0 || iTrigIndex == 0 || iCamIndex == 0)
+		_StartTime = clock();
 
 	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
 	_iNumFovProced++;
@@ -281,11 +283,12 @@ void PanelAligner::SetCalibrationWeight(double dValue)
 
 void PanelAligner::CalTransformsWithMask()
 {
+	clock_t sTime = clock();
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin solver on Mask");
-
+	
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): Begin Mask ovelap calculation");
 	_pOverlapManager->AlignFovFovOverlapWithMask();
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask ovelap calculation");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End Mask ovelap calculation, time =%f", (float)(clock() - sTime)/CLOCKS_PER_SEC);
 
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
@@ -339,7 +342,7 @@ void PanelAligner::CalTransformsWithMask()
 		}
 	}
 
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End solver on Mask");
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CalTransformsWithMask(): End solver on Mask,  time =%f", (float)(clock() - sTime)/CLOCKS_PER_SEC);
 
 	// Reset solver
 	_pSolver->Reset();
