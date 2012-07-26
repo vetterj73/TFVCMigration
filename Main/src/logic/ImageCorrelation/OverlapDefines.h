@@ -14,6 +14,13 @@
 #include "CorrelationFlags.h"
 using namespace MosaicDM;
 
+enum OverlapAlignOption
+{
+	COARSEFINE,
+	COARSEONLY,
+	FINEONLY
+};
+
 // Base class for overlap between image and image
 class Overlap : CyberJob::Job		
 {
@@ -46,7 +53,6 @@ public:
 	bool UseForCoarseAlign() const {return _bUseForCoarseAlign;};
 	void SetUseForCoarseAlign(bool bValue) {_bUseForCoarseAlign = bValue;};
 	
-
 	CorrelationPair* GetCoarsePair() {return &_coarsePair;};
 	list<CorrelationPair>* GetFinePairListPtr()  {return &_finePairList;};
 
@@ -54,7 +60,9 @@ public:
 
 	bool HasMaskPanelImage();
 	void SetUseMask(bool bValue);
-	void SetSkipCoarseAlign(bool bValue) {_bSkipCoarseAlign = bValue;};
+
+	void SetAlignOption(OverlapAlignOption bValue) {_alignOption = bValue;};
+	OverlapAlignOption GetAlignOption() {return(_alignOption);};
 
 	// Do alignment and reset
 	void Run();
@@ -74,6 +82,9 @@ protected:
 	//For mask
 	Image* _pMaskImg;	// Mask image is with first Fov/image
 	MaskInfo* _pMaskInfo;
+
+	// Alignment option
+	OverlapAlignOption _alignOption;
 	
 	virtual bool DumpOvelapImages()=0;
 	virtual bool DumpResultImages()=0;
@@ -89,9 +100,10 @@ private:
 
 	bool _bApplyCorrSizeUpLimit;
 
+
+
 	// For Mask
 	bool _bUseMask;
-	bool _bSkipCoarseAlign; 
 };
 
 // Overlap between FOV image and FOV image

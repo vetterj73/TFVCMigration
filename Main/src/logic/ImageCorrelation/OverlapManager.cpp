@@ -1082,7 +1082,8 @@ list<FidFovOverlap>* OverlapManager::GetCurPanelFidFovList4Fid(
 bool OverlapManager::DoAlignmentForFov(
 	unsigned int iMosaicIndex, 
 	unsigned int iTrigIndex,
-	unsigned int iCamIndex)
+	unsigned int iCamIndex,
+	OverlapAlignOption alignOption)
 {
 	// Flag that fov is added to alginer
 	_pMosaicSet->GetLayer(iMosaicIndex)->GetTile(iTrigIndex, iCamIndex)->SetAdded2Aligner();
@@ -1097,7 +1098,10 @@ bool OverlapManager::DoAlignmentForFov(
 	for(list<FovFovOverlap*>::iterator i=pFovFovPtrList->begin(); i!=pFovFovPtrList->end(); i++)
 	{
 		if((*i)->IsReadyToProcess())
+		{
+			(*i)->SetAlignOption(alignOption);
 			_pJobManager->AddAJob((CyberJob::Job*)*i);
+		}
 	}
 
 	// Process valid Cad Fov overalp
@@ -2213,10 +2217,26 @@ void OverlapManager::AlignFovFovOverlapWithMask()
 	{
 		(*i)->Reset();
 		(*i)->SetUseMask(true);				// Use mask
-		(*i)->SetSkipCoarseAlign(true);		// Skip coarse alignment
+		(*i)->SetAlignOption(FINEONLY);		// Fine alignment only
 
 		//(*i)->Run();
 		_pJobManager->AddAJob((CyberJob::Job*)*i);
+	}
+
+	FinishOverlaps();
+}
+
+
+// Align FovFov overlap with mask 
+void OverlapManager::AlignFovFovOverlap_FineOnly()
+{
+	//CorrelationParametersInst.bSaveOverlaps = true;
+	for(FovFovOverlapList::iterator i = _fovFovOverlapSet.begin(); i != _fovFovOverlapSet.end(); i++)
+	{
+		i->Reset();			// Use mask
+		i->SetAlignOption(FINEONLY);		// Fine alignment only
+
+		_pJobManager->AddAJob((CyberJob::Job*)&(*i));
 	}
 
 	FinishOverlaps();

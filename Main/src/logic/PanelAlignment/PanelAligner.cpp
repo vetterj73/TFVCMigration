@@ -49,7 +49,12 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	if(iLayerIndex == 0 || iTrigIndex == 0 || iCamIndex == 0)
 		_StartTime = clock();
 
-	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex);
+	OverlapAlignOption alignOption = COARSEFINE;
+	if(CorrelationParametersInst.bUseTwoPassStitch && 
+		(CorrelationParametersInst.bUseCameraModelStitch || 
+		CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
+		alignOption = COARSEONLY;
+	_pOverlapManager->DoAlignmentForFov(iLayerIndex, iTrigIndex, iCamIndex, alignOption);
 	_iNumFovProced++;
 	
 	// Release mutex
@@ -692,7 +697,7 @@ bool PanelAligner::CreateTransforms()
 		}
 	}
 
-	// For fine stage (first pass/second stage)
+	// For fine pass (first run/second pass)
 	if(CorrelationParametersInst.bUseTwoPassStitch && 
 		(CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
 	{
@@ -706,18 +711,9 @@ bool PanelAligner::CreateTransforms()
 			_pJobManager->AddAJob((CyberJob::Job*)*i);  // 
 		}*/
 
-		for(int i=0; i<iNumLayer; i++)
-		{
-			// Get calculated transforms
-			MosaicLayer* pLayer = _pSet->GetLayer(i);
-			for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
-			{
-				for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
-				{
-					_pOverlapManager->DoAlignmentForFov(i, iTrig, iCam);
-				}
-			}
-		}
+		// Do fine alignment
+		_pOverlapManager->AlignFovFovOverlap_FineOnly();
+
 		_pSolver->Reset();
 		_pSolver->ConstrainZTerms();
 		_pSolver->ConstrainPerTrig();
@@ -758,7 +754,7 @@ bool PanelAligner::CreateTransforms()
 	}
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
-	// If mask is needed (second pass)
+	// If mask is needed (second run)
 	if(bMaskNeeded)
 		CalTransformsWithMask();
 

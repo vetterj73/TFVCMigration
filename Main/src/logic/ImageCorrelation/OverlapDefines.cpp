@@ -10,10 +10,11 @@ Overlap::Overlap()
 	_bValid = false;
 	_bProcessed = false;
 	_bGood4Solver = true;
+	_bUseForCoarseAlign = true;
 
 	// For mask
 	_bUseMask = false;
-	_bSkipCoarseAlign = false; 
+	_alignOption = COARSEFINE; 
 	_pMaskImg = NULL;
 	_pMaskInfo = NULL; 
 }
@@ -41,7 +42,7 @@ void Overlap::operator=(const Overlap& b)
 
 	// For mask
 	_bUseMask = b._bUseMask;
-	_bSkipCoarseAlign = b._bSkipCoarseAlign; 
+	_alignOption = b._alignOption; 
 	_pMaskInfo = b._pMaskInfo; 	
 		// Create own mask image if not NULL
 	if(b._pMaskImg == NULL)
@@ -116,11 +117,13 @@ bool Overlap::Reset()
 
 	// Reset processed flag 
 	_bProcessed = false;
-	_bGood4Solver = true;
+	_bGood4Solver = true;	
+	
+	// Alignment option
+	_alignOption = COARSEFINE; 
 	
 	// for mask
 	_bUseMask = false;
-	_bSkipCoarseAlign = false; 
 
 	return(true);
 }
@@ -255,29 +258,24 @@ void Overlap::Run()
 	if(!_bValid)
 		return;
 
-	if(HasMaskPanelImage())
-		int iH = 10;
+	// Clear fine list
+	_finePairList.clear();
 
-	// Special process for fiducial use vsfinder 
-	if(_type == Fid_To_Fov)    //@todo don't do on 2nd pass if 2 pass
+	// Special process for fiducial search using vsfinder or CyberNgc
+	if(_type == Fid_To_Fov)    
 	{
 		FidFovOverlap* pTemp =  (FidFovOverlap*)this;
 		if(pTemp->GetFiducialSearchMethod() == FIDVSFINDER)
 		{
 			pTemp->VsfinderAlign();
-			_bProcessed = true;
-
-			if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
-			{
-				DumpOvelapImages();
-				DumpResultImages();
-			}
-
-			return;
 		}
 		else if(pTemp->GetFiducialSearchMethod() == FIDCYBERNGC)
 		{
 			pTemp->NgcFidAlign();
+		}
+		
+		if(pTemp->GetFiducialSearchMethod() == FIDVSFINDER || pTemp->GetFiducialSearchMethod() == FIDCYBERNGC)
+		{
 			_bProcessed = true;
 
 			if(CorrelationParametersInst.bSaveOverlaps || CorrelationParametersInst.bSaveFiducialOverlaps)
@@ -285,6 +283,7 @@ void Overlap::Run()
 				DumpOvelapImages();
 				DumpResultImages();
 			}
+
 			return;
 		}
 	}
@@ -305,13 +304,14 @@ void Overlap::Run()
 			iLayer2 == 2 && iTrig2 == 7 && iCam2 == 0)
 			iLayer1 = 0;
 	}//*/
-	bool temp = _bUseForCoarseAlign;
-	if ( (!_bSkipCoarseAlign || _type != Fov_To_Fov) && !CorrelationParametersInst.bUseTwoPassStitch || !CorrelationParametersInst.bCoarsePassDone && _bUseForCoarseAlign  )  
+
+	// If coarse alignment is needed or fiducial overlap (using regoff) 
+	if (_alignOption != FINEONLY || _type == Fid_To_Fov) 
 	{
 		// Do coarse correlation
 		bool bCorrSizeReduced = false;
 		_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
-		_bProcessed = true;
+
 		// If the Roi size is reduced in correlation
 		double dCoarseReliableScore = 0;
 		if(_coarsePair.IsProcessed() && bCorrSizeReduced) 
@@ -327,7 +327,7 @@ void Overlap::Run()
 			}
 		}
 
-		if(_type != Fov_To_Fov)  // when is this code ever reached????  CAD align??
+		if(_alignOption == COARSEONLY || _type == Fid_To_Fov)  // Coarse only or fiducial overlap (using regoff) 
 		{
 			_bProcessed = true;
 
@@ -343,129 +343,126 @@ void Overlap::Run()
 	}
 
 // Fine alignemt (only for Fov and Fov)
-	// Clean fine correlation pair list
-	_finePairList.clear();
-	if (!(CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone) )  // skip ONLY if two pass flag AND NOT coarse already done
+	// Adjust ROI base on the coarse results
+	bool bAdjusted = false;
+	CorrelationPair tempPair = _coarsePair;
+	double dCoarseReliableScore = 0;
+	if(_alignOption  == COARSEFINE && _coarsePair.IsProcessed()) // Use processed coarse alignment
+	{	
+		CorrelationResult result= _coarsePair.GetCorrelationResult();
+		dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
+		if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
+			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);
+	}
+	else if(_alignOption == FINEONLY)	// Based on current image transforms	
 	{
+		double dx1, dy1, dx2, dy2;
+		_pImg1->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter(), &dx1, &dy1);
+		_pImg2->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter(), &dx2, &dy2);
+		double dRowOffset = (dx1 - dx2)*2/(_pImg1->PixelSizeX()+_pImg2->PixelSizeX());
+		double dColOffset = (dy1 - dy2)*2/(_pImg1->PixelSizeY()+_pImg2->PixelSizeY());
+		CorrelationResult result(dRowOffset, dColOffset, 1, 0);
+		_coarsePair.SetCorrlelationResult(result);
+	
 		// Adjust ROI base on the coarse results
-		bool bAdjusted = false;
-		CorrelationPair tempPair = _coarsePair;
-		double dCoarseReliableScore = 0;
-		if( !CorrelationParametersInst.bUseTwoPassStitch &&_coarsePair.IsProcessed() )
-		{
-			CorrelationResult result= _coarsePair.GetCorrelationResult();
-			dCoarseReliableScore = fabs(result.CorrCoeff) * (1-result.AmbigScore);
-			if(dCoarseReliableScore > CorrelationParametersInst.dCoarseResultReliableTh)
-				bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
-		}
-		if( _bSkipCoarseAlign || CorrelationParametersInst.bUseTwoPassStitch )		// use the coarse align step adjust the images
-		{
-			// Based on current image transforms
-			double dx1, dy1, dx2, dy2;
-			_pImg1->ImageToWorld(_coarsePair.GetFirstRoi().RowCenter(), _coarsePair.GetFirstRoi().ColumnCenter(), &dx1, &dy1);
-			_pImg2->ImageToWorld(_coarsePair.GetSecondRoi().RowCenter(), _coarsePair.GetSecondRoi().ColumnCenter(), &dx2, &dy2);
-			// Warning:: the direction need to be check
-			double dRowOffset = (dx1 - dx2)*2/(_pImg1->PixelSizeX()+_pImg2->PixelSizeX());
-			double dColOffset = (dy1 - dy2)*2/(_pImg1->PixelSizeY()+_pImg2->PixelSizeY());
-			CorrelationResult result(dRowOffset, dColOffset, 1, 0);
-			_coarsePair.SetCorrlelationResult(result);
+		dCoarseReliableScore = 1;
+		bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
+	}
 	
-			// Adjust ROI base on the coarse results
-			dCoarseReliableScore = 1;
-			bAdjusted = _coarsePair.AdjustRoiBaseOnResult(&tempPair);	
-		}
-		_bProcessed = true;
-		// Set status
-		if(_type == Fov_To_Fov)
-			((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
+	// Set status
+	if(_type == Fov_To_Fov)
+		((FovFovOverlap*)this)->SetAdjustedBasedOnCoarseAlignment(bAdjusted);
 	
-		// Create fine correlation pair list
-		unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
-		unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
-		if(iNumBlockX > CorrelationParametersInst.iFineMaxBlocksInCol) iNumBlockX = CorrelationParametersInst.iFineMaxBlocksInCol;
-		if(iNumBlockX < 1) iNumBlockX = 1;
-		if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
+	// Create fine correlation pair list
+	unsigned int iBlockWidth = CorrelationParametersInst.iFineBlockWidth;
+	unsigned int iNumBlockX = (tempPair.Columns()/iBlockWidth);
+	if(iNumBlockX > CorrelationParametersInst.iFineMaxBlocksInCol) iNumBlockX = CorrelationParametersInst.iFineMaxBlocksInCol;
+	if(iNumBlockX < 1) iNumBlockX = 1;
+	if(iBlockWidth > tempPair.Columns()/iNumBlockX) iBlockWidth = tempPair.Columns()/iNumBlockX;
 
-		unsigned int iBlockHeight = CorrelationParametersInst.iFineBlockHeight;
-		unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
-		if(iNumBlockY > CorrelationParametersInst.iFineMaxBlocksInRow) iNumBlockY = CorrelationParametersInst.iFineMaxBlocksInRow;
-		if(iNumBlockY < 1) iNumBlockY = 1;
-		if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
+	unsigned int iBlockHeight = CorrelationParametersInst.iFineBlockHeight;
+	unsigned int iNumBlockY = (tempPair.Rows()/iBlockHeight);
+	if(iNumBlockY > CorrelationParametersInst.iFineMaxBlocksInRow) iNumBlockY = CorrelationParametersInst.iFineMaxBlocksInRow;
+	if(iNumBlockY < 1) iNumBlockY = 1;
+	if(iBlockHeight > tempPair.Rows()/iNumBlockY) iBlockHeight = tempPair.Rows()/iNumBlockY;
 
-		unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
-		unsigned int iBlockColSearchExpansion = CorrelationParametersInst.iFineNgcColSearchExpansion;
-		unsigned int iBlockRowSearchExpansion = CorrelationParametersInst.iFineNgcRowSearchExpansion;
-		if(!bAdjusted)
-		{
-			iBlockColSearchExpansion = CorrelationParametersInst.iCoarseNgcColSearchExpansion;
-			iBlockRowSearchExpansion = CorrelationParametersInst.iCoarseNgcRowSearchExpansion;
-		}
+	unsigned int iBlockDecim = CorrelationParametersInst.iFineDecim;
+	unsigned int iBlockNgcColSearchExpansion = CorrelationParametersInst.iFineNgcColSearchExpansion;
+	unsigned int iBlockNgcRowSearchExpansion = CorrelationParametersInst.iFineNgcRowSearchExpansion;
+	if(!bAdjusted)
+	{
+		iBlockNgcColSearchExpansion = CorrelationParametersInst.iCoarseNgcColSearchExpansion;
+		iBlockNgcRowSearchExpansion = CorrelationParametersInst.iCoarseNgcRowSearchExpansion;
+	}
 
-		tempPair.ChopCorrPair(
-			iNumBlockX, iNumBlockY,
-			iBlockWidth, iBlockHeight,
-			iBlockDecim, iBlockColSearchExpansion, iBlockRowSearchExpansion,
-			&_finePairList);
-		// If mask is used
-		bool bUseMask = _bUseMask && 
-			_pMaskImg != NULL && 
-			_pMaskImg->GetBuffer() != NULL && 
-			_pMaskInfo->_pPanelMaskImage != NULL &&
-			_pMaskInfo->_bMask;
+	tempPair.ChopCorrPair(
+		iNumBlockX, iNumBlockY,
+		iBlockWidth, iBlockHeight,
+		iBlockDecim, iBlockNgcColSearchExpansion, iBlockNgcRowSearchExpansion,
+		&_finePairList);
+	
+	// If mask is used
+	bool bUseMask = _bUseMask && 
+		_pMaskImg != NULL && 
+		_pMaskImg->GetBuffer() != NULL && 
+		_pMaskInfo->_pPanelMaskImage != NULL &&
+		_pMaskInfo->_bMask;
 
+	if(bUseMask)
+	{
+		_pMaskImg->ZeroBuffer();
+		_pMaskImg->SetTransform(_pImg1->GetTransform()); 
+
+		// for debug
+		//_pMaskInfo->_pPanelMaskImage->Save("C:\\Temp\\PanelMaskFov.bmp");
+		//UIRect roi(0, 0, _pMaskImg->Columns()-1, _pMaskImg->Rows()-1);
+		//_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, roi);
+		//_pMaskImg->Save("C:\\Temp\\MaskFov.bmp");
+	}	
+
+	// Do fine correlation
+	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+	{
+		// Set for mask
 		if(bUseMask)
 		{
-			_pMaskImg->ZeroBuffer();
-			_pMaskImg->SetTransform(_pImg1->GetTransform()); 
+			i->SetUseMask(true);
+			_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
+		}
 
-			// for debug
-			//_pMaskInfo->_pPanelMaskImage->Save("C:\\Temp\\PanelMaskFov.bmp");
-			//UIRect roi(0, 0, _pMaskImg->Columns()-1, _pMaskImg->Rows()-1);
-			//_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, roi);
-			//_pMaskImg->Save("C:\\Temp\\MaskFov.bmp");
-		}	
+		i->DoAlignment();
 
-		// Do fine correlation
-		for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
+		// Validation check
+		// To prevent wrong correlation results between different layers to be used
+		if(bAdjusted) 
 		{
-			// Set for mask
-			if(bUseMask)
-			{
-				i->SetUseMask(true);
-				_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
+			bool bValid = true;
+			CorrelationResult result = i->GetCorrelationResult();;
+			if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColOffsetTh ||
+				fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineRowOffsetTh)
+			{ // If the offset is too big
+				bValid = false;
 			}
-
-			i->DoAlignment();
-
-			if(bAdjusted) 
-			{
-				bool bValid = true;
-				CorrelationResult result = i->GetCorrelationResult();;
-				if(fabs(result.ColOffset) > 1.5 * CorrelationParametersInst.iFineColOffsetTh||
-					fabs(result.RowOffset) > 1.5 * CorrelationParametersInst.iFineRowOffsetTh)
-				{ // If the offset is too big
+			else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColOffsetTh ||
+				fabs(result.RowOffset) > CorrelationParametersInst.iFineRowOffsetTh)
+			{	// If offset is big
+				if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
+				{	// If fine result is less reliable than coarse one 
 					bValid = false;
 				}
-				else if(fabs(result.ColOffset) > CorrelationParametersInst.iFineColOffsetTh||
-					fabs(result.RowOffset) > CorrelationParametersInst.iFineRowOffsetTh)
-				{	// If offset is big
-					if(fabs(result.CorrCoeff)*(1-result.AmbigScore) < dCoarseReliableScore)
-					{	// If fine result is less reliable than coarse one 
-						bValid = false;
-					}
-				}
+			}
 
-				// If fine result is not valid, ignore this result by set a faiure one
-				if(bValid == false)
-				{
-					CorrelationResult failureResult;			// Default result is a failure result;
-					i->SetCorrlelationResult(failureResult);	
-				}
+			// If fine result is not valid, ignore this result by set a faiure one
+			if(bValid == false)
+			{
+				CorrelationResult failureResult;			// Default result is a failure result;
+				i->SetCorrlelationResult(failureResult);	
 			}
 		}
 	}	
-	
 
+	_bProcessed = true;
+	
 	/*/ for debug
 	if(_type == Fov_To_Fov)
 	{
@@ -577,18 +574,18 @@ double FovFovOverlap::CalWeightSum()
 // For Debug 
 bool FovFovOverlap::DumpOvelapImages()
 {
-	if(!IsReadyToProcess() || !_bProcessed)
+	if(!IsReadyToProcess())
 		return(false);
 
 	string s;
 	char cTemp[100];
-	if (!CorrelationParametersInst.bUseTwoPassStitch || CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
+	if (_bUseForCoarseAlign)
 	{
 		sprintf_s(cTemp, 100, "%s%sFovFov_coarse_L%dT%dC%d_L%dT%dC%d.bmp", 
-		CorrelationParametersInst.GetOverlapPath().c_str(),
-		_coarsePair.IsUseNgc() ? "NGC_" : "",
-		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
-		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
+			CorrelationParametersInst.GetOverlapPath().c_str(),
+			_coarsePair.IsUseNgc() ? "NGC_" : "",
+			_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
+			_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex);
 		
 		s.append(cTemp);
 		_coarsePair.DumpImg(s);
@@ -619,7 +616,7 @@ bool FovFovOverlap::DumpResultImages()
 
 	string s;
 	char cTemp[100];
-	if (!CorrelationParametersInst.bUseTwoPassStitch || CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
+	if (_alignOption != FINEONLY)
 	{
 		sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
 			CorrelationParametersInst.GetOverlapPath().c_str(),

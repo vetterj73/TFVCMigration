@@ -40,7 +40,8 @@ public:
 	bool DoAlignmentForFov(
 		unsigned int iMosaicIndex, 
 		unsigned int iTrigIndex,
-		unsigned int iCamIndex);
+		unsigned int iCamIndex,
+		OverlapAlignOption alignOption);
 
 	bool DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFidInfo=false);
 
@@ -83,6 +84,8 @@ public:
 
 	bool FovFovAlignConsistCheckForPanel(bool bTrustCoarse, int* piCoarseInconsistNum, int* piFineInconsistNum);
 
+	void AlignFovFovOverlap_FineOnly();
+
 	// for supplement overlaps
 	int CalSupplementOverlaps();
 	FovFovOverlapList* GetSupplementOverlaps();
@@ -91,7 +94,6 @@ public:
 	bool IsMaskNeeded() {return _bNeedMask;};
 	FovFovOverlapPtrList* GetMaskFovFovPtrSet() {return &_maskFovFovOverlapPtrSet;};
 	void AlignFovFovOverlapWithMask();
-
 
 protected:
 	bool IsCadImageNeeded();
