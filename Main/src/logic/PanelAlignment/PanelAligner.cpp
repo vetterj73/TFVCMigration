@@ -688,9 +688,8 @@ bool PanelAligner::CreateTransforms()
 			}
 		}
 	}
-	// If mask is needed
-	if(bMaskNeeded)
-		CalTransformsWithMask();
+
+	// For fine stage (first pass/second stage)
 	if(CorrelationParametersInst.bUseTwoPassStitch && 
 		(CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) )
 	{
@@ -748,12 +747,17 @@ bool PanelAligner::CreateTransforms()
 					Image* img = pLayer->GetImage(iTrig, iCam);
 					ImgTransform t = _pSolver->GetResultTransform(i, iTrig, iCam);
 					img->SetTransform(t);
-					img->CalInverseTransform();
+					if(!bMaskNeeded)
+						img->CalInverseTransform();
 				}
 			}
 		}
 	}
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Transforms are created, time = %f", (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
+
+	// If mask is needed (second pass)
+	if(bMaskNeeded)
+		CalTransformsWithMask();
 
 	// Log fiducial confidence
 	int iNumDevice = _pSet->GetNumDevice();
