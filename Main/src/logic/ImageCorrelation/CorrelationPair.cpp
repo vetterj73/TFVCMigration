@@ -540,28 +540,20 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
     tCorrelate.dHiResMinScore			= 0.25;
     tCorrelate.iMaxResultPoints			= 2;
 	// Flat peak check
-	//tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
-    //tCorrelate.iFlatPeakRadiusThresh	= 5;
+	tCorrelate.dFlatPeakThreshPercent	= 4.0 /* CORR_AREA_FLAT_PEAK_THRESH_PERCENT */;
+    tCorrelate.iFlatPeakRadiusThresh	= 5;
 
 	iFlag =vs2DCorrelate(
 		&tTemplate, &oSearchImage, 
 		searchRect, iDepth, &tCorrelate);
-	if(iFlag < 0) // Error or no match
+	if(iFlag < 0 ||														// Error or no match
+		tCorrelate.iNumResultPoints == 0 ||								// No Match 
+		tCorrelate.iResultFlags & VS_CORRELATE_FLAT_CORRELATION_PEAK || // flat peak
+		tCorrelate.ptCPoint[0].dScore < 0.5)							// Match is too low 
 	{
 		vsDispose2DTemplate(&tTemplate);	
 		vsDispose2DCorrelate(&tCorrelate);	
-		return(0);
-	}
-	if(tCorrelate.iNumResultPoints == 0) // No Match 
-	{
-		vsDispose2DTemplate(&tTemplate);	
-		vsDispose2DCorrelate(&tCorrelate);
-		return(0);
-	}
-	if(tCorrelate.ptCPoint[0].dScore < 0.5) // Match is too low
-	{
-		vsDispose2DTemplate(&tTemplate);	
-		vsDispose2DCorrelate(&tCorrelate);
+
 		return(0);
 	}
 
