@@ -552,15 +552,14 @@ void OverlapManager::CalcFirstLastCamera(
 	unsigned int iNumCams1 = pLayer1->GetNumberOfCameras();
 	unsigned int iNumCams2 = pLayer2->GetNumberOfCameras();
 	unsigned int iImageCols = pLayer1->GetImage(0,0)->Columns();
-	double x,y,row,colMin1, colMax1,colMin2, colMax2;
 	// find last valid camera
 	*iFirstCamera = -1;
 	*iLastCamera = -1;
-	for(int iCam1 = 0; iCam1<iNumCams1; iCam1++)
+	for(unsigned int iCam1 = 0; iCam1<iNumCams1; iCam1++)
 	{
 		// valid region in camera
 		DRect rectWorld1 = pLayer1->GetImage(0,iCam1)->GetBoundBoxInWorld();
-		for(int iCam2 = 0; iCam2<iNumCams2; iCam2++)
+		for(unsigned int iCam2 = 0; iCam2<iNumCams2; iCam2++)
 		{
 			// below copied from OverlDefines.cpp     bool Overlap::CalCoarseCorrPair()
 			DRect rectWorld2 = pLayer2->GetImage(0,iCam2)->GetBoundBoxInWorld();
