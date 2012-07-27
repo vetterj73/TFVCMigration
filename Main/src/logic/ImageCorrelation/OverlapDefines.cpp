@@ -618,12 +618,14 @@ bool FovFovOverlap::DumpResultImages()
 	char cTemp[100];
 	if (_alignOption != FINEONLY)
 	{
-		sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%d.bmp", 
+		sprintf_s(cTemp, 100, "%sResult_FovFov_coarse_L%dT%dC%d_L%dT%dC%d_Score%dAmbig%dCol%dRow%d.bmp", 
 			CorrelationParametersInst.GetOverlapPath().c_str(),
 			_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 			_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex,
 			(int)(_coarsePair.GetCorrelationResult().CorrCoeff*100),
-			(int)(_coarsePair.GetCorrelationResult().AmbigScore*100));
+			(int)(_coarsePair.GetCorrelationResult().AmbigScore*100),
+			(int)(_coarsePair.GetCorrelationResult().ColOffset),
+			(int)(_coarsePair.GetCorrelationResult().RowOffset));
 		
 		s.append(cTemp);
 		_coarsePair.DumpImgWithResult(s);
@@ -631,13 +633,15 @@ bool FovFovOverlap::DumpResultImages()
 	int iCount = 0;
 	for(list<CorrelationPair>::iterator i=_finePairList.begin(); i!=_finePairList.end(); i++)
 	{
-		sprintf_s(cTemp, 100, "%s%sResult_FovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d_Score%dAmbig%d.bmp",
+		sprintf_s(cTemp, 100, "%s%sResult_FovFov_Fine_L%dT%dC%d_L%dT%dC%d_%d_Score%dAmbig%dCol%dRow%d.bmp",
 		CorrelationParametersInst.GetOverlapPath().c_str(),
 		i->IsUseNgc() ? "NGC_" : "",
 		_pLayer1->Index(), _imgPos1.iTrigIndex, _imgPos1.iCamIndex,
 		_pLayer2->Index(), _imgPos2.iTrigIndex, _imgPos2.iCamIndex, i->GetIndex(),
 		(int)(i->GetCorrelationResult().CorrCoeff*100),
-		(int)(i->GetCorrelationResult().AmbigScore*100));
+		(int)(i->GetCorrelationResult().AmbigScore*100),
+		(int)(i->GetCorrelationResult().ColOffset),
+		(int)(i->GetCorrelationResult().RowOffset));
 
 		s.clear();
 		s.append(cTemp);
