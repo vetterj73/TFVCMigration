@@ -8,6 +8,7 @@
 #include "Bitmap.h"
 #include "ColorImage.h"
 #include "DemosaicJob.h"
+#include <ctime>
 
 namespace MosaicDM 
 {
@@ -374,6 +375,7 @@ namespace MosaicDM
 				if(_bBayerPattern)
 				{
 					FireLogEntry(LogTypeDiagnostic, "Begin demosaic");
+					clock_t StartTime = clock();
 
 					// Create the thread job manager if it is necessary
 					if(_pDemosaicJobManager == NULL)
@@ -400,7 +402,7 @@ namespace MosaicDM
 
 					_demosaicJobPtrList.clear();
 
-					FireLogEntry(LogTypeDiagnostic, "End demosaic");
+					FireLogEntry(LogTypeDiagnostic, "End demosaic, Time = %f", (float)(clock() - StartTime)/CLOCKS_PER_SEC);
 				}
 				else
 				{	

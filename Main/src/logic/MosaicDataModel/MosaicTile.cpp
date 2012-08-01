@@ -105,6 +105,11 @@ namespace MosaicDM
 			((ColorImage*)_pImage)->SetChannelStoreSeperated(false);
 			_pImage->Save("C:\\Temp\\ColorFov.bmp"); 
 			//*/
+
+			/*/ for debug
+			memcpy(_pImage->GetBuffer(), pImageBuffer, _pImage->BufferSizeInBytes()/3);	
+			_pImage->Bayer2Lum((BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			//*/
 		}
 		else // For gray image 
 		{
