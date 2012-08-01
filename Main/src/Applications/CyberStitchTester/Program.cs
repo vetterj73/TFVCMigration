@@ -36,7 +36,7 @@ namespace CyberStitchTester
         private static uint _numThreads = 8;
         private static int _cycleCount = 0;
 
-        private static bool _bDetectPanelEedge = false;
+        private static bool _bDetectPanelEdge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
         private static bool _bUseDualIllumination = true;// default use dual illumination for live mode
@@ -91,7 +91,7 @@ namespace CyberStitchTester
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
                 else if (args[i] == "-de")
-                    _bDetectPanelEedge = true;
+                    _bDetectPanelEdge = true;
                 else if (args[i] == "-iter")
                     bUseIterativeCameraModel = true;
                 else if (args[i] == "-rtol")
@@ -180,7 +180,7 @@ namespace CyberStitchTester
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
 
                 // Add trigger to trigger overlaps for same layer
                 //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)

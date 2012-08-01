@@ -52,7 +52,7 @@ namespace CyberStitchFidTester
         private static double _dYDiffSqrSumTol = 0.0;
         private static double _dXRMS = 0.0;//used for the xoffset RMS
         private static double _dYRMS = 0.0;
-        private static bool _bDetectPanelEedge = false;
+        private static bool _bDetectPanelEdge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
 
@@ -63,7 +63,6 @@ namespace CyberStitchFidTester
         private static int _iBayerType = 1; // GBRG
         private static StreamWriter writer = null;
         private static StreamWriter finalCompWriter = null;
-
 
         // For output analysis
         private static double[] _dXDiffSum;
@@ -81,7 +80,6 @@ namespace CyberStitchFidTester
         private static TimeSpan _tsRunTime = TimeSpan.Zero; 
         private static TimeSpan _tsTotalRunTime = TimeSpan.Zero;
        
-
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
         /// 1)  All images are obtained prior to running through CyberStitch.
@@ -146,7 +144,7 @@ namespace CyberStitchFidTester
                 else if (args[i] == "-frr")
                     _bFRR = true;
                 else if (args[i] == "-de")
-                    _bDetectPanelEedge = true;
+                    _bDetectPanelEdge = true;
                 else if (args[i] == "-le" && i < args.Length - 1)
                     iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-pixsize" && i < args.Length - 1)
@@ -188,7 +186,8 @@ namespace CyberStitchFidTester
                     Console.WriteLine("Could not load Panel File: " + panelFile);
                     return;
                 }
-            } else if (!bImageOnly) // Panel file must exist...
+            } 
+            else if (!bImageOnly) // Panel file must exist...
             {
                 Terminate(false);
                 Console.WriteLine("The panel file does not exist..: " + panelFile);
@@ -198,7 +197,6 @@ namespace CyberStitchFidTester
             Bitmap inputBmp = null;
             if(bImageOnly)
                 inputBmp = new Bitmap(imagePath[0]);  // should be safe, as bImageOnly == (imagePath.Length > 0)
-
 
             int ifidsNum = 0;
             double pixelSize = dPixelSizeInMeters;
@@ -293,7 +291,7 @@ namespace CyberStitchFidTester
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEedge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 // Set up mosaic set
                 SetupMosaic(true, false);
