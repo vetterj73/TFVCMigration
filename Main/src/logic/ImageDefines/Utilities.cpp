@@ -472,8 +472,10 @@ void BayerLum(						// Bayer interpolation
    unsigned char  bayer[],			// Input 8-bit Bayer image
    int            bstride,			// Addressed as bayer[col + row*bstride]  
    BayerType      order,			// Bayer pattern order; use the enums in bayer.h
-   unsigned char  out[],			// In/Out 24-bit BGR/YCrCb image, allocated outside and filled inside of function
-   int            ostride,			// Addressed as out[col + row*ostride]
+   unsigned char  out[],			// In/Out 24-bit BGR/YCrCb or 8-bit Y(luminance) image, 
+									// allocated outside and filled inside of function
+   int            ostride,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*ostride] if channels are combined
+									// or out[col + row*ostride + (ChannelIndex-1)*ostride*nrows] if channels are seperated
    COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate)	// true, the channel stored seperated
 
@@ -520,12 +522,11 @@ void BayerLum(						// Bayer interpolation
    /* Compute luminance with maximally-flat filter having zeros at
    (+/-f, +/-f) and (0, +/-f) and (+/-f, 0).  Compute r-y and b-y from
    RGB values with bilinear filter.  Finally combine the results.
-
    */
 
-	unsigned char *bptr = bayer + 2*bstride;
-	unsigned char *optr = out + 2*ostride;
-	unsigned char *c0Ptr = out + 2*ostride;
+	unsigned char *bptr = bayer + 2*bstride;	// For input bayer image
+	unsigned char *optr = out + 2*ostride;		// For output image with combined channels
+	unsigned char *c0Ptr = out + 2*ostride;		// For output image with seperated channels
 	unsigned char *c1Ptr = c0Ptr + nrows*ostride;
 	unsigned char *c2Ptr = c1Ptr + nrows*ostride;
 	for (row=2; row<nrows-2; row++) 
@@ -579,7 +580,7 @@ void BayerLum(						// Bayer interpolation
 			// Only collect luminance
 			if(type == YONLY)
 			{
-				optr[col] = clip(y>>8);
+				optr[col] = clip(y/256);
 				continue;
 			}
 
@@ -914,23 +915,33 @@ void BayerLum(						// Bayer interpolation
 			}
 		}
 
-		if(bChannelSeperate)
+		if(YONLY)
 		{
-			c0Ptr[0] = c0Ptr[1];
-			c1Ptr[0] = c1Ptr[1];
-			c2Ptr[0] = c2Ptr[1];
-			c0Ptr[ncols-1] = c0Ptr[ncols-2];
-			c1Ptr[ncols-1] = c1Ptr[ncols-2];
-			c2Ptr[ncols-1] = c2Ptr[ncols-2];
+			optr[0] = optr[1];
+			optr[ncols-1] = optr[ncols-2];
 		}
 		else
-		{	
-			optr[0] = optr[3];
-			optr[1] = optr[4];
-			optr[2] = optr[5];
-			optr[3*ncols-3] = optr[3*ncols-6];
-			optr[3*ncols-2] = optr[3*ncols-5];
-			optr[3*ncols-1] = optr[3*ncols-4];
+		{
+			if(bChannelSeperate)
+			{
+				c0Ptr[0] = c0Ptr[1];
+				c1Ptr[0] = c1Ptr[1];
+				c2Ptr[0] = c2Ptr[1];
+				c0Ptr[ncols-1] = c0Ptr[ncols-2];
+				c1Ptr[ncols-1] = c1Ptr[ncols-2];
+				c2Ptr[ncols-1] = c2Ptr[ncols-2];
+			}
+			else
+			{	
+
+				optr[0] = optr[3];
+				optr[1] = optr[4];
+				optr[2] = optr[5];
+				optr[3*ncols-3] = optr[3*ncols-6];
+				optr[3*ncols-2] = optr[3*ncols-5];
+				optr[3*ncols-1] = optr[3*ncols-4];
+
+			}
 		}
 		bptr += bstride;
 		optr += ostride;

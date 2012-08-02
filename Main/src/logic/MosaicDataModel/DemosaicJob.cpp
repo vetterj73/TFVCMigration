@@ -30,6 +30,27 @@ void DemosaicJob::Run()
 
 	if(!pLayer->AddRawImage(_pBuffer, _iCameraIndex, _iTriggerIndex))
 		return;
+	/*
+	Image* pImage = pLayer->GetImage(_iTriggerIndex, _iCameraIndex);
+	ImgTransform trans1;
+	Image tempImage1(
+		pImage->Columns(), 
+		pImage->Rows(), 
+		pImage->PixelRowStride(),
+		1,
+		trans1,
+		trans1,
+		false,
+		pImage->GetBuffer());
+
+	memcpy( tempImage1.GetBuffer(), pImage->GetBuffer(), pImage->BufferSizeInBytes()/3);	
+
+	string s;
+	char cTemp[100];
+	sprintf_s(cTemp, 100, "C:\\Temp\\YCrCb\\L%d_T%d_C%d.bmp", 
+		pLayer->Index(), _iTriggerIndex, _iCameraIndex);
+	s.append(cTemp);
+	tempImage1.Save(s);*/
 
 	if(_bTrigAlignment)
 		_pSet->FireImageAdded(_iLayerIndex, _iCameraIndex, _iTriggerIndex);

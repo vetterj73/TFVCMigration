@@ -90,13 +90,16 @@ enum BayerType
    RGGB
 };
 
+// Modified from Rudd's BayerLum()
 void BayerLum(						// Bayer interpolation 
    int            ncols,			// Image dimensions 
    int            nrows,
    unsigned char  bayer[],			// Input 8-bit Bayer image
    int            bstride,			// Addressed as bayer[col + row*bstride]  
    BayerType      order,			// Bayer pattern order; use the enums in bayer.h
-   unsigned char  out[],			// In/Out 24-bit BGR/YCrCb image, allocated outside and filled inside of function
-   int            ostride,			// Addressed as out[col + row*ostride]
+   unsigned char  out[],			// In/Out 24-bit BGR/YCrCb or 8-bit Y(luminance) image, 
+									// allocated outside and filled inside of function
+   int            ostride,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*ostride] if channels are combined
+									// or out[col + row*ostride + (ChannelIndex-1)*ostride*nrows] if channels are seperated
    COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
-   bool			  bChannelSeperate);	// true, the channel stored seperated
+   bool			  bChannelSeperate);// true, the channel stored seperated

@@ -100,15 +100,26 @@ namespace MosaicDM
 				_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
 				(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
 
+			/*/ for debug
+			ImgTransform trans;
+			Image tempImage(
+				_pImage->Columns(), 
+				_pImage->Rows(), 
+				_pImage->PixelRowStride(),
+				1,
+				trans,
+				trans,
+				false,
+				pImageBuffer);
+
+			tempImage.Bayer2Lum((BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			memcpy(_pImage->GetBuffer(), tempImage.GetBuffer(), _pImage->BufferSizeInBytes()/3);	
+			//*/
+
 			/*/ For debug
 			((ColorImage*)_pImage)->SetColorStyle(RGB);
 			((ColorImage*)_pImage)->SetChannelStoreSeperated(false);
 			_pImage->Save("C:\\Temp\\ColorFov.bmp"); 
-			//*/
-
-			/*/ for debug
-			memcpy(_pImage->GetBuffer(), pImageBuffer, _pImage->BufferSizeInBytes()/3);	
-			_pImage->Bayer2Lum((BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
 			//*/
 		}
 		else // For gray image 
