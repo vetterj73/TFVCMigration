@@ -101,6 +101,7 @@ namespace CyberStitchFidTester
             string unitTestFolder="";
             double dCalScale = 1.0;
             int iLayerIndex4Edge = 0;
+            bool bMaskForDiffDevices = false;
             ManagedFeatureLocationCheck fidChecker;
          
             //output csv file shows the comparison results
@@ -117,6 +118,8 @@ namespace CyberStitchFidTester
                     imagePathPattern = args[i + 1];
                 else if (args[i] == "-l" && i < args.Length - 1)
                     lastOutputTextPath = args[i + 1];
+                else if (args[i] == "-m")
+                    bMaskForDiffDevices = true;
                 else if (args[i] == "-n" && i < args.Length - 1)
                     numberToRun = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-o" && i < args.Length - 1)
@@ -294,7 +297,7 @@ namespace CyberStitchFidTester
                 _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 // Set up mosaic set
-                SetupMosaic(true, false);
+                SetupMosaic(true, bMaskForDiffDevices);
 
                 try
                 {
@@ -428,10 +431,15 @@ namespace CyberStitchFidTester
                     Output("Panel dPanelXscale is: " + set.dPanelXscale);
                     Output("Panel dPanelYscale is: " + set.dPanelYscale);
 
-                    if (bSaveStitchedResultsImage && ManagedCoreAPI.NumberOfDevices()>1)
+                    uint iIndex1 = 0;
+                    uint iIndex2 = 1;
+                    if (_mosaicSetProcessing.GetNumMosaicLayers() == 1)
+                        iIndex2 = 0;
+
+                    if (bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                               _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                               _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSetProcessing.GetLayer(iIndex1).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSetProcessing.GetLayer(iIndex2).GetStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
