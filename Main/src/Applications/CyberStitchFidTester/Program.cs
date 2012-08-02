@@ -414,17 +414,11 @@ namespace CyberStitchFidTester
                     CreateIllumImages();
                     _dtStartTime = DateTime.Now;
                     RunStitch();
+                    mAlignedEvent.WaitOne();
                     _dtEndTime = DateTime.Now;
                     _tsRunTime = _dtEndTime - _dtStartTime;
                     _tsTotalRunTime += _tsRunTime;
 
-                    //_mosaicSetProcessing.SaveAllStitchedImagesToDirectory("C:\\Temp\\");
-                    // for fiducials(used for stitch) location check
-                    //_aligner.Save3ChannelImage("c:\\Temp\\StitchFidLocation.bmp",
-                    //                          _mosaicSetProcessing.GetLayer(0).GetStitchedBuffer(),
-                    //                          _mosaicSetProcessing.GetLayer(1).GetStitchedBuffer(),
-                    //                          _processingPanel.GetCADBuffer(),
-                    //                          _processingPanel.GetNumPixelsInY(), _processingPanel.GetNumPixelsInX());
 
                     ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
                     Output("Panel Skew is: " + set.dPanelSkew);
