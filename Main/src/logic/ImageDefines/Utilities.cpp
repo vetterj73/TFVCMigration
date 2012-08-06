@@ -537,8 +537,8 @@ void BayerLum(						// Bayer interpolation
                  )
 
 				+ 30*(
-                   +bptr[col     + 1*bstride]
-                   +bptr[col     - 1*bstride]
+                   +bptr[col     + bstride]
+                   +bptr[col     - bstride]
                    +bptr[col - 1            ]
                    +bptr[col + 1            ]
                 )
@@ -551,19 +551,19 @@ void BayerLum(						// Bayer interpolation
                 )
 
 				+ 16*(
-                   +bptr[col - 1 + 1*bstride]
-                   +bptr[col + 1 + 1*bstride]
-                   +bptr[col - 1 - 1*bstride]
-                   +bptr[col + 1 - 1*bstride]
+                   +bptr[col - 1 + bstride]
+                   +bptr[col + 1 + bstride]
+                   +bptr[col - 1 - bstride]
+                   +bptr[col + 1 - bstride]
                 )
 
 				+    (
                    +bptr[col - 1 + 2*bstride]
                    +bptr[col + 1 + 2*bstride]
-                   +bptr[col - 2 + 1*bstride]
-                   +bptr[col + 2 + 1*bstride]
-                   +bptr[col - 2 - 1*bstride]
-                   +bptr[col + 2 - 1*bstride]
+                   +bptr[col - 2 + bstride]
+                   +bptr[col + 2 + bstride]
+                   +bptr[col - 2 - bstride]
+                   +bptr[col + 2 - bstride]
                    +bptr[col - 1 - 2*bstride]
                    +bptr[col + 1 - 2*bstride]
                 )
@@ -589,17 +589,17 @@ void BayerLum(						// Bayer interpolation
 					b = 64*bptr[col];
 
 					g = 16*(
-						+bptr[col  -1*bstride]
+						+bptr[col  -bstride]
 						+bptr[col-1     ]
 						+bptr[col+1     ]
 						+bptr[col  +1*bstride]
 									 );
 
 					r = 16*(
-						+bptr[col-1-1*bstride]
-						+bptr[col+1-1*bstride]
-						+bptr[col-1+1*bstride]
-						+bptr[col+1+1*bstride]
+						+bptr[col-1-bstride]
+						+bptr[col+1-bstride]
+						+bptr[col-1+bstride]
+						+bptr[col+1+bstride]
 									 );
 				} 
 				else 
@@ -610,16 +610,16 @@ void BayerLum(						// Bayer interpolation
 									 );
 
 					g = 8*(
-					   +bptr[col-1-1*bstride]
-					   +bptr[col+1-1*bstride]
+					   +bptr[col-1-bstride]
+					   +bptr[col+1-bstride]
 					   +4*bptr[col]
-					   +bptr[col-1+1*bstride]
-					   +bptr[col+1+1*bstride]
+					   +bptr[col-1+bstride]
+					   +bptr[col+1+bstride]
 									 );
 
 					r = 32*(
-					   +bptr[col  -1*bstride]
-					   +bptr[col  +1*bstride]
+					   +bptr[col  -bstride]
+					   +bptr[col  +bstride]
 								 );
 				}
 			}
@@ -628,16 +628,16 @@ void BayerLum(						// Bayer interpolation
 				if ((col&1) == ColOrder) 
 				{ /* Green in red row */
 					b = 32*(
-						+bptr[col  -1*bstride]
-						+bptr[col  +1*bstride]
+						+bptr[col  -bstride]
+						+bptr[col  +bstride]
 								 );
 
 					g = 8*(
-						+bptr[col-1-1*bstride]
-						+bptr[col+1-1*bstride]
+						+bptr[col-1-bstride]
+						+bptr[col+1-bstride]
 						+4*bptr[col]
-						+bptr[col-1+1*bstride]
-						+bptr[col+1+1*bstride]
+						+bptr[col-1+bstride]
+						+bptr[col+1+bstride]
 								 );
 
 					r = 32*(
@@ -648,17 +648,17 @@ void BayerLum(						// Bayer interpolation
 				else 
 				{   /* Red */
 					b = 16*(
-						+bptr[col-1-1*bstride]
-						+bptr[col+1-1*bstride]
-						+bptr[col-1+1*bstride]
-						+bptr[col+1+1*bstride]
+						+bptr[col-1-bstride]
+						+bptr[col+1-bstride]
+						+bptr[col-1+bstride]
+						+bptr[col+1+bstride]
 								 );
 
 					g = 16*(
-						+bptr[col  -1*bstride]
+						+bptr[col  -bstride]
 						+bptr[col-1     ]
 						+bptr[col+1     ]
-						+bptr[col  +1*bstride]
+						+bptr[col  +bstride]
 								 );
 
 					r = 64*bptr[col];
