@@ -142,6 +142,9 @@ namespace PanelAlignM {
 
 		ManagedPanelFidResultsSet^ GetFiducialResultsSet();
 
+		// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
+		double GetAlignmentTime();
+
 	private:
 		PanelAligner* _pAligner;
 		double _pixelSizeX;

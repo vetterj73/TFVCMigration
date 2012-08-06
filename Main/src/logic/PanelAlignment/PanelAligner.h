@@ -81,6 +81,9 @@ public:
 
 	MosaicSet* GetMosaicSet() {return _pSet;};
 
+	// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
+	double GetAlignmentTime() {return _dAlignmentTime;};
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();
@@ -138,6 +141,7 @@ private:
 	// for debug
 	int _iPanelCount;
 	clock_t _StartTime;
+	double _dAlignmentTime;
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 

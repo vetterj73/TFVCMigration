@@ -46,7 +46,7 @@ bool PanelAligner::ImageAddedToMosaicCallback(
 	WaitForSingleObject(_queueMutex, INFINITE);
 
 	//LOG.FireLogEntry(LogTypeSystem, "PanelAligner::AddImage():Fov Layer=%d Trig=%d Cam=%d added!", iLayerIndex, iTrigIndex, iCamIndex);
-	if(iLayerIndex == 0 || iTrigIndex == 0 || iCamIndex == 0)
+	if(_iNumFovProced == 0)
 		_StartTime = clock();
 
 	OverlapAlignOption alignOption = COARSEFINE;
@@ -184,8 +184,6 @@ void PanelAligner::ResetForNextPanel()
 	_bResultsReady = false;
 
 	_iNumFovProced = 0;
-	_StartTime = clock();
-	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ResetForNextPanel(), time = %f",  (float)_StartTime/CLOCKS_PER_SEC);
 }
 
 #pragma endregion
@@ -799,6 +797,10 @@ bool PanelAligner::CreateTransforms()
 		s.assign(cTemp);
 		OutputFiducialForSolver(s);
 	}
+
+	_dAlignmentTime = (double)(clock() - _StartTime)/CLOCKS_PER_SEC;
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms(): Overall alignment (no demosaic) time = %f",  _dAlignmentTime);
+
 	return(true);
 }
 

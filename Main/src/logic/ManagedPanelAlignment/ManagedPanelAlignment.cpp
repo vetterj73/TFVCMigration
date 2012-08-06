@@ -263,4 +263,9 @@ namespace PanelAlignM {
 		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
 		return bSaved;
 	}
+
+	double ManagedPanelAlignment::GetAlignmentTime() 
+	{
+		return _pAligner->GetAlignmentTime(); 
+	};
 }
