@@ -21,8 +21,6 @@ void inverse3x3(
 		for (unsigned int i(0); i < 8; i++)
 			outMatrix[i] = 0;
 		outMatrix[8] = 1.;
-		// TODO do something about this error
-		// LOG.FireLogEntry(LogTypeError, "SINGULAR TRANSFORM MATRIX");	
 	}
 	else
 	{

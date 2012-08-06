@@ -11,11 +11,7 @@
 void inverse3x3(	
 	const double* inMatrix,
 	double* outMatrix);
-void inverse(	
-	const double* inMatrix,
-	double* outMatrix,
-	unsigned int rows,
-	unsigned int cols);
+
 
 // Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
 // Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
