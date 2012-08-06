@@ -27,7 +27,6 @@ namespace CyberStitchTester
         private static uint iInputImageColumns = 2592;
         private static uint iInputImageRows = 1944;
         private static ManagedMosaicSet _mosaicSet = null;
-        private static ManagedMosaicSet _mosaicSetCopy = null;
         private static CPanel _panel = new CPanel(0, 0, dPixelSizeInMeters, dPixelSizeInMeters); 
         private readonly static ManualResetEvent mDoneEvent = new ManualResetEvent(false);
         private static int numAcqsComplete = 0;
@@ -326,16 +325,6 @@ namespace CyberStitchTester
                     //ManagedFOVPreferSelected select = new ManagedFOVPreferSelected();
                     //_mosaicSet.GetLayer(iLayerIndex1).GetImagePatch(pPoint, 100, 0, 0, 100, 100, select);
 
-                    /*/ Testing a copy of mosaic...
-                    _mosaicSetCopy.CopyBuffers(_mosaicSet);
-                    _mosaicSetCopy.CopyTransforms(_mosaicSet);
-                    _aligner.Save3ChannelImage("c:\\temp\\3channelresultcyclecopy" + _cycleCount + ".bmp",
-                    _mosaicSetCopy.GetLayer(iLayerIndex1).GetStitchedBuffer(),
-                    _mosaicSetCopy.GetLayer(iLayerIndex2).GetStitchedBuffer(),
-                    _panel.GetCADBuffer(),
-                    _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                    //*/
-
                     Output("End morph");
                 }
 
@@ -506,10 +495,8 @@ namespace CyberStitchTester
                 return;
             }
             _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetCopy = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetCopy, bMaskForDiffDevices);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
         }
 
