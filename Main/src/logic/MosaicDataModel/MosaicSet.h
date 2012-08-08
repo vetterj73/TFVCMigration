@@ -61,7 +61,8 @@ namespace MosaicDM
 					  double nominalPixelSizeYInMeters,
 					  bool ownBuffers,
 					  bool bBayerPattern,
-					  int iBayerType);
+					  int iBayerType,
+					  bool bSkipDemosaic);
 
 			///
 			///	Destructor
@@ -112,6 +113,7 @@ namespace MosaicDM
 			bool IsBayerPattern(){return _bBayerPattern;}; 
 			int GetBayerType(){return _iBayerType;};
 			void SetSeperateProcessStages(bool bValue) { _bSeperateProcessStages = bValue;};
+			bool IsSkipDemosaic() { return _bSkipDemosaic;};
 			
 			///
 			/// Calculate the total number of triggers in the MosaicSet
@@ -180,6 +182,7 @@ namespace MosaicDM
 			bool _ownBuffers;
 			bool _bBayerPattern;
 			int _iBayerType;
+			bool _bSkipDemosaic;
 
 			CyberJob::JobManager *_pDemosaicJobManager;
 			list<DemosaicJob*> _demosaicJobPtrList;

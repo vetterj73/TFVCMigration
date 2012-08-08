@@ -71,6 +71,7 @@ public:
 		bool bConveyorLeft2Right,
 		bool bConveyorFixedFrontRail);
 	void SetCalibrationWeight(double dValue);
+	void SetSkipDemosaic(bool bValue);
 
 	FidFovOverlapList* GetLastProcessedFids();
 	

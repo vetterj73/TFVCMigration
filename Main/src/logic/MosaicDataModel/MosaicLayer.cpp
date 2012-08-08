@@ -126,7 +126,7 @@ namespace MosaicDM
 	{
 		AllocateStitchedImageIfNecessary();
 		int iSize = _pMosaicSet->GetObjectWidthInPixels()*_pMosaicSet->GetObjectLengthInPixels();
-		if (GetMosaicSet()->IsBayerPattern())
+		if (GetMosaicSet()->IsBayerPattern() && !GetMosaicSet()->IsSkipDemosaic())
 			iSize *= 3;
 		memcpy(_pStitchedImage->GetBuffer(), pBuffer, iSize);
 		_stitchedImageValid = true;
@@ -138,7 +138,7 @@ namespace MosaicDM
 		if(_pStitchedImage != NULL)
 			return;
 
-		if(GetMosaicSet()->IsBayerPattern())
+		if(GetMosaicSet()->IsBayerPattern() && !GetMosaicSet()->IsSkipDemosaic())
 			_pStitchedImage = new ColorImage(BGR, false);
 		else 
 			_pStitchedImage = new Image();		
@@ -1016,7 +1016,7 @@ namespace MosaicDM
 	{
 		// Create image
 		Image* pImage;
-		if(GetMosaicSet()->IsBayerPattern())
+		if(GetMosaicSet()->IsBayerPattern() && !GetMosaicSet()->IsSkipDemosaic())
 		{
 			pImage = new ColorImage(BGR, false);
 		}
@@ -1062,7 +1062,7 @@ namespace MosaicDM
 			return(false);
 
 		int iChannels = pImage->GetBytesPerPixel();
-		if(!GetMosaicSet()->IsBayerPattern())
+		if(!GetMosaicSet()->IsBayerPattern() && !GetMosaicSet()->IsSkipDemosaic())
 		{
 			if(iChannels != 1)
 				return(false);

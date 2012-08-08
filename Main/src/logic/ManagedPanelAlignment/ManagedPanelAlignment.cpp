@@ -220,6 +220,11 @@ namespace PanelAlignM {
 		_pAligner->SetCalibrationWeight(dValue);
 	}
 
+	void ManagedPanelAlignment::SetSkipDemosaic(bool bValue)
+	{
+		_pAligner->SetSkipDemosaic(bValue);
+	}
+
 	// Reset for next panel
 	void ManagedPanelAlignment::ResetForNextPanel()
 	{

@@ -121,6 +121,9 @@ public:
 	// For Mask
 	double dCadExpansion;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
+	// For skip demosaic
+	bool bSkipDemosaic;					// Use bayer (not to do bayer to luminance conversion) as input of aligner
+
 	// debug flage
 	bool bSaveFiducialOverlaps;
 	bool bSaveOverlaps;

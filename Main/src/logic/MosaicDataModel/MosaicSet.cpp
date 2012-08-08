@@ -21,7 +21,8 @@ namespace MosaicDM
 					  double nominalPixelSizeYInMeters,
 					  bool ownBuffers,
 					  bool bBayerPattern,
-					  int iBayerType)
+					  int iBayerType,
+					  bool bSkipDemosaic)
 	{
 		_objectWidthInMeters = objectWidthInMeters;
 		_objectLengthInMeters = objectLengthInMeters;
@@ -36,6 +37,7 @@ namespace MosaicDM
 		
 		_bBayerPattern = bBayerPattern;
 		_iBayerType = iBayerType;
+		_bSkipDemosaic = bSkipDemosaic;
 
 		_pDemosaicJobManager = NULL;
 		_demosaicJobPtrList.clear();
@@ -132,7 +134,6 @@ namespace MosaicDM
 			bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch,
 			(unsigned int)_layerList.size(), iDeviceIndex);
 		_layerList.push_back(pML);
-
 
 		// Setup the default correlation Flags...
 		for(unsigned int i=0; i<_layerList.size(); i++)
@@ -277,7 +278,7 @@ namespace MosaicDM
 				return false;
 
 			// Check gray/color match
-			if(IsBayerPattern())
+			if(IsBayerPattern() && !IsSkipDemosaic())
 			{
 				if(bmp.bytesPerPixel() != 3)
 					return(false);

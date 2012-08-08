@@ -40,11 +40,11 @@ namespace CyberStitchTester
         private static bool _bFRR = false; // fixed rear rail indicator
         private static bool _bUseDualIllumination = true;// default use dual illumination for live mode
 
-        // For debug
         private static int _iBufCount = 0;
         private static bool _bSimulating = false;
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
+        private static bool _bSkipDemosaic = false;  // true: Skip demosaic for Bayer image
  
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
@@ -97,26 +97,28 @@ namespace CyberStitchTester
                     _bRtoL = true;
                 else if (args[i] == "-frr")
                     _bFRR = true;
+                else if (args[i] == "-sps")
+                    bSeperateProcessStages = true;
+                else if (args[i] == "-twopass")
+                    bUseTwoPassStitch = true;
+                else if (args[i] == "-bSkipD")
+                    _bSkipDemosaic = true;
+                else if (args[i] == "-sillu")
+                    _bUseDualIllumination = false;
                 else if (args[i] == "-s" && i < args.Length - 1)
                     simulationFile = args[i + 1];
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     panelFile = args[i + 1];
-                else if (args[i] == "-sps")
-                    bSeperateProcessStages = true;
                 else if (args[i] == "-pixsize" && i < args.Length - 1)
                     dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-imgcols" && i < args.Length - 1)
                     iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
                     iInputImageRows = Convert.ToUInt32(args[i + 1]);
-                else if (args[i] == "-twopass")
-                    bUseTwoPassStitch = true;
 				else if (args[i] == "-overlap" && i < args.Length - 1)
                     dTriggerOverlapInM = Convert.ToDouble(args[i + 1]);
-                else if (args[i] == "-sillu")
-                    _bUseDualIllumination = false;
                 else if (args[i] == "-brightfield" && i < args.Length - 1)
                     iBrightField = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-darkfield" && i < args.Length - 1)
@@ -180,6 +182,10 @@ namespace CyberStitchTester
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
                 _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+
+                // true: Skip demosaic for Bayer image
+                if (_bBayerPattern)
+                    _aligner.SetSkipDemosaic(_bSkipDemosaic);
 
                 // Add trigger to trigger overlaps for same layer
                 //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
@@ -494,7 +500,12 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSet = new ManagedMosaicSet(_panel.PanelSizeX, _panel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
+            _mosaicSet = new ManagedMosaicSet(
+                _panel.PanelSizeX, _panel.PanelSizeY, 
+                iInputImageColumns, iInputImageRows, iInputImageColumns, 
+                dPixelSizeInMeters, dPixelSizeInMeters, 
+                bOwnBuffers,
+                _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
             SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);

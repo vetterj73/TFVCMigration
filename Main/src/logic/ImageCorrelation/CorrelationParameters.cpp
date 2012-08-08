@@ -102,6 +102,9 @@ CorrelationParameters::CorrelationParameters(void)
 	// For Mask
 	dCadExpansion = 1.7e-4;					// The expansion of CAD for all 4 directions to create mask image (unit meter)
 
+	// For skip demosaic
+	bSkipDemosaic = false;					// Use bayer (not to do bayer to luminance conversion) as input of aligner
+
 	// debug flags
 	bSaveFiducialOverlaps = false;
 	bSaveOverlaps = false;

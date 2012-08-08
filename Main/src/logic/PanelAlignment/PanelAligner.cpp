@@ -272,10 +272,14 @@ void PanelAligner::SetPanelEdgeDetection(
 	CorrelationParametersInst.bConveyorFixedFrontRail = bConveyorFixedFrontRail;
 }
 
-
 void PanelAligner::SetCalibrationWeight(double dValue)
 {
 	EquationWeights::Instance().SetCalibrationScale(dValue);
+}
+
+void PanelAligner::SetSkipDemosaic(bool bValue)
+{
+	CorrelationParametersInst.bSkipDemosaic = bValue;
 }
 
 #pragma endregion
@@ -1090,7 +1094,7 @@ void PanelAligner::TestGetImagePatch()
 	//setFov.preferTB = MosaicDM::BOTTOMFOV;
 
 	// Modify color for different FOV for debug purpose
-	if(_pSet->IsBayerPattern())
+	if(_pSet->IsBayerPattern() && !_pSet->IsSkipDemosaic())
 	{
 		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
 		int iNumCam = pLayer->GetNumberOfCameras();
@@ -1122,7 +1126,7 @@ void PanelAligner::TestGetImagePatch()
 
 	// Create a whole stitched image with patches
 	Image* pStitchedImage;
-	if(_pSet->IsBayerPattern())
+	if(_pSet->IsBayerPattern() && !_pSet->IsSkipDemosaic())
 	{
 		pStitchedImage = new ColorImage(BGR, false);
 	}
@@ -1167,7 +1171,7 @@ void PanelAligner::TestGetImagePatch()
 
 		Image* pImg;
 		int iBytePerPIxel = 1;
-		if(_pSet->IsBayerPattern())
+		if(_pSet->IsBayerPattern() && !_pSet->IsSkipDemosaic())
 		{
 			pImg = new ColorImage(BGR, false);
 		}
@@ -1212,7 +1216,7 @@ void PanelAligner::TestSingleImagePatch()
 
 	Image* pImg;
 	int iBytePerPIxel = 1;
-	if(_pSet->IsBayerPattern())
+	if(_pSet->IsBayerPattern() && !_pSet->IsSkipDemosaic())
 	{
 		pImg = new ColorImage(BGR, false);
 	}

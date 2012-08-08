@@ -36,7 +36,7 @@ namespace CyberStitchFidTester
         private static double dPixelSizeInMeters = 1.70e-5;
         private static uint iInputImageColumns = 2592;
         private static uint iInputImageRows = 1944;
-        private static ManagedMosaicSet _mosaicSetProcessing = null;
+        private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _processingPanel = null;
         private static CPanel _fidPanel = null;
         private readonly static ManualResetEvent mCollectedEvent = new ManualResetEvent(false);
@@ -53,6 +53,7 @@ namespace CyberStitchFidTester
         private static bool _bDetectPanelEdge = false;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
+        private static bool _bSkipDemosaic = false; // true: skip demosaic for bayer image
 
         // For debug
         private static int _iBufCount = 0;
@@ -138,14 +139,16 @@ namespace CyberStitchFidTester
                     bUseProjective = false;
                 else if (args[i] == "-cammod")
                     bUseCameraModel = true;
-                if (args[i] == "-iter")
+                else if (args[i] == "-iter")
                     bUseIterativeCameraModel = true;
-                if (args[i] == "-rtol")
+                else if (args[i] == "-rtol")
                     _bRtoL = true;
                 else if (args[i] == "-frr")
                     _bFRR = true;
                 else if (args[i] == "-de")
                     _bDetectPanelEdge = true;
+                else if (args[i] == "-bSkipD")
+                    _bSkipDemosaic = true;
                 else if (args[i] == "-le" && i < args.Length - 1)
                     iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-pixsize" && i < args.Length - 1)
@@ -324,13 +327,18 @@ namespace CyberStitchFidTester
                     }
 
                     // Always seperate acquistion, demosaic and alignment stages 
-                    _mosaicSetProcessing.SetSeperateProcessStages(true);
+                    _mosaicSet.SetSeperateProcessStages(true);
+
+                    // true: Skip demosaic for Bayer image
+                    if(_bBayerPattern)
+                        _aligner.SetSkipDemosaic(_bSkipDemosaic);
+
 
                     // Add trigger to trigger overlaps for same layer
-                    //for (uint i = 0; i < _mosaicSetProcessing.GetNumMosaicLayers(); i++)
-                    //    _mosaicSetProcessing.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
+                    //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+                    //    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
 
-                    if (!_aligner.ChangeProduction(_mosaicSetProcessing, _processingPanel))
+                    if (!_aligner.ChangeProduction(_mosaicSet, _processingPanel))
                     {
                         throw new ApplicationException("Aligner failed to change production ");
                     }
@@ -392,7 +400,7 @@ namespace CyberStitchFidTester
             {
                 numAcqsComplete = 0;
                 _aligner.ResetForNextPanel();
-                _mosaicSetProcessing.ClearAllImages();
+                _mosaicSet.ClearAllImages();
                 if (!GatherImages())
                 {
                     Output("Issue with StartAcquisition");
@@ -405,7 +413,7 @@ namespace CyberStitchFidTester
                 }
 
                 // Verify that mosaic is filled in...
-                if (!_mosaicSetProcessing.HasAllImages())
+                if (!_mosaicSet.HasAllImages())
                     Output("The mosaic does not contain all images!");
                 else
                 {
@@ -421,13 +429,13 @@ namespace CyberStitchFidTester
 
                     uint iIndex1 = 0;
                     uint iIndex2 = 1;
-                    if (_mosaicSetProcessing.GetNumMosaicLayers() == 1)
+                    if (_mosaicSet.GetNumMosaicLayers() == 1)
                         iIndex2 = 0;
 
                     if (bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                               _mosaicSetProcessing.GetLayer(iIndex1).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
-                                               _mosaicSetProcessing.GetLayer(iIndex2).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
+                                               _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _fidPanel.GetCADBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
@@ -438,7 +446,7 @@ namespace CyberStitchFidTester
                     }
 
                     if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSetProcessing.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
+                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -776,10 +784,15 @@ namespace CyberStitchFidTester
                 Output("No Device Defined");
                 return;
             }
-            _mosaicSetProcessing = new ManagedMosaicSet(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, iInputImageColumns, iInputImageRows, iInputImageColumns, dPixelSizeInMeters, dPixelSizeInMeters, bOwnBuffers, _bBayerPattern, _iBayerType);
-            _mosaicSetProcessing.OnLogEntry += OnLogEntryFromMosaic;
-            _mosaicSetProcessing.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSetProcessing, bMaskForDiffDevices);
+            _mosaicSet = new ManagedMosaicSet(
+                _processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 
+                iInputImageColumns, iInputImageRows, iInputImageColumns, 
+                dPixelSizeInMeters, dPixelSizeInMeters, 
+                bOwnBuffers, 
+                _bBayerPattern, _iBayerType, _bSkipDemosaic);
+            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
+            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
         }
 
         private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
@@ -821,7 +834,7 @@ namespace CyberStitchFidTester
             uint layer = (uint)(device * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
                         pframe.CaptureSpecIndex());
 
-            _mosaicSetProcessing.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
         }
 
 

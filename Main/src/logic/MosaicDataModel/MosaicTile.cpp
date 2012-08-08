@@ -34,7 +34,7 @@ namespace MosaicDM
 		ImgTransform inputTransform;
 		inputTransform.Config(pixelSizeXInMeters, pixelSizeYInMeters, rotation, offsetXInMeters, offsetYInMeters);
 
-		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern())
+		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern() && !_pMosaicLayer->GetMosaicSet()->IsSkipDemosaic())
 			_pImage = new ColorImage(YCrCb, true); // YCrCb color, seperate channel
 			//_pImage = new ColorImage(BGR, false); // RGB color, combined channel
 		else
@@ -86,7 +86,7 @@ namespace MosaicDM
 
 	bool MosaicTile::SetRawImageBuffer(unsigned char* pImageBuffer)
 	{
-		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern()) // For bayer/color image
+		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern() && !_pMosaicLayer->GetMosaicSet()->IsSkipDemosaic()) // For bayer/color image
 		{
 			// for Bayer pattern input, mosaicSet must have its own buffer
 			_pMosaicLayer->GetMosaicSet()->SetOwnBuffers(true);
