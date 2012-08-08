@@ -1253,6 +1253,11 @@ namespace MosaicDM
 			return(pTempImg);
 		else
 		{
+			if(_pGreyStitchedImage != NULL)
+			{
+				delete _pGreyStitchedImage;
+				_pGreyStitchedImage = NULL;
+			}
 			_pGreyStitchedImage = new Image();		
 
 			((ColorImage*)pTempImg)->Color2Luminance(_pGreyStitchedImage);
