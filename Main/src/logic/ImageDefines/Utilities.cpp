@@ -973,3 +973,53 @@ void BayerLum(						// Bayer interpolation
    }
 }
 
+// Return NULL if failed, otherwise the buffer for luminance
+unsigned char* Bayer2Lum_rect(
+	int				iBayerCols,		// Bayer Buffer dimensions 
+	int				iBayerRows,
+	unsigned char*	pBayer,			// Input 8-bit Bayer image
+	int				iBayerStride,	// Addressed as bayer[col + row*bstride]  
+	BayerType		order,			// Bayer pattern order; use the enums in bayer.h
+	UIRect			rectIn,			// Input rect for Roi 
+	UIRect*			pRectOut)		// Output rect for Roi
+{
+	// Normalize for bayer pattern
+	int iFirstCol =  rectIn.FirstColumn/2*2;		// First one must be dividable by 2
+	int iLastCol = (rectIn.LastColumn%2)==1 ? rectIn.LastColumn : rectIn.LastColumn+1;
+	if(iLastCol > iBayerCols-1) iLastCol = ((iBayerCols-1)%2)==1 ? iBayerCols-1 : iBayerCols-2;
+
+	int iFirstRow =  rectIn.FirstRow/2*2;			// First one must be dividable by 2
+	int iLastRow = (rectIn.LastRow%2)==1 ? rectIn.LastRow : rectIn.LastRow+1;
+	if(iLastRow > iBayerRows-1) iLastRow = ((iBayerRows-1)%2)==1 ? iBayerRows-1 : iBayerRows-2;
+
+	pRectOut->FirstColumn = (unsigned int)iFirstCol;
+	pRectOut->LastColumn = (unsigned int)iLastCol;
+	pRectOut->FirstRow = (unsigned int)iFirstRow;
+	pRectOut->LastRow = (unsigned int)iLastRow;
+
+	// Allocate buffer
+	unsigned int iSize = pRectOut->Size();
+	if(iSize == 0)
+		return(NULL);
+
+	unsigned char* pOut = new unsigned char[iSize];
+
+	// Bayer to luminace conversion
+	BayerLum(					// Bayer interpolation 
+		pRectOut->Columns(),	// Dimensions 
+		pRectOut->Rows(),
+		pBayer + iBayerStride*pRectOut->FirstRow + pRectOut->FirstColumn,		
+								// Input 8-bit Bayer image
+		iBayerStride,			// Addressed as bayer[col + row*bstride]  
+		order,					// Bayer pattern order; use the enums in bayer.h
+		pOut,					// In/Out 24-bit BGR/YCrCb or 8-bit Y(luminance) image, 
+								// allocated outside and filled inside of function
+		pRectOut->Columns(),	// Addressed as out[col*NumOfChannel+ChannelIndex + row*ostride] if channels are combined
+								// or out[col + row*ostride + (ChannelIndex-1)*ostride*nrows] if channels are seperated
+		YONLY,					// Type of color BGR/YCrCb/Y
+		false);					// true, the channel stored seperated
+
+	return(pOut);
+}
+
+

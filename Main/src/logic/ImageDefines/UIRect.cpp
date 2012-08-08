@@ -56,6 +56,11 @@ unsigned int UIRect::Columns() const
 	return LastColumn-FirstColumn+1; 
 }
 
+unsigned int UIRect::Size() const
+{
+	return(Rows()*Columns());
+}
+
 double UIRect::ColumnCenter() const
 {
 	if( !IsValid() )

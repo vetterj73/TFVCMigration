@@ -27,10 +27,10 @@ public:
 
 	unsigned int Rows() const;
 	unsigned int Columns() const;
+	unsigned int Size() const;
 
 	double RowCenter() const;
 	double ColumnCenter() const;
-	
 };
 
 /*

@@ -330,6 +330,12 @@ namespace MosaicDM
 			{
 				Image* pFOV = GetImage(iTrig, iCam);
 
+				// For test purpose, it will modify the image buffer, 
+				// It isn't optimized
+				// When bayer patern without demosaic
+				if(_pMosaicSet->IsBayerPattern() && _pMosaicSet->IsSkipDemosaic())
+					pFOV->Bayer2Lum((BayerType)_pMosaicSet->GetBayerType());
+
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
 					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),

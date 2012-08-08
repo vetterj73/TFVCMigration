@@ -1,6 +1,7 @@
 #include "OverlapDefines.h"
 #include "Logger.h"
 #include "MosaicTile.h"
+#include "MosaicSet.h"
 #include "EquationWeights.h"
 
 #pragma region Overlap class
@@ -877,12 +878,49 @@ bool FidFovOverlap::VsfinderAlign()
 	double search_height = _coarsePair.GetFirstRoi().Rows();
 	double time_out = 1e5;			// MicroSeconds
 	double dMinScore = CorrelationParametersInst.dVsFinderMinCorrScore;
-	
+
+	unsigned char* pBuf = _coarsePair.GetFirstImg()->GetBuffer();
+	int iWidth = _coarsePair.GetFirstImg()->Columns();
+	int iHeight = _coarsePair.GetFirstImg()->Rows();
+	bool bBufAllocated = false;
+
+	// Do bayer to luminace conversion if bayer patten and skip the demosaic
+	UIRect rectOut;
+	if(_pLayer->GetMosaicSet()->IsBayerPattern() && _pLayer->GetMosaicSet()->IsSkipDemosaic())
+	{
+		// Create luminace buffer
+		pBuf = Bayer2Lum_rect(
+			_coarsePair.GetFirstImg()->Columns(),				// Bayer Buffer dimensions 
+			_coarsePair.GetFirstImg()->Rows(),
+			_coarsePair.GetFirstImg()->GetBuffer(),				// Input 8-bit Bayer image
+			_coarsePair.GetFirstImg()->PixelRowStride(),		// Addressed as bayer[col + row*bstride]  
+			(BayerType)_pLayer->GetMosaicSet()->GetBayerType(),	// Bayer pattern order; use the enums in bayer.h
+			_coarsePair.GetFirstRoi(),							// Input rect for Roi 
+			&rectOut);											// Output rect for Roi
+
+		iWidth = rectOut.Columns();
+		iHeight = rectOut.Rows();
+		bBufAllocated = true;
+
+		/* For debug
+		ImgTransform trans;
+		Image grayImg(iWidth, iHeight, iWidth, 1, trans, trans, false, pBuf);
+		grayImg.Save("C:\\Temp\\grayPatch.bmp");
+		//*/
+
+		search_center_x = rectOut.ColumnCenter() - rectOut.FirstColumn;
+		search_center_y = rectOut.RowCenter() - rectOut.FirstRow;
+		// Reduce 1 pixel in all four direction to avoid vsfinder round off 
+		// leading to search area is out of image size
+		search_width = rectOut.Columns();	 
+		search_height = rectOut.Rows();
+	}
+		
 	VsFinderCorrelation::Instance().Find(
 		_iTemplateID,							// map ID of template  and finder
-		_coarsePair.GetFirstImg()->GetBuffer(),	// buffer containing the image
-		_coarsePair.GetFirstImg()->Columns(),   // width of the image in pixels
-		_coarsePair.GetFirstImg()->Rows(),		// height of the image in pixels
+		pBuf,									// buffer containing the image
+		iWidth,									// width of the image in pixels
+		iHeight,								// height of the image in pixels
 		x,										// returned x location of the center of the template from the origin
 		y,										// returned x location of the center of the template from the origin
 		corscore,								// match score 0-1
@@ -898,9 +936,20 @@ bool FidFovOverlap::VsfinderAlign()
 		dMinScore/3);							// If >0 minumum score to accept at max pyramid level to look for peak override
 												// Use a lower minimum score for vsfinder so that we can get a reliable ambig score
 
+	// Release allocated memory
+	if(bBufAllocated)
+		delete [] pBuf;
+	
 	CorrelationResult result;
 	if(corscore > dMinScore)	// Valid results
 	{
+		// Adjust for bayer and skip demosaic
+		if(_pLayer->GetMosaicSet()->IsBayerPattern() && _pLayer->GetMosaicSet()->IsSkipDemosaic())
+		{
+			x += rectOut.FirstColumn; // +1 to compensate -2/2 in above code
+			y += rectOut.LastColumn;
+		}
+
 		result.CorrCoeff = corscore;
 		result.AmbigScore = ambig;
 		
@@ -942,6 +991,7 @@ bool FidFovOverlap::NgcFidAlign()
 	double search_center_x = (_coarsePair.GetFirstRoi().FirstColumn + _coarsePair.GetFirstRoi().LastColumn)/2.0; 
 	double search_center_y = (_coarsePair.GetFirstRoi().FirstRow + _coarsePair.GetFirstRoi().LastRow)/2.0; 
 	
+	// Warning: not support bayer pattern without demosaic
 	bool bFlag = CyberNgcFiducialCorrelation::Instance().Find(
 		_iTemplateID,					// Map ID of template  and finder
 		_coarsePair.GetFirstImg(),		// Search image

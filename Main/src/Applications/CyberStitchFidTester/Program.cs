@@ -78,6 +78,7 @@ namespace CyberStitchFidTester
         private static DateTime _dtEndTime;
         private static double _tsRunTime = 0; 
         private static double _tsTotalRunTime = 0;
+        private static uint _numThreads = 8;
        
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
@@ -159,7 +160,8 @@ namespace CyberStitchFidTester
                     iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-twopass")
                     bUseTwoPassStitch = true;
-
+                else if (args[i] == "-t" && i < args.Length - 1)
+                    _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -325,6 +327,9 @@ namespace CyberStitchFidTester
                         _aligner.UseCameraModelIterativeStitch(true);
                         _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                     }
+
+                    // Set number of thread to be used in cyberstitch
+                    _aligner.NumThreads(_numThreads);
 
                     // Always seperate acquistion, demosaic and alignment stages 
                     _mosaicSet.SetSeperateProcessStages(true);

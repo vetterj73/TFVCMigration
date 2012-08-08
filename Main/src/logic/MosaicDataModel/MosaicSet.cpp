@@ -312,9 +312,9 @@ namespace MosaicDM
 	{
 		if(!_bSeperateProcessStages)	// Normal working mode
 		{
-			// If bayer pattern, demosaic is needed.
+			// If bayer pattern and demosaic is needed.
 			// Work in Multi-thread to speed up
-			if(_bBayerPattern)
+			if(_bBayerPattern && !_bSkipDemosaic)
 			{
 				// Create the thread job manager if it is necessary
 				if(_pDemosaicJobManager == NULL)
@@ -343,7 +343,7 @@ namespace MosaicDM
 					FireLogEntry(LogTypeDiagnostic, "Demosaic is done!");
 				}
 			}
-			// If greyscale, demosaic is not needed. 
+			// If greyscale or demosaic is not needed. 
 			// Not necessary to add overheader by use multi-thread manager 
 			else	
 			{
@@ -371,9 +371,9 @@ namespace MosaicDM
 			if(_fovDataList.size() == NumberOfImageTiles())
 			{
 				FireLogEntry(LogTypeDiagnostic, "End SIM1 acquisition");
-				// If bayer pattern, demosaic is needed.
+				// If bayer pattern and demosaic is needed.
 				// Work in Multi-thread to speed up
-				if(_bBayerPattern)
+				if(_bBayerPattern && !_bSkipDemosaic)
 				{
 					FireLogEntry(LogTypeDiagnostic, "Begin demosaic");
 					clock_t StartTime = clock();
@@ -407,7 +407,7 @@ namespace MosaicDM
 				}
 				else
 				{	
-					// If greyscale, demosaic is not needed. 
+					// If greyscale or demosaic is not needed. 
 					// Not necessary to add overheader by use multi-thread manager 
 					for(list<FovData>::iterator i = _fovDataList.begin(); i != _fovDataList.end(); i++)
 					{

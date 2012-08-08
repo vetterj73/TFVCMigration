@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "UIRect.h"
+
 // Inverse a matrix,
 // inMatrix: input matrix, data stored row by row
 // outMatrix: output Matrix, data stored row by row
@@ -99,3 +101,13 @@ void BayerLum(						// Bayer interpolation
 									// or out[col + row*ostride + (ChannelIndex-1)*ostride*nrows] if channels are seperated
    COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate);// true, the channel stored seperated
+
+
+unsigned char* Bayer2Lum_rect(
+	int				iBayerCols,		// Bayer Buffer dimensions 
+	int				iBayerRows,
+	unsigned char*	pBayer,			// Input 8-bit Bayer image
+	int				iBayerStride,	// Addressed as bayer[col + row*bstride]  
+	BayerType		order,			// Bayer pattern order; use the enums in bayer.h
+	UIRect			rectIn,			// Input rect for Roi 
+	UIRect*			pRectOut);		// Output rect for Roi
