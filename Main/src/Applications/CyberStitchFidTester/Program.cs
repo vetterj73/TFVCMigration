@@ -417,6 +417,8 @@ namespace CyberStitchFidTester
                     mCollectedEvent.WaitOne();
                 }
 
+                _dtStartTime = DateTime.Now;
+
                 // Verify that mosaic is filled in...
                 if (!_mosaicSet.HasAllImages())
                     Output("The mosaic does not contain all images!");
@@ -426,6 +428,8 @@ namespace CyberStitchFidTester
                     mAlignedEvent.WaitOne();
                     _tsRunTime = _aligner.GetAlignmentTime();
                     _tsTotalRunTime += _tsRunTime;
+
+                    _dtEndTime = DateTime.Now;
 
                     ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
                     Output("Panel Skew is: " + set.dPanelSkew);
@@ -653,7 +657,7 @@ namespace CyberStitchFidTester
 
             writer.WriteLine("Total Difference for this Panel: " + fidDifference);
             _allPanelFidDifference += fidDifference;
-            writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime,_dtEndTime,_tsRunTime));
+            writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime, _dtEndTime, _tsRunTime));
            // _tsTotalRunTime += tsRunTime;
         }
 
