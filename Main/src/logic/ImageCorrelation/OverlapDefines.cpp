@@ -910,8 +910,6 @@ bool FidFovOverlap::VsfinderAlign()
 
 		search_center_x = rectOut.ColumnCenter() - rectOut.FirstColumn;
 		search_center_y = rectOut.RowCenter() - rectOut.FirstRow;
-		// Reduce 1 pixel in all four direction to avoid vsfinder round off 
-		// leading to search area is out of image size
 		search_width = rectOut.Columns();	 
 		search_height = rectOut.Rows();
 	}
@@ -943,16 +941,17 @@ bool FidFovOverlap::VsfinderAlign()
 	CorrelationResult result;
 	if(corscore > dMinScore)	// Valid results
 	{
-		// Adjust for bayer and skip demosaic
-		if(_pLayer->GetMosaicSet()->IsBayerPattern() && _pLayer->GetMosaicSet()->IsSkipDemosaic())
-		{
-			x += rectOut.FirstColumn; // +1 to compensate -2/2 in above code
-			y += rectOut.LastColumn;
-		}
-
 		result.CorrCoeff = corscore;
 		result.AmbigScore = ambig;
 		
+		// Compensate the shift between search center and roi center in FOV coordinate
+		// if bayer patten and skip the demosaic
+		if(_pLayer->GetMosaicSet()->IsBayerPattern() && _pLayer->GetMosaicSet()->IsSkipDemosaic())
+		{
+			x += rectOut.ColumnCenter() - _coarsePair.GetFirstRoi().ColumnCenter();
+			y += rectOut.RowCenter() - _coarsePair.GetFirstRoi().RowCenter();
+		}
+
 		// Unclipped image patch (first image of overlap) center 
 		// matches drawed fiducial center (second image of overlap) in the overlap
 		// alignment offset is the difference of unclipped image patch center 
