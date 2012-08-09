@@ -167,6 +167,9 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 						bProjectiveTrans);
 	}
 
+	if(_pSet->IsBayerPattern() && _pSet->IsSkipDemosaic() )
+		LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Bayer pattern but skip demosaic!");
+
 	// Creat solver for mask creation if it is necessary
 	_bResultsReady = false;
 

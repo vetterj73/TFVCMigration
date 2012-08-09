@@ -101,7 +101,7 @@ namespace CyberStitchTester
                     bSeperateProcessStages = true;
                 else if (args[i] == "-twopass")
                     bUseTwoPassStitch = true;
-                else if (args[i] == "-bSkipD")
+                else if (args[i] == "-skipD")
                     _bSkipDemosaic = true;
                 else if (args[i] == "-sillu")
                     _bUseDualIllumination = false;

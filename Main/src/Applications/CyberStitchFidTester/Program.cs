@@ -148,7 +148,7 @@ namespace CyberStitchFidTester
                     _bFRR = true;
                 else if (args[i] == "-de")
                     _bDetectPanelEdge = true;
-                else if (args[i] == "-bSkipD")
+                else if (args[i] == "-skipD")
                     _bSkipDemosaic = true;
                 else if (args[i] == "-le" && i < args.Length - 1)
                     iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
