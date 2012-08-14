@@ -2226,13 +2226,13 @@ void OverlapManager::AlignFovFovOverlapWithMask()
 }
 
 
-// Align FovFov overlap with mask 
+// Align FovFov overlap for fine overlap only
 void OverlapManager::AlignFovFovOverlap_FineOnly()
 {
 	//CorrelationParametersInst.bSaveOverlaps = true;
 	for(FovFovOverlapList::iterator i = _fovFovOverlapSet.begin(); i != _fovFovOverlapSet.end(); i++)
 	{
-		i->Reset();			// Use mask
+		i->Reset();			
 		i->SetAlignOption(FINEONLY);		// Fine alignment only
 
 		_pJobManager->AddAJob((CyberJob::Job*)&(*i));
