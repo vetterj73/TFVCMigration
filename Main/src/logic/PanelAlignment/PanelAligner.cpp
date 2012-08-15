@@ -611,7 +611,7 @@ bool PanelAligner::CreateTransforms()
 {	
 	// for debug
 	_iPanelCount++;
-	LOG.FireLogEntry(LogTypeSystem, "Panel #%d is processing time = %f", _iPanelCount, (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Panel #%d is processing time = %f", _iPanelCount, (float)(clock() - _StartTime)/CLOCKS_PER_SEC);
 
 	// Consist check for FovFov alignment of each trigger
 	if(CorrelationParametersInst.bFovFovAlignCheck)
