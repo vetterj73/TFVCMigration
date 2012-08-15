@@ -99,7 +99,7 @@ public:
 	void SetIsGoodForSolver(bool bValue) {_bGood4Solver = bValue;};
 
 	// Do alignment and reset
-	bool DoAlignment(bool bApplyCorrSizeUpLimit=false, bool* pbCorrSizeReduced=NULL);	
+	bool DoAlignment(bool bBayerSkipDemosaic, bool bApplyCorrSizeUpLimit=false, bool* pbCorrSizeReduced=NULL);	
 	bool Reset();
 
 	// For overlap process
@@ -126,8 +126,8 @@ public:
 
 protected:
 	bool SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced);
-	bool NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced);
-	int MaskedNgc(UIRect tempRoi, UIRect searchRoi);
+	bool NGCCorrelation(bool bSmooth, bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced);
+	int MaskedNgc(bool bSmooth, UIRect tempRoi, UIRect searchRoi);
 
 private:
 	Image* _pImg1;

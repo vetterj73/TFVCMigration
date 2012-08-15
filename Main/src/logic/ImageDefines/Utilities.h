@@ -102,7 +102,6 @@ void BayerLum(						// Bayer interpolation
    COLORSTYLE     type,				// Type of color BGR/YCrCb/Y
    bool			  bChannelSeperate);// true, the channel stored seperated
 
-
 unsigned char* Bayer2Lum_rect(
 	int				iBayerCols,		// Bayer Buffer dimensions 
 	int				iBayerRows,
@@ -111,3 +110,10 @@ unsigned char* Bayer2Lum_rect(
 	BayerType		order,			// Bayer pattern order; use the enums in bayer.h
 	UIRect			rectIn,			// Input rect for Roi 
 	UIRect*			pRectOut);		// Output rect for Roi
+
+// Bayer pattern to luminance conversion by smooth filter for image registration
+// Conversion is fast but not accurate
+void Smooth2d_B2L(
+	unsigned char* pcInBuf, unsigned int iInSpan,
+	unsigned char* pcOutBuf, unsigned int iOutSpan,
+	unsigned int iWidth, unsigned int iHeight);

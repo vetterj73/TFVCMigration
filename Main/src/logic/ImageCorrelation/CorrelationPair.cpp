@@ -187,7 +187,7 @@ bool CorrelationPair::Reset()
 
 // Do the alignment
 // Return true if it is processed
-bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
+bool CorrelationPair::DoAlignment(bool bBayerSkipDemosaic, bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {
 	bool bSRC = true;
 	_bUsedNgc = false;
@@ -242,7 +242,8 @@ bool CorrelationPair::DoAlignment(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeRe
 
 		_bUsedNgc = true;
 
-		if(!NGCCorrelation(bApplyCorrSizeUpLimit, pbCorrSizeReduced))
+		bool bSmooth = bBayerSkipDemosaic;
+		if(!NGCCorrelation(bSmooth, bApplyCorrSizeUpLimit, pbCorrSizeReduced))
 			return(false);
 	}
 	
@@ -267,7 +268,7 @@ bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSi
 	unsigned char* pLumBuf1 = NULL;
 	unsigned char* pLumBuf2 = NULL;
 
-	if(bApplyCorrSizeUpLimit)
+	if(bApplyCorrSizeUpLimit && pbCorrSizeReduced!=NULL)
 	{
 		*pbCorrSizeReduced = false; 
 
@@ -385,7 +386,7 @@ bool CorrelationPair::SqRtCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSi
 }
 
 // Calculate correlatin by using NGC
-bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
+bool CorrelationPair::NGCCorrelation(bool bSmooth, bool bApplyCorrSizeUpLimit, bool* pbCorrSizeReduced)
 {
 	unsigned int nrows = Rows();
 	unsigned int ncols = Columns();
@@ -446,7 +447,7 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 	searchRect.FirstRow = iFirstRow2;
 	searchRect.LastRow = iLastRow2;
 
-	int iFlag = MaskedNgc(tempRect, searchRect);
+	int iFlag = MaskedNgc(bSmooth, tempRect, searchRect);
 	if(iFlag>=0)
 		return(true);
 	else
@@ -454,21 +455,67 @@ bool CorrelationPair::NGCCorrelation(bool bApplyCorrSizeUpLimit, bool* pbCorrSiz
 }
 
 // Cyber Ngc correlation with mask
-int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
+int CorrelationPair::MaskedNgc(bool bSmooth, UIRect tempRoi, UIRect searchRoi)
 {
 	// Create template
 	SvImage oTempImage;
-	oTempImage.pdData = _pImg1->GetBuffer();
-	oTempImage.iWidth = _pImg1->Columns();
-	oTempImage.iHeight = _pImg1->Rows();
-	oTempImage.iSpan = _pImg1->PixelRowStride();
-	
 	VsStRect templateRect;
-	templateRect.lXMin = tempRoi.FirstColumn;
-	templateRect.lXMax = tempRoi.LastColumn;
-	templateRect.lYMin = tempRoi.FirstRow;
-	templateRect.lYMax = tempRoi.LastRow;
+
+	if(!bSmooth)	// Do not need smooth
+	{
+		oTempImage.pdData = _pImg1->GetBuffer();
+		oTempImage.iWidth = _pImg1->Columns();
+		oTempImage.iHeight = _pImg1->Rows();
+		oTempImage.iSpan = _pImg1->PixelRowStride();
 	
+		templateRect.lXMin = tempRoi.FirstColumn;
+		templateRect.lXMax = tempRoi.LastColumn;
+		templateRect.lYMin = tempRoi.FirstRow;
+		templateRect.lYMax = tempRoi.LastRow;
+	}
+	else	// Need smooth
+	{
+		oTempImage.pdData = new unsigned char[tempRoi.Size()];
+		oTempImage.iWidth = tempRoi.Columns();
+		oTempImage.iHeight = tempRoi.Rows();
+		oTempImage.iSpan = oTempImage.iWidth;
+	
+		templateRect.lXMin = 0;
+		templateRect.lXMax = tempRoi.Columns()-1;
+		templateRect.lYMin = 0;
+		templateRect.lYMax = tempRoi.Rows()-1;
+
+		Smooth2d_B2L(
+			_pImg1->GetBuffer() + tempRoi.FirstRow*_pImg1->PixelRowStride() + tempRoi.FirstColumn, _pImg1->PixelRowStride(),
+			oTempImage.pdData, oTempImage.iSpan,
+			oTempImage.iWidth, oTempImage.iHeight);
+
+		/* For debug
+		ImgTransform trans;
+		Image rawImg(
+			(int)tempRoi.Columns(), 
+			(int)tempRoi.Rows(),
+			_pImg1->PixelRowStride(),
+			1,
+			trans,
+			trans,
+			false,
+			_pImg1->GetBuffer() + tempRoi.FirstRow*_pImg1->PixelRowStride() + tempRoi.FirstColumn);
+		rawImg.Save("C:\\Temp\\raw1.bmp");
+
+		Image smoothImg(
+			(int)tempRoi.Columns(), 
+			(int)tempRoi.Rows(),
+			(int)tempRoi.Columns(),
+			1,
+			trans,
+			trans,
+			false,
+			oTempImage.pdData);
+		smoothImg.Save("C:\\Temp\\Smooth1.bmp");
+		//*/
+	}
+
 	// Calculate depth based on template size
 		// In width
 	int iW = templateRect.Width();
@@ -498,7 +545,7 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 
 	// Add mask
 	unsigned char* pMaskLine = NULL;
-	pMaskLine = (unsigned char*)_pMaskImg->GetBuffer() + _pMaskImg->PixelRowStride()  *templateRect.lYMin + templateRect.lXMin;
+	pMaskLine = (unsigned char*)_pMaskImg->GetBuffer() + _pMaskImg->PixelRowStride()*tempRoi.FirstRow + tempRoi.FirstColumn;
 	int iCount = 0;
 	for(int iy = 0; iy < (int)templateRect.Height(); iy++)
 	{
@@ -522,16 +569,61 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	
 	// Search
 	SvImage oSearchImage;
-	oSearchImage.pdData = _pImg2->GetBuffer();
-	oSearchImage.iWidth = _pImg2->Columns();
-	oSearchImage.iHeight = _pImg2->Rows();
-	oSearchImage.iSpan = _pImg2->PixelRowStride();
-    
 	VsStRect searchRect;
-	searchRect.lXMin = searchRoi.FirstColumn;
-	searchRect.lXMax = searchRoi.LastColumn;
-	searchRect.lYMin = searchRoi.FirstRow;
-	searchRect.lYMax = searchRoi.LastRow;
+	if(!bSmooth)
+	{
+		oSearchImage.pdData = _pImg2->GetBuffer();
+		oSearchImage.iWidth = _pImg2->Columns();
+		oSearchImage.iHeight = _pImg2->Rows();
+		oSearchImage.iSpan = _pImg2->PixelRowStride();
+    
+		searchRect.lXMin = searchRoi.FirstColumn;
+		searchRect.lXMax = searchRoi.LastColumn;
+		searchRect.lYMin = searchRoi.FirstRow;
+		searchRect.lYMax = searchRoi.LastRow;
+	}
+	else	// Need smooth
+	{
+		oSearchImage.pdData = new unsigned char[searchRoi.Size()];
+		oSearchImage.iWidth = searchRoi.Columns();
+		oSearchImage.iHeight = searchRoi.Rows();
+		oSearchImage.iSpan = oSearchImage.iWidth;
+	
+		searchRect.lXMin = 0;
+		searchRect.lXMax = searchRoi.Columns()-1;
+		searchRect.lYMin = 0;
+		searchRect.lYMax = searchRoi.Rows()-1;
+
+		Smooth2d_B2L(
+			_pImg2->GetBuffer() + searchRoi.FirstRow*_pImg2->PixelRowStride() + searchRoi.FirstColumn, _pImg2->PixelRowStride(),
+			oSearchImage.pdData, oSearchImage.iSpan,
+			oSearchImage.iWidth, oSearchImage.iHeight);
+
+		/* For debug
+		ImgTransform trans;
+		Image rawImg(
+			(int)searchRoi.Columns(), 
+			(int)searchRoi.Rows(),
+			_pImg2->PixelRowStride(),
+			1,
+			trans,
+			trans,
+			false,
+			_pImg2->GetBuffer() + searchRoi.FirstRow*_pImg2->PixelRowStride() + searchRoi.FirstColumn);
+		rawImg.Save("C:\\Temp\\raw.bmp");
+
+		Image smoothImg(
+			(int)searchRoi.Columns(), 
+			(int)searchRoi.Rows(),
+			(int)searchRoi.Columns(),
+			1,
+			trans,
+			trans,
+			false,
+			oSearchImage.pdData);
+		smoothImg.Save("C:\\Temp\\Smooth.bmp");
+		//*/
+	}
 	
 	// Set correlation paramter	
 	VsStCorrelate tCorrelate;
@@ -558,8 +650,11 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 	}
 
 	// Get results
-	_result.ColOffset = tCorrelate.ptCPoint[0].dLoc[0] - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
-	_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - (_roi2.FirstRow+_roi2.LastRow)/2.0;
+	//_result.ColOffset = tCorrelate.ptCPoint[0].dLoc[0] - (_roi2.FirstColumn+_roi2.LastColumn)/2.0; 
+	//_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - (_roi2.FirstRow+_roi2.LastRow)/2.0;
+	_result.ColOffset = tCorrelate.ptCPoint[0].dLoc[0] - searchRect.CenterX(); 
+	_result.RowOffset = tCorrelate.ptCPoint[0].dLoc[1] - searchRect.CenterY();
+
 	_result.CorrCoeff = tCorrelate.ptCPoint[0].dScore;
 	if(tCorrelate.iNumResultPoints >=2)
 		_result.AmbigScore= fabs(tCorrelate.ptCPoint[1].dScore/tCorrelate.ptCPoint[0].dScore);
@@ -567,6 +662,11 @@ int CorrelationPair::MaskedNgc(UIRect tempRoi, UIRect searchRoi)
 		_result.AmbigScore = 0;
 
 	// Clean up
+	if(bSmooth)
+	{
+		delete [] oTempImage.pdData;
+		delete [] oSearchImage.pdData;
+	}
 	vsDispose2DTemplate(&tTemplate);	
 	vsDispose2DCorrelate(&tCorrelate);		
 

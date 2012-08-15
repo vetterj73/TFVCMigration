@@ -1022,4 +1022,76 @@ unsigned char* Bayer2Lum_rect(
 	return(pOut);
 }
 
+// 1D smooth
+void inline Smooth1d_B2L(unsigned char* pcInLine, unsigned char* pcOutLine, unsigned int iLength) 
+{
+	// Out[i] = in[i-2]/8+in[i-1]/8+in[i]/4+in[i+1]/4+in[i+2]/8+in[i+3]/8
+	// Filter must be even in size and symmetry 
+	
+	// Values in middle
+	for(unsigned int i = 2; i<iLength-3; i++)
+	{
+		pcOutLine[i] = (unsigned char)(
+				((int)pcInLine[i] + (int)pcInLine[i+1])/4
+			+	((int)pcInLine[i-2] + (int)pcInLine[i-1] + (int)pcInLine[i+2] + (int)pcInLine[i+3])/8
+			);
+	}
 
+	// First two values
+	pcOutLine[0] = pcOutLine[2];
+	pcOutLine[1] = pcOutLine[2];
+	
+	// Last three values
+	pcOutLine[iLength-3] = pcOutLine[iLength-4];
+	pcOutLine[iLength-2] = pcOutLine[iLength-4];
+	pcOutLine[iLength-1] = pcOutLine[iLength-4];
+}
+
+// Bayer pattern to luminance conversion by smooth filter for image registration
+// Conversion is fast but not accurate
+void Smooth2d_B2L(
+	unsigned char* pcInBuf, unsigned int iInSpan,
+	unsigned char* pcOutBuf, unsigned int iOutSpan,
+	unsigned int iWidth, unsigned int iHeight)
+{
+	unsigned char* pcTempBuf = new unsigned char[iWidth*iHeight];
+	unsigned char* pcTempInLine = new unsigned char[iHeight];
+	unsigned char* pcTempOutLine = new unsigned char[iHeight];
+
+	// Smooth for each row (pcInBuf->pcTempBuf)
+	unsigned char* pcInLine = pcInBuf;
+	unsigned char* pcOutLine = pcTempBuf;
+	for(unsigned int i=0; i<iHeight; i++)
+	{
+		Smooth1d_B2L(pcInLine, pcOutLine, iWidth);
+		pcInLine += iInSpan;
+		pcOutLine += iWidth;
+	}
+
+	// Smooth for each column (pcTempBuf->pcOutBuf)
+	for(unsigned int i=0; i<iWidth; i++)
+	{
+		// Input column
+		int iIndex = i;
+		for(int j=0; j<iHeight; j++)
+		{
+			pcTempInLine[j] =  pcTempBuf[iIndex];
+			iIndex += iWidth;
+		}
+
+		Smooth1d_B2L(pcTempInLine, pcTempOutLine, iHeight);
+		
+		// Output 
+		iIndex = i;
+		for(int j=0; j<iHeight; j++)
+		{
+			pcOutBuf[iIndex] =  pcTempOutLine[j];
+			iIndex += iOutSpan;
+		}
+	}
+
+	// Clean up
+	delete [] pcTempBuf;
+	delete [] pcTempInLine;
+	delete [] pcTempOutLine;
+}

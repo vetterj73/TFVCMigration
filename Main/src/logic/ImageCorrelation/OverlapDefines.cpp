@@ -306,12 +306,20 @@ void Overlap::Run()
 			iLayer1 = 0;
 	}//*/
 
+	bool bBayerSkipDemosaic = false;
+	if(_type == Fov_To_Fov)
+	{
+		MosaicSet* pSet  = ((FovFovOverlap*)this)->GetFirstMosaicLayer()->GetMosaicSet();
+		if(pSet->IsBayerPattern() && pSet->IsSkipDemosaic())
+			bBayerSkipDemosaic = true;
+	}
+
 	// If coarse alignment is needed or fiducial overlap (using regoff) 
 	if (_alignOption != FINEONLY || _type == Fid_To_Fov) 
 	{
 		// Do coarse correlation
 		bool bCorrSizeReduced = false;
-		_coarsePair.DoAlignment(_bApplyCorrSizeUpLimit, &bCorrSizeReduced);
+		_coarsePair.DoAlignment(bBayerSkipDemosaic, _bApplyCorrSizeUpLimit, &bCorrSizeReduced);
 
 		// If the Roi size is reduced in correlation
 		double dCoarseReliableScore = 0;
@@ -324,7 +332,7 @@ void Overlap::Run()
 			{
 				// try again without ROI reduce
 				_coarsePair.Reset();
-				_coarsePair.DoAlignment();
+				_coarsePair.DoAlignment(bBayerSkipDemosaic);
 			}
 		}
 
@@ -431,7 +439,7 @@ void Overlap::Run()
 			_pMaskImg->GrayNNMorphFrom(_pMaskInfo->_pPanelMaskImage, i->GetFirstRoi());
 		}
 
-		i->DoAlignment();
+		i->DoAlignment(bBayerSkipDemosaic);
 
 		// Validation check
 		// To prevent wrong correlation results between different layers to be used
