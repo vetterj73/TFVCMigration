@@ -511,14 +511,15 @@ namespace MosaicDM
 		return GetNumPixels(GetObjectLengthInMeters(), GetNominalPixelSizeY());
 	}
 
-	// For fiducial information from outside
+	// For fiducial CAD information from outside
 	bool MosaicSet::SetFiducailCadLoc(int iID, double dx, double dy)
 	{
+		// If already exists, return false
 		if(_inputFidLocMap.find(iID) != _inputFidLocMap.end())
 			return(false);
 
+		// Add fiducial CAD information
 		FiducialLocation fidLoc(dx, dy);
-
 		_inputFidLocMap.insert(pair<int, FiducialLocation>(iID, fidLoc));
 
 		return(true);
@@ -528,7 +529,8 @@ namespace MosaicDM
 			int iLayer, int iTrig, int iCam,
 			double dCol, double dRow)
 	{
-		if(_inputFidLocMap.find(iID) != _inputFidLocMap.end())
+		// If doesn't exist, return false
+		if(_inputFidLocMap.find(iID) == _inputFidLocMap.end())
 			return(false);
 
 		_inputFidLocMap[iID].iLayerIndex = iLayer;

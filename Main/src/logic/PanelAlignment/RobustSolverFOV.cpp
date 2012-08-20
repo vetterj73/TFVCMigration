@@ -645,7 +645,7 @@ bool RobustSolverFOV::AddInputFidLocations(FiducialLocation* pLoc)
 
 	// Fov's information
 	unsigned int iLayerIndex= pLoc->iLayerIndex;
-	unsigned int iTrigIndex = pLoc->iLayerIndex;
+	unsigned int iTrigIndex = pLoc->iTrigIndex;
 	unsigned int iCamIndex = pLoc->iCamIndex;
 	FovIndex index(iLayerIndex, iTrigIndex, iCamIndex); 
 	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;

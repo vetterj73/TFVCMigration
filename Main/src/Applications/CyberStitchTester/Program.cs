@@ -190,8 +190,15 @@ namespace CyberStitchTester
                 /* for debug
                 _mosaicSet.SetFiducailCadLoc(0, 5e-3, 10e-3);
                 _mosaicSet.SetFiducailCadLoc(1, 160e-3, 10e-3);
-                _mosaicSet.SetFiducailCadLoc(0, 160e-3, 120e-3);
+                _mosaicSet.SetFiducailCadLoc(2, 160e-3, 120e-3);
                 //*/
+
+                /* for debug
+                _mosaicSet.SetFiducailCadLoc(0, 4.915e-3, 9.71e-3);
+                _mosaicSet.SetFiducailCadLoc(1, 159.9e-3, 9.71e-3);
+                _mosaicSet.SetFiducailCadLoc(2, 159.9e-3, 119.95e-3);
+                //*/
+                
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
