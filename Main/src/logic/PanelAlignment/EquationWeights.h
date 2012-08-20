@@ -15,6 +15,8 @@ public:
 
 	double GetFovFovWeight(){return _dWeightFovFov;};
 
+	double GetFidFovWeight(){return _dWeightFidFov;};
+
 protected:
 	static EquationWeights* ptr;
 
@@ -62,7 +64,6 @@ public:
 
 	// additions for iterative fit camera model
 	double wCalDriftZero;
-
 
 private:
 	// Parameters of weight for Fov and Fov overlap

@@ -187,10 +187,11 @@ namespace CyberStitchTester
                 if (_bBayerPattern)
                     _aligner.SetSkipDemosaic(_bSkipDemosaic);
 
-                // Add trigger to trigger overlaps for same layer
-                //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
-                //    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
-
+                /* for debug
+                _mosaicSet.SetFiducailCadLoc(0, 5e-3, 10e-3);
+                _mosaicSet.SetFiducailCadLoc(1, 160e-3, 10e-3);
+                _mosaicSet.SetFiducailCadLoc(0, 160e-3, 120e-3);
+                //*/
                 if (!_aligner.ChangeProduction(_mosaicSet, _panel))
                 {
                     throw new ApplicationException("Aligner failed to change production ");
@@ -250,6 +251,19 @@ namespace CyberStitchTester
                 _aligner.ResetForNextPanel();
                
                 _mosaicSet.ClearAllImages();
+
+                /* for debug
+                _mosaicSet.SetFiducialFovLoc(0,
+                    0, 6, 0,
+                    2503.607, 436.062);
+                _mosaicSet.SetFiducialFovLoc(1,
+                    0, 0, 0,
+                    2437.501, 716.265);
+                _mosaicSet.SetFiducialFovLoc(2,
+                    0, 0, 3,
+                    1867.331, 763.484);
+                 //*/
+
                 Output("Begin stitch cycle...");
                 if (!GatherImages())
                 {

@@ -602,13 +602,40 @@ void PanelAligner::AddOverlapResults2Solver(
 		solver->AddFovFovOvelapResults(&(*ite));
 	}
 
+	// Add Supplement overlaps
 	AddSupplementOverlapResults(_pSolver);
+
+	// Add input fiducial information
+	if(_pSet->HasInputFidLocations())
+	{
+		map<int, FiducialLocation>* pFidLocMap = _pSet->GetInputFidLocMap();
+		for(map<int, FiducialLocation>::iterator i=pFidLocMap->begin(); i!=pFidLocMap->end(); i++)
+		{
+			solver->AddInputFidLocations(&(i->second));
+		}
+	}
 }
 
 
 // Create the transform for each Fov
 bool PanelAligner::CreateTransforms()
 {	
+	// If there are fiducial locations that need input from outside 
+	if(_pSet->HasInputFidLocations())
+	{
+		int iSleepCount = 0;
+		while(!_pSet->IsValidInputFidLocations())
+		{
+			if(iSleepCount > 100)
+			{
+				LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Waiting input fidcucial location time out");
+				return(false);
+			}
+			Sleep(100);
+			iSleepCount++;
+		}
+	}
+
 	// for debug
 	_iPanelCount++;
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::CreateTransforms():Panel #%d is processing time = %f", _iPanelCount, (float)(clock() - _StartTime)/CLOCKS_PER_SEC);

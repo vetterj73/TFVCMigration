@@ -18,6 +18,9 @@ OverlapManager::OverlapManager(
 	_pPanel = pPanel;
 	_numThreads = numThreads;
 
+	// For debug
+	//_pPanel->ClearFiducials();
+
 	/*
 	int k=2;
 	double dS = 1e-3;

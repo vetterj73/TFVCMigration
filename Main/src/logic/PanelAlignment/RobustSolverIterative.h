@@ -45,6 +45,7 @@ public:
 	bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
 	bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
 	bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
+	bool AddInputFidLocations(FiducialLocation* pLoc){return true;};
 	void OutputVectorXCSV(string filename) const;
 
 protected:

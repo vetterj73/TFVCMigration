@@ -637,9 +637,59 @@ bool RobustSolverFOV::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	return(true);
 }
 
+// Add fiducial location from input
+bool RobustSolverFOV::AddInputFidLocations(FiducialLocation* pLoc)
+{
+	if(!pLoc->IsValid())
+		return(false);
+
+	// Fov's information
+	unsigned int iLayerIndex= pLoc->iLayerIndex;
+	unsigned int iTrigIndex = pLoc->iLayerIndex;
+	unsigned int iCamIndex = pLoc->iCamIndex;
+	FovIndex index(iLayerIndex, iTrigIndex, iCamIndex); 
+	unsigned int iFOVPosA = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
+
+	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+
+	double w = Weights.GetFidFovWeight();
+
+	// Add a equataion for X
+	pdRow[iFOVPosA + 0] = pLoc->dRow * w;
+	pdRow[iFOVPosA + 1] = pLoc->dCol * w;
+	pdRow[iFOVPosA + 2] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 6] = pLoc->dRow * pLoc->dRow * w;
+		pdRow[iFOVPosA + 7] = pLoc->dRow * pLoc->dCol * w;
+		pdRow[iFOVPosA + 8] = pLoc->dCol * pLoc->dCol * w;
+	}
+	_dVectorB[_iCurrentRow] = w*pLoc->dCadX;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+
+	// Add a equataion for Y
+	pdRow[iFOVPosA + 3] = pLoc->dRow * w;
+	pdRow[iFOVPosA + 4] = pLoc->dCol * w;
+	pdRow[iFOVPosA + 5] = w;
+
+	// For projective transform
+	if(_bProjectiveTrans)
+	{
+		pdRow[iFOVPosA + 9] = pLoc->dRow * pLoc->dRow * w;
+		pdRow[iFOVPosA +10] = pLoc->dRow * pLoc->dCol * w;
+		pdRow[iFOVPosA +11] = pLoc->dCol * pLoc->dCol * w;
+	}
+	_dVectorB[_iCurrentRow] = w*pLoc->dCadY;
+	pdRow += _iMatrixWidth;
+	_iCurrentRow++;
+	
+	return(true);
+}
+
 #pragma endregion
-
-
 
 // Robust regression by Huber's "Algorithm H"
 // Banded version

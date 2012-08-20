@@ -64,6 +64,7 @@ public:
 	virtual bool AddFovFovOvelapResults(FovFovOverlap* pOverlap)=0;
 	virtual bool AddCadFovOvelapResults(CadFovOverlap* pOverlap)=0;
 	virtual bool AddFidFovOvelapResults(FidFovOverlap* pOverlap)=0;
+	virtual bool AddInputFidLocations(FiducialLocation* pLoc)=0;
 	virtual void SolveXAlgH()=0;
 	
 	virtual ImgTransform GetResultTransform(

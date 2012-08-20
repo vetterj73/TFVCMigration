@@ -189,6 +189,19 @@ namespace MMosaicDM
 				_pMosaicSet->SetSeperateProcessStages(bValue);
 			}
 
+			bool SetFiducailCadLoc(int iID, double dx, double dy)
+			{
+				return(_pMosaicSet->SetFiducailCadLoc(iID, dx, dy));
+			}
+
+			bool SetFiducialFovLoc(int iID, 
+				int iLayer, int iTrig, int iCam,
+				double dCol, double dRow)
+			{
+				return(_pMosaicSet->SetFiducialFovLoc(
+					iID, iLayer, iTrig, iCam, dCol, dRow));
+			}
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		

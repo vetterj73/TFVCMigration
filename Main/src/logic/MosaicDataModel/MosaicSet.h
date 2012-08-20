@@ -31,6 +31,25 @@ namespace MosaicDM
 		int iCamIndex;
 	};
 
+	// For input fidcucial information
+	class FiducialLocation
+	{
+	public:
+		FiducialLocation();
+		FiducialLocation(double cadX, double cadY); 
+		bool IsValid();
+		void Reset();
+
+	public:
+		int iLayerIndex;
+		int iTrigIndex;
+		int iCamIndex;
+		double dCol;
+		double dRow;
+		double dCadX;
+		double dCadY;
+	};
+
 	typedef void (*IMAGEADDED_CALLBACK)(int layerIndex, int cameraIndex, int triggerIndex, void* context);
 
 	///
@@ -166,6 +185,16 @@ namespace MosaicDM
 
 			int NumberOfImageTiles();
 
+			// Input fiducial location information
+			bool SetFiducailCadLoc(int iID, double dX, double dy);
+			bool SetFiducialFovLoc(int iID, 
+				int iLayer, int iTrig, int iCam,
+				double dCol, double dRow);
+			bool HasInputFidLocations();
+			bool IsValidInputFidLocations();
+			void ResetInputFidLocMap();
+			map<int, FiducialLocation>* GetInputFidLocMap();
+			
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;
@@ -191,5 +220,8 @@ namespace MosaicDM
 			// Seperate acqusition, demosaicing and alignment for speed test
 			bool _bSeperateProcessStages;
 			list<FovData> _fovDataList;
+
+			// For input fiducial information
+			map<int, FiducialLocation> _inputFidLocMap;
 	};
 }

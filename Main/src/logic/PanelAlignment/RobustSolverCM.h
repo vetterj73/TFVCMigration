@@ -31,6 +31,7 @@ public:
 	virtual bool AddFovFovOvelapResults(FovFovOverlap* pOverlap);
 	virtual bool AddCadFovOvelapResults(CadFovOverlap* pOverlap);
 	virtual bool AddFidFovOvelapResults(FidFovOverlap* pOverlap);
+	virtual bool AddInputFidLocations(FiducialLocation* pLoc){return true;};
 
 	virtual ImgTransform GetResultTransform(
 		unsigned int iLlluminationIndex,

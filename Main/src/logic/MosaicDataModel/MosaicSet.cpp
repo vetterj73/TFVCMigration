@@ -12,6 +12,46 @@
 
 namespace MosaicDM 
 {
+
+#pragma region class FiducialLocation
+	FiducialLocation::FiducialLocation()
+	{
+		dCadX = -1;
+		dCadY = -1;
+
+		Reset();
+	}
+
+	FiducialLocation::FiducialLocation(double cadX, double cadY)
+	{
+		dCadX = cadX;
+		dCadY = cadY;
+
+		Reset();
+	}
+
+	void FiducialLocation::Reset()
+	{
+		iLayerIndex = -1;
+		iTrigIndex = -1;
+		iCamIndex = -1;
+		dCol = -1;
+		dRow = -1;
+	}
+
+	bool FiducialLocation::IsValid()
+	{
+		if(iLayerIndex < 0 ||
+			iTrigIndex < 0 ||
+			iCamIndex < 0 ||
+			dCol < 0 ||
+			dRow < 0)
+			return(false);
+
+		return(true);
+	}
+#pragma endregion
+
 	MosaicSet::MosaicSet(double objectWidthInMeters,
 					  double objectLengthInMeters,
 					  unsigned int imageWidthInPixels,
@@ -44,6 +84,8 @@ namespace MosaicDM
 		_iNumThreads = 8;
 
 		_bSeperateProcessStages = false;
+
+		_inputFidLocMap.clear();
 	}
 
 	MosaicSet::~MosaicSet()
@@ -215,6 +257,10 @@ namespace MosaicDM
 	{
 		for(unsigned int i=0; i<_layerList.size(); i++)
 			_layerList[i]->ClearAllImages();
+
+		// Reset input fiducial Fov location.
+		if(HasInputFidLocations())
+			ResetInputFidLocMap();
 	}
 
 	int MosaicSet::NumberOfImageTiles()
@@ -463,5 +509,61 @@ namespace MosaicDM
 	unsigned int MosaicSet::GetObjectLengthInPixels()
 	{
 		return GetNumPixels(GetObjectLengthInMeters(), GetNominalPixelSizeY());
+	}
+
+	// For fiducial information from outside
+	bool MosaicSet::SetFiducailCadLoc(int iID, double dx, double dy)
+	{
+		if(_inputFidLocMap.find(iID) != _inputFidLocMap.end())
+			return(false);
+
+		FiducialLocation fidLoc(dx, dy);
+
+		_inputFidLocMap.insert(pair<int, FiducialLocation>(iID, fidLoc));
+
+		return(true);
+	}
+
+	bool MosaicSet::SetFiducialFovLoc(int iID, 
+			int iLayer, int iTrig, int iCam,
+			double dCol, double dRow)
+	{
+		if(_inputFidLocMap.find(iID) != _inputFidLocMap.end())
+			return(false);
+
+		_inputFidLocMap[iID].iLayerIndex = iLayer;
+		_inputFidLocMap[iID].iTrigIndex = iTrig;
+		_inputFidLocMap[iID].iCamIndex = iCam;
+		_inputFidLocMap[iID].dCol = dCol;
+		_inputFidLocMap[iID].dRow = dRow;
+	}
+
+	bool MosaicSet::HasInputFidLocations()
+	{
+		return(!_inputFidLocMap.empty());
+	}
+
+	bool MosaicSet::IsValidInputFidLocations()
+	{
+		for(map<int, FiducialLocation>::iterator i=_inputFidLocMap.begin(); i!=_inputFidLocMap.end(); i++)
+		{
+			if(!i->second.IsValid())
+				return(false);
+		}
+
+		return(true);
+	}
+
+	void MosaicSet::ResetInputFidLocMap()
+	{
+		for(map<int, FiducialLocation>::iterator i=_inputFidLocMap.begin(); i!=_inputFidLocMap.end(); i++)
+		{
+			i->second.Reset();
+		}
+	}
+
+	map<int, FiducialLocation>* MosaicSet::GetInputFidLocMap()
+	{
+		return(&_inputFidLocMap);
 	}
 }
