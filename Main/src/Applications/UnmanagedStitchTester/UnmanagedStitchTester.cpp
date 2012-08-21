@@ -8,7 +8,7 @@ using namespace std;
 
 #include "XmlUtils.h"
 #include "Panel.h"
-//#include "SIMAPI.h"
+#include "SIMAPI.h"
 
 Feature* CreateFeatureFromNode(XmlNode pNode);
 bool LoadPanelDescription(string sPanelFile);
@@ -40,9 +40,9 @@ int main(int argc, char* argv[])
 	LoadPanelDescription(_sPanelFile);
 	CoUninitialize();
 
-	/*/ Initial coreAPI
+	// Initial coreAPI
 	SIMSTATUS status = SIMAPI::SIMCore::InitializeCoreAPI(
-	bSimulated, simulationFile.c_str());
+	bSimulated, _sSimulationFile.c_str());
 	if(status != SIMSTATUS_SUCCESS)
 	{
 		printf("Init Failed with %d\n", status);
@@ -52,11 +52,13 @@ int main(int argc, char* argv[])
 	{
 		printf("No SIM Devices Available.\n", status);
 		return 1;
-	}*/
+	}
 
 	// Clean up
 	if(_pPanel != NULL)
 		delete _pPanel;
+
+	SIMAPI::SIMCore::RemoveCoreAPI();
 
 	printf("Done!\n");
 	return 0;

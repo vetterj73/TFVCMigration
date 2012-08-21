@@ -13,6 +13,7 @@
       <dependency project_name="SRF" version="1.0.1.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\SRF" target=".\SRF\" />
       <dependency project_name="CyberNgc" version="1.0.13.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\CyberNgc" target=".\CyberNgc\" />
       <dependency project_name="OpenCV" version="2.3.1.2010" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\vs2010\OpenCV" target=".\OpenCV\" />
+      <dependency project_name="Logger" version="1.1.11.0" source="\\cyberfs.msp.cyberoptics.com\Projects\CyberBuild\Repository\VS2010\Logger" target=".\Logger\" />
     </dependencies>
     <hardware_dependencies>
     </hardware_dependencies>
