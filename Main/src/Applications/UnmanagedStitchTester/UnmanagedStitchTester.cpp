@@ -11,15 +11,17 @@ using namespace std;
 #include "SIMAPI.h"
 
 Feature* CreateFeatureFromNode(XmlNode pNode);
-bool LoadPanelDescription(string sPanelFile);
+Panel* LoadPanelDescription(string sPanelFile);
+bool bInitialCoreApi(bool bSimulated, string sSimulationFile);
 
-Panel* _pPanel = NULL;
-int main(int argc, char* argv[])
+void main(int argc, char* argv[])	
 {
 	string _sPanelFile = "";
 	string _sSimulationFile = "";
-	bool bSimulated = false;
+	Panel* _pPanel = NULL;
+	bool _bSimulated = false;
 
+	// Paramter input
 	for(int i=0; i<argc; i++)
 	{
 		string cmd = argv[i];
@@ -31,27 +33,32 @@ int main(int argc, char* argv[])
 		else if(cmd == "-s" && i <= argc-1)
 		{
 			_sSimulationFile = argv[i+1];
-			bSimulated = true;
+			_bSimulated = true;
 		}
+	}
+
+	// Only support simulation mode
+	if(!_bSimulated)
+	{
+		printf("No simulation file is available!");
+		return;
 	}
 
 	// Load panel description
 	CoInitialize(NULL);
-	LoadPanelDescription(_sPanelFile);
+	_pPanel = LoadPanelDescription(_sPanelFile);
 	CoUninitialize();
-
-	// Initial coreAPI
-	SIMSTATUS status = SIMAPI::SIMCore::InitializeCoreAPI(
-	bSimulated, _sSimulationFile.c_str());
-	if(status != SIMSTATUS_SUCCESS)
+	if(_pPanel == NULL)
 	{
-		printf("Init Failed with %d\n", status);
-		return 1;
+		printf("Failed to load panel file!");
+		return;
 	}
-	if(SIMAPI::SIMCore::NumberOfDevices() < 1)
+
+	// Initial coreApi
+	if(!bInitialCoreApi(_bSimulated, _sSimulationFile))
 	{
-		printf("No SIM Devices Available.\n", status);
-		return 1;
+		printf("Failed to initial coreApi");
+		return;
 	}
 
 	// Clean up
@@ -61,12 +68,12 @@ int main(int argc, char* argv[])
 	SIMAPI::SIMCore::RemoveCoreAPI();
 
 	printf("Done!\n");
-	return 0;
 }
 
 // Load panel description file
-bool LoadPanelDescription(string sPanelFile)
+Panel* LoadPanelDescription(string sPanelFile)
 {
+	Panel* pPanel = NULL;
 	// Load panel Xml file
 	using namespace MSXML2;
 	IXMLDOMDocument2Ptr pDOM;
@@ -74,13 +81,13 @@ bool LoadPanelDescription(string sPanelFile)
 	if(FAILED(hr))
 	{
 		printf("Could not instantiate XML DOM!");
-		return false;
+		return NULL;
 	}
 
 	if(pDOM->load(sPanelFile.c_str()) == VARIANT_FALSE)
 	{
 		printf("Could not load panel file: \'%s\'", sPanelFile.c_str() );
-		return false;
+		return NULL;
 	}
 	
 	try{
@@ -91,7 +98,7 @@ bool LoadPanelDescription(string sPanelFile)
 		s = pDOM->selectSingleNode("//PanelSize/Height")->Gettext();
 		double dLengthY = atof(s.c_str());
 
-		_pPanel = new Panel(dLengthX, dLengthY, 1.7e-5, 1.7e-5);
+		pPanel = new Panel(dLengthX, dLengthY, 1.7e-5, 1.7e-5);
 
 		// Add features
 		XmlNode pNode = pDOM->selectSingleNode("//Features");
@@ -99,7 +106,7 @@ bool LoadPanelDescription(string sPanelFile)
 		for(int i=0; i<pNodeList->length; i++)
 		{
 			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
-			_pPanel->AddFeature(pFeature);
+			pPanel->AddFeature(pFeature);
 		}
 
 		// Add fiducials 
@@ -108,7 +115,7 @@ bool LoadPanelDescription(string sPanelFile)
 		for(int i=0; i<pNodeList->length; i++)
 		{
 			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
-			_pPanel->AddFiducial(pFeature);
+			pPanel->AddFiducial(pFeature);
 		}
 	}
 	catch(...)
@@ -117,7 +124,7 @@ bool LoadPanelDescription(string sPanelFile)
 	}
 
 	pDOM.Release();
-	return(true);
+	return(pPanel);
 }
 
 // Create a fearue point from
@@ -174,3 +181,62 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 
 	return(pFeature);
 }
+
+// Frame done callback
+void OnFrameDone(int device, SIMSTATUS status, class SIMAPI::CSIMFrame* frame, void* context)
+{
+	printf("Image Ready\n");
+}
+
+// Device acquistion doene callback
+void OnAcquisitionDone(int device, SIMSTATUS status, int Count, void* context)
+{
+}
+
+// Initial coreApi
+bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
+{
+	// Validation check
+	SIMSTATUS status = SIMAPI::SIMCore::InitializeCoreAPI(bSimulated, sSimulationFile.c_str());
+	if(status != SIMSTATUS_SUCCESS)
+	{
+		printf("Init Failed with %d\n", status);
+		return false;
+	}
+	if(SIMAPI::SIMCore::NumberOfDevices() < 1)
+	{
+		printf("No SIM Devices Available with %d.\n", status);
+		return false;
+	}
+
+	// For each device
+	int iNumDevice = SIMAPI::SIMCore::NumberOfDevices();
+	for(int i=0; i<iNumDevice; i++)
+	{
+		// Allocate buffers
+		SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(i);
+		
+			// Total trigs
+		int iTotalTrigs = 0;
+		int iNumCS = pDevice->NumberOfCaptureSpecs();
+		for(int j=0; j<iNumCS; j++)
+			iTotalTrigs += pDevice->GetSIMCaptureSpec(j)->GetNumberOfTriggers();
+
+			// Allocate buffers
+		int iBufCount = 8* iTotalTrigs;
+		int iAllocatedBufs = iBufCount;
+		pDevice->AllocateFrameBuffers(&iAllocatedBufs);
+		if(iAllocatedBufs < iBufCount)
+		{
+			printf("Could not %d allocate buffers!\n", iBufCount);
+			return false;
+		}
+
+		// Call back function
+		pDevice->RegisterAcquisitionCallback(OnFrameDone, pDevice);
+		pDevice->RegisterAcquisitionDoneCallback(OnAcquisitionDone, pDevice);
+	}
+
+	return true;
+}
+
