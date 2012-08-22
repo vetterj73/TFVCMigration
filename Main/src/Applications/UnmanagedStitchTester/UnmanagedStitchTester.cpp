@@ -9,16 +9,47 @@ using namespace std;
 #include "XmlUtils.h"
 #include "Panel.h"
 #include "SIMAPI.h"
+#include "MosaicSet.h"
+#include "PanelAligner.h"
+#include "ConfigMosaicSet.h"
+
+// "using namespace SIMAPI" will lead confustion of Panel definition (CoreAPI has a panel class)
 
 Feature* CreateFeatureFromNode(XmlNode pNode);
 Panel* LoadPanelDescription(string sPanelFile);
 bool bInitialCoreApi(bool bSimulated, string sSimulationFile);
+void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices);
+bool SetupAligner();
+
+Panel* _pPanel = NULL;
+MosaicSet* _pMosaicSet = NULL;
+PanelAligner* _pAligner = NULL;
+
+unsigned int _iInputImageColumns = 2592;
+unsigned int _iInputImageRows = 1944;
+
+bool _bBayerPattern = false;
+int _iBayerType = 1; // GBRG, 
+bool _bSkipDemosaic = true;
+
+bool _bContinuous = false;
+bool _bOwnBuffers = true; /// Must be true because we are release buffers immediately.
+bool _bMaskForDiffDevices = false;
+bool _bAdjustForHeight = true;
+bool _bUseProjective = true;
+bool _bUseCameraModel = false;
+bool _bUseIterativeCameraModel = false;
+bool _bSeperateProcessStages = false;
+bool _bUseTwoPassStitch = false;
+unsigned int _iNumThreads = 8;
+bool _bDetectPanelEdge = false;	
+int _iNumToRun = 1;
+int _iLayerIndex4Edge = 0;
 
 void main(int argc, char* argv[])	
 {
 	string _sPanelFile = "";
-	string _sSimulationFile = "";
-	Panel* _pPanel = NULL;
+	string _sSimulationFile = "";	
 	bool _bSimulated = false;
 
 	// Paramter input
@@ -27,14 +58,38 @@ void main(int argc, char* argv[])
 		string cmd = argv[i];
 
 		if(cmd == "-p" && i <= argc-1)
-		{
 			_sPanelFile = argv[i+1];
-		}
 		else if(cmd == "-s" && i <= argc-1)
 		{
 			_sSimulationFile = argv[i+1];
 			_bSimulated = true;
 		}
+		else if (cmd == "-c")
+            _bContinuous = true;
+        else if (cmd == "-m")
+			_bMaskForDiffDevices = true;
+        else if (cmd == "-bayer")
+			_bBayerPattern = true;
+        else if (cmd == "-nw")
+			_bUseProjective = false;
+        else if (cmd == "-nh")
+			_bAdjustForHeight = false;
+		else if (cmd == "-cammod")
+			_bUseCameraModel = true;
+		else if (cmd == "-de")
+			_bDetectPanelEdge = true;
+        else if (cmd == "-iter")
+			_bUseIterativeCameraModel = true;
+        else if (cmd == "-sps")
+			_bSeperateProcessStages = true;
+        else if (cmd == "-twopass")
+            _bUseTwoPassStitch = true;
+        else if (cmd == "-skipD")
+			_bSkipDemosaic = true;
+		else if (cmd == "-t" && i <= argc-1)
+			_iNumThreads = atoi(argv[i + 1]);        
+		else if (cmd == "-n" && i < i <= argc-1)
+			_iNumToRun = atoi(argv[i + 1]);
 	}
 
 	// Only support simulation mode
@@ -61,15 +116,26 @@ void main(int argc, char* argv[])
 		return;
 	}
 
+	// Set up mosaic
+	SetupMosaic(_pPanel, _bOwnBuffers, _bMaskForDiffDevices);
+
+	// Set up aligner
+	SetupAligner();
+
 	// Clean up
 	if(_pPanel != NULL)
 		delete _pPanel;
+	if(_pMosaicSet != NULL)
+		delete _pMosaicSet;
+	if(_pAligner != NULL)
+		delete _pAligner;
 
 	SIMAPI::SIMCore::RemoveCoreAPI();
 
 	printf("Done!\n");
 }
 
+#pragma region panel description
 // Load panel description file
 Panel* LoadPanelDescription(string sPanelFile)
 {
@@ -182,6 +248,10 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 	return(pFeature);
 }
 
+#pragma endregion
+
+#pragma region coreAPI
+
 // Frame done callback
 void OnFrameDone(int device, SIMSTATUS status, class SIMAPI::CSIMFrame* frame, void* context)
 {
@@ -240,3 +310,65 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 	return true;
 }
 
+#pragma endregion
+
+void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices)
+{
+	_pMosaicSet = new MosaicSet(
+		pPanel->xLength(), pPanel->yLength(), 
+        _iInputImageColumns, _iInputImageRows, _iInputImageColumns, 
+		pPanel->GetPixelSizeX(), pPanel->GetPixelSizeY(), 
+        bOwnBuffers,
+        _bBayerPattern, _iBayerType, _bSkipDemosaic);
+            //_pMosaicSet.OnLogEntry += OnLogEntryFromMosaic;
+            //_mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+
+	ConfigMosaicSet::MosaicSetDefaultConfiguration(_pMosaicSet, bMaskForDiffDevices);
+}
+
+bool SetupAligner()
+{
+	_pAligner = new PanelAligner();
+    //_pAligner->OnLogEntry += OnLogEntryFromClient;
+    //_pAligner->SetAllLogTypes(true);
+    //_pAligner->LogTransformVectors(true);
+
+    // Set up aligner delegate
+    // _pAligner->OnAlignmentDone += OnAlignmentDone;
+
+    // Set up production for aligner
+    _pAligner->NumThreads(_iNumThreads);
+    _pMosaicSet->SetThreadNumber(_iNumThreads);
+    //_pAligner->LogOverlaps(true);
+    //_pAligner->LogFiducialOverlaps(true);
+    //_pAligner->UseCyberNgc4Fiducial();
+    //_pAligner->LogPanelEdgeDebugImages(true);
+    _pAligner->UseProjectiveTransform(_bUseProjective);
+	if (_bUseTwoPassStitch)
+		_pAligner->SetUseTwoPassStitch(true);
+    if (_bUseCameraModel)
+    {
+		_pAligner->UseCameraModelStitch(true);
+        _pAligner->UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+    }
+    if (_bUseIterativeCameraModel)
+    {
+		_pAligner->UseCameraModelIterativeStitch(true);
+        _pAligner->UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+	}
+    _pMosaicSet->SetSeperateProcessStages(_bSeperateProcessStages);
+
+    // Must after InitializeSimCoreAPI() before ChangeProduction()
+    SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(0);
+    _pAligner->SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !pDevice->ConveyorRtoL(), !pDevice->FixedRearRail());
+
+    // true: Skip demosaic for Bayer image
+    if (_bBayerPattern)
+		_pAligner->SetSkipDemosaic(_bSkipDemosaic);
+            
+	if (!_pAligner->ChangeProduction(_pMosaicSet, _pPanel))
+		return(false);
+        				
+	return(true);
+
+}
