@@ -6,6 +6,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <time.h>
 using namespace std;
 
 #include "XmlUtils.h"
@@ -22,6 +23,7 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile);
 void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices);
 bool SetupAligner();
 void Output(const char* message);
+bool RunStitch();
 
 Panel* _pPanel = NULL;
 MosaicSet* _pMosaicSet = NULL;
@@ -54,6 +56,7 @@ unsigned int _iLayerIndex2 = 0;
 int _iNumAcqsComplete = 0;
 
 HANDLE _AlignDoneEvent;
+clock_t sTime;
 
 void main(int argc, char* argv[])	
 {
@@ -61,6 +64,7 @@ void main(int argc, char* argv[])
 	string _sSimulationFile = "";	
 
 	remove("C:\\Temp\\UMCybetstitch.log");
+	sTime = clock();
 
 	_AlignDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL); // Auto Reset, nonsignaled
 
@@ -107,7 +111,7 @@ void main(int argc, char* argv[])
 	// Only support simulation mode
 	if(!_bSimulated)
 	{
-		Output("No simulation file is available!\n");
+		Output("No simulation file is available!");
 		return;
 	}
 
@@ -117,20 +121,25 @@ void main(int argc, char* argv[])
 	CoUninitialize();
 	if(!bFlag)
 	{
-		Output("Failed to load panel file!\n");
+		Output("Failed to load panel file!");
 		return;
 	}
-	Output("Panel description has loaded\n");
+	Output("Panel description has loaded");
 
 	// Initial coreApi
 	if(!bInitialCoreApi(_bSimulated, _sSimulationFile))
 	{
-		Output("Failed to initial coreApi\n");
+		Output("Failed to initial coreApi");
 		return;
 	}
 
 	// Set up aligner
-	SetupAligner();
+	if(!SetupAligner())
+		Output("Failed to setup aligner");
+	
+	// Do Stitch work
+	if(!RunStitch())
+		Output("Failed to run stitch");
 
 	// Clean up
 	if(_pPanel != NULL)
@@ -144,17 +153,14 @@ void main(int argc, char* argv[])
 
 	CloseHandle(_AlignDoneEvent);
 
-	Output("Done!\n");
+	Output("Done!");
 }
 
 
 void LoggingCallback(LOGTYPE LogType, const char* message)
 {
-	SYSTEMTIME st;
-	GetLocalTime(&st);
-
 	char cTemp[255];
-	sprintf_s(cTemp, 255, "%2d:%2d:%2d.%3d %s\n", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds, message);
+	sprintf_s(cTemp, 255, "%f: %s\n",  (float)(clock() - sTime)/CLOCKS_PER_SEC, message);
 
 	ofstream of("C:\\Temp\\UMCybetstitch.log", ios_base::app); // add
 	if(of.is_open())
@@ -164,14 +170,13 @@ void LoggingCallback(LOGTYPE LogType, const char* message)
 	of.close();
 	
 	// This should print to command line...
-	printf_s("%s\n", cTemp);  
+	printf_s("%s", cTemp);  
 }
 
 void Output(const char* message)
 {
 	LoggingCallback(LogTypeSystem, message);
 }
-
 
 #pragma region panel description
 
@@ -224,7 +229,7 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 	}
 	catch(...)
 	{
-		printf("Node to feature conversion failed!");
+		Output("Node to feature conversion failed!");
 	}
 
 	return(pFeature);
@@ -296,33 +301,42 @@ bool LoadPanelDescription(string sPanelFile)
 #pragma region coreAPI
 
 // Frame done callback
-void OnFrameDone(int iDeviceIndex, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame, void* context)
+void OnFrameDone(int iDevice, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame, void* context)
 {
+	char cTemp[255];
+	// Before CoreAPI fixed the bug, device index need to be calculated
+	int iDeviceIndex = pFrame->DeviceNumber();
 	SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(iDeviceIndex);
 
-	int mosaic_row = ConfigMosaicSet::TranslateTrigger(pFrame);
-	int mosaic_column = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
+	int iCamIndex = ConfigMosaicSet::TranslateTrigger(pFrame);
+	int iTrigIndex = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
 
-    unsigned int layer = iDeviceIndex * pDevice->NumberOfCaptureSpecs() +
+    unsigned int iLayer = iDeviceIndex * pDevice->NumberOfCaptureSpecs() +
 		pFrame->CaptureSpecNumber();
 
-    _pMosaicSet->AddRawImage(pFrame->Buffer(), layer, mosaic_column, mosaic_row);
+	//if(iCamIndex == 5)
+	//	iCamIndex = 5;
+    _pMosaicSet->AddRawImage(pFrame->Buffer(), iLayer, iCamIndex, iTrigIndex);
+	//sprintf_s(cTemp, 255, "Fov (layer=%d, Trig=%d, Cam=%d)", iLayer, iTrigIndex, iCamIndex);
+	//Output(cTemp);
 
     pDevice->ReleaseFrameBuffer(pFrame);
 }
 
 // Device acquistion doene callback
-void OnAcquisitionDone(int device, SIMSTATUS status, int Count, void* context)
+void OnAcquisitionDone(int iDeviceINdex, SIMSTATUS status, int Count, void* context)
 {
-	 //if(0 == device)
-		//Output("End SIM"+device+" acquisition");
+	char cTemp[255];
+	sprintf_s(cTemp, 255, "End SIM%d acquisition", iDeviceINdex);
+	Output(cTemp);
     _iNumAcqsComplete++;
     // lauch next device in simulation case
     if (_bSimulated && _iNumAcqsComplete < SIMAPI::SIMCore::NumberOfDevices())
     {
 		// Thread.Sleep(10000);
 		SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(_iNumAcqsComplete);
-        //Output("Begin SIM" + numAcqsComplete + " acquisition");
+        sprintf_s(cTemp, 255, "Begin SIM%d acquisition",  _iNumAcqsComplete);
+		Output(cTemp);
         if (pDevice->StartAcquisition(SIMAPI::Panel) != 0)
 			return;
 	}
@@ -336,13 +350,13 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 	SIMSTATUS status = SIMAPI::SIMCore::InitializeCoreAPI(bSimulated, sSimulationFile.c_str());
 	if(status != SIMSTATUS_SUCCESS)
 	{
-		sprintf_s(cTemp, 255, "CoreApi initialization failed with simulation file %s and status=%d\n", sSimulationFile.c_str(), status);
+		sprintf_s(cTemp, 255, "CoreApi initialization failed with simulation file %s and status=%d", sSimulationFile.c_str(), status);
 		Output(cTemp);
 		return false;
 	}
 	if(SIMAPI::SIMCore::NumberOfDevices() < 1)
 	{
-		sprintf_s(cTemp, 255, "No SIM Devices Available with status=%d.\n", status);
+		sprintf_s(cTemp, 255, "No SIM Devices Available with status=%d.", status);
 		Output(cTemp);
 		return false;
 	}
@@ -366,7 +380,7 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 		pDevice->AllocateFrameBuffers(&iAllocatedBufs);
 		if(iAllocatedBufs < iBufCount)
 		{
-			sprintf_s(cTemp, "Could not %d allocate buffers!\n", iBufCount);
+			sprintf_s(cTemp, "Could not %d allocate buffers!", iBufCount);
 			Output(cTemp);
 			return false;
 		}
@@ -516,22 +530,22 @@ bool GatherImages()
     return true;
 }
 
-void RunStitch()
+bool RunStitch()
 {
 	char cTemp[255];
 	int iCycleCount = 0;
 	bool bDone = false;
     while(!bDone)
     {
+		_iNumAcqsComplete = 0;
         _pAligner->ResetForNextPanel();
-               
         _pMosaicSet->ClearAllImages();
 
         Output("Begin stitch cycle...");
         if (!GatherImages())
         {
             Output("Issue with StartAcquisition");
-            return;
+            return false;
         }
         else
         {
@@ -543,7 +557,7 @@ void RunStitch()
         if (!_pMosaicSet->HasAllImages())
 		{
 			Output("The mosaic does not contain all images!");
-			return;
+			return false;
 		}
         else
         {
@@ -569,5 +583,7 @@ void RunStitch()
         if (!_bContinuous && iCycleCount >= _iNumToRun)
 			bDone = true;
 	}
+
+	return(true);
 }
 #pragma endregion
