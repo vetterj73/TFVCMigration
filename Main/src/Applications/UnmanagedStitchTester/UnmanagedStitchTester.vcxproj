@@ -113,6 +113,9 @@
       <AdditionalLibraryDirectories>..\..\..\SIMCoreAPI\lib\x64;..\..\..\Logger\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CoreAPId.lib;LoggerD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_debug\*.dll .\x64\Debug</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -153,6 +156,9 @@
       <AdditionalLibraryDirectories>..\..\..\SIMCoreAPI\lib\x64;..\..\..\Logger\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>CoreAPI.lib;Logger.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PostBuildEvent>
+      <Command>opy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_release\*.dll .\x64\Release</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
