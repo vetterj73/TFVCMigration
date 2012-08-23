@@ -17,8 +17,7 @@ using namespace std;
 
 // "using namespace SIMAPI" will lead confustion of Panel definition (CoreAPI has a panel class)
 
-Feature* CreateFeatureFromNode(XmlNode pNode);
-Panel* LoadPanelDescription(string sPanelFile);
+bool LoadPanelDescription(string sPanelFile);
 bool bInitialCoreApi(bool bSimulated, string sSimulationFile);
 void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices);
 bool SetupAligner();
@@ -114,13 +113,14 @@ void main(int argc, char* argv[])
 
 	// Load panel description
 	CoInitialize(NULL);
-	_pPanel = LoadPanelDescription(_sPanelFile);
+	bool bFlag = LoadPanelDescription(_sPanelFile);
 	CoUninitialize();
-	if(_pPanel == NULL)
+	if(!bFlag)
 	{
 		Output("Failed to load panel file!\n");
 		return;
 	}
+	Output("Panel description has loaded\n");
 
 	// Initial coreApi
 	if(!bInitialCoreApi(_bSimulated, _sSimulationFile))
@@ -174,66 +174,6 @@ void Output(const char* message)
 
 
 #pragma region panel description
-// Load panel description file
-Panel* LoadPanelDescription(string sPanelFile)
-{
-	char cTemp[255];
-
-	Panel* pPanel = NULL;
-	// Load panel Xml file
-	using namespace MSXML2;
-	IXMLDOMDocument2Ptr pDOM;
-	HRESULT hr = pDOM.CreateInstance(__uuidof(DOMDocument60));
-	if(FAILED(hr))
-	{
-		Output("Could not instantiate XML DOM!");
-		return NULL;
-	}
-
-	if(pDOM->load(sPanelFile.c_str()) == VARIANT_FALSE)
-	{
-		sprintf_s(cTemp, 255, "Could not load panel file: \'%s\'", sPanelFile.c_str() );
-		Output(cTemp);
-		return NULL;
-	}
-	
-	try{
-		// Create panel object
-		string s = pDOM->selectSingleNode("//PanelSize/Width")->Gettext();
-		double dLengthX = atof(s.c_str());
-
-		s = pDOM->selectSingleNode("//PanelSize/Height")->Gettext();
-		double dLengthY = atof(s.c_str());
-
-		pPanel = new Panel(dLengthX, dLengthY, 1.7e-5, 1.7e-5);
-
-		// Add features
-		XmlNode pNode = pDOM->selectSingleNode("//Features");
-		XmlNodeList pNodeList = pNode->selectNodes("anyType");
-		for(int i=0; i<pNodeList->length; i++)
-		{
-			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
-			pPanel->AddFeature(pFeature);
-		}
-
-		// Add fiducials 
-		pNode = pDOM->selectSingleNode("//Fiducials");
-		pNodeList = pNode->selectNodes("anyType");
-		for(int i=0; i<pNodeList->length; i++)
-		{
-			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
-			pPanel->AddFiducial(pFeature);
-		}
-	}
-	catch(...)
-	{
-		sprintf_s(cTemp, 255, "Faled to read panel filee: \'%s\'", sPanelFile.c_str());
-		Output(cTemp);
-	}
-
-	pDOM.Release();
-	return(pPanel);
-}
 
 // Create a fearue point from
 Feature* CreateFeatureFromNode(XmlNode pNode)
@@ -244,10 +184,10 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 	{
 		// Common items for all types of fearures
 		string s =pNode->selectSingleNode("PositionX")->Gettext();
-		double dPosX = atof(s.c_str());
+		double dPosX = atof(s.c_str())/1000;
 
 		s =pNode->selectSingleNode("PositionY")->Gettext();
-		double dPosY = atof(s.c_str());			
+		double dPosY = atof(s.c_str())/1000;			
 		
 		s =pNode->selectSingleNode("ReferenceID")->Gettext();
 		unsigned int iID = atoi(s.c_str());
@@ -260,20 +200,20 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 			double dAngle = atof(s.c_str());
 
 			s =pNode->selectSingleNode("SizeX")->Gettext();
-			double dSizeX = atof(s.c_str());
+			double dSizeX = atof(s.c_str())/1000;
 
 			s =pNode->selectSingleNode("SizeY")->Gettext();
-			double dSizeY = atof(s.c_str());
+			double dSizeY = atof(s.c_str())/1000;
 
 			s =pNode->selectSingleNode("SizeZ")->Gettext();
-			double dSizeZ = atof(s.c_str());
+			double dSizeZ = atof(s.c_str())/1000;
 
 			pFeature = new RectangularFeature(iID, dPosX, dPosY, dAngle, dSizeX, dSizeY, dSizeZ);
 		}
 		else if(type == "CSIMDisc")
 		{	// Disc feature
 			s =pNode->selectSingleNode("Diameter")->Gettext();
-			double dDiameter = atof(s.c_str());
+			double dDiameter = atof(s.c_str())/1000;
 
 			pFeature = new DiscFeature(iID, dPosX, dPosY, dDiameter);
 		}
@@ -289,6 +229,67 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 
 	return(pFeature);
 }
+
+// Load panel description file
+bool LoadPanelDescription(string sPanelFile)
+{
+	char cTemp[255];
+	// Load panel Xml file
+	using namespace MSXML2;
+	IXMLDOMDocument2Ptr pDOM;
+	HRESULT hr = pDOM.CreateInstance(__uuidof(DOMDocument60));
+	if(FAILED(hr))
+	{
+		Output("Could not instantiate XML DOM!");
+		return false;
+	}
+
+	if(pDOM->load(sPanelFile.c_str()) == VARIANT_FALSE)
+	{
+		sprintf_s(cTemp, 255, "Could not load panel file: \'%s\'", sPanelFile.c_str() );
+		Output(cTemp);
+		return false;
+	}
+	
+	try{
+		// Create panel object
+		string s = pDOM->selectSingleNode("//PanelSize/Width")->Gettext();
+		double dLengthX = atof(s.c_str())/1000;
+
+		s = pDOM->selectSingleNode("//PanelSize/Height")->Gettext();
+		double dLengthY = atof(s.c_str())/1000;
+
+		_pPanel = new Panel(dLengthX, dLengthY, 1.7e-5, 1.7e-5);
+
+		// Add features
+		XmlNode pNode = pDOM->selectSingleNode("//Features");
+		XmlNodeList pNodeList = pNode->selectNodes("anyType");
+		for(int i=0; i<pNodeList->length; i++)
+		{
+			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
+			_pPanel->AddFeature(pFeature);
+		}
+
+		// Add fiducials 
+		pNode = pDOM->selectSingleNode("//Fiducials");
+		pNodeList = pNode->selectNodes("anyType");
+		for(int i=0; i<pNodeList->length; i++)
+		{
+			Feature* pFeature = CreateFeatureFromNode(pNodeList->item[i]);
+			_pPanel->AddFiducial(pFeature);
+		}
+	}
+	catch(...)
+	{
+		sprintf_s(cTemp, 255, "Faled to read panel filee: \'%s\'", sPanelFile.c_str());
+		Output(cTemp);
+	}
+
+	pDOM.Release();
+	return(true);
+}
+
+
 
 #pragma endregion
 
@@ -335,13 +336,13 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 	SIMSTATUS status = SIMAPI::SIMCore::InitializeCoreAPI(bSimulated, sSimulationFile.c_str());
 	if(status != SIMSTATUS_SUCCESS)
 	{
-		sprintf_s(cTemp, 255, "Init Failed with %d\n", status);
+		sprintf_s(cTemp, 255, "CoreApi initialization failed with simulation file %s and status=%d\n", sSimulationFile.c_str(), status);
 		Output(cTemp);
 		return false;
 	}
 	if(SIMAPI::SIMCore::NumberOfDevices() < 1)
 	{
-		sprintf_s(cTemp, 255, "No SIM Devices Available with %d.\n", status);
+		sprintf_s(cTemp, 255, "No SIM Devices Available with status=%d.\n", status);
 		Output(cTemp);
 		return false;
 	}
