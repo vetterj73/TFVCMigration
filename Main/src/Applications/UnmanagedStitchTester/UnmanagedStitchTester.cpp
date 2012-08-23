@@ -308,14 +308,12 @@ void OnFrameDone(int iDevice, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame,
 	int iDeviceIndex = pFrame->DeviceNumber();
 	SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(iDeviceIndex);
 
-	int iCamIndex = ConfigMosaicSet::TranslateTrigger(pFrame);
-	int iTrigIndex = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
+	int iTrigIndex = ConfigMosaicSet::TranslateTrigger(pFrame);
+	int iCamIndex = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
 
     unsigned int iLayer = iDeviceIndex * pDevice->NumberOfCaptureSpecs() +
 		pFrame->CaptureSpecNumber();
 
-	//if(iCamIndex == 5)
-	//	iCamIndex = 5;
     _pMosaicSet->AddRawImage(pFrame->Buffer(), iLayer, iCamIndex, iTrigIndex);
 	//sprintf_s(cTemp, 255, "Fov (layer=%d, Trig=%d, Cam=%d)", iLayer, iTrigIndex, iCamIndex);
 	//Output(cTemp);
