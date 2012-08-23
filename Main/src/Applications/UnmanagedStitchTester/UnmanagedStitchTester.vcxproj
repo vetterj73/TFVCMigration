@@ -175,6 +175,9 @@
     <ClCompile Include="XmlUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj">
+      <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\logic\ImageDefines\ImageDefines.vcxproj">
       <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
     </ProjectReference>
@@ -186,6 +189,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\logic\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\VsFinderWrapper\VsFinderWrapper.vcxproj">
+      <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

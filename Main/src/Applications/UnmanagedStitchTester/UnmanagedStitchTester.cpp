@@ -44,13 +44,21 @@ bool _bUseTwoPassStitch = false;
 unsigned int _iNumThreads = 8;
 bool _bDetectPanelEdge = false;	
 int _iNumToRun = 1;
-int _iLayerIndex4Edge = 0;
+int _iLayerIndex4Edge = 0;	
+
+bool _bSimulated = false;
+unsigned int _iLayerIndex1 = 0;
+unsigned int _iLayerIndex2 = 0;
+int _iNumAcqsComplete = 0;
+
+HANDLE _AlignDoneEvent;
 
 void main(int argc, char* argv[])	
 {
 	string _sPanelFile = "";
 	string _sSimulationFile = "";	
-	bool _bSimulated = false;
+
+	_AlignDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL); // Auto Reset, nonsignaled
 
 	// Paramter input
 	for(int i=0; i<argc; i++)
@@ -88,7 +96,7 @@ void main(int argc, char* argv[])
 			_bSkipDemosaic = true;
 		else if (cmd == "-t" && i <= argc-1)
 			_iNumThreads = atoi(argv[i + 1]);        
-		else if (cmd == "-n" && i < i <= argc-1)
+		else if (cmd == "-n" && i <= argc-1)
 			_iNumToRun = atoi(argv[i + 1]);
 	}
 
@@ -116,9 +124,6 @@ void main(int argc, char* argv[])
 		return;
 	}
 
-	// Set up mosaic
-	SetupMosaic(_pPanel, _bOwnBuffers, _bMaskForDiffDevices);
-
 	// Set up aligner
 	SetupAligner();
 
@@ -131,6 +136,8 @@ void main(int argc, char* argv[])
 		delete _pAligner;
 
 	SIMAPI::SIMCore::RemoveCoreAPI();
+
+	CloseHandle(_AlignDoneEvent);
 
 	printf("Done!\n");
 }
@@ -253,14 +260,36 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 #pragma region coreAPI
 
 // Frame done callback
-void OnFrameDone(int device, SIMSTATUS status, class SIMAPI::CSIMFrame* frame, void* context)
+void OnFrameDone(int iDeviceIndex, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame, void* context)
 {
-	printf("Image Ready\n");
+	SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(iDeviceIndex);
+
+	int mosaic_row = ConfigMosaicSet::TranslateTrigger(pFrame);
+	int mosaic_column = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
+
+    unsigned int layer = iDeviceIndex * pDevice->NumberOfCaptureSpecs() +
+		pFrame->CaptureSpecNumber();
+
+    _pMosaicSet->AddRawImage(pFrame->Buffer(), layer, mosaic_column, mosaic_row);
+
+    pDevice->ReleaseFrameBuffer(pFrame);
 }
 
 // Device acquistion doene callback
 void OnAcquisitionDone(int device, SIMSTATUS status, int Count, void* context)
 {
+	 //if(0 == device)
+		//Output("End SIM"+device+" acquisition");
+    _iNumAcqsComplete++;
+    // lauch next device in simulation case
+    if (_bSimulated && _iNumAcqsComplete < SIMAPI::SIMCore::NumberOfDevices())
+    {
+		// Thread.Sleep(10000);
+		SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(_iNumAcqsComplete);
+        //Output("Begin SIM" + numAcqsComplete + " acquisition");
+        if (pDevice->StartAcquisition(SIMAPI::AcquisitionMode::Panel) != 0)
+			return;
+	}
 }
 
 // Initial coreApi
@@ -312,6 +341,8 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 
 #pragma endregion
 
+#pragma region Aligner setup
+
 void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices)
 {
 	_pMosaicSet = new MosaicSet(
@@ -326,15 +357,23 @@ void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices)
 	ConfigMosaicSet::MosaicSetDefaultConfiguration(_pMosaicSet, bMaskForDiffDevices);
 }
 
+void OnAlignmentDone(bool status)
+{
+	SetEvent(_AlignDoneEvent);
+}
+
 bool SetupAligner()
 {
+	// Set up mosaic
+	SetupMosaic(_pPanel, _bOwnBuffers, _bMaskForDiffDevices);
+
 	_pAligner = new PanelAligner();
     //_pAligner->OnLogEntry += OnLogEntryFromClient;
     //_pAligner->SetAllLogTypes(true);
     //_pAligner->LogTransformVectors(true);
 
     // Set up aligner delegate
-    // _pAligner->OnAlignmentDone += OnAlignmentDone;
+	_pAligner->RegisterAlignmentDoneCallback(OnAlignmentDone, _pAligner);
 
     // Set up production for aligner
     _pAligner->NumThreads(_iNumThreads);
@@ -368,7 +407,122 @@ bool SetupAligner()
             
 	if (!_pAligner->ChangeProduction(_pMosaicSet, _pPanel))
 		return(false);
+
+	// Calculate indices
+	switch (_pMosaicSet->GetNumMosaicLayers())
+    {
+	case 1:
+		_iLayerIndex1 = 0;
+        _iLayerIndex2 = 0;
+        break;
+
+	case 2:
+		_iLayerIndex1 = 0;
+        _iLayerIndex2 = 1;
+		break;
+
+    case 4:
+		_iLayerIndex1 = 2;
+        _iLayerIndex2 = 3;
+        break;
+    }
+
+    // Set component height if it exist
+    double dMaxHeight = 0;
+    if (_bAdjustForHeight)
+		dMaxHeight = _pPanel->GetMaxComponentHeight();
+
+	if (dMaxHeight > 0)
+    {
+		bool bSmooth = true;
+        unsigned char* heightBuf = _pPanel->GetHeightImageBuffer(bSmooth);
+        unsigned int iSpan = _pPanel->GetNumPixelsInY();
+        double dHeightRes = _pPanel->GetHeightResolution();
+        double dPupilDistance = 0.3702;
+        // Need modified based on layers that have component 
+        _pMosaicSet->GetLayer(_iLayerIndex1)->SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+        _pMosaicSet->GetLayer(_iLayerIndex2)->SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
+    }
         				
 	return(true);
-
 }
+#pragma endregion
+
+#pragma region run stitch
+bool GatherImages()
+{
+	if (!_bSimulated)
+    {        
+		for (int i = 0; i <SIMAPI::SIMCore::NumberOfDevices(); i++)
+		{
+			SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(i);
+            //Output("Begin SIM" + i + " acquisition");
+            if (pDevice->StartAcquisition(SIMAPI::AcquisitionMode::Panel) != 0)
+                        return false;
+        }
+	}
+    else
+    {   // launch device one by one in simulation case
+        SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(0);
+		//Output("Begin SIM0 acquisition");
+        if (pDevice->StartAcquisition(SIMAPI::AcquisitionMode::Panel) != 0)
+			return false;
+	}
+    return true;
+}
+
+void RunStitch()
+{
+	int iCycleCount = 0;
+	bool bDone = false;
+    while(!bDone)
+    {
+		//numAcqsComplete = 0;
+
+        _pAligner->ResetForNextPanel();
+               
+        _pMosaicSet->ClearAllImages();
+
+        //Output("Begin stitch cycle...");
+        if (!GatherImages())
+        {
+            //Output("Issue with StartAcquisition");
+            bDone = true;
+        }
+        else
+        {
+			//Output("Waiting for Images...");
+            WaitForSingleObject(_AlignDoneEvent, INFINITE);
+        }
+
+        // Verify that mosaic is filled in...
+        if (!_pMosaicSet->HasAllImages())
+			return;
+			//Output("The mosaic does not contain all images!");
+        else
+        {
+			//Output("End stitch cycle");
+            iCycleCount++;                   
+
+            //Output("Begin morph");
+			char cTemp[255];
+			string sStitchedImFile;
+			sprintf_s(cTemp, 100, "c:\\temp\\Aftercycle%d.bmp", iCycleCount);
+			sStitchedImFile.assign(cTemp);
+          
+            _pAligner->Save3ChannelImage(sStitchedImFile,
+				_pMosaicSet->GetLayer(_iLayerIndex1)->GetGreyStitchedImage()->GetBuffer(),
+				_pMosaicSet->GetLayer(_iLayerIndex2)->GetGreyStitchedImage()->GetBuffer(),
+				_pPanel->GetCadBuffer(), //heightBuf,
+                _pPanel->GetNumPixelsInY(), _pPanel->GetNumPixelsInX());
+
+            // After a panel is stitched and before aligner is reset for next panel
+			PanelFiducialResultsSet* pFidResultSet = _pAligner->GetFidResultsSetPoint();   
+		}
+
+        // should we do another cycle?
+        if (!_bContinuous && iCycleCount >= _iNumToRun)
+			bDone = true;
+	}
+}
+#pragma endregion

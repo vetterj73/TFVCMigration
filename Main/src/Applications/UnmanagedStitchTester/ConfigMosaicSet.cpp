@@ -171,3 +171,17 @@ void ConfigMosaicSet::SetDefaultCorrelationFlags(MosaicSet* pSet, bool bMaskForD
 	}
 }
 
+
+// calculates new mosaic trigger value based on frame trigger and conveyor direction
+int ConfigMosaicSet::TranslateTrigger(CSIMFrame* pFrame)
+{
+	int device = pFrame->DeviceNumber();
+
+    int triggers = SIMCore::GetSIMDevice(device)->GetSIMCaptureSpec(pFrame->CaptureSpecNumber())->GetNumberOfTriggers();
+
+    int trigger = (SIMCore::GetSIMDevice(device)->ConveyorRtoL()) ?
+		triggers - pFrame->TriggerIndex() - 1 : pFrame->TriggerIndex();
+
+    return trigger;
+}
+
