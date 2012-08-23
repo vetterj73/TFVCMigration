@@ -18,6 +18,7 @@ using namespace std;
 
 // "using namespace SIMAPI" will lead confustion of Panel definition (CoreAPI has a panel class)
 
+// Functions
 bool LoadPanelDescription(string sPanelFile);
 bool bInitialCoreApi(bool bSimulated, string sSimulationFile);
 void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices);
@@ -25,16 +26,13 @@ bool SetupAligner();
 void Output(const char* message);
 bool RunStitch();
 
-Panel* _pPanel = NULL;
-MosaicSet* _pMosaicSet = NULL;
-PanelAligner* _pAligner = NULL;
-
+// Control paramters
 unsigned int _iInputImageColumns = 2592;
 unsigned int _iInputImageRows = 1944;
 
 bool _bBayerPattern = false;
 int _iBayerType = 1; // GBRG, 
-bool _bSkipDemosaic = true;
+bool _bSkipDemosaic = false;
 
 bool _bContinuous = false;
 bool _bOwnBuffers = true; /// Must be true because we are release buffers immediately.
@@ -50,25 +48,30 @@ bool _bDetectPanelEdge = false;
 int _iNumToRun = 1;
 int _iLayerIndex4Edge = 0;	
 
+string _sPanelFile = "";
+string _sSimulationFile = "";	
+
+// Internal variables
+Panel* _pPanel = NULL;
+MosaicSet* _pMosaicSet = NULL;
+PanelAligner* _pAligner = NULL;
+
 bool _bSimulated = false;
 unsigned int _iLayerIndex1 = 0;
 unsigned int _iLayerIndex2 = 0;
 int _iNumAcqsComplete = 0;
 
 HANDLE _AlignDoneEvent;
-clock_t sTime;
+clock_t _startTime;
 
+// Only support simulation mode 
 void main(int argc, char* argv[])	
 {
-	string _sPanelFile = "";
-	string _sSimulationFile = "";	
-
-	remove("C:\\Temp\\UMCybetstitch.log");
-	sTime = clock();
-
 	_AlignDoneEvent = CreateEvent(NULL, FALSE, FALSE, NULL); // Auto Reset, nonsignaled
-
-	// Paramter input
+	remove("C:\\Temp\\UMCybetstitch.log");
+	_startTime = clock();
+	
+	// Parameters input
 	for(int i=0; i<argc; i++)
 	{
 		string cmd = argv[i];
@@ -156,11 +159,11 @@ void main(int argc, char* argv[])
 	Output("Done!");
 }
 
-
+// Log callback
 void LoggingCallback(LOGTYPE LogType, const char* message)
 {
 	char cTemp[255];
-	sprintf_s(cTemp, 255, "%f: %s\n",  (float)(clock() - sTime)/CLOCKS_PER_SEC, message);
+	sprintf_s(cTemp, 255, "%f: %s\n",  (float)(clock() - _startTime)/CLOCKS_PER_SEC, message);
 
 	ofstream of("C:\\Temp\\UMCybetstitch.log", ios_base::app); // add
 	if(of.is_open())
@@ -173,6 +176,7 @@ void LoggingCallback(LOGTYPE LogType, const char* message)
 	printf_s("%s", cTemp);  
 }
 
+// log output
 void Output(const char* message)
 {
 	LoggingCallback(LogTypeSystem, message);
@@ -180,7 +184,8 @@ void Output(const char* message)
 
 #pragma region panel description
 
-// Create a fearue point from
+// Create a fearue point from Xml node
+// Not complete for all feature types
 Feature* CreateFeatureFromNode(XmlNode pNode)
 {
 	Feature *pFeature = NULL;			
@@ -224,7 +229,7 @@ Feature* CreateFeatureFromNode(XmlNode pNode)
 		}
 		else
 		{
-			// not support type
+			Output("The feature type is not supported!");
 		}
 	}
 	catch(...)
@@ -294,8 +299,6 @@ bool LoadPanelDescription(string sPanelFile)
 	return(true);
 }
 
-
-
 #pragma endregion
 
 #pragma region coreAPI
@@ -310,7 +313,6 @@ void OnFrameDone(int iDevice, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame,
 
 	int iTrigIndex = ConfigMosaicSet::TranslateTrigger(pFrame);
 	int iCamIndex = pFrame->CameraIndex() - pDevice->FirstCameraEnabled();
-
     unsigned int iLayer = iDeviceIndex * pDevice->NumberOfCaptureSpecs() +
 		pFrame->CaptureSpecNumber();
 
@@ -321,12 +323,13 @@ void OnFrameDone(int iDevice, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame,
     pDevice->ReleaseFrameBuffer(pFrame);
 }
 
-// Device acquistion doene callback
+// Device acquistion done callback
 void OnAcquisitionDone(int iDeviceINdex, SIMSTATUS status, int Count, void* context)
 {
 	char cTemp[255];
 	sprintf_s(cTemp, 255, "End SIM%d acquisition", iDeviceINdex);
 	Output(cTemp);
+
     _iNumAcqsComplete++;
     // lauch next device in simulation case
     if (_bSimulated && _iNumAcqsComplete < SIMAPI::SIMCore::NumberOfDevices())
@@ -395,6 +398,7 @@ bool bInitialCoreApi(bool bSimulated, string sSimulationFile)
 
 #pragma region Aligner setup
 
+// Set up mosaicSet
 void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices)
 {
 	// Create mosaicset
@@ -413,11 +417,13 @@ void SetupMosaic(Panel* pPanel, bool bOwnBuffers, bool bMaskForDiffDevices)
 	ConfigMosaicSet::MosaicSetDefaultConfiguration(_pMosaicSet, bMaskForDiffDevices);
 }
 
+// Alignment done callback
 void OnAlignmentDone(bool status)
 {
 	SetEvent(_AlignDoneEvent);
 }
 
+// Setup aligner
 bool SetupAligner()
 {
 	// Set up mosaic
@@ -504,11 +510,13 @@ bool SetupAligner()
 #pragma endregion
 
 #pragma region run stitch
-bool GatherImages()
+
+// lAcquire image
+bool LaunchAcquireImages()
 {
 	char cTemp[255];
 	if (!_bSimulated)
-    {        
+    {   // Launch all devices in real mode     
 		for (int i = 0; i <SIMAPI::SIMCore::NumberOfDevices(); i++)
 		{
 			SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(i);
@@ -519,7 +527,7 @@ bool GatherImages()
         }
 	}
     else
-    {   // launch device one by one in simulation case
+    {   // Launch device one by one in simulation case
         SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(0);
 		Output("Begin SIM0 acquisition");
         if (pDevice->StartAcquisition(SIMAPI::Panel) != 0)
@@ -539,8 +547,9 @@ bool RunStitch()
         _pAligner->ResetForNextPanel();
         _pMosaicSet->ClearAllImages();
 
+		// Images acquisition
         Output("Begin stitch cycle...");
-        if (!GatherImages())
+        if (!LaunchAcquireImages())
         {
             Output("Issue with StartAcquisition");
             return false;
@@ -562,8 +571,8 @@ bool RunStitch()
 			Output("End stitch cycle");
             iCycleCount++;                   
 
-            Output("Begin morph");
-			
+			// Do the moph and output stitched image
+            Output("Begin morph");			
 			string sStitchedImFile;
 			sprintf_s(cTemp, 100, "c:\\temp\\Aftercycle%d.bmp", iCycleCount);
 			sStitchedImFile.assign(cTemp);
