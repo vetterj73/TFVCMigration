@@ -306,7 +306,7 @@ bool LoadPanelDescription(string sPanelFile)
 // Frame done callback
 void OnFrameDone(int iDevice, SIMSTATUS status, class SIMAPI::CSIMFrame* pFrame, void* context)
 {
-	char cTemp[255];
+	//char cTemp[255];
 	// Before CoreAPI fixed the bug, device index need to be calculated
 	int iDeviceIndex = pFrame->DeviceNumber();
 	SIMAPI::ISIMDevice *pDevice = SIMAPI::SIMCore::GetSIMDevice(iDeviceIndex);
