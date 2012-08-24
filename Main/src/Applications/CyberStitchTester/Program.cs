@@ -14,7 +14,7 @@ namespace CyberStitchTester
 {
     class Program
     {
-        // for live mode image capture setup
+        // For live mode image capture setup
         private static double _dTriggerOverlapInM = 0.004; //Image capture overlap setup
         private static int _iBrightField = 31; // Bright field intensity setup(0-31)
         private static int _iDarkField = 31; // Dark field intensity setup(0-31)
@@ -55,8 +55,6 @@ namespace CyberStitchTester
         
         private static int _numAcqsComplete = 0;
         private readonly static AutoResetEvent _mDoneEvent = new AutoResetEvent(false);
-        private static int _cycleCount = 0;
-        private static int _iBufCount = 0;
         private static bool _bSimulating = false;
         private static uint _iLayerIndex1 = 0;
         private static uint _iLayerIndex2 = 0;
@@ -70,7 +68,7 @@ namespace CyberStitchTester
             // Start the _logger
             _logger.Start("Logger", @"c:\\Temp\\", "CyberStitch.log", true, -1);
 
-            // Gather input data.
+            // Input control parameter
             for(int i=0; i<args.Length; i++)
             {
                 if (args[i] == "-c")
@@ -137,17 +135,25 @@ namespace CyberStitchTester
             }
 
             // Initialize the SIM CoreAPI
-            if (!InitializeSimCoreAPI(_simulationFile))
+            if (!InitializeSimCoreAPI())
             {
                 _logger.Kill();
                 return;
             }
             
             // Set up mosaic set
-            SetupMosaic(_bOwnBuffers, _bMaskForDiffDevices);
+            if (!SetupMosaic())
+            {
+                Output("Failed to setup mosaic!");
+                return;
+            }
 
             // Set up logger for aligner
-            SetupAligner();
+            if (!SetupAligner())
+            {
+                Output("Failed to setup aligner!");
+                return;
+            }
 
             // Run stitch
             RunStitch();
@@ -229,7 +235,6 @@ namespace CyberStitchTester
         {
             //Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
             //   pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
-            _iBufCount++; // for debug
 
             int device = pframe.DeviceIndex();
             int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
@@ -244,16 +249,16 @@ namespace CyberStitchTester
             d.ReleaseFrameBuffer(pframe);
         }
 
-        private static bool InitializeSimCoreAPI(string simulationFile)
+        private static bool InitializeSimCoreAPI()
         {
             //bool bSimulating = false;
-            if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
+            if (!string.IsNullOrEmpty(_simulationFile) && File.Exists(_simulationFile))
                 _bSimulating = true;
 
             if (_bSimulating)
             {
-                Output("Running with Simulation File: " + simulationFile);
-                ManagedCoreAPI.SetSimulationFile(simulationFile);
+                Output("Running with Simulation File: " + _simulationFile);
+                ManagedCoreAPI.SetSimulationFile(_simulationFile);
             }
 
             ManagedSIMDevice.OnFrameDone += OnFrameDone;
@@ -330,25 +335,27 @@ namespace CyberStitchTester
         /// <summary>
         /// Given a SIM setup and a mosaic for stitching, setup the stich...
         /// </summary>
-        private static void SetupMosaic(bool bOwnBuffers, bool bMaskForDiffDevices)
+        private static bool SetupMosaic()
         {
             if (ManagedCoreAPI.NumberOfDevices() <= 0)
             {
                 Output("No Device Defined");
-                return;
+                return false;
             }
             _mosaicSet = new ManagedMosaicSet(
                 _panel.PanelSizeX, _panel.PanelSizeY, 
                 _iInputImageColumns, _iInputImageRows, _iInputImageColumns, 
                 _dPixelSizeInMeters, _dPixelSizeInMeters, 
-                bOwnBuffers,
+                _bOwnBuffers,
                 _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+
+            return (true);
         }
 
-        private static void SetupAligner()
+        private static bool SetupAligner()
         {
                     // Set up logger for aligner
             _aligner.OnLogEntry += OnLogEntryFromClient;
@@ -412,7 +419,7 @@ namespace CyberStitchTester
             {
                 Output("Error: " + except.Message);
                 _logger.Kill();
-                return;
+                return false;
             }
 
             // Calculate indices
@@ -451,6 +458,8 @@ namespace CyberStitchTester
                 _mosaicSet.GetLayer(_iLayerIndex1).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
                 _mosaicSet.GetLayer(_iLayerIndex2).SetComponentHeightInfo(heightBuf, iSpan, dHeightRes, dPupilDistance);
             }
+
+            return (true);
         }
         #endregion
 
@@ -485,6 +494,8 @@ namespace CyberStitchTester
 
         private static void RunStitch()
         {
+            int iCycleCount = 0; 
+
             bool bDone = false;
             while (!bDone)
             {
@@ -520,12 +531,15 @@ namespace CyberStitchTester
 
                 // Verify that mosaic is filled in...
                 if (!_mosaicSet.HasAllImages())
+                {
                     Output("The mosaic does not contain all images!");
+                    bDone = true;
+                }
                 else
                 {
                     Output("End stitch cycle");
 
-                    _cycleCount++;
+                    iCycleCount++;
                     // After a panel is stitched and before aligner is reset for next panel
                     ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
 
@@ -533,17 +547,17 @@ namespace CyberStitchTester
 
                     if (_bBayerPattern) // for bayer pattern
                     {
-                        /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1)) == false)
+                        /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1)) == false)
                          {
-                             Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1));
+                             Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1));
                          }
 
-                         if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (_cycleCount - 1) + "\\") == false)
+                         if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
                              Output("Could not save mosaic images");
                          */
                     }
 
-                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + _cycleCount + ".bmp",
+                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + iCycleCount + ".bmp",
                         _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
                         _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
                         _panel.GetCADBuffer(), //heightBuf,
@@ -552,19 +566,19 @@ namespace CyberStitchTester
                     if (_bUseDualIllumination)
                     {
                         //*
-                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + iCycleCount + ".bmp",
                          _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
                          _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
                          _panel.GetCADBuffer(), //heightBuf,
                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + iCycleCount + ".bmp",
                          _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
                          _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
                          _panel.GetCADBuffer(), //heightBuf,
                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + iCycleCount + ".bmp",
                          _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
                          _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
                          _panel.GetCADBuffer(), //heightBuf,
@@ -590,7 +604,7 @@ namespace CyberStitchTester
                 }
 
                 // should we do another cycle?
-                if (!_bContinuous && _cycleCount >= _numberToRun)
+                if (!_bContinuous && iCycleCount >= _numberToRun)
                     bDone = true;
             }
         }
