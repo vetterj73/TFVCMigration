@@ -31,39 +31,45 @@ namespace CyberStitchFidTester
     /// </summary>
     class Program
     {
-        private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
-
-        private static double dPixelSizeInMeters = 1.70e-5;
-        private static uint iInputImageColumns = 2592;
-        private static uint iInputImageRows = 1944;
-        private static ManagedMosaicSet _mosaicSet = null;
-        private static CPanel _processingPanel = null;
-        private static CPanel _fidPanel = null;
-        private readonly static ManualResetEvent mCollectedEvent = new ManualResetEvent(false);
-        private readonly static ManualResetEvent mAlignedEvent = new ManualResetEvent(false);
-        private static int numAcqsComplete = 0;
-        private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
-        private static LoggingThread logger = new LoggingThread(null);
-        private static int _cycleCount = 0;
-        private static double _allPanelFidDifference = 0.0;
-        private static double _dXDiffSqrSumTol = 0.0;//used for the total Xoffset square sum
-        private static double _dYDiffSqrSumTol = 0.0;
-        private static double _dXRMS = 0.0;//used for the xoffset RMS
-        private static double _dYRMS = 0.0;
+        // Control parameter
+        private static double _dPixelSizeInMeters = 1.70e-5;
+        private static uint _iInputImageColumns = 2592;
+        private static uint _iInputImageRows = 1944;
         private static bool _bDetectPanelEdge = false;
+        private static int _iLayerIndex4Edge = 0;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
         private static bool _bSkipDemosaic = true; // true: skip demosaic for bayer image
-
-        // For debug
-        private static int _iBufCount = 0;
-        private static bool _bSimulating = false;
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
-        private static StreamWriter writer = null;
-        private static StreamWriter finalCompWriter = null;
+        private static string _simulationFile = "";
+        private static string _panelFile = "";
+        private static string _fidPanelFile = "";
+        private static bool _bSimulating = false;
+        private static bool _bUseProjective = false;
+        private static bool _bUseCameraModel = false;
+        private static bool _bSaveStitchedResultsImage = false;
+        private static bool _bUseIterativeCameraModel = false;
+        private static bool _bUseTwoPassStitch = false;
+        private static int _numberToRun = 1;
+        private static string _unitTestFolder = "";
+        private static bool _bMaskForDiffDevices = false;
 
+        // Internal variable
+        private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
+        private static ManagedMosaicSet _mosaicSet = null;
+        private static CPanel _processingPanel = null;
+        private static CPanel _fidPanel = null;
+        private static LoggingThread _logger = new LoggingThread(null);
+        private readonly static ManualResetEvent _mCollectedEvent = new ManualResetEvent(false);
+        private readonly static ManualResetEvent _mAlignedEvent = new ManualResetEvent(false);
+        private static StreamWriter _writer = null;
+        private static StreamWriter _finalCompWriter= null;
+        private static int _numAcqsComplete = 0;
+        private static int _cycleCount = 0;
+        
         // For output analysis
+        private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
         private static double[] _dXDiffSum;
         private static double[] _dYDiffSum;
         private static double[] _dXAbsDiffSum;
@@ -71,9 +77,14 @@ namespace CyberStitchFidTester
         private static double[] _dXDiffSqrSum;
         private static double[] _dYDiffSqrSum;        
         private static int[] _icycleCount;
-        private static int _iTotalCount = 0;
+        private static int _iTotalCount = 0;        
+        private static double _allPanelFidDifference = 0.0;
+        private static double _dXDiffSqrSumTol = 0.0;//used for the total Xoffset square sum
+        private static double _dYDiffSqrSumTol = 0.0;
+        private static double _dXRMS = 0.0;//used for the xoffset RMS
+        private static double _dYRMS = 0.0;
 
-        //For time stamp
+        // For time stamp
         private static DateTime _dtStartTime;
         private static DateTime _dtEndTime;
         private static double _tsRunTime = 0; 
@@ -89,19 +100,7 @@ namespace CyberStitchFidTester
         static void Main(string[] args)
         {
             // Gather input data.
-            string simulationFile = "";
-            string panelFile = "";
-            string fidPanelFile = "";
-            bool bUseProjective = false;
-            bool bUseCameraModel = false;
-            bool bSaveStitchedResultsImage = false;
-            bool bUseIterativeCameraModel = false;
-            bool bUseTwoPassStitch = false;
-            int numberToRun = 1;
-            string unitTestFolder="";
-            double dCalScale = 1.0;
-            int iLayerIndex4Edge = 0;
-            bool bMaskForDiffDevices = false;
+
             ManagedFeatureLocationCheck fidChecker;
          
             //output csv file shows the comparison results
@@ -112,36 +111,18 @@ namespace CyberStitchFidTester
             {
                 if (args[i] == "-b")
                     _bBayerPattern = true;
-                else if (args[i] == "-f" && i < args.Length - 1)
-                    fidPanelFile = args[i + 1];
-                else if (args[i] == "-i" && i < args.Length - 1)
-                    imagePathPattern = args[i + 1];
-                else if (args[i] == "-l" && i < args.Length - 1)
-                    lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-m")
-                    bMaskForDiffDevices = true;
-                else if (args[i] == "-n" && i < args.Length - 1)
-                    numberToRun = Convert.ToInt16(args[i + 1]);
-                else if (args[i] == "-o" && i < args.Length - 1)
-                    outputTextPath = args[i + 1];
-                else if (args[i] == "-p" && i < args.Length - 1)
-                    panelFile = args[i + 1];
+                    _bMaskForDiffDevices = true;
                 else if (args[i] == "-r")
-                    bSaveStitchedResultsImage = true;
-                else if (args[i] == "-s" && i < args.Length - 1)
-                    simulationFile = args[i + 1];
-                else if (args[i] == "-u" && i < args.Length - 1)
-                    unitTestFolder = args[i + 1];
-                else if (args[i] == "-scale" && i < args.Length - 1)
-                    dCalScale = Convert.ToDouble(args[i + 1]);
+                    _bSaveStitchedResultsImage = true;
                 else if (args[i] == "-w")
-                    bUseProjective = true;
+                    _bUseProjective = true;
                 else if (args[i] == "-nw")
-                    bUseProjective = false;
+                    _bUseProjective = false;
                 else if (args[i] == "-cammod")
-                    bUseCameraModel = true;
+                    _bUseCameraModel = true;
                 else if (args[i] == "-iter")
-                    bUseIterativeCameraModel = true;
+                    _bUseIterativeCameraModel = true;
                 else if (args[i] == "-rtol")
                     _bRtoL = true;
                 else if (args[i] == "-frr")
@@ -150,16 +131,32 @@ namespace CyberStitchFidTester
                     _bDetectPanelEdge = true;
                 else if (args[i] == "-skipD")
                     _bSkipDemosaic = true;
-                else if (args[i] == "-le" && i < args.Length - 1)
-                    iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
-                else if (args[i] == "-pixsize" && i < args.Length - 1)
-                    dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
-                else if (args[i] == "-imgcols" && i < args.Length - 1)
-                    iInputImageColumns = Convert.ToUInt32(args[i + 1]);
-                else if (args[i] == "-imgrows" && i < args.Length - 1)
-                    iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-twopass")
-                    bUseTwoPassStitch = true;
+                    _bUseTwoPassStitch = true;
+                else if (args[i] == "-s" && i < args.Length - 1)
+                    _simulationFile = args[i + 1];
+                else if (args[i] == "-u" && i < args.Length - 1)
+                    _unitTestFolder = args[i + 1];
+                else if (args[i] == "-n" && i < args.Length - 1)
+                    _numberToRun = Convert.ToInt16(args[i + 1]);
+                else if (args[i] == "-o" && i < args.Length - 1)
+                    outputTextPath = args[i + 1];
+                else if (args[i] == "-p" && i < args.Length - 1)
+                    _panelFile = args[i + 1];
+                else if (args[i] == "-f" && i < args.Length - 1)
+                    _fidPanelFile = args[i + 1];
+                else if (args[i] == "-i" && i < args.Length - 1)
+                    imagePathPattern = args[i + 1];
+                else if (args[i] == "-l" && i < args.Length - 1)
+                    lastOutputTextPath = args[i + 1];
+                else if (args[i] == "-le" && i < args.Length - 1)
+                    _iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
+                else if (args[i] == "-pixsize" && i < args.Length - 1)
+                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-imgcols" && i < args.Length - 1)
+                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-imgrows" && i < args.Length - 1)
+                    _iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-h" && i < args.Length - 1)
@@ -170,11 +167,11 @@ namespace CyberStitchFidTester
             }
 
             // Start the logger
-            logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
-            logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
+            _logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
+            _logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
 
             // Open output text file.
-            writer = new StreamWriter(outputTextPath);
+            _writer = new StreamWriter(outputTextPath);
 
             Output("The report file: " + outputTextPath);
 
@@ -183,21 +180,24 @@ namespace CyberStitchFidTester
             if(imagePath.Length > 0)
                 bImageOnly = true;
 
-            if (!bImageOnly && File.Exists(panelFile))
+            if (!bImageOnly)
             {
-                _processingPanel = LoadProductionFile(panelFile, dPixelSizeInMeters);
-                if (_processingPanel == null)
+                if (File.Exists(_panelFile))
+                {
+                    _processingPanel = LoadPanelDescription(_panelFile, _dPixelSizeInMeters);
+                    if (_processingPanel == null)
+                    {
+                        Terminate(false);
+                        Console.WriteLine("Could not load Panel File: " + _panelFile);
+                        return;
+                    }
+                }
+                else
                 {
                     Terminate(false);
-                    Console.WriteLine("Could not load Panel File: " + panelFile);
+                    Console.WriteLine("The panel file does not exist..: " + _panelFile);
                     return;
                 }
-            } 
-            else if (!bImageOnly) // Panel file must exist...
-            {
-                Terminate(false);
-                Console.WriteLine("The panel file does not exist..: " + panelFile);
-                return;
             }
 
             Bitmap inputBmp = null;
@@ -205,19 +205,19 @@ namespace CyberStitchFidTester
                 inputBmp = new Bitmap(imagePath[0]);  // should be safe, as bImageOnly == (imagePath.Length > 0)
 
             int ifidsNum = 0;
-            double pixelSize = dPixelSizeInMeters;
-            if (File.Exists(fidPanelFile))
+            
+            if (File.Exists(_fidPanelFile))
             {
-                _fidPanel = LoadProductionFile(fidPanelFile, dPixelSizeInMeters);
+                double pixelSize = _dPixelSizeInMeters;
                 if (bImageOnly && _fidPanel.GetNumPixelsInY() != inputBmp.Width)
-                {
                     pixelSize = _fidPanel.PanelSizeY/inputBmp.Width;
-                    _fidPanel = LoadProductionFile(fidPanelFile, pixelSize);
-                }
+   
+                _fidPanel = LoadPanelDescription(_fidPanelFile, pixelSize);
+                
                 if (_fidPanel == null)
                 {
                     Terminate(false);
-                    Console.WriteLine("Could not load Fid Test File: " + fidPanelFile);
+                    Console.WriteLine("Could not load Fid Test File: " + _fidPanelFile);
                     return;
                 }
                 fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
@@ -244,7 +244,7 @@ namespace CyberStitchFidTester
             else
             {
                 Terminate(false);
-                Console.WriteLine("Fid Test File does not exist: " + fidPanelFile);
+                Console.WriteLine("Fid Test File does not exist: " + _fidPanelFile);
                 return;
             }
 
@@ -252,7 +252,7 @@ namespace CyberStitchFidTester
             {
                 int cycleId = 0; // Image already loaded.
 
-                writer.WriteLine(headerLine);
+                _writer.WriteLine(headerLine);
 
                 while (inputBmp != null)
                 {
@@ -263,8 +263,8 @@ namespace CyberStitchFidTester
 
                     cbd.Lock(inputBmp);
                     fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
-                    RunFiducialCompare(cbd.Scan0, cbd.Stride, writer, fidChecker);
-                    if (bSaveStitchedResultsImage)
+                    RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer, fidChecker);
+                    if (_bSaveStitchedResultsImage)
                     {
                         string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
@@ -288,7 +288,7 @@ namespace CyberStitchFidTester
             else
             {
                 // Initialize the SIM CoreAPI
-                if (!InitializeSimCoreAPI(simulationFile))
+                if (!InitializeSimCoreAPI(_simulationFile))
                 {
                     Terminate(false);
                     Console.WriteLine("Could not initialize Core API");
@@ -297,10 +297,10 @@ namespace CyberStitchFidTester
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
 
                 // Set up mosaic set
-                SetupMosaic(true, bMaskForDiffDevices);
+                SetupMosaic(true, _bMaskForDiffDevices);
 
                 try
                 {
@@ -310,19 +310,17 @@ namespace CyberStitchFidTester
                     _aligner.SetAllLogTypes(true);
                     _aligner.OnAlignmentDone += OnAlignmentDone;
                     _aligner.NumThreads(8);
-                    _aligner.UseProjectiveTransform(bUseProjective);
-                    if (dCalScale != 1.0)
-                        _aligner.SetCalibrationWeight(dCalScale);
+                    _aligner.UseProjectiveTransform(_bUseProjective);
                     
-                    if (bUseTwoPassStitch)
+                    if (_bUseTwoPassStitch)
                         _aligner.SetUseTwoPassStitch(true);
-                    if (bUseCameraModel)
+                    if (_bUseCameraModel)
                     {
                         _aligner.UseCameraModelStitch(true);
                         _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
                     }
 
-                    if (bUseIterativeCameraModel)
+                    if (_bUseIterativeCameraModel)
                     {
                         _aligner.UseCameraModelIterativeStitch(true);
                         _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
@@ -357,7 +355,7 @@ namespace CyberStitchFidTester
 
                 try
                 {
-                    RunAcquireAndStitch(numberToRun, fidChecker, bSaveStitchedResultsImage);
+                    RunAcquireAndStitch(_numberToRun, fidChecker);
                 }
                 catch (Exception except)
                 {
@@ -371,7 +369,7 @@ namespace CyberStitchFidTester
             // Last attempt to force proper shutdown...
             try
             {
-                WriteResults(lastOutputTextPath, outputTextPath, unitTestFolder);
+                WriteResults(lastOutputTextPath, outputTextPath, _unitTestFolder);
                 Output("Processing Complete");
             }
             catch (Exception except)
@@ -386,11 +384,11 @@ namespace CyberStitchFidTester
 
         private static void Terminate(bool bTerminateCore)
         {
-            if (writer != null)
-                writer.Close();
+            if (_writer != null)
+                _writer.Close();
 
-            if (logger != null)
-                logger.Kill();
+            if (_logger != null)
+                _logger.Kill();
 
             _aligner.Dispose();       
 
@@ -398,12 +396,12 @@ namespace CyberStitchFidTester
                 ManagedCoreAPI.TerminateAPI();
         }
 
-        private static void RunAcquireAndStitch(int numberToRun, ManagedFeatureLocationCheck fidChecker, bool bSaveStitchedResultsImage)
+        private static void RunAcquireAndStitch(int numberToRun, ManagedFeatureLocationCheck fidChecker)
         {
             bool bDone = false;
             while (!bDone)
             {
-                numAcqsComplete = 0;
+                _numAcqsComplete = 0;
                 _aligner.ResetForNextPanel();
                 _mosaicSet.ClearAllImages();
                 if (!GatherImages())
@@ -414,7 +412,7 @@ namespace CyberStitchFidTester
                 else
                 {
                     Output("Waiting for Images...");
-                    mCollectedEvent.WaitOne();
+                    _mCollectedEvent.WaitOne();
                 }
 
                 _dtStartTime = DateTime.Now;
@@ -425,7 +423,7 @@ namespace CyberStitchFidTester
                 else
                 {
                     _cycleCount++;
-                    mAlignedEvent.WaitOne();
+                    _mAlignedEvent.WaitOne();
                     _tsRunTime = _aligner.GetAlignmentTime();
                     _tsTotalRunTime += _tsRunTime;
 
@@ -441,7 +439,7 @@ namespace CyberStitchFidTester
                     if (_mosaicSet.GetNumMosaicLayers() == 1)
                         iIndex2 = 0;
 
-                    if (bSaveStitchedResultsImage)
+                    if (_bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
                                                _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
                                                _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _processingPanel.GetNumPixelsInY(),
@@ -449,32 +447,32 @@ namespace CyberStitchFidTester
                                                _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
                     {
-                        writer.WriteLine("Units: Microns");
+                        _writer.WriteLine("Units: Microns");
                         //outline is the output file column names
-                        writer.WriteLine(headerLine);
+                        _writer.WriteLine(headerLine);
                     }
 
                     if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), writer, fidChecker);
+                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), _writer, fidChecker);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
                 else
                 {
-                    mCollectedEvent.Reset();
-                    mAlignedEvent.Reset();
+                    _mCollectedEvent.Reset();
+                    _mAlignedEvent.Reset();
                 }
             }
         }
 
         private static void WriteResults(string lastOutputTextPath, string outputTextPath, string unitTestFolder)
         {
-            writer.WriteLine(" Fid#, XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev, Absolute XOffset Mean, Absolute YOffset Mean, Absolute XOffset Stdev, Absolute YOffset Stdev, Number of cycle ");
+            _writer.WriteLine(" Fid#, XOffset Mean, YOffset Mean,XOffset Stdev, YOffset Stdev, Absolute XOffset Mean, Absolute YOffset Mean, Absolute XOffset Stdev, Absolute YOffset Stdev, Number of cycle ");
             for (int i = 0; i < _fidPanel.NumberOfFiducials; i++)
             {
                 if (_icycleCount[i] == 0)   // If no fiducial is found
                 {
-                    writer.WriteLine(
+                    _writer.WriteLine(
                         string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}", i,
                             "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", _icycleCount[i]));
                 }
@@ -488,7 +486,7 @@ namespace CyberStitchFidTester
                     double dAbsMeanY = _dYAbsDiffSum[i] / _icycleCount[i];
                     double dAbsSdvX = Math.Sqrt(_dXDiffSqrSum[i] / _icycleCount[i] - dAbsMeanX * dAbsMeanX);
                     double dAbsSdvY = Math.Sqrt(_dYDiffSqrSum[i] / _icycleCount[i] - dAbsMeanY * dAbsMeanY);
-                    writer.WriteLine(
+                    _writer.WriteLine(
                         string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}", i,
                         dMeanX, dMeanY, dSdvX, dSdvY,
                         dAbsMeanX, dAbsMeanY, dAbsSdvX, dAbsSdvY, 
@@ -500,9 +498,9 @@ namespace CyberStitchFidTester
             _dXRMS = Math.Sqrt(_dXDiffSqrSumTol / (_iTotalCount));
             _dYRMS = Math.Sqrt(_dYDiffSqrSumTol / (_iTotalCount));
 
-            writer.WriteLine(String.Format("Average Panel Process Running time(Unites:Minutes): {0}", _tsTotalRunTime/60/_cycleCount));
-            writer.WriteLine(string.Format("MagicNumber: {0}, Xoffset RMS:{1}, Yoffset RMS:{2}", _allPanelFidDifference, _dXRMS, _dYRMS));
-            writer.WriteLine(string.Format("Average Offset: {0}", _allPanelFidDifference / _iTotalCount));
+            _writer.WriteLine(String.Format("Average Panel Process Running time(Unites:Minutes): {0}", _tsTotalRunTime/60/_cycleCount));
+            _writer.WriteLine(string.Format("MagicNumber: {0}, Xoffset RMS:{1}, Yoffset RMS:{2}", _allPanelFidDifference, _dXRMS, _dYRMS));
+            _writer.WriteLine(string.Format("Average Offset: {0}", _allPanelFidDifference / _iTotalCount));
 
             if (File.Exists(lastOutputTextPath))
             {
@@ -527,7 +525,7 @@ namespace CyberStitchFidTester
                     string testResult;
                     if (File.Exists(finalCompCSVPath))
                         bHeadLine = false;
-                    finalCompWriter = new StreamWriter(finalCompCSVPath, true);
+                    _finalCompWriter= new StreamWriter(finalCompCSVPath, true);
                     if (averageParts.Length > 1 && double.TryParse(averageParts[1], out lastAverage))
                     {
                         // Check that we are at least as good as last time (to the nearest micron)
@@ -543,12 +541,12 @@ namespace CyberStitchFidTester
                     bGood = bGoodAver && bGoodTime;
                     testResult = (bGood ? "Passed" : "Failed");
                     Console.WriteLine("Are we as good as last time: " + (bGood ? "Yes!" : "No!"));
-                    if (bHeadLine) finalCompWriter.WriteLine(headLine);
-                    finalCompWriter.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", testName, lastAverage,
+                    if (bHeadLine) _finalCompWriter.WriteLine(headLine);
+                    _finalCompWriter.WriteLine(string.Format("{0},{1},{2},{3},{4},{5}", testName, lastAverage,
                                                             _allPanelFidDifference/_iTotalCount, lastTimeRecord,
                                                             _tsTotalRunTime/60/_cycleCount, testResult));
-                    if (finalCompWriter != null)
-                        finalCompWriter.Close();
+                    if (_finalCompWriter!= null)
+                        _finalCompWriter.Close();
                     if (Directory.Exists(unitTestFolder))
                     {
                         string file =
@@ -561,22 +559,22 @@ namespace CyberStitchFidTester
 
         private static void ShowHelp()
         {
-            logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
-            logger.AddObjectToThreadQueue("*****************************************");
-            logger.AddObjectToThreadQueue("-b // if bayer pattern");
-            logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
-            logger.AddObjectToThreadQueue("-i <imagePath> instead of running cyberstitch");
-            logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
-            logger.AddObjectToThreadQueue("-h Show Help");
-            logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
-            logger.AddObjectToThreadQueue("-n <#> // Number of panels - defaults to 1");
-            logger.AddObjectToThreadQueue("-o <output.txt>");
-            logger.AddObjectToThreadQueue("-p <panelfile.xml>");
-            logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
-            logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
-            logger.AddObjectToThreadQueue("-u <UnitTestFolder>");
-            logger.AddObjectToThreadQueue("-w // if projective transform is desired");
-            logger.AddObjectToThreadQueue("-----------------------------------------");
+            _logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
+            _logger.AddObjectToThreadQueue("*****************************************");
+            _logger.AddObjectToThreadQueue("-b // if bayer pattern");
+            _logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
+            _logger.AddObjectToThreadQueue("-i <imagePath> instead of running cyberstitch");
+            _logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
+            _logger.AddObjectToThreadQueue("-h Show Help");
+            _logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
+            _logger.AddObjectToThreadQueue("-n <#> // Number of panels - defaults to 1");
+            _logger.AddObjectToThreadQueue("-o <output.txt>");
+            _logger.AddObjectToThreadQueue("-p <panelfile.xml>");
+            _logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
+            _logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
+            _logger.AddObjectToThreadQueue("-u <UnitTestFolder>");
+            _logger.AddObjectToThreadQueue("-w // if projective transform is desired");
+            _logger.AddObjectToThreadQueue("-----------------------------------------");
         }
 
         static string[] ExpandFilePaths(string filePathPattern)
@@ -700,14 +698,14 @@ namespace CyberStitchFidTester
             {
 
                 Output("Could not initialize CoreAPI!");
-                logger.Kill();
+                _logger.Kill();
                 return false;
             }
 
             if (ManagedCoreAPI.NumberOfDevices() <= 0)
             {
                 Output("There are no SIM Devices attached!");
-                logger.Kill();
+                _logger.Kill();
                 return false;
             }
 
@@ -723,7 +721,7 @@ namespace CyberStitchFidTester
                     if (desiredCount != bufferCount)
                     {
                         Output("Could not allocate all buffers!  Desired = " + desiredCount + " Actual = " + bufferCount);
-                        logger.Kill();
+                        _logger.Kill();
                         return false;
                     }
                     if (_bRtoL)
@@ -746,7 +744,7 @@ namespace CyberStitchFidTester
             return true;
         }
 
-        private static CPanel LoadProductionFile(string panelFile, double pixelSize)
+        private static CPanel LoadPanelDescription(string panelFile, double pixelSize)
         {
             CPanel panel = null;
             if (!string.IsNullOrEmpty(panelFile))
@@ -771,7 +769,7 @@ namespace CyberStitchFidTester
                 catch (Exception except)
                 {
                     Output("Exception reading Panel file: " + except.Message);
-                    logger.Kill();
+                    _logger.Kill();
                 }
             }
             return panel;
@@ -795,8 +793,8 @@ namespace CyberStitchFidTester
             }
             _mosaicSet = new ManagedMosaicSet(
                 _processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 
-                iInputImageColumns, iInputImageRows, iInputImageColumns, 
-                dPixelSizeInMeters, dPixelSizeInMeters, 
+                _iInputImageColumns, _iInputImageRows, _iInputImageColumns, 
+                _dPixelSizeInMeters, _dPixelSizeInMeters, 
                 bOwnBuffers, 
                 _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
@@ -812,29 +810,28 @@ namespace CyberStitchFidTester
         private static void OnAcquisitionDone(int device, int status, int count)
         {
             Output("OnAcquisitionDone Called!");
-            numAcqsComplete++;
+            _numAcqsComplete++;
             // launch next device in simulation case
-            if (_bSimulating && numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
+            if (_bSimulating && _numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
             {
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(numAcqsComplete);
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(_numAcqsComplete);
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return;
             }
-            if (ManagedCoreAPI.NumberOfDevices() == numAcqsComplete)
-                mCollectedEvent.Set();
+            if (ManagedCoreAPI.NumberOfDevices() == _numAcqsComplete)
+                _mCollectedEvent.Set();
         }
 
         private static void OnAlignmentDone(bool status)
         {
             Output("OnAlignmentDone Called!");
-            mAlignedEvent.Set();
+            _mAlignedEvent.Set();
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
         {
             // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
             //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
-            _iBufCount++; // for debug
 
             int device = pframe.DeviceIndex();
             int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
@@ -849,8 +846,8 @@ namespace CyberStitchFidTester
 
         private static void Output(string str)
         {
-            logger.AddObjectToThreadQueue(str);
-            logger.AddObjectToThreadQueue(null);
+            _logger.AddObjectToThreadQueue(str);
+            _logger.AddObjectToThreadQueue(null);
         }
     }
 }
