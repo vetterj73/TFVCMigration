@@ -29,7 +29,7 @@ namespace CyberStitchFidTester
     /// file may be built with other tools (2dSPI for instance) and therefore may have a different pixel size and stride.  This muddied the 
     /// water, but it should be handled correctly.
     /// </summary>
-    class Program
+    class ProgramfidChecker
     {
         // Control parameter
         private static double _dPixelSizeInMeters = 1.70e-5;
@@ -48,18 +48,24 @@ namespace CyberStitchFidTester
         private static bool _bSimulating = false;
         private static bool _bUseProjective = false;
         private static bool _bUseCameraModel = false;
-        private static bool _bSaveStitchedResultsImage = false;
         private static bool _bUseIterativeCameraModel = false;
+        private static bool _bSaveStitchedResultsImage = false;
         private static bool _bUseTwoPassStitch = false;
         private static int _numberToRun = 1;
-        private static string _unitTestFolder = "";
         private static bool _bMaskForDiffDevices = false;
+
+        //output csv file shows the comparison results
+        private static string _unitTestFolder = "";
+        private static string _outputTextPath = @".\fidsCompareResults.csv";
+        private static string _lastOutputTextPath = @".\lastFidsCompareResults.csv";
+        private static string _imagePathPattern = "";
 
         // Internal variable
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _processingPanel = null;
         private static CPanel _fidPanel = null;
+        private static ManagedFeatureLocationCheck _fidChecker = null;
         private static LoggingThread _logger = new LoggingThread(null);
         private readonly static ManualResetEvent _mCollectedEvent = new ManualResetEvent(false);
         private readonly static ManualResetEvent _mAlignedEvent = new ManualResetEvent(false);
@@ -67,6 +73,8 @@ namespace CyberStitchFidTester
         private static StreamWriter _finalCompWriter= null;
         private static int _numAcqsComplete = 0;
         private static int _cycleCount = 0;
+        private static bool _bImageOnly = false;
+        private static Bitmap _inputBmp = null;
         
         // For output analysis
         private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
@@ -82,8 +90,8 @@ namespace CyberStitchFidTester
         private static double _dXDiffSqrSumTol = 0.0;//used for the total Xoffset square sum
         private static double _dYDiffSqrSumTol = 0.0;
         private static double _dXRMS = 0.0;//used for the xoffset RMS
-        private static double _dYRMS = 0.0;
-
+        private static double _dYRMS = 0.0;            
+       
         // For time stamp
         private static DateTime _dtStartTime;
         private static DateTime _dtEndTime;
@@ -99,14 +107,7 @@ namespace CyberStitchFidTester
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            // Gather input data.
-
-            ManagedFeatureLocationCheck fidChecker;
-         
-            //output csv file shows the comparison results
-            string outputTextPath = @".\fidsCompareResults.csv";
-            string lastOutputTextPath = @".\lastFidsCompareResults.csv";
-            string imagePathPattern = "";
+            // Control parameter inputs
             for (int i = 0; i < args.Length; i++)
             {
                 if (args[i] == "-b")
@@ -140,15 +141,15 @@ namespace CyberStitchFidTester
                 else if (args[i] == "-n" && i < args.Length - 1)
                     _numberToRun = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-o" && i < args.Length - 1)
-                    outputTextPath = args[i + 1];
+                    _outputTextPath = args[i + 1];
                 else if (args[i] == "-p" && i < args.Length - 1)
                     _panelFile = args[i + 1];
                 else if (args[i] == "-f" && i < args.Length - 1)
                     _fidPanelFile = args[i + 1];
                 else if (args[i] == "-i" && i < args.Length - 1)
-                    imagePathPattern = args[i + 1];
+                    _imagePathPattern = args[i + 1];
                 else if (args[i] == "-l" && i < args.Length - 1)
-                    lastOutputTextPath = args[i + 1];
+                    _lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-le" && i < args.Length - 1)
                     _iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-pixsize" && i < args.Length - 1)
@@ -170,18 +171,63 @@ namespace CyberStitchFidTester
             _logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
             _logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
 
+            // Panel images are from disc or from stitch
+            string[] imagePath = ExpandFilePaths(_imagePathPattern);
+            if (imagePath.Length > 0)
+                _bImageOnly = true;
+
+            // Load offset Fiducial file
+            if (!LoadOffsetFiducialFile())
+                Output("Cannot load offset fiducial file");
+
             // Open output text file.
-            _writer = new StreamWriter(outputTextPath);
+            _writer = new StreamWriter(_outputTextPath);
+            Output("The report file: " + _outputTextPath);
 
-            Output("The report file: " + outputTextPath);
+            if (_bImageOnly) // Panel images are from disc
+            { 
+                _writer.WriteLine(headerLine);
+                
+                // Load first image
+                _inputBmp = new Bitmap(imagePath[0]);  // should be safe, as _bImageOnly == (imagePath.Length > 0)
+                int cycleId = 0; // Image already loaded.
+               
+                while (_inputBmp!= null)
+                {
+                    Console.WriteLine("Comparing fiducials on {0}...", imagePath[cycleId]);
 
-            string[] imagePath = ExpandFilePaths(imagePathPattern);
-            bool bImageOnly = false;
-            if(imagePath.Length > 0)
-                bImageOnly = true;
+                    // This allows images to directly be sent in instead of using CyberStitch to create them
+                    CyberBitmapData cbd = new CyberBitmapData();
 
-            if (!bImageOnly)
+                    // Calcaulate offsets
+                    cbd.Lock(_inputBmp);
+                    RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer);
+                    
+                    // Save panel image
+                    if (_bSaveStitchedResultsImage)
+                    {
+                        string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
+                        _aligner.Save3ChannelImage(imageFilename,
+                                             cbd.Scan0, cbd.Stride,
+                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
+                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
+                                              _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
+                    }
+                    cbd.Unlock();
+
+                    // Increment cycle and get bitmap, if available
+                    cycleId++;
+
+                    // Load next image if it is available
+                    if (cycleId < imagePath.Length)
+                        _inputBmp= new Bitmap(imagePath[cycleId]);
+                    else
+                        _inputBmp= null;
+                }
+            }
+            else  // Panel images are from stitch
             {
+                // Load panel 
                 if (File.Exists(_panelFile))
                 {
                     _processingPanel = LoadPanelDescription(_panelFile, _dPixelSizeInMeters);
@@ -198,30 +244,184 @@ namespace CyberStitchFidTester
                     Console.WriteLine("The panel file does not exist..: " + _panelFile);
                     return;
                 }
+
+                // Initialize the SIM CoreAPI
+                if (!InitializeSimCoreAPI(_simulationFile))
+                {
+                    Terminate(false);
+                    Console.WriteLine("Could not initialize Core API");
+                    return;
+                }
+
+                // SetUp aligner
+                try
+                {
+                    SetupAligner();
+                }
+                catch (Exception except)
+                {
+                    Output("Error SetupAligner: " + except.Message);
+                    Terminate(true);
+                    return;
+                }
+
+                // 
+                try
+                {
+                    RunStitchAndRecordResults(_numberToRun);
+                }
+                catch (Exception except)
+                {
+                    Output("Error during acquire and stitch: " + except.Message);
+                    Terminate(true);
+                    return;
+                }
+
+            } // End Simulation Mode
+
+            // Last attempt to force proper shutdown...
+            try
+            {
+                WriteResults(_lastOutputTextPath, _outputTextPath, _unitTestFolder);
+                Output("Processing Complete");
+            }
+            catch (Exception except)
+            {
+                Output("Error during write results: " + except.Message);
+            }
+            finally
+            {
+                Terminate(!_bImageOnly);           
+            }
+        }
+
+
+        #region utilities
+        
+        private static void Terminate(bool bTerminateCore)
+        {
+            if (_writer != null)
+                _writer.Close();
+
+            if (_logger != null)
+                _logger.Kill();
+
+            _aligner.Dispose();       
+
+            if(bTerminateCore)
+                ManagedCoreAPI.TerminateAPI();
+        }
+
+        private static void OnLogEntryFromClient(MLOGTYPE logtype, string message)
+        {
+            Console.WriteLine(logtype + " " + message);
+            Output(logtype + " " + message);
+        }
+
+        private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
+        {
+            Output(logtype + " From Mosaic: " + message);
+        }
+
+        private static void Output(string str)
+        {
+            _logger.AddObjectToThreadQueue(str);
+            _logger.AddObjectToThreadQueue(null);
+        }
+
+        private static void ShowHelp()
+        {
+            _logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
+            _logger.AddObjectToThreadQueue("*****************************************");
+            _logger.AddObjectToThreadQueue("-b // if bayer pattern");
+            _logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
+            _logger.AddObjectToThreadQueue("-i <imagePath> instead of running cyberstitch");
+            _logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
+            _logger.AddObjectToThreadQueue("-h Show Help");
+            _logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
+            _logger.AddObjectToThreadQueue("-n <#> // Number of panels - defaults to 1");
+            _logger.AddObjectToThreadQueue("-o <output.txt>");
+            _logger.AddObjectToThreadQueue("-p <panelfile.xml>");
+            _logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
+            _logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
+            _logger.AddObjectToThreadQueue("-u <UnitTestFolder>");
+            _logger.AddObjectToThreadQueue("-w // if projective transform is desired");
+            _logger.AddObjectToThreadQueue("-----------------------------------------");
+        }
+
+        private static string[] ExpandFilePaths(string filePathPattern)
+        {
+            List<string> fileList = new List<string>();
+
+            if (filePathPattern.Length > 0)
+            {
+                string substitutedFilePathPattern = System.Environment.ExpandEnvironmentVariables(filePathPattern);
+
+                string directory = Path.GetDirectoryName(substitutedFilePathPattern);
+                if (directory.Length == 0)
+                    directory = ".";
+
+                string filePattern = Path.GetFileName(substitutedFilePathPattern);
+
+                foreach (string filePath in Directory.GetFiles(directory, filePattern))
+                    fileList.Add(filePath);
             }
 
-            Bitmap inputBmp = null;
-            if(bImageOnly)
-                inputBmp = new Bitmap(imagePath[0]);  // should be safe, as bImageOnly == (imagePath.Length > 0)
+            return fileList.ToArray();
+        }
 
-            int ifidsNum = 0;
-            
+        #endregion
+
+        #region load panel file
+        private static CPanel LoadPanelDescription(string panelFile, double pixelSize)
+        {
+            CPanel panel = null;
+            if (!string.IsNullOrEmpty(panelFile))
+            {
+                try
+                {
+                    if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        panel = SRFToPanel.parseSRF(panelFile, pixelSize, pixelSize);
+                        if (panel == null)
+                            throw new ApplicationException("Could not parse the SRF panel file");
+                    }
+                    else if (_panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, pixelSize, pixelSize);
+                        if (panel == null)
+                            throw new ApplicationException("Could not convert xml panel file");
+                    }
+
+                    return panel;
+                }
+                catch (Exception except)
+                {
+                    Output("Exception reading Panel file: " + except.Message);
+                    _logger.Kill();
+                }
+            }
+            return panel;
+        }
+
+        private static bool LoadOffsetFiducialFile()
+        {
             if (File.Exists(_fidPanelFile))
             {
                 double pixelSize = _dPixelSizeInMeters;
-                if (bImageOnly && _fidPanel.GetNumPixelsInY() != inputBmp.Width)
-                    pixelSize = _fidPanel.PanelSizeY/inputBmp.Width;
-   
+                if (_bImageOnly && _fidPanel.GetNumPixelsInY() != _inputBmp.Width)
+                    pixelSize = _fidPanel.PanelSizeY / _inputBmp.Width;
+
                 _fidPanel = LoadPanelDescription(_fidPanelFile, pixelSize);
-                
+
                 if (_fidPanel == null)
                 {
                     Terminate(false);
                     Console.WriteLine("Could not load Fid Test File: " + _fidPanelFile);
-                    return;
+                    return false;
                 }
-                fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
-                ifidsNum = _fidPanel.NumberOfFiducials;
+                _fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
+                int ifidsNum = _fidPanel.NumberOfFiducials;
                 _dXDiffSum = new double[ifidsNum];
                 _dYDiffSum = new double[ifidsNum];
                 _dXAbsDiffSum = new double[ifidsNum];
@@ -245,158 +445,195 @@ namespace CyberStitchFidTester
             {
                 Terminate(false);
                 Console.WriteLine("Fid Test File does not exist: " + _fidPanelFile);
-                return;
+                return false;
             }
 
-            if (bImageOnly)
-            {
-                int cycleId = 0; // Image already loaded.
-
-                _writer.WriteLine(headerLine);
-
-                while (inputBmp != null)
-                {
-                    Console.WriteLine("Comparing fiducials on {0}...", imagePath[cycleId]);
-
-                    // This allows images to directly be sent in instead of using CyberStitch to create them
-                    CyberBitmapData cbd = new CyberBitmapData();
-
-                    cbd.Lock(inputBmp);
-                    fidChecker = new ManagedFeatureLocationCheck(_fidPanel);
-                    RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer, fidChecker);
-                    if (_bSaveStitchedResultsImage)
-                    {
-                        string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
-                        _aligner.Save3ChannelImage(imageFilename,
-                                             cbd.Scan0, cbd.Stride,
-                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
-                                              _fidPanel.GetCADBuffer(), _fidPanel.GetNumPixelsInY(),
-                                              _fidPanel.GetNumPixelsInY(), _fidPanel.GetNumPixelsInX());
-                    }
-                    cbd.Unlock();
-
-                    //
-                    // Increment cycle and get bitmap, if available
-                    cycleId++;
-
-                    if (cycleId < imagePath.Length)
-                        inputBmp = new Bitmap(imagePath[cycleId]);
-                    else
-                        inputBmp = null;
-                }
-            } // End Stitched Image Inspection Mode
-            else
-            {
-                // Initialize the SIM CoreAPI
-                if (!InitializeSimCoreAPI(_simulationFile))
-                {
-                    Terminate(false);
-                    Console.WriteLine("Could not initialize Core API");
-                    return;
-                }
-
-                // Must after InitializeSimCoreAPI() before ChangeProduction()
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail); 
-
-                // Set up mosaic set
-                SetupMosaic(true, _bMaskForDiffDevices);
-
-                try
-                {
-                    Output("Aligner ChangeProduction");
-                    // Setup Aligner...
-                    _aligner.OnLogEntry += OnLogEntryFromClient;
-                    _aligner.SetAllLogTypes(true);
-                    _aligner.OnAlignmentDone += OnAlignmentDone;
-                    _aligner.NumThreads(8);
-                    _aligner.UseProjectiveTransform(_bUseProjective);
-                    
-                    if (_bUseTwoPassStitch)
-                        _aligner.SetUseTwoPassStitch(true);
-                    if (_bUseCameraModel)
-                    {
-                        _aligner.UseCameraModelStitch(true);
-                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                    }
-
-                    if (_bUseIterativeCameraModel)
-                    {
-                        _aligner.UseCameraModelIterativeStitch(true);
-                        _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
-                    }
-
-                    // Set number of thread to be used in cyberstitch
-                    _aligner.NumThreads(_numThreads);
-
-                    // Always seperate acquistion, demosaic and alignment stages 
-                    _mosaicSet.SetSeperateProcessStages(true);
-
-                    // true: Skip demosaic for Bayer image
-                    if(_bBayerPattern)
-                        _aligner.SetSkipDemosaic(_bSkipDemosaic);
-
-
-                    // Add trigger to trigger overlaps for same layer
-                    //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
-                    //    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
-
-                    if (!_aligner.ChangeProduction(_mosaicSet, _processingPanel))
-                    {
-                        throw new ApplicationException("Aligner failed to change production ");
-                    }
-                }
-                catch (Exception except)
-                {
-                    Output("Error Changing Production: " + except.Message);
-                    Terminate(true);
-                    return;
-                }
-
-                try
-                {
-                    RunAcquireAndStitch(_numberToRun, fidChecker);
-                }
-                catch (Exception except)
-                {
-                    Output("Error during acquire and stitch: " + except.Message);
-                    Terminate(true);
-                    return;
-                }
-
-            } // End Simulation Mode
-
-            // Last attempt to force proper shutdown...
-            try
-            {
-                WriteResults(lastOutputTextPath, outputTextPath, _unitTestFolder);
-                Output("Processing Complete");
-            }
-            catch (Exception except)
-            {
-                Output("Error during write results: " + except.Message);
-            }
-            finally
-            {
-                Terminate(!bImageOnly);           
-            }
+            return (true);
         }
+        #endregion
 
-        private static void Terminate(bool bTerminateCore)
+        #region coreApi and callbacks
+
+        private static bool InitializeSimCoreAPI(string simulationFile)
         {
-            if (_writer != null)
-                _writer.Close();
+            //bool bSimulating = false;
+            if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
+                _bSimulating = true;
 
-            if (_logger != null)
+            if (_bSimulating)
+            {
+                Output("Running with Simulation File: " + simulationFile);
+                ManagedCoreAPI.SetSimulationFile(simulationFile);
+            }
+
+            ManagedSIMDevice.OnFrameDone += OnFrameDone;
+            ManagedSIMDevice.OnAcquisitionDone += OnAcquisitionDone;
+
+            if (ManagedCoreAPI.InitializeAPI() != 0)
+            {
+
+                Output("Could not initialize CoreAPI!");
                 _logger.Kill();
+                return false;
+            }
 
-            _aligner.Dispose();       
+            if (ManagedCoreAPI.NumberOfDevices() <= 0)
+            {
+                Output("There are no SIM Devices attached!");
+                _logger.Kill();
+                return false;
+            }
 
-            if(bTerminateCore)
-                ManagedCoreAPI.TerminateAPI();
+            if (!_bSimulating)
+            {
+                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+                {
+                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                    int bufferCount = 128;// (triggerCount + 1) * GetNumberOfEnabledCameras(0) * 2;
+                    int desiredCount = bufferCount;
+                    d.AllocateFrameBuffers(ref bufferCount);
+
+                    if (desiredCount != bufferCount)
+                    {
+                        Output("Could not allocate all buffers!  Desired = " + desiredCount + " Actual = " + bufferCount);
+                        _logger.Kill();
+                        return false;
+                    }
+                    if (_bRtoL)
+                    {
+                        d.ConveyorRtoL = true;
+                    }
+                    if (_bFRR)
+                    {
+                        d.FixedRearRail = true;
+                    }
+
+                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 0, .004);
+                    if (cs1 == null)
+                    {
+                        Output("Could not create capture spec.");
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
-        private static void RunAcquireAndStitch(int numberToRun, ManagedFeatureLocationCheck fidChecker)
+        private static void OnAcquisitionDone(int device, int status, int count)
+        {
+            Output("OnAcquisitionDone Called!");
+            _numAcqsComplete++;
+            // launch next device in simulation case
+            if (_bSimulating && _numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
+            {
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(_numAcqsComplete);
+                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                    return;
+            }
+            if (ManagedCoreAPI.NumberOfDevices() == _numAcqsComplete)
+                _mCollectedEvent.Set();
+        }
+
+        private static void OnFrameDone(ManagedSIMFrame pframe)
+        {
+            // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
+            //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
+
+            int device = pframe.DeviceIndex();
+            int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
+            int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
+
+            uint layer = (uint)(device * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
+                        pframe.CaptureSpecIndex());
+
+            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
+        }
+
+        #endregion
+
+        #region Setup Aligner
+
+        /// <summary>
+        /// Given a SIM setup and a mosaic for stitching, setup the stich...
+        /// </summary>
+        private static bool SetupMosaicSet()
+        {
+            if (ManagedCoreAPI.NumberOfDevices() <= 0)
+            {
+                Output("No Device Defined");
+                return false;
+            }
+
+            bool bOwnBuffer = true;
+            _mosaicSet = new ManagedMosaicSet(
+                _processingPanel.PanelSizeX, _processingPanel.PanelSizeY,
+                _iInputImageColumns, _iInputImageRows, _iInputImageColumns,
+                _dPixelSizeInMeters, _dPixelSizeInMeters,
+                bOwnBuffer,
+                _bBayerPattern, _iBayerType, _bSkipDemosaic);
+            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
+            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
+            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+
+            return true;
+        }
+
+        private static void SetupAligner()
+        {
+            if (!SetupMosaicSet())
+            {
+                throw new ApplicationException("Failed to setup mossaic set");
+            }
+
+            Output("Aligner ChangeProduction");
+            // Setup Aligner...
+            _aligner.OnLogEntry += OnLogEntryFromClient;
+            _aligner.SetAllLogTypes(true);
+            _aligner.OnAlignmentDone += OnAlignmentDone;
+            _aligner.UseProjectiveTransform(_bUseProjective);
+
+            if (_bUseTwoPassStitch)
+                _aligner.SetUseTwoPassStitch(true);
+            if (_bUseCameraModel)
+            {
+                _aligner.UseCameraModelStitch(true);
+                _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+            }
+            if (_bUseIterativeCameraModel)
+            {
+                _aligner.UseCameraModelIterativeStitch(true);
+                _aligner.UseProjectiveTransform(true);  // projective transform is assumed for camera model stitching
+            }
+
+            // Set number of thread to be used in cyberstitch
+            _aligner.NumThreads(_numThreads);
+
+            // Always seperate acquistion, demosaic and alignment stages 
+            _mosaicSet.SetSeperateProcessStages(true);
+
+            // true: Skip demosaic for Bayer image
+            if (_bBayerPattern)
+                _aligner.SetSkipDemosaic(_bSkipDemosaic);
+
+            // Must after InitializeSimCoreAPI() before ChangeProduction()
+            ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+            _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+
+            // Add trigger to trigger overlaps for same layer
+            //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
+            //    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
+
+            if (!_aligner.ChangeProduction(_mosaicSet, _processingPanel))
+            {
+                throw new ApplicationException("Aligner failed to change production");
+            }
+        }
+
+        #endregion
+
+        #region stitch
+
+        private static void RunStitchAndRecordResults(int numberToRun)
         {
             bool bDone = false;
             while (!bDone)
@@ -404,7 +641,7 @@ namespace CyberStitchFidTester
                 _numAcqsComplete = 0;
                 _aligner.ResetForNextPanel();
                 _mosaicSet.ClearAllImages();
-                if (!GatherImages())
+                if (!StartSimAcquistion())
                 {
                     Output("Issue with StartAcquisition");
                     bDone = true;
@@ -453,7 +690,7 @@ namespace CyberStitchFidTester
                     }
 
                     if (_fidPanel != null)
-                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), _writer, fidChecker);
+                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _fidPanel.GetNumPixelsInY(), _writer);
                 }
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -464,6 +701,36 @@ namespace CyberStitchFidTester
                 }
             }
         }
+
+        private static bool StartSimAcquistion()
+        {
+            if (!_bSimulating)
+            {
+                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
+                {
+                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
+                    if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                        return false;
+                }
+            }
+            else
+            {   // launch device one by one in simulation case
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
+                    return false;
+            }
+            return true;
+        }
+
+        private static void OnAlignmentDone(bool status)
+        {
+            Output("OnAlignmentDone Called!");
+            _mAlignedEvent.Set();
+        }
+
+        #endregion
+
+        #region offset calculation and result record
 
         private static void WriteResults(string lastOutputTextPath, string outputTextPath, string unitTestFolder)
         {
@@ -557,48 +824,7 @@ namespace CyberStitchFidTester
             }
         }
 
-        private static void ShowHelp()
-        {
-            _logger.AddObjectToThreadQueue("CyberStitchFIDTester Command line Options");
-            _logger.AddObjectToThreadQueue("*****************************************");
-            _logger.AddObjectToThreadQueue("-b // if bayer pattern");
-            _logger.AddObjectToThreadQueue("-f <FidTestPanel.xml>");
-            _logger.AddObjectToThreadQueue("-i <imagePath> instead of running cyberstitch");
-            _logger.AddObjectToThreadQueue("-l <lastResultsDirectory>");
-            _logger.AddObjectToThreadQueue("-h Show Help");
-            _logger.AddObjectToThreadQueue("-l <lastOutput.txt>");
-            _logger.AddObjectToThreadQueue("-n <#> // Number of panels - defaults to 1");
-            _logger.AddObjectToThreadQueue("-o <output.txt>");
-            _logger.AddObjectToThreadQueue("-p <panelfile.xml>");
-            _logger.AddObjectToThreadQueue("-r // Save stitched results image (c:\\temp\\*.bmp)");
-            _logger.AddObjectToThreadQueue("-s <SimScenario.xml>");
-            _logger.AddObjectToThreadQueue("-u <UnitTestFolder>");
-            _logger.AddObjectToThreadQueue("-w // if projective transform is desired");
-            _logger.AddObjectToThreadQueue("-----------------------------------------");
-        }
-
-        static string[] ExpandFilePaths(string filePathPattern)
-        {
-            List<string> fileList = new List<string>();
-
-            if (filePathPattern.Length > 0)
-            {
-                string substitutedFilePathPattern = System.Environment.ExpandEnvironmentVariables(filePathPattern);
-
-                string directory = Path.GetDirectoryName(substitutedFilePathPattern);
-                if (directory.Length == 0)
-                    directory = ".";
-
-                string filePattern = Path.GetFileName(substitutedFilePathPattern);
-
-                foreach (string filePath in Directory.GetFiles(directory, filePattern))
-                    fileList.Add(filePath);
-            }
-
-            return fileList.ToArray();
-        }
-
-        private static void RunFiducialCompare(IntPtr data, int stride, StreamWriter writer, ManagedFeatureLocationCheck fidChecker)
+        private static void RunFiducialCompare(IntPtr data, int stride, StreamWriter writer)
         {
             int iFidNums = _fidPanel.NumberOfFiducials;
 
@@ -612,7 +838,7 @@ namespace CyberStitchFidTester
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find fiducial on the board
-            fidChecker.CheckFeatureLocation(data, stride, dResults);
+            _fidChecker.CheckFeatureLocation(data, stride, dResults);
             //Record the processing time
             //DateTime dtEndTime = DateTime.Now;
             //TimeSpan tsRunTime = dtEndTime - _dtStartTime;
@@ -659,195 +885,6 @@ namespace CyberStitchFidTester
            // _tsTotalRunTime += tsRunTime;
         }
 
-        private static bool GatherImages()
-        {
-            if (!_bSimulating)
-            {
-                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
-                {
-                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                    if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
-                        return false;
-                }
-            }
-            else
-            {   // launch device one by one in simulation case
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
-                    return false;
-            }
-            return true;
-        }
-
-        private static bool InitializeSimCoreAPI(string simulationFile)
-        {
-            //bool bSimulating = false;
-            if (!string.IsNullOrEmpty(simulationFile) && File.Exists(simulationFile))
-                _bSimulating = true;
-
-            if (_bSimulating)
-            {
-                Output("Running with Simulation File: " + simulationFile);
-                ManagedCoreAPI.SetSimulationFile(simulationFile);
-            }
-
-            ManagedSIMDevice.OnFrameDone += OnFrameDone;
-            ManagedSIMDevice.OnAcquisitionDone += OnAcquisitionDone;
-
-            if (ManagedCoreAPI.InitializeAPI() != 0)
-            {
-
-                Output("Could not initialize CoreAPI!");
-                _logger.Kill();
-                return false;
-            }
-
-            if (ManagedCoreAPI.NumberOfDevices() <= 0)
-            {
-                Output("There are no SIM Devices attached!");
-                _logger.Kill();
-                return false;
-            }
-
-            if (!_bSimulating)
-            {
-                for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
-                {
-                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(i);
-                    int bufferCount = 128;// (triggerCount + 1) * GetNumberOfEnabledCameras(0) * 2;
-                    int desiredCount = bufferCount;
-                    d.AllocateFrameBuffers(ref bufferCount);
-
-                    if (desiredCount != bufferCount)
-                    {
-                        Output("Could not allocate all buffers!  Desired = " + desiredCount + " Actual = " + bufferCount);
-                        _logger.Kill();
-                        return false;
-                    }
-                    if (_bRtoL)
-                    {
-                        d.ConveyorRtoL = true;
-                    }
-                    if (_bFRR)
-                    {
-                        d.FixedRearRail = true;
-                    }
-
-                    ManagedSIMCaptureSpec cs1 = d.SetupCaptureSpec(_processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 0, .004);
-                    if (cs1 == null)
-                    {
-                        Output("Could not create capture spec.");
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        private static CPanel LoadPanelDescription(string panelFile, double pixelSize)
-        {
-            CPanel panel = null;
-            if (!string.IsNullOrEmpty(panelFile))
-            {
-                try
-                {
-                    if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        panel = SRFToPanel.parseSRF(panelFile, pixelSize, pixelSize);
-                        if (panel == null)
-                            throw new ApplicationException("Could not parse the SRF panel file");
-                    }
-                    else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
-                    {
-                        panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, pixelSize, pixelSize);
-                        if (panel == null)
-                            throw new ApplicationException("Could not convert xml panel file");
-                    }
-
-                    return panel;
-                }
-                catch (Exception except)
-                {
-                    Output("Exception reading Panel file: " + except.Message);
-                    _logger.Kill();
-                }
-            }
-            return panel;
-        }
-
-        private static void OnLogEntryFromClient(MLOGTYPE logtype, string message)
-        {
-            Console.WriteLine(logtype + " " + message);
-            Output(logtype + " " + message);
-        }
-
-        /// <summary>
-        /// Given a SIM setup and a mosaic for stitching, setup the stich...
-        /// </summary>
-        private static void SetupMosaic(bool bOwnBuffers, bool bMaskForDiffDevices)
-        {
-            if (ManagedCoreAPI.NumberOfDevices() <= 0)
-            {
-                Output("No Device Defined");
-                return;
-            }
-            _mosaicSet = new ManagedMosaicSet(
-                _processingPanel.PanelSizeX, _processingPanel.PanelSizeY, 
-                _iInputImageColumns, _iInputImageRows, _iInputImageColumns, 
-                _dPixelSizeInMeters, _dPixelSizeInMeters, 
-                bOwnBuffers, 
-                _bBayerPattern, _iBayerType, _bSkipDemosaic);
-            _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
-            _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, bMaskForDiffDevices);
-        }
-
-        private static void OnLogEntryFromMosaic(MLOGTYPE logtype, string message)
-        {
-            Output(logtype + " From Mosaic: " + message);
-        }
-
-        private static void OnAcquisitionDone(int device, int status, int count)
-        {
-            Output("OnAcquisitionDone Called!");
-            _numAcqsComplete++;
-            // launch next device in simulation case
-            if (_bSimulating && _numAcqsComplete < ManagedCoreAPI.NumberOfDevices())
-            {
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(_numAcqsComplete);
-                if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
-                    return;
-            }
-            if (ManagedCoreAPI.NumberOfDevices() == _numAcqsComplete)
-                _mCollectedEvent.Set();
-        }
-
-        private static void OnAlignmentDone(bool status)
-        {
-            Output("OnAlignmentDone Called!");
-            _mAlignedEvent.Set();
-        }
-
-        private static void OnFrameDone(ManagedSIMFrame pframe)
-        {
-            // Output(string.Format("Got an Image:  Device:{0}, ICS:{1}, Camera:{2}, Trigger:{3}",
-            //     pframe.DeviceIndex(), pframe.CaptureSpecIndex(), pframe.CameraIndex(), pframe.TriggerIndex()));
-
-            int device = pframe.DeviceIndex();
-            int mosaic_row = SimMosaicTranslator.TranslateTrigger(pframe);
-            int mosaic_column = pframe.CameraIndex() - ManagedCoreAPI.GetDevice(device).FirstCameraEnabled;
-
-            uint layer = (uint)(device * ManagedCoreAPI.GetDevice(device).NumberOfCaptureSpecs +
-                        pframe.CaptureSpecIndex());
-
-            _mosaicSet.AddRawImage(pframe.BufferPtr(), layer, (uint)mosaic_column, (uint)mosaic_row);
-        }
-
-
-        private static void Output(string str)
-        {
-            _logger.AddObjectToThreadQueue(str);
-            _logger.AddObjectToThreadQueue(null);
-        }
+        #endregion
     }
 }
