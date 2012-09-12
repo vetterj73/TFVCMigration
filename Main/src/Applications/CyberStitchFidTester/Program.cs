@@ -181,7 +181,7 @@ namespace CyberStitchFidTester
                 _bImageOnly = true;
 
             // Load offset Fiducial file
-            if (!LoadOffsetFiducialFile())
+            if (!LoadFeatureFile())
                 Output("Cannot load offset fiducial file");
 
             // Open output text file.
@@ -191,13 +191,21 @@ namespace CyberStitchFidTester
             if (_bImageOnly) // Panel images are from disc
             { 
                 _writer.WriteLine(headerLine);
-                
-                // Load first image
-                _inputBmp = new Bitmap(stitchedImagePath[0]);  // should be safe, as _bImageOnly == (stitchedImagePath.Length > 0)
                 int cycleId = 0; // Image already loaded.
                
-                while (_inputBmp!= null)
-                {
+                while (cycleId < stitchedImagePath.Length)
+                { 
+                    // Load first image
+                    _inputBmp = new Bitmap(stitchedImagePath[cycleId]);  // should be safe, as _bImageOnly == (stitchedImagePath.Length > 0)
+                    if(_inputBmp == null)
+                        break;
+                    
+                    if(_inputBmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                    {
+                        Output("Image " + stitchedImagePath[cycleId] + " is not a grayscale one!");
+                        Terminate(false);
+                        return;
+                    }
                     Console.WriteLine("Comparing fiducials on {0}...", stitchedImagePath[cycleId]);
 
                     // This allows images to directly be sent in instead of using CyberStitch to create them
@@ -208,25 +216,21 @@ namespace CyberStitchFidTester
                     RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer);
                     
                     // Save panel image
-                    if (_bSaveStitchedResultsImage)
+                    if (_bSaveStitchedResultsImage &&
+                        _inputBmp.Width == _featurePanel.GetNumPixelsInY() &&
+                        _inputBmp.Height == _featurePanel.GetNumPixelsInX())
                     {
                         string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
-                                             cbd.Scan0, cbd.Stride,
-                                              _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
-                                              _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
-                                              _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
+                            cbd.Scan0, cbd.Stride,
+                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                            _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
                     }
                     cbd.Unlock();
 
                     // Increment cycle and get bitmap, if available
                     cycleId++;
-
-                    // Load next image if it is available
-                    if (cycleId < stitchedImagePath.Length)
-                        _inputBmp= new Bitmap(stitchedImagePath[cycleId]);
-                    else
-                        _inputBmp= null;
                 }
             }
             else  // Panel images are from stitch
@@ -408,13 +412,11 @@ namespace CyberStitchFidTester
             return panel;
         }
 
-        private static bool LoadOffsetFiducialFile()
+        private static bool LoadFeatureFile()
         {
             if (File.Exists(_featureFile))
             {
                 double pixelSize = _dPixelSizeInMeters;
-                if (_bImageOnly && _featurePanel.GetNumPixelsInY() != _inputBmp.Width)
-                    pixelSize = _featurePanel.PanelSizeY / _inputBmp.Width;
 
                 _featurePanel = LoadPanelDescription(_featureFile, pixelSize);
 
@@ -682,10 +684,10 @@ namespace CyberStitchFidTester
 
                     if (_bSaveStitchedResultsImage)
                         _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
-                                               _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
-                                               _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
-                                               _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
-                                               _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
+                            _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
+                            _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
+                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                            _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
                     if (_cycleCount == 1)
                     {
                         _writer.WriteLine("Units: Microns");
