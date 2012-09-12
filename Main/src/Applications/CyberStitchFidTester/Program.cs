@@ -58,6 +58,8 @@ namespace CyberStitchFidTester
 
         // For stitched image as input
         private static string _stitchedImagePathPattern = "";
+        private static int _iPanelOffsetInCols = 0; // Panel's top left corner in stitched image
+        private static int _iPanelOffsetInRows = 0; 
         
         //output csv file shows the comparison results
         private static string _unitTestFolder = "";
@@ -77,8 +79,11 @@ namespace CyberStitchFidTester
         private static StreamWriter _finalCompWriter= null;
         private static int _numAcqsComplete = 0;
         private static int _cycleCount = 0;
-        private static bool _bImageOnly = false;
-        private static Bitmap _inputBmp = null;
+        private static bool _bStitchedImageOnly = false;
+
+        // Internal variable for stitched image as input
+        private static ManagedFeatureLocationCheck _fidChecker = null;
+        private static double[] _dRefOffset = new double[] {0, 0};
         
         // For output analysis
         private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
@@ -164,6 +169,10 @@ namespace CyberStitchFidTester
                     _iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
+                else if (args[i] == "-xoffset" && i < args.Length - 1)
+                    _iPanelOffsetInCols = Convert.ToInt32(args[i + 1]);
+                else if (args[i] == "-yoffset" && i < args.Length - 1)
+                    _iPanelOffsetInRows = Convert.ToInt32(args[i + 1]);
                 else if (args[i] == "-h" && i < args.Length - 1)
                 {
                     ShowHelp();
@@ -178,17 +187,34 @@ namespace CyberStitchFidTester
             // Panel images are from disc or from stitch
             string[] stitchedImagePath = ExpandFilePaths(_stitchedImagePathPattern);
             if (stitchedImagePath.Length > 0)
-                _bImageOnly = true;
+                _bStitchedImageOnly = true;
 
             // Load offset Fiducial file
             if (!LoadFeatureFile())
                 Output("Cannot load offset fiducial file");
 
+            // Load panel, _alignmentPanel default is null 
+            if (File.Exists(_alignmentPanelFile))
+                _alignmentPanel = LoadPanelDescription(_alignmentPanelFile, _dPixelSizeInMeters);
+
+            if (_bStitchedImageOnly && _alignmentPanel != null)
+            {
+                _fidChecker = new ManagedFeatureLocationCheck(_alignmentPanel);
+            }
+
+            // If no stitched image and panel information is not available
+            if(!_bStitchedImageOnly && _alignmentPanel == null)
+            {
+                Terminate(false);
+                Console.WriteLine("Could not load Panel File: " + _alignmentPanelFile);
+                return;
+            }
+  
             // Open output text file.
             _writer = new StreamWriter(_outputTextPath);
             Output("The report file: " + _outputTextPath);
 
-            if (_bImageOnly) // Panel images are from disc
+            if (_bStitchedImageOnly) // Panel images are from disc
             { 
                 _writer.WriteLine(headerLine);
                 int cycleId = 0; // Image already loaded.
@@ -196,11 +222,11 @@ namespace CyberStitchFidTester
                 while (cycleId < stitchedImagePath.Length)
                 { 
                     // Load first image
-                    _inputBmp = new Bitmap(stitchedImagePath[cycleId]);  // should be safe, as _bImageOnly == (stitchedImagePath.Length > 0)
-                    if(_inputBmp == null)
+                    Bitmap inputBmp = new Bitmap(stitchedImagePath[cycleId]);  // should be safe, as _bStitchedImageOnly == (stitchedImagePath.Length > 0)
+                    if(inputBmp == null)
                         break;
                     
-                    if(_inputBmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                    if(inputBmp.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
                     {
                         Output("Image " + stitchedImagePath[cycleId] + " is not a grayscale one!");
                         Terminate(false);
@@ -212,13 +238,21 @@ namespace CyberStitchFidTester
                     CyberBitmapData cbd = new CyberBitmapData();
 
                     // Calcaulate offsets
-                    cbd.Lock(_inputBmp);
+                    cbd.Lock(inputBmp);
+
+                    if (!PickReferenceFiducial(cbd.Scan0, cbd.Stride, _dRefOffset))
+                    {
+                        Output("Failed to find a reference fiducail in Image " + stitchedImagePath[cycleId]);
+                        Terminate(false);
+                        return;
+                    }
+
                     RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer);
                     
                     // Save panel image
                     if (_bSaveStitchedResultsImage &&
-                        _inputBmp.Width == _featurePanel.GetNumPixelsInY() &&
-                        _inputBmp.Height == _featurePanel.GetNumPixelsInX())
+                        inputBmp.Width == _featurePanel.GetNumPixelsInY() &&
+                        inputBmp.Height == _featurePanel.GetNumPixelsInX())
                     {
                         string imageFilename = "c:\\Temp\\FeatureCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
@@ -229,30 +263,19 @@ namespace CyberStitchFidTester
                     }
                     cbd.Unlock();
 
+                    // It is safe to explicit release memory
+                    inputBmp.Dispose();
+
                     // Increment cycle and get bitmap, if available
                     cycleId++;
+
+                    // Check terminal condition
+                    if (cycleId == _numberToRun)
+                        break;
                 }
             }
             else  // Panel images are from stitch
             {
-                // Load panel 
-                if (File.Exists(_alignmentPanelFile))
-                {
-                    _alignmentPanel = LoadPanelDescription(_alignmentPanelFile, _dPixelSizeInMeters);
-                    if (_alignmentPanel == null)
-                    {
-                        Terminate(false);
-                        Console.WriteLine("Could not load Panel File: " + _alignmentPanelFile);
-                        return;
-                    }
-                }
-                else
-                {
-                    Terminate(false);
-                    Console.WriteLine("The panel file does not exist..: " + _alignmentPanelFile);
-                    return;
-                }
-
                 // Initialize the SIM CoreAPI
                 if (!InitializeSimCoreAPI(_simulationFile))
                 {
@@ -299,7 +322,7 @@ namespace CyberStitchFidTester
             }
             finally
             {
-                Terminate(!_bImageOnly);           
+                Terminate(!_bStitchedImageOnly);           
             }
         }
 
@@ -843,11 +866,19 @@ namespace CyberStitchFidTester
             string sNofid = "N/A";
             //convert meters to microns
             int iUnitCoverter = 1000000;
-            // Find fiducial on the board
-            _featureChecker.CheckFeatureLocation(data, stride, dResults);
+            // Find features on the board
+            IntPtr dataPoint = new IntPtr((int)data + _iPanelOffsetInRows * stride + _iPanelOffsetInCols);
+            _featureChecker.CheckFeatureLocation(dataPoint, stride, dResults);
             //Record the processing time
             //DateTime dtEndTime = DateTime.Now;
             //TimeSpan tsRunTime = dtEndTime - _dtStartTime;
+
+            // Adjust results based on reference fiducial
+            for (int i = 0; i < iFidNums; i++)
+            {
+                dResults[i * iItems + 2] -= _dRefOffset[0];
+                dResults[i * iItems + 3] -= _dRefOffset[1];
+            }
 
             for (int i = 0; i < iFidNums; i++)
             {
@@ -889,8 +920,51 @@ namespace CyberStitchFidTester
             _allPanelFidDifference += fidDifference;
             writer.WriteLine(string.Format("Panel Process Start Time: {0}, Panel Processing end time: {1},Panel process running time: {2}" ,_dtStartTime, _dtEndTime, _tsRunTime));
            // _tsTotalRunTime += tsRunTime;
+        } 
+        
+        // Pick up reference fiducial 
+        // and calculate offest of real location-nominal one for reference fiducial
+        private static bool PickReferenceFiducial(IntPtr data, int stride, double[] dRefOffset)
+        {
+            int iFidNums = _alignmentPanel.NumberOfFiducials;
+            // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
+            int iItems = 6;
+            double[] dResults = new double[iFidNums * iItems];
+            // Find fiducials on panel
+            IntPtr dataPoint = new IntPtr((int)data + _iPanelOffsetInRows*stride + _iPanelOffsetInCols);
+            _fidChecker.CheckFeatureLocation(dataPoint, stride, dResults);
+
+            // Pick fiducial with highest confidence
+            double dMaxConfidence = -1;
+            int iIndex = -1;
+            for (int i = 0; i < iFidNums; i++)
+            {
+                // CorrScore * (1-ambig)
+                double dConfidence = dResults[i * iItems + 4] * (1 - dResults[i * iItems + 5]);
+                if (dConfidence > 0.1 && dMaxConfidence < dConfidence)
+                {
+                    dMaxConfidence = dConfidence;
+                    iIndex = i;
+                }
+            }
+
+            // Failed to find a fiducial as reference
+            if (iIndex < 0)
+                return false;
+
+            // Offset between real location and nominal one
+            dRefOffset[0] = dResults[iIndex * iItems + 2] - dResults[iIndex * iItems + 0];
+            dRefOffset[1] = dResults[iIndex * iItems + 3] - dResults[iIndex * iItems + 1];
+
+            // For debug
+            //double d0 = dRefOffset[0] * 1e6;
+            //double d1 = dRefOffset[1] * 1e6;
+
+            return (true);
         }
 
         #endregion
     }
+
+   
 }
