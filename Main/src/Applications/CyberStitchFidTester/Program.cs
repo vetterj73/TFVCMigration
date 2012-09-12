@@ -220,10 +220,10 @@ namespace CyberStitchFidTester
                         _inputBmp.Width == _featurePanel.GetNumPixelsInY() &&
                         _inputBmp.Height == _featurePanel.GetNumPixelsInX())
                     {
-                        string imageFilename = "FidCompareImage-" + cycleId + ".bmp";
+                        string imageFilename = "c:\\Temp\\FeatureCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
                             cbd.Scan0, cbd.Stride,
-                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                            cbd.Scan0, cbd.Stride,
                             _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
                             _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
                     }
@@ -683,7 +683,7 @@ namespace CyberStitchFidTester
                         iIndex2 = 0;
 
                     if (_bSaveStitchedResultsImage)
-                        _aligner.Save3ChannelImage("c:\\Temp\\FidCompareAfterCycle" + _cycleCount + ".bmp",
+                        _aligner.Save3ChannelImage("c:\\Temp\\FeatureCompareAfterCycle" + _cycleCount + ".bmp",
                             _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
                             _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
                             _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
