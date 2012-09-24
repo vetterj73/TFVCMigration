@@ -191,7 +191,11 @@ namespace CyberStitchFidTester
 
             // Load offset Fiducial file
             if (!LoadFeatureFile())
+            {
                 Output("Cannot load offset fiducial file");
+                Terminate(false);
+                return;
+            }
 
             // Load panel, _alignmentPanel default is null 
             if (File.Exists(_alignmentPanelFile))
@@ -205,14 +209,23 @@ namespace CyberStitchFidTester
             // If no stitched image and panel information is not available
             if(!_bStitchedImageOnly && _alignmentPanel == null)
             {
-                Terminate(false);
                 Console.WriteLine("Could not load Panel File: " + _alignmentPanelFile);
+                Terminate(false);
                 return;
             }
   
-            // Open output text file.
-            _writer = new StreamWriter(_outputTextPath);
-            Output("The report file: " + _outputTextPath);
+            // Open output text file
+            try
+            {
+                _writer = new StreamWriter(_outputTextPath);
+                Output("The report file: " + _outputTextPath);
+            }
+            catch(Exception e)
+            {
+                Output("Cannot open outputfile");
+                Terminate(false);
+                return;
+            }
 
             if (_bStitchedImageOnly) // Panel images are from disc
             { 
@@ -250,17 +263,41 @@ namespace CyberStitchFidTester
                     RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer);
                     
                     // Save panel image
-                    if (_bSaveStitchedResultsImage &&
-                        inputBmp.Width == _featurePanel.GetNumPixelsInY() &&
-                        inputBmp.Height == _featurePanel.GetNumPixelsInX())
+                    if (_bSaveStitchedResultsImage)
                     {
+                        // Start buffer point in image
+                        int iImStartX = _iPanelOffsetInCols + (int)(_dRefOffset[0] / _dPixelSizeInMeters);
+                        int iImStartY = _iPanelOffsetInRows + (int)(_dRefOffset[1] / _dPixelSizeInMeters);
+                        // Start buffer point in CAD
+                        int iCadStartX = 0;
+                        int iCadStartY = 0;
+                        // Adjust if image top or left edge is inside CAD
+                        if(iImStartX < 0)
+                        {
+                            iCadStartX -= iImStartX;
+                            iImStartX = 0;
+                        }
+                        if(iImStartY < 0)
+                        {
+                            iCadStartY -= iImStartY;
+                            iImStartY = 0;
+                        }                        
+                        // record image size
+                        int iImWidth = inputBmp.Width;
+                        int iImHeight = inputBmp.Height;
+                        int iCadWidth = _featurePanel.GetNumPixelsInY();
+                        int iCadHeight = _featurePanel.GetNumPixelsInX();
+                        int iRecordWidth = iImWidth-iImStartX < iCadWidth-iCadStartX ? iImWidth-iImStartX : iCadWidth-iCadStartX;
+                        int iRecordHeight = iImHeight-iImStartY < iCadHeight-iCadStartY ? iImHeight-iImStartY : iCadHeight-iCadStartX;
+                       
+                        // record debug image
                         string imageFilename = "c:\\Temp\\FeatureCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
-                            cbd.Scan0, cbd.Stride,
-                            cbd.Scan0, cbd.Stride,
-                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
-                            _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
-                    }
+                            cbd.Scan0 + iImStartY * cbd.Stride+iImStartX, cbd.Stride,
+                            cbd.Scan0 + iImStartY * cbd.Stride+iImStartX, cbd.Stride,
+                            _featurePanel.GetCADBuffer()+iCadStartY*iCadWidth+iCadStartX, iCadWidth,
+                            iRecordWidth, iRecordHeight);
+                        }
                     cbd.Unlock();
 
                     // It is safe to explicit release memory
