@@ -904,7 +904,7 @@ namespace CyberStitchFidTester
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find features on the board
-            IntPtr dataPoint = new IntPtr((int)data + _iPanelOffsetInRows * stride + _iPanelOffsetInCols);
+            IntPtr dataPoint = new IntPtr(data.ToInt64() + _iPanelOffsetInRows * stride + _iPanelOffsetInCols);
             _featureChecker.CheckFeatureLocation(dataPoint, stride, dResults);
             //Record the processing time
             //DateTime dtEndTime = DateTime.Now;
