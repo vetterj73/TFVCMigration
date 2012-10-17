@@ -97,7 +97,8 @@
       <Command>msbuild ..\..\get_dependencies.proj</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -113,11 +114,11 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>msbuild ..\..\get_dependencies.proj</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,7 +136,8 @@
       <Command>msbuild ..\..\get_dependencies.proj</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -150,11 +152,11 @@
       </AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>
-      </Command>
+      <Command>msbuild ..\..\get_dependencies.proj</Command>
     </PreBuildEvent>
     <PostBuildEvent>
-      <Command>msbuild ..\..\get_dependencies.proj</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

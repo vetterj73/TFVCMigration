@@ -5,6 +5,7 @@
 #include "MorphJob.h"
 #include "JobManager.h"
 #include "ColorImage.h"
+#include <math.h>
 
 using namespace CyberJob;
 namespace MosaicDM 

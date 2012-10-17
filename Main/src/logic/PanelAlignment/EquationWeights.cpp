@@ -1,5 +1,5 @@
 #include "EquationWeights.h"
-
+#include <math.h>
 // For singleton pattern
 EquationWeights* EquationWeights::ptr = 0;
 EquationWeights& EquationWeights::Instance()

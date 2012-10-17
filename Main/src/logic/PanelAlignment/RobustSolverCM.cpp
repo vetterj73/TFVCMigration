@@ -1422,7 +1422,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixA_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		ofstream of(fileName);
+		ofstream of(fileName.c_str());
 	
 		for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 		{ 
@@ -1440,7 +1440,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 		sprintf_s(cTemp, 100, "C:\\Temp\\VectorB_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		of.open(fileName);
+		of.open(fileName.c_str());
 		for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 		{ 
 			of << _dVectorB[k] << std::endl;
@@ -1453,7 +1453,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 			sprintf_s(cTemp, 100, "C:\\Temp\\Weights_%d.csv",iFileSaveIndex); 
 			fileName.clear();
 			fileName.assign(cTemp);
-			of.open(fileName);
+			of.open(fileName.c_str());
 			for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 			{ 
 				of << _pdWeights[k] << std::endl;
@@ -1467,7 +1467,7 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 			sprintf_s(cTemp, 100, "C:\\Temp\\Notes_%d.csv",iFileSaveIndex); 
 			fileName.clear();
 			fileName.assign(cTemp);
-			of.open(fileName);
+			of.open(fileName.c_str());
 			for(unsigned int k=0; k<_iMatrixALastRowUsed; k++)
 			{ 
 				of << _pcNotes[k] << std::endl;

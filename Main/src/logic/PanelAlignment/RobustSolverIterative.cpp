@@ -475,7 +475,7 @@ void RobustSolverIterative::SolveXOneIteration()
 		sprintf_s(cTemp, 100, "C:\\Temp\\Resid_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		ofstream of(fileName);
+		ofstream of(fileName.c_str());
 		for(unsigned int k=0; k<_iCurrentRow; k++)
 		{ 
 			of << resid[k] << std::endl;

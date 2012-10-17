@@ -130,7 +130,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixA_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		ofstream of(fileName);
+		ofstream of(fileName.c_str());
 	
 		for(unsigned int k=0; k<_iMatrixHeight; k++)
 		{ 
@@ -148,7 +148,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\VectorB_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		of.open(fileName);
+		of.open(fileName.c_str());
 		for(unsigned int k=0; k<_iMatrixHeight; k++)
 		{ 
 			of << _dVectorB[k] << std::endl;
@@ -161,7 +161,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 			sprintf_s(cTemp, 100, "C:\\Temp\\Weights_%d.csv",iFileSaveIndex); 
 			fileName.clear();
 			fileName.assign(cTemp);
-			of.open(fileName);
+			of.open(fileName.c_str());
 			for(unsigned int k=0; k<_iMatrixHeight; k++)
 			{ 
 				of << _pdWeights[k] << std::endl;
@@ -175,7 +175,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 			sprintf_s(cTemp, 100, "C:\\Temp\\Notes_%d.csv",iFileSaveIndex); 
 			fileName.clear();
 			fileName.assign(cTemp);
-			of.open(fileName);
+			of.open(fileName.c_str());
 			for(unsigned int k=0; k<_iMatrixHeight; k++)
 			{ 
 				of << _pcNotes[k] << std::endl;
@@ -287,7 +287,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixA_t_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		ofstream of(fileName);		
+		ofstream of(fileName.c_str());		
 		//of << std::scientific;
 
 		unsigned int ilines = _iMatrixHeight;
@@ -312,7 +312,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\MatrixAOrdered_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		of.open(fileName);		
+		of.open(fileName.c_str());		
 		for(unsigned int k=0; k<ilines; k++)
 		{ 
 			for(unsigned int j=0; j<_iMatrixWidth; j++)
@@ -329,7 +329,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\VectorBOrdered_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		of.open(fileName);		
+		of.open(fileName.c_str());		
 		for(unsigned int k=0; k<ilines; k++)
 		{ 
 			of << _dVectorB[k] << std::endl;
@@ -340,7 +340,7 @@ unsigned int RobustSolver::ReorderAndTranspose(bool bRemoveEmptyRows, int* piCou
 		sprintf_s(cTemp, 100, "C:\\Temp\\BlockLength_%d.csv",iFileSaveIndex); 
 		fileName.clear();
 		fileName.assign(cTemp);
-		of.open(fileName);		
+		of.open(fileName.c_str());		
 		of << _iMatrixWidth << std::endl;
 		of << ilines <<std::endl;
 		of << iMaxLength <<std::endl;
