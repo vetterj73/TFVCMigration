@@ -409,6 +409,10 @@ namespace CyberStitchTester
                     ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
                     _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
                 }
+                else
+                {
+                    _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, true, true);
+                }
 
                 // true: Skip demosaic for Bayer image
                 if (_bBayerPattern)
