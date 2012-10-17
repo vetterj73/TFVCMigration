@@ -48,6 +48,26 @@ namespace MosaicDM
 
 	}
 
+
+	/// Set nominal transform pTrans is a size 8 arrary for projecitve transform
+	void MosaicTile::SetNominalTransform(double dTrans[9])
+	{
+		ImgTransform inputTransform;
+		inputTransform.SetMatrix(dTrans);
+
+		if(_pMosaicLayer->GetMosaicSet()->IsBayerPattern() && !_pMosaicLayer->GetMosaicSet()->IsSkipDemosaic())
+			_pImage = new ColorImage(YCrCb, true); // YCrCb color, seperate channel
+			//_pImage = new ColorImage(BGR, false); // RGB color, combined channel
+		else
+			_pImage = new Image();
+		
+		_pImage->Configure(
+			_pMosaicLayer->GetMosaicSet()->GetImageWidthInPixels(), 
+			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
+			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
+			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->HasOwnBuffers(), NULL);
+	}
+
 	///
 	/// TODO 
 	/// Set camera calibration parameters

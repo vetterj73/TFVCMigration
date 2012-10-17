@@ -32,7 +32,7 @@ namespace MMosaicDM
 			}
 
 			///
-			///	Sets the parameters needed for transform.  If this function isn't called,
+			///	Sets the parameters needed for nominal transform.  If this function isn't called,
 			/// nominal values will be used.
 			///
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
@@ -43,6 +43,17 @@ namespace MMosaicDM
 					rotation,
 					centerOffsetXInMeters, centerOffsetYInMeters);
 			}
+
+			void SetNominalTransform(array<double>^ pTrans)
+			{
+				double dTrans[9];
+				for(int i=0; i<8; i++)
+					dTrans[i] = pTrans[i];
+				dTrans[8] = 1;
+
+				_pMosaicTile->SetNominalTransform(dTrans);
+			}
+
 			///
 			/// Set camera calibration parameters
 			///

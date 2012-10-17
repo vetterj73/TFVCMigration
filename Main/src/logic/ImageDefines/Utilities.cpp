@@ -1073,7 +1073,7 @@ void Smooth2d_B2L(
 	{
 		// Input column
 		int iIndex = i;
-		for(int j=0; j<iHeight; j++)
+		for(unsigned int j=0; j<iHeight; j++)
 		{
 			pcTempInLine[j] =  pcTempBuf[iIndex];
 			iIndex += iWidth;
@@ -1083,7 +1083,7 @@ void Smooth2d_B2L(
 		
 		// Output 
 		iIndex = i;
-		for(int j=0; j<iHeight; j++)
+		for(unsigned int j=0; j<iHeight; j++)
 		{
 			pcOutBuf[iIndex] =  pcTempOutLine[j];
 			iIndex += iOutSpan;

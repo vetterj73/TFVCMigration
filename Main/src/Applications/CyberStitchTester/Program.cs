@@ -59,6 +59,8 @@ namespace CyberStitchTester
         private static uint _iLayerIndex1 = 0;
         private static uint _iLayerIndex2 = 0;
 
+        private static bool _bUseCoreAPI = true;
+
         /// <summary>
         /// Use SIM to load up an image set and run it through the stitch tools...
         /// </summary>
@@ -127,6 +129,9 @@ namespace CyberStitchTester
                     _dTriggerStartOffsetInMCS2 = Convert.ToDouble(args[i + 1]);
             }
 
+            if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
+                _bUseCoreAPI = false;
+
             // Setup the panel based on panel file
             if (!LoadPanelDecription())
             {
@@ -134,11 +139,14 @@ namespace CyberStitchTester
                 return;
             }
 
-            // Initialize the SIM CoreAPI
-            if (!InitializeSimCoreAPI())
+            if (_bUseCoreAPI) 
             {
-                _logger.Kill();
-                return;
+                // Initialize the SIM CoreAPI
+                if (!InitializeSimCoreAPI())
+                {
+                    _logger.Kill();
+                    return;
+                }
             }
             
             // Set up mosaic set
@@ -337,7 +345,7 @@ namespace CyberStitchTester
         /// </summary>
         private static bool SetupMosaic()
         {
-            if (ManagedCoreAPI.NumberOfDevices() <= 0)
+            if (_bUseCoreAPI && ManagedCoreAPI.NumberOfDevices() <= 0)
             {
                 Output("No Device Defined");
                 return false;
@@ -350,7 +358,12 @@ namespace CyberStitchTester
                 _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+
+            // Fill mosaicset
+            if (_bUseCoreAPI)
+                SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+            else
+                SimMosaicTranslator.InitializeMosaicFromNominalTrans(_mosaicSet, _simulationFile, _panel.PanelSizeX);
 
             return (true);
         }
@@ -391,8 +404,11 @@ namespace CyberStitchTester
                 _mosaicSet.SetSeperateProcessStages(_bSeperateProcessStages);
 
                 // Must after InitializeSimCoreAPI() before ChangeProduction()
-                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+                if (_bUseCoreAPI)
+                {
+                    ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                    _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+                }
 
                 // true: Skip demosaic for Bayer image
                 if (_bBayerPattern)
@@ -518,22 +534,31 @@ namespace CyberStitchTester
                  //*/
 
                 Output("Begin stitch cycle...");
-                if (!AcquireSIMImages())
-                {
-                    Output("Issue with StartAcquisition");
-                    bDone = true;
+                if (_bUseCoreAPI)
+                {   // acquire image by coreAPI
+                    if (!AcquireSIMImages())
+                    {
+                        Output("Issue with StartAcquisition");
+                        break;
+                    }
                 }
                 else
-                {
-                    Output("Waiting for Images...");
-                    _mDoneEvent.WaitOne();
+                {   // Directly load image from disc
+                    string sFolder = Path.GetDirectoryName(_simulationFile);
+                    sFolder += "\\Cycle" + iCycleCount;
+                    if(!Directory.Exists(sFolder))
+                        break;
+
+                    SimMosaicTranslator.LoadAllRawImages(_mosaicSet, sFolder);
                 }
+                Output("Waiting for Images...");
+                _mDoneEvent.WaitOne();
 
                 // Verify that mosaic is filled in...
                 if (!_mosaicSet.HasAllImages())
                 {
                     Output("The mosaic does not contain all images!");
-                    bDone = true;
+                    break;
                 }
                 else
                 {

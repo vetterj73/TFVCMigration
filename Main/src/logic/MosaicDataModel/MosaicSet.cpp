@@ -241,7 +241,7 @@ namespace MosaicDM
 				deviceIndice.push_back(iIndex);
 		}
 
-		return(deviceIndice.size());
+		return((int)deviceIndice.size());
 	}
 
 	bool MosaicSet::HasAllImages()

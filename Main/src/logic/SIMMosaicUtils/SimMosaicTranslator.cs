@@ -2,6 +2,8 @@
 using MCoreAPI;
 using MMosaicDM;
 using SIMAPI;
+using System.Collections.Generic;
+using System.Drawing;
 
 namespace SIMMosaicUtils
 {
@@ -207,5 +209,171 @@ namespace SIMMosaicUtils
 
             return trigger;
         }
+
+        public static int InitializeMosaicFromNominalTrans(
+            ManagedMosaicSet set, string sFilename, 
+            double dPanelHeight)
+        {
+            // Read calibration and trig infomation
+            double dOx, dOy;
+            List<double []> transList = new List<double[]>();
+            List<double> trigList = new List<double>();
+            using (System.IO.StreamReader reader = new System.IO.StreamReader(sFilename))
+            {
+                // Read X, Y offset
+                string sLine = reader.ReadLine();
+                string [] sSeg = sLine.Split(new char[] {','});
+                if (!sSeg[0].Contains("Offset(x y)")) return (-1);
+                dOx = -Convert.ToDouble(sSeg[1]);
+                dOy = -Convert.ToDouble(sSeg[2]);
+
+                // Read transform based on camera calibration       
+                sLine = reader.ReadLine(); // Skip one line
+                while (reader.Peek() > 0)
+                {
+                    // Validation check 
+                    sLine = reader.ReadLine();
+                    sSeg = sLine.Split(new char[] { ',' });
+                    if (!sSeg[0].Contains("Camera"))
+                        break;
+
+                    // Read a transform
+                    double [] trans = new double[8];
+                    for(int i =0; i<8; i++)
+                        trans[i] = Convert.ToDouble(sSeg[i+1]);
+                    transList.Add(trans);
+                }
+
+                // Read trigger list
+                    // first one
+                if (!sSeg[0].Contains("Trig"))
+                    return (-2);
+                double dValue = Convert.ToDouble(sSeg[1]);
+                trigList.Add(dValue);
+
+                while(reader.Peek() > -1)
+                {
+                     // Validation check 
+                    sLine = reader.ReadLine();
+                    sSeg = sLine.Split(new char[] { ',' });
+                    if (!sSeg[0].Contains("Trig"))
+                        break;
+
+                    dValue = Convert.ToDouble(sSeg[1]);
+                    trigList.Add(dValue);
+                }
+            }
+
+            // Add a mosaic layer
+            uint iNumCam = (uint)transList.Count;
+            uint iNumTrig = (uint)trigList.Count + 1;
+
+            bool bFiducialAllowNegativeMatch = false; // Bright field not allow negavie match
+            bool bAlignWithCAD = false;
+            bool bAlignWithFiducial = true;
+            bool bFiducialBrighterThanBackground = true;
+            uint deviceIndex = 0;
+            ManagedMosaicLayer layer = set.AddLayer(iNumCam, iNumTrig, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+
+            // Set nominal transforms
+            uint iImageRows = set.GetImageLengthInPixels();
+            double[] leftM = new double[]{ 
+                0, -1, dPanelHeight-dOy, 
+                1, 0, dOx,
+                0, 0};
+
+            double[] rightM = new double[]{
+                0, 1, 0,
+                -1, 0, iImageRows-1,
+                0, 0, 1};
+
+            double[] tempM = new double[8];
+            double[] camM = new double[8];
+            double[] fovM = new double[8];
+
+            for (uint iCam = 0; iCam < iNumCam; iCam++)
+            {
+                // Calculate camera transform for first trigger
+                MultiProjective2D(leftM, transList[(int)iCam], tempM);
+                MultiProjective2D(tempM, rightM, camM);
+                for (int i = 0; i < 8; i++)
+                    fovM[i] = camM[i];
+
+                for (uint iTrig = 0; iTrig < iNumTrig; iTrig++)
+                {
+                    // Set transform for each trigger
+                    if (iTrig > 0)
+                        fovM[2] -= trigList[(int)iTrig - 1]; // This calcualtion is not very accurate
+                    ManagedMosaicTile mmt = layer.GetTile(iTrig, iCam);
+                    mmt.SetNominalTransform(fovM);
+                }
+            }
+
+            // Set correlation flags
+            SetDefaultCorrelationFlags(set, false);
+
+            return (1);
+        }
+
+        public static bool LoadAllRawImages(ManagedMosaicSet set, string sFolder)
+        {
+            // Validation check
+            if (set.GetNumMosaicLayers() != 1)
+                return (false);
+
+            ManagedMosaicLayer layer = set.GetLayer(0);
+            uint iTrigNum = (uint)layer.GetNumberOfTriggers();
+            uint iCamNum = (uint)layer.GetNumberOfCameras();
+            for (uint iTrig = 0; iTrig < iTrigNum; iTrig++)
+            {
+                for (uint iCam = 0; iCam < iCamNum; iCam++)
+                {
+                    string sFile = sFolder + "\\Cam" + iCam + "_Trig" + iTrig +".bmp";
+                    // Load image  
+                    Bitmap fov = new Bitmap(sFile);
+                    if (fov.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed ||
+                        fov.Width != set.GetImageWidthInPixels() ||
+                        fov.Height != set.GetImageLengthInPixels())
+                        return false;
+
+                    // Add image to mosaic set
+                    System.Drawing.Imaging.BitmapData bmd = fov.LockBits(
+                        new Rectangle(0, 0, fov.Width, fov.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, fov.PixelFormat);
+
+                    set.AddRawImage(bmd.Scan0, 0, iCam, iTrig);
+                    
+                    fov.UnlockBits(bmd);
+
+                    // Explicitly release bmp memory (may have memory leakage if doesn't do so)
+                    fov.Dispose();
+                }
+            }
+
+            return (true);
+        }
+
+        private static void MultiProjective2D(double [] leftM, double [] rightM, double [] outM)
+        {
+            outM[0] = leftM[0]*rightM[0]+leftM[1]*rightM[3]+leftM[2]*rightM[6];
+	        outM[1] = leftM[0]*rightM[1]+leftM[1]*rightM[4]+leftM[2]*rightM[7];
+	        outM[2] = leftM[0]*rightM[2]+leftM[1]*rightM[5]+leftM[2]*1;
+											 
+	        outM[3] = leftM[3]*rightM[0]+leftM[4]*rightM[3]+leftM[5]*rightM[6];
+	        outM[4] = leftM[3]*rightM[1]+leftM[4]*rightM[4]+leftM[5]*rightM[7];
+	        outM[5] = leftM[3]*rightM[2]+leftM[4]*rightM[5]+leftM[5]*1;
+											 
+	        outM[6] = leftM[6]*rightM[0]+leftM[7]*rightM[3]+1*rightM[6];
+	        outM[7] = leftM[6]*rightM[1]+leftM[7]*rightM[4]+1*rightM[7];
+	        double dScale = leftM[6]*rightM[2]+leftM[7]*rightM[5]+1*1;
+
+	        if(dScale<0.01 && dScale>-0.01)
+	        {
+		        dScale = 0.01;
+	        }
+
+	        for(int i=0; i<8; i++)
+		        outM[i] = outM[i]/dScale;
+        }
+        
     }
 }

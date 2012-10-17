@@ -57,11 +57,14 @@ namespace MosaicDM
 			void Initialize(MosaicLayer* pMosaicLayer, double centerOffsetX, double centerOffsetY);	
 
 			///
-			///	Sets the parameters needed for transform.  If this function isn't called,
+			///	Sets the parameters needed for nominal transform.  If this function isn't called,
 			/// nominal values will be used.
 			///
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
 				double rotation, double centerOffsetXInMeters, double centerOffsetYInMeters);
+			
+			/// Set nominal transform pTrans is a size 8 arrary for projecitve transform
+			void SetNominalTransform(double dTrans[9]);
 
 			///
 			/// Set camera calibration parameters
