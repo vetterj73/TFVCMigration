@@ -73,7 +73,6 @@ namespace CyberStitchFidTester
         private static CPanel _featurePanel = null;
         private static ManagedFeatureLocationCheck _featureChecker = null;
         private static LoggingThread _logger = new LoggingThread(null);
-        private readonly static ManualResetEvent _mCollectedEvent = new ManualResetEvent(false);
         private readonly static ManualResetEvent _mAlignedEvent = new ManualResetEvent(false);
         private static StreamWriter _writer = null;
         private static StreamWriter _finalCompWriter= null;
@@ -107,6 +106,8 @@ namespace CyberStitchFidTester
         private static double _tsRunTime = 0; 
         private static double _tsTotalRunTime = 0;
         private static uint _numThreads = 8;
+
+        private static bool _bUseCoreAPI = true;
        
         /// <summary>
         /// This works similar to CyberStitchTester.  The differences:
@@ -179,6 +180,9 @@ namespace CyberStitchFidTester
                     return;
                 }
             }
+
+            if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
+                _bUseCoreAPI = false;
 
             // Start the logger
             _logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
@@ -313,12 +317,15 @@ namespace CyberStitchFidTester
             }
             else  // Panel images are from stitch
             {
-                // Initialize the SIM CoreAPI
-                if (!InitializeSimCoreAPI(_simulationFile))
+                if (_bUseCoreAPI)
                 {
-                    Terminate(false);
-                    Console.WriteLine("Could not initialize Core API");
-                    return;
+                    // Initialize the SIM CoreAPI
+                    if (!InitializeSimCoreAPI(_simulationFile))
+                    {
+                        Terminate(false);
+                        Console.WriteLine("Could not initialize Core API");
+                        return;
+                    }
                 }
 
                 // SetUp aligner
@@ -596,8 +603,6 @@ namespace CyberStitchFidTester
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
                     return;
             }
-            if (ManagedCoreAPI.NumberOfDevices() == _numAcqsComplete)
-                _mCollectedEvent.Set();
         }
 
         private static void OnFrameDone(ManagedSIMFrame pframe)
@@ -624,10 +629,13 @@ namespace CyberStitchFidTester
         /// </summary>
         private static bool SetupMosaicSet()
         {
-            if (ManagedCoreAPI.NumberOfDevices() <= 0)
+            if (_bUseCoreAPI)
             {
-                Output("No Device Defined");
-                return false;
+                if (ManagedCoreAPI.NumberOfDevices() <= 0)
+                {
+                    Output("No Device Defined");
+                    return false;
+                }
             }
 
             bool bOwnBuffer = true;
@@ -639,7 +647,11 @@ namespace CyberStitchFidTester
                 _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
-            SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+
+            if (_bUseCoreAPI)
+                SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
+            else
+                SimMosaicTranslator.InitializeMosaicFromNominalTrans(_mosaicSet, _simulationFile, _alignmentPanel.PanelSizeX);
 
             return true;
         }
@@ -657,6 +669,9 @@ namespace CyberStitchFidTester
             _aligner.SetAllLogTypes(true);
             _aligner.OnAlignmentDone += OnAlignmentDone;
             _aligner.UseProjectiveTransform(_bUseProjective);
+
+            //_aligner.LogOverlaps(true);
+            //_aligner.LogFiducialOverlaps(true);
 
             if (_bUseTwoPassStitch)
                 _aligner.SetUseTwoPassStitch(true);
@@ -682,8 +697,13 @@ namespace CyberStitchFidTester
                 _aligner.SetSkipDemosaic(_bSkipDemosaic);
 
             // Must after InitializeSimCoreAPI() before ChangeProduction()
-            ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
-            _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+            if (_bUseCoreAPI)
+            {
+                ManagedSIMDevice d = ManagedCoreAPI.GetDevice(0);
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, !d.ConveyorRtoL, !d.FixedRearRail);
+            }
+            else
+                _aligner.SetPanelEdgeDetection(_bDetectPanelEdge, _iLayerIndex4Edge, true, true);
 
             // Add trigger to trigger overlaps for same layer
             //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
@@ -698,6 +718,11 @@ namespace CyberStitchFidTester
         #endregion
 
         #region stitch
+        private static void OnAlignmentDone(bool status)
+        {
+            Output("OnAlignmentDone Called!");
+            _mAlignedEvent.Set();
+        }
 
         private static void RunStitchAndRecordResults(int numberToRun)
         {
@@ -707,62 +732,73 @@ namespace CyberStitchFidTester
                 _numAcqsComplete = 0;
                 _aligner.ResetForNextPanel();
                 _mosaicSet.ClearAllImages();
-                if (!StartSimAcquistion())
+
+                if (_bUseCoreAPI)
                 {
-                    Output("Issue with StartAcquisition");
-                    bDone = true;
+                    if (!StartSimAcquistion())
+                    {
+                        Output("Issue with StartAcquisition");
+                        break;
+                    }
                 }
                 else
                 {
-                    Output("Waiting for Images...");
-                    _mCollectedEvent.WaitOne();
-                }
+                    // Directly load image from disc
+                    string sFolder = Path.GetDirectoryName(_simulationFile);
+                    sFolder += "\\Cycle" + _cycleCount;
+                    if(!Directory.Exists(sFolder))
+                        break;
+
+                    SimMosaicTranslator.LoadAllRawImages(_mosaicSet, sFolder);
+                }         
+                Output("Waiting for Images...");
+                _mAlignedEvent.WaitOne();
+
+                // Release raw buffer, Raw buffer have to hold until demosaic/memoery copy is done
+                if (!_bUseCoreAPI)
+                    SimMosaicTranslator.ReleaseRawBufs(_mosaicSet);
 
                 _dtStartTime = DateTime.Now;
 
                 // Verify that mosaic is filled in...
-                if (!_mosaicSet.HasAllImages())
-                    Output("The mosaic does not contain all images!");
-                else
+ 
+                _cycleCount++;
+                _mAlignedEvent.WaitOne();
+                _tsRunTime = _aligner.GetAlignmentTime();
+                _tsTotalRunTime += _tsRunTime;
+
+                _dtEndTime = DateTime.Now;
+
+                ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
+                Output("Panel Skew is: " + set.dPanelSkew);
+                Output("Panel dPanelXscale is: " + set.dPanelXscale);
+                Output("Panel dPanelYscale is: " + set.dPanelYscale);
+
+                uint iIndex1 = 0;
+                uint iIndex2 = 1;
+                if (_mosaicSet.GetNumMosaicLayers() == 1)
+                    iIndex2 = 0;
+
+                if (_bSaveStitchedResultsImage)
+                    _aligner.Save3ChannelImage("c:\\Temp\\FeatureCompareAfterCycle" + _cycleCount + ".bmp",
+                        _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
+                        _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
+                        _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                        _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
+                if (_cycleCount == 1)
                 {
-                    _cycleCount++;
-                    _mAlignedEvent.WaitOne();
-                    _tsRunTime = _aligner.GetAlignmentTime();
-                    _tsTotalRunTime += _tsRunTime;
-
-                    _dtEndTime = DateTime.Now;
-
-                    ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
-                    Output("Panel Skew is: " + set.dPanelSkew);
-                    Output("Panel dPanelXscale is: " + set.dPanelXscale);
-                    Output("Panel dPanelYscale is: " + set.dPanelYscale);
-
-                    uint iIndex1 = 0;
-                    uint iIndex2 = 1;
-                    if (_mosaicSet.GetNumMosaicLayers() == 1)
-                        iIndex2 = 0;
-
-                    if (_bSaveStitchedResultsImage)
-                        _aligner.Save3ChannelImage("c:\\Temp\\FeatureCompareAfterCycle" + _cycleCount + ".bmp",
-                            _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
-                            _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
-                            _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
-                            _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
-                    if (_cycleCount == 1)
-                    {
-                        _writer.WriteLine("Units: Microns");
-                        //outline is the output file column names
-                        _writer.WriteLine(headerLine);
-                    }
-
-                    if (_featurePanel != null)
-                        RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _featurePanel.GetNumPixelsInY(), _writer);
+                    _writer.WriteLine("Units: Microns");
+                    //outline is the output file column names
+                    _writer.WriteLine(headerLine);
                 }
+
+                if (_featurePanel != null)
+                    RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _featurePanel.GetNumPixelsInY(), _writer);
+
                 if (_cycleCount >= numberToRun)
                     bDone = true;
                 else
                 {
-                    _mCollectedEvent.Reset();
                     _mAlignedEvent.Reset();
                 }
             }
@@ -787,13 +823,6 @@ namespace CyberStitchFidTester
             }
             return true;
         }
-
-        private static void OnAlignmentDone(bool status)
-        {
-            Output("OnAlignmentDone Called!");
-            _mAlignedEvent.Set();
-        }
-
         #endregion
 
         #region offset calculation and result record

@@ -4,6 +4,7 @@ using MMosaicDM;
 using SIMAPI;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 
 namespace SIMMosaicUtils
 {
@@ -315,6 +316,10 @@ namespace SIMMosaicUtils
             return (1);
         }
 
+        // Raw buffers need to be hold until the demosaic or copy is done (maybe in multi-thread)
+        // LoadAllRawImages() and ReleaseRawBufs() need to be called in pair 
+        private static Bitmap[,] fovs = null;
+        private static System.Drawing.Imaging.BitmapData[,] bufs = null; 
         public static bool LoadAllRawImages(ManagedMosaicSet set, string sFolder)
         {
             // Validation check
@@ -324,32 +329,63 @@ namespace SIMMosaicUtils
             ManagedMosaicLayer layer = set.GetLayer(0);
             uint iTrigNum = (uint)layer.GetNumberOfTriggers();
             uint iCamNum = (uint)layer.GetNumberOfCameras();
+
+            if (fovs == null)
+                fovs = new Bitmap[iTrigNum, iCamNum];
+            if (bufs == null)
+                bufs = new System.Drawing.Imaging.BitmapData[iTrigNum, iCamNum];
+
             for (uint iTrig = 0; iTrig < iTrigNum; iTrig++)
             {
                 for (uint iCam = 0; iCam < iCamNum; iCam++)
                 {
-                    string sFile = sFolder + "\\Cam" + iCam + "_Trig" + iTrig +".bmp";
+                    string sFile = sFolder + "\\Cam" + iCam + "_Trig" + iTrig + ".bmp";
+                    if (!File.Exists(sFile))
+                        return (false);
+
                     // Load image  
-                    Bitmap fov = new Bitmap(sFile);
+                    fovs[iTrig, iCam] = new Bitmap(sFile);
+                    Bitmap fov = fovs[iTrig, iCam];
                     if (fov.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed ||
                         fov.Width != set.GetImageWidthInPixels() ||
                         fov.Height != set.GetImageLengthInPixels())
                         return false;
 
                     // Add image to mosaic set
-                    System.Drawing.Imaging.BitmapData bmd = fov.LockBits(
+                    System.Drawing.Imaging.BitmapData buf = fov.LockBits(
                         new Rectangle(0, 0, fov.Width, fov.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, fov.PixelFormat);
+                    bufs[iTrig, iCam] = buf;
 
-                    set.AddRawImage(bmd.Scan0, 0, iCam, iTrig);
-                    
-                    fov.UnlockBits(bmd);
+                    set.AddRawImage(buf.Scan0, 0, iCam, iTrig);
+                }
+            }
+
+            return (true);
+        }
+
+        public static void ReleaseRawBufs(ManagedMosaicSet set)
+        {
+            // Validation check
+            if (set.GetNumMosaicLayers() != 1 || fovs == null || bufs == null)
+                return;
+
+            ManagedMosaicLayer layer = set.GetLayer(0);
+            uint iTrigNum = (uint)layer.GetNumberOfTriggers();
+            uint iCamNum = (uint)layer.GetNumberOfCameras();
+            for (uint iTrig = 0; iTrig < iTrigNum; iTrig++)
+            {
+                for (uint iCam = 0; iCam < iCamNum; iCam++)
+                {
+                    Bitmap fov = fovs[iTrig, iCam];
+
+                    System.Drawing.Imaging.BitmapData buf = bufs[iTrig, iCam];
+
+                    fov.UnlockBits(buf);
 
                     // Explicitly release bmp memory (may have memory leakage if doesn't do so)
                     fov.Dispose();
                 }
             }
-
-            return (true);
         }
 
         private static void MultiProjective2D(double [] leftM, double [] rightM, double [] outM)

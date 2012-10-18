@@ -558,79 +558,76 @@ namespace CyberStitchTester
                 Output("Waiting for Images...");
                 _mDoneEvent.WaitOne();
 
+                // Release raw buffer, Raw buffer have to hold until demosaic/memoery copy is done
+                if (!_bUseCoreAPI)
+                    SimMosaicTranslator.ReleaseRawBufs(_mosaicSet);
+
                 // Verify that mosaic is filled in...
-                if (!_mosaicSet.HasAllImages())
+
+                Output("End stitch cycle");
+
+                iCycleCount++;
+                // After a panel is stitched and before aligner is reset for next panel
+                ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
+
+                Output("Begin morph");
+
+                if (_bBayerPattern) // for bayer pattern
                 {
-                    Output("The mosaic does not contain all images!");
-                    break;
+                    /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1)) == false)
+                        {
+                            Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1));
+                        }
+
+                        if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
+                            Output("Could not save mosaic images");
+                        */
                 }
-                else
+
+                _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + iCycleCount + ".bmp",
+                    _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
+                    _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
+                    _panel.GetCADBuffer(), //heightBuf,
+                    _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+
+                if (_bUseDualIllumination)
                 {
-                    Output("End stitch cycle");
-
-                    iCycleCount++;
-                    // After a panel is stitched and before aligner is reset for next panel
-                    ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
-
-                    Output("Begin morph");
-
-                    if (_bBayerPattern) // for bayer pattern
-                    {
-                        /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1)) == false)
-                         {
-                             Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1));
-                         }
-
-                         if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
-                             Output("Could not save mosaic images");
-                         */
-                    }
-
-                    _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + iCycleCount + ".bmp",
-                        _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
-                        _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
+                    //*
+                    _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + iCycleCount + ".bmp",
+                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
                         _panel.GetCADBuffer(), //heightBuf,
                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                    if (_bUseDualIllumination)
-                    {
-                        //*
-                        _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + iCycleCount + ".bmp",
-                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
-                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
-                         _panel.GetCADBuffer(), //heightBuf,
-                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + iCycleCount + ".bmp",
+                        _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
-                        _aligner.Save3ChannelImage("c:\\temp\\Brightcycle" + iCycleCount + ".bmp",
-                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
-                         _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
-                         _panel.GetCADBuffer(), //heightBuf,
-                         _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-
-                        _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + iCycleCount + ".bmp",
-                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
-                         _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
-                         _panel.GetCADBuffer(), //heightBuf,
-                          _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
-                        //*/
-                    }
-
-                    // Get fiducial information
-                    ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
-
-                    // Get the stitch grid 
-                    // Must after get stitched image of the same layer
-                    int[] pCols = new int[_mosaicSet.GetLayer(_iLayerIndex1).GetNumberOfCameras() + 1];
-                    int[] pRows = new int[_mosaicSet.GetLayer(_iLayerIndex1).GetNumberOfTriggers() + 1];
-                    _mosaicSet.GetLayer(_iLayerIndex1).GetStitchGrid(pCols, pRows);
-
-                    // For image patch test
-                    //IntPtr pPoint = _mosaicSet.GetLayer(_iLayerIndex1).GetStitchedBuffer();
-                    //ManagedFOVPreferSelected select = new ManagedFOVPreferSelected();
-                    //_mosaicSet.GetLayer(_iLayerIndex1).GetImagePatch(pPoint, 100, 0, 0, 100, 100, select);
-
-                    Output("End morph");
+                    _aligner.Save3ChannelImage("c:\\temp\\Darkcycle" + iCycleCount + ".bmp",
+                        _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),
+                        _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
+                        _panel.GetCADBuffer(), //heightBuf,
+                        _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
+                    //*/
                 }
+
+                // Get fiducial information
+                ManagedPanelFidResultsSet set = _aligner.GetFiducialResultsSet();
+
+                // Get the stitch grid 
+                // Must after get stitched image of the same layer
+                int[] pCols = new int[_mosaicSet.GetLayer(_iLayerIndex1).GetNumberOfCameras() + 1];
+                int[] pRows = new int[_mosaicSet.GetLayer(_iLayerIndex1).GetNumberOfTriggers() + 1];
+                _mosaicSet.GetLayer(_iLayerIndex1).GetStitchGrid(pCols, pRows);
+
+                // For image patch test
+                //IntPtr pPoint = _mosaicSet.GetLayer(_iLayerIndex1).GetStitchedBuffer();
+                //ManagedFOVPreferSelected select = new ManagedFOVPreferSelected();
+                //_mosaicSet.GetLayer(_iLayerIndex1).GetImagePatch(pPoint, 100, 0, 0, 100, 100, select);
+
+                Output("End morph");
 
                 // should we do another cycle?
                 if (!_bContinuous && iCycleCount >= _numberToRun)
