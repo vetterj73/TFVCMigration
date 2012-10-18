@@ -226,7 +226,7 @@ namespace CyberStitchFidTester
             }
             catch(Exception e)
             {
-                Output("Cannot open outputfile");
+                Output("Cannot open outputfile"+e.Message);
                 Terminate(false);
                 return;
             }

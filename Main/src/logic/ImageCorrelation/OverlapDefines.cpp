@@ -161,37 +161,41 @@ bool Overlap::CalCoarseCorrPair()
 
 	// Calculate Roi1 and Roi2
 		// Rows and colums
-	unsigned int iRows, iCols;
+	int iRows, iCols;
 	if(_pImg1->PixelSizeX() > _pImg2->PixelSizeX())
-		iRows = (unsigned int)((overlapWorld.xMax - overlapWorld.xMin)/_pImg1->PixelSizeX());
+		iRows = (int)((overlapWorld.xMax - overlapWorld.xMin)/_pImg1->PixelSizeX());
 	else
-		iRows = (unsigned int)((overlapWorld.xMax - overlapWorld.xMin)/_pImg2->PixelSizeX());
+		iRows = (int)((overlapWorld.xMax - overlapWorld.xMin)/_pImg2->PixelSizeX());
 
 	if(_pImg1->PixelSizeY() > _pImg2->PixelSizeY())
-		iCols = (unsigned int)((overlapWorld.yMax - overlapWorld.yMin)/_pImg1->PixelSizeY());
+		iCols = (int)((overlapWorld.yMax - overlapWorld.yMin)/_pImg1->PixelSizeY());
 	else
-		iCols = (unsigned int)((overlapWorld.yMax - overlapWorld.yMin)/_pImg2->PixelSizeY());
+		iCols = (int)((overlapWorld.yMax - overlapWorld.yMin)/_pImg2->PixelSizeY());
+
+	// Reduce two pixels (one pixel in all four directions) to avoid rounding error
+	iRows -= 2;
+	iCols -= 2;
 
 	UIRect roi1, roi2;
 	double dFirstRow1, dFirstCol1, dFirstRow2, dFirstCol2;
 	_pImg1->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow1, &dFirstCol1);
 	_pImg2->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow2, &dFirstCol2);
 
-	if(dFirstRow1+0.5<0 || dFirstRow2+0.5<0 || dFirstCol1+0.5<0 || dFirstCol2+0.5<0)
+	if(dFirstRow1+1.5<0 || dFirstRow2+1.5<0 || dFirstCol1+1.5<0 || dFirstCol2+1.5<0)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 		return(false);
 	}
 		
-		// Roi1 and Roi2
-	roi1.FirstRow = (unsigned int)(dFirstRow1+0.5);
+	// Roi1 and Roi2
+	roi1.FirstRow = (unsigned int)(dFirstRow1+1.5);
 	roi1.LastRow = roi1.FirstRow+iRows-1;
-	roi1.FirstColumn = (unsigned int)(dFirstCol1+0.5);
+	roi1.FirstColumn = (unsigned int)(dFirstCol1+1.5);
 	roi1.LastColumn = roi1.FirstColumn+iCols-1;
 
-	roi2.FirstRow = (unsigned int)dFirstRow2;
+	roi2.FirstRow = (unsigned int)(dFirstRow2+1.5);
 	roi2.LastRow = roi2.FirstRow+iRows-1;
-	roi2.FirstColumn = (unsigned int)dFirstCol2;
+	roi2.FirstColumn = (unsigned int)(dFirstCol2+1.5);
 	roi2.LastColumn = roi2.FirstColumn+iCols-1;
 
 		// Validation check 
