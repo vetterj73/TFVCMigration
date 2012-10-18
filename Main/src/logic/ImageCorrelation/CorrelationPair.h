@@ -115,7 +115,7 @@ public:
 		unsigned int iBlockRowSearchExpansion,
 		list<CorrelationPair>* pOutPairList) const;
 
-	void NorminalCenterInWorld(double* fdx, double* fdy);
+	void NominalCenterInWorld(double* fdx, double* fdy);
 
 	int GetIndex() {return _iIndex;};
 	void SetIndex(int iValue) {_iIndex = iValue;}; 

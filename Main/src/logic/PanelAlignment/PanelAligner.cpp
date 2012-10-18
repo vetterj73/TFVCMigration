@@ -321,12 +321,12 @@ void PanelAligner::CalTransformsWithMask()
 	// Fill the solver
 	bool bUseFiducials = true; 
 	bool bPinPanelWithCalibration = false;
-	bool bUseNorminalTransform = false;
+	bool bUseNominalTransform = false;
 	AddOverlapResults2Solver(
 		_pSolver,
 		bUseFiducials, 
 		bPinPanelWithCalibration,
-		bUseNorminalTransform);
+		bUseNominalTransform);
 
 	// Solve transforms with panel leading edge but without fiducial information
 	_pSolver->SolveXAlgH();
@@ -544,7 +544,7 @@ void PanelAligner::AddOverlapResults2Solver(
 	RobustSolver* solver, 
 	bool bUseFiducials, 
 	bool bPinPanelWithCalibration,
-	bool bUseNorminalTransform)
+	bool bUseNominalTransform)
 {
 	int iNumLayer = _pSet->GetNumMosaicLayers();
 	for(int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
@@ -565,7 +565,7 @@ void PanelAligner::AddOverlapResults2Solver(
 					bPinFov = true;
 				}
 
-				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov, bUseNorminalTransform);
+				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov, bUseNominalTransform);
 
 				// Add Cad and Fov overlap results
 				CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);

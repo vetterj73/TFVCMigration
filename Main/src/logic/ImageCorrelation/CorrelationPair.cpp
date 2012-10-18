@@ -830,7 +830,7 @@ bool CorrelationPair::AdjustRoiBaseOnResult(CorrelationPair* pPair) const
 	return(true);
 }
 
-void CorrelationPair::NorminalCenterInWorld(double* pdx, double* pdy)
+void CorrelationPair::NominalCenterInWorld(double* pdx, double* pdy)
 {
 	_pImg1->ImageToWorld(_roi1.RowCenter(), _roi1.ColumnCenter(), pdx, pdy); 
 }

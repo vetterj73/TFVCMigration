@@ -56,7 +56,7 @@ public:
 	ImgTransform		GetTransform() const {return _thisToWorld;};
 	void				SetTransform(const ImgTransform t) {_thisToWorld = t;};
 	ImgTransform		GetNominalTransform() const {return _nominalTrans;};
-	void				SetNorminalTransform(const ImgTransform t) {_nominalTrans = t;};
+	void				SetNominalTransform(const ImgTransform t) {_nominalTrans = t;};
 	TransformCamModel	GetTransformCamModel() {return _tCamModelToWorld;};
 	void				SetTransformCamModel(const TransformCamModel t) {_tCamModelToWorld = t;};
 	TransformCamModel	GetTransformCamCalibration() {return _tCamCalibration;};

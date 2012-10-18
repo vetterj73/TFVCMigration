@@ -100,7 +100,7 @@ protected:
 		RobustSolver* solver, 
 		bool bUseFiducials, 
 		bool bPinPanelWithCalibration=false,
-		bool bUseNorminalTransform=true);
+		bool bUseNominalTransform=true);
 	bool AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex = -1);
 	bool UseEdgeInfomation();
 	void AddCurPanelFidOverlapResults(RobustSolver* solver);

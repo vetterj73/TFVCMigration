@@ -57,7 +57,7 @@ public:
 		unsigned int iCamIndex, 
 		unsigned int iTrigIndex, 
 		bool bPinFov=false, 
-		bool bUseNorminalTransform=true)=0;
+		bool bUseNominalTransform=true)=0;
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope, bool bSlopeOnly=false)=0;

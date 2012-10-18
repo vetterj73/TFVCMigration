@@ -1161,7 +1161,7 @@ bool OverlapManager::DoAlignment4AllFiducial(bool bForCurPanel, bool bHasEdgeFid
 		return(false);
 	}
 
-	if(!bForCurPanel) // Use norminal fiducial overlap
+	if(!bForCurPanel) // Use Nominal fiducial overlap
 	{
 		int iNumLayer = _pMosaicSet->GetNumMosaicLayers();
 		for(int iLayer=0; iLayer<iNumLayer; iLayer++)
@@ -1651,15 +1651,15 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	// Collect data for consistent check
 	double* pdRowOffsets = new double[iNum];
 	double* pdColOffsets = new double[iNum];
-	double* pdNorminalX = new double[iNum];
-	double* pdNorminalY = new double[iNum];
+	double* pdNominalX = new double[iNum];
+	double* pdNominalY = new double[iNum];
 	int iCount = 0;
 	double dx, dy;
 	for(list<FovFovOverlap*>::iterator j = validList.begin(); j != validList.end(); j++)
 	{
-		(*j)->GetCoarsePair()->NorminalCenterInWorld(&dx, &dy);
-		pdNorminalX[iCount] = dx;
-		pdNorminalY[iCount] = dy;
+		(*j)->GetCoarsePair()->NominalCenterInWorld(&dx, &dy);
+		pdNominalX[iCount] = dx;
+		pdNominalY[iCount] = dy;
 		pdRowOffsets[iCount] = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
 		pdColOffsets[iCount] = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
 		iCount++;
@@ -1674,7 +1674,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
-	bool bFlag = CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
+	bool bFlag = CalInconsistBasedOnLine(pdNominalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	if(bFlag)
 	{
 		iCount = 0;
@@ -1700,7 +1700,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
-	bFlag = CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
+	bFlag = CalInconsistBasedOnLine(pdNominalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	if(bFlag)
 	{
 		iCount = 0;
@@ -1730,8 +1730,8 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	delete [] pRowOffsetFromLine;
 	delete [] pdRowOffsets;
 	delete [] pdColOffsets;
-	delete [] pdNorminalX;
-	delete [] pdNorminalY;
+	delete [] pdNominalX;
+	delete [] pdNominalY;
 
 	return(iReturnFlag);
 }
@@ -1745,7 +1745,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 // Return number of fine alignment failed in check
 int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool bTrustCoarse)
 {
-	list<double> rowOffsetList, colOffsetList, norminalXList, norminalYList;
+	list<double> rowOffsetList, colOffsetList, nominalXList, nominalYList;
 	list<CorrelationPair*> pairList;
 
 	// Collect data for consistent check
@@ -1774,15 +1774,15 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 
 			pairList.push_back(&(*k));
 
-			k->NorminalCenterInWorld(&dx, &dy);
-			norminalXList.push_back(dx);
-			norminalYList.push_back(dy);
+			k->NominalCenterInWorld(&dx, &dy);
+			nominalXList.push_back(dx);
+			nominalYList.push_back(dy);
 			rowOffsetList.push_back(k->GetCorrelationResult().RowOffset + dCoarseRowOffset);
 			colOffsetList.push_back(k->GetCorrelationResult().ColOffset + dCoarseColOffset);
 		}
 	}
 
-	int iNum = (int)norminalXList.size();
+	int iNum = (int)nominalXList.size();
 	
 	// Not enough number for test 
 	if(iNum<=2) return(0);
@@ -1791,19 +1791,19 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 
 	double* pdRowOffsets = new double[iNum];
 	double* pdColOffsets = new double[iNum];
-	double* pdNorminalX = new double[iNum];
-	double* pdNorminalY = new double[iNum];
+	double* pdNominalX = new double[iNum];
+	double* pdNominalY = new double[iNum];
 
 	list<double>::iterator i1 = rowOffsetList.begin();
 	list<double>::iterator i2 = colOffsetList.begin();
-	list<double>::iterator i3 = norminalXList.begin();
-	list<double>::iterator i4 = norminalYList.begin();
+	list<double>::iterator i3 = nominalXList.begin();
+	list<double>::iterator i4 = nominalYList.begin();
 	for(int i=0; i<iNum; i++)
 	{
 		pdRowOffsets[i] = *i1;
 		pdColOffsets[i] = *i2;
-		pdNorminalX[i] = *i3;
-		pdNorminalY[i] = *i4;
+		pdNominalX[i] = *i3;
+		pdNominalY[i] = *i4;
 
 		i1++;
 		i2++;
@@ -1820,7 +1820,7 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
-	CalInconsistBasedOnLine(pdNorminalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
+	CalInconsistBasedOnLine(pdNominalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
 	{
@@ -1847,7 +1847,7 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
-	CalInconsistBasedOnLine(pdNorminalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
+	CalInconsistBasedOnLine(pdNominalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
 	iCount = 0;
 	for(list<CorrelationPair*>::iterator j =  pairList.begin(); j != pairList.end(); j++)
 	{
@@ -1878,8 +1878,8 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 	delete [] pRowOffsetFromLine;
 	delete [] pdRowOffsets;
 	delete [] pdColOffsets;
-	delete [] pdNorminalX;
-	delete [] pdNorminalY;
+	delete [] pdNominalX;
+	delete [] pdNominalY;
 
 	return(iReturnFlag);
 }

@@ -353,7 +353,7 @@ bool PanelEdgeDetection::CalLeadingEdgeLocation(EdgeInfo* pInfo)
 	{
 		// Calculat slope of panel leading edge
 		// Assume board is rigid and calibration is almost consistent
-		// So that norminal transforms can be used in the calculation
+		// So that Nominal transforms can be used in the calculation
 			// Center point of edge in FOV
 		double dLeftRoiCenCols = (_leftFovParam.iLeft + _leftFovParam.iRight)/2.0;
 		double dLeftRoiCenRows = _leftFovParam.dRowOffsetInColumn0 + _leftFovParam.dSlope*dLeftRoiCenCols;

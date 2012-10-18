@@ -106,7 +106,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	unsigned int iCamIndex, 
 	unsigned int iTrigIndex,	
 	bool bPinFov, 
-	bool bUseNorminalTransform)
+	bool bUseNominalTransform)
 {
 	// Validation check
 	if(iCamIndex>=pLayer->GetNumberOfCameras() || iTrigIndex>=pLayer->GetNumberOfTriggers())
@@ -117,7 +117,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	int iFOVPos = (*_pFovOrderMap)[index] *_iNumParamsPerFov;
 	ImgTransform transFov = pLayer->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform();
-	if(!bUseNorminalTransform) 
+	if(!bUseNominalTransform) 
 		transFov = pLayer->GetImage(iTrigIndex, iCamIndex)->GetTransform();
 	unsigned int iCols = pLayer->GetImage(iTrigIndex, iCamIndex)->Columns();
 	unsigned int iRows = pLayer->GetImage(iTrigIndex, iCamIndex)->Rows();
@@ -136,7 +136,7 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	{
 		iNextCamFovPos = (*_pFovOrderMap)[index] * _iNumParamsPerFov;
 		transNextCamFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetNominalTransform();
-		if(!bUseNorminalTransform)
+		if(!bUseNominalTransform)
 			transNextCamFov = pLayer->GetImage(index.TriggerIndex, index.CameraIndex)->GetTransform();
 		transNextCamFov.Map(dPixelCenRow, dPixelCenCol, &dNextCamFovCalCenX, &dNextCamFovCalCenY);
 	}
@@ -364,7 +364,7 @@ bool RobustSolverFOV::AddPanelEdgeContraints(
 	double* pdRowBegin = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	
 	ImgTransform trans = pLayer->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform();
-	double dNorminalPixelSize = trans.GetItem(0);
+	double dNominalPixelSize = trans.GetItem(0);
 
 	// Position X constraint
 	if(!bSlopeOnly)
@@ -376,15 +376,15 @@ bool RobustSolverFOV::AddPanelEdgeContraints(
 	}
 
 	// Angle constraint
-	// dNorminalPixelSize * (-dSlope) = M[1];
+	// dNominalPixelSize * (-dSlope) = M[1];
 	pdRowBegin[iFOVPos+1] = Weights.wRbyEdge; 
-	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * (-dSlope);
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNominalPixelSize * (-dSlope);
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
-	// dNorminalPixelSize * (dSlope) = M[3];
+	// dNominalPixelSize * (dSlope) = M[3];
 	pdRowBegin[iFOVPos+3] = Weights.wRbyEdge; 
-	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNorminalPixelSize * dSlope ;
+	_dVectorB[_iCurrentRow] = Weights.wRbyEdge * dNominalPixelSize * dSlope ;
 	pdRowBegin += _iMatrixWidth;
 	_iCurrentRow++;
 
