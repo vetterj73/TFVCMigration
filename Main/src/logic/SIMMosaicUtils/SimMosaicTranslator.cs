@@ -114,14 +114,14 @@ namespace SIMMosaicUtils
                         mmt.SetTransformCamCalibrationVMax( camera.Rows());
                         for (uint m = 0; m < 16; m++)
                         {
-                            if(m==3 || m==9)
-                                mmt.SetTransformCamCalibrationS(m, 0);
-                            else
+                            //if(m==3 || m==9)
+                            //    mmt.SetTransformCamCalibrationS(m, 0);
+                            //else
                                 mmt.SetTransformCamCalibrationS(m,      (float)camera.get_HorizontalDistortion(m));
 
-                            if (m == 6 || m == 12)
-                                mmt.SetTransformCamCalibrationS(m + 16, 0);
-                            else
+                            //if (m == 6 || m == 12)
+                            //    mmt.SetTransformCamCalibrationS(m + 16, 0);
+                            //else
                                 mmt.SetTransformCamCalibrationS(m + 16, (float)camera.get_VerticalDistortion(m));
 
                             mmt.SetTransformCamCalibrationdSdz(m,      (float)camera.get_HorizontalSensitivity(m));
