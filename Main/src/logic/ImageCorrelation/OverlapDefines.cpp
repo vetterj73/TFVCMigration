@@ -172,44 +172,88 @@ bool Overlap::CalCoarseCorrPair()
 	else
 		iCols = (int)((overlapWorld.yMax - overlapWorld.yMin)/_pImg2->PixelSizeY());
 
-	// Reduce two pixels (one pixel in all four directions) to avoid rounding error
-	iRows -= 2;
-	iCols -= 2;
-
 	UIRect roi1, roi2;
 	double dFirstRow1, dFirstCol1, dFirstRow2, dFirstCol2;
 	_pImg1->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow1, &dFirstCol1);
 	_pImg2->WorldToImage(overlapWorld.xMin, overlapWorld.yMin, &dFirstRow2, &dFirstCol2);
 
-	if(dFirstRow1+1.5<0 || dFirstRow2+1.5<0 || dFirstCol1+1.5<0 || dFirstCol2+1.5<0)
+	int iFirstRow1 = (int)(dFirstRow1+0.5);
+	int iLastRow1 = iFirstRow1+iRows-1;
+	int iFirstCol1 = (int)(dFirstCol1+0.5);
+	int iLastCol1 = iFirstCol1+iCols-1;
+	int iFirstRow2 = (int)(dFirstRow2+0.5);
+	int iLastRow2 = iFirstRow2+iRows-1;
+	int iFirstCol2 = (int)(dFirstCol2+0.5);
+	int iLastCol2 = iFirstCol2+iCols-1;
+
+	// Make sure rect is valid
+	if(iFirstRow1<0)
+	{
+		iFirstRow2 -= iFirstRow1;
+		iFirstRow1 = 0;
+	}
+	if(iFirstRow2<0)
+	{
+		iFirstRow1 -= iFirstRow2;
+		iFirstRow2 = 0;
+	}
+	if(iLastRow1 > (int)_pImg1->Rows()-1)
+	{
+		iLastRow2 -= iLastRow1- (_pImg1->Rows()-1);
+		iLastRow1 = _pImg1->Rows()-1;
+	}
+	if(iLastRow2 > (int)_pImg2->Rows()-1)
+	{
+		iLastRow1 -= iLastRow2- (_pImg2->Rows()-1);
+		iLastRow2 = _pImg2->Rows()-1;
+	}
+	if(iLastRow1 <= iFirstRow1 || iLastRow2 <= iFirstRow2)
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 		return(false);
 	}
-		
+
+	if(iFirstCol1<0)
+	{
+		iFirstCol2 -= iFirstCol1;
+		iFirstCol1 = 0;
+	}
+	if(iFirstCol2<0)
+	{
+		iFirstCol1 -= iFirstCol2;
+		iFirstCol2 = 0;
+	}
+	if(iLastCol1 > (int)_pImg1->Columns()-1)
+	{
+		iLastCol2 -= iLastCol1- (_pImg1->Columns()-1);
+		iLastCol1 = _pImg1->Columns()-1;
+	}
+	if(iLastCol2 > (int)_pImg2->Columns()-1)
+	{
+		iLastCol1 -= iLastCol2- (_pImg2->Columns()-1);
+		iLastCol2 = _pImg2->Columns()-1;
+	}
+	if(iLastCol1 <= iFirstCol1 || iLastCol2 <= iFirstCol2)
+	{
+		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
+		return(false);
+	}
+
 	// Roi1 and Roi2
-	roi1.FirstRow = (unsigned int)(dFirstRow1+1.5);
-	roi1.LastRow = roi1.FirstRow+iRows-1;
-	roi1.FirstColumn = (unsigned int)(dFirstCol1+1.5);
-	roi1.LastColumn = roi1.FirstColumn+iCols-1;
+	roi1.FirstRow = (unsigned int)iFirstRow1;
+	roi1.LastRow = (unsigned int)iLastRow1;
+	roi1.FirstColumn = (unsigned int)iFirstCol1;
+	roi1.LastColumn = (unsigned int)iLastCol1;
 
-	roi2.FirstRow = (unsigned int)(dFirstRow2+1.5);
-	roi2.LastRow = roi2.FirstRow+iRows-1;
-	roi2.FirstColumn = (unsigned int)(dFirstCol2+1.5);
-	roi2.LastColumn = roi2.FirstColumn+iCols-1;
+	roi2.FirstRow = (unsigned int)iFirstRow2;
+	roi2.LastRow = (unsigned int)iLastRow2;
+	roi2.FirstColumn = (unsigned int)iFirstCol2;
+	roi2.LastColumn = (unsigned int)iLastCol2;
 
-		// Validation check 
-	if(	roi1.LastRow > _pImg1->Rows()-1 ||
-		roi1.LastColumn > _pImg1->Columns()-1)
+	if(!roi1.IsValid() || !roi2.IsValid())
 	{
 		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 		return(false);
-	}
-
-	if(	roi2.LastRow > _pImg2->Rows()-1 ||
-		roi2.LastColumn > _pImg2->Columns()-1)
-	{
-		LOG.FireLogEntry(LogTypeError, "Overlap::CalCoarseCorrPair(): ROI is invalid");
 	}
 
 	// create coarse correlation pair

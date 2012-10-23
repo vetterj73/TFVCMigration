@@ -79,7 +79,7 @@ namespace CyberStitchTester
                     _numberToRun = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-m")
                     _bMaskForDiffDevices = true;
-                else if (args[i] == "-bayer")
+                else if (args[i] == "-b")
                     _bBayerPattern = true;
                 else if (args[i] == "-w")
                     _bUseProjective = true;
