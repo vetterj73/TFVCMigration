@@ -37,18 +37,20 @@ typedef struct {
    double u, v;
 } POINTPIX;
 
+
+// S and dSdZ for (col, row)<->(y,x) in world space
 class TransformCamModel
 {
 public:
 
-	/* constructors */	TransformCamModel();
-
-						
-						TransformCamModel(const TransformCamModel& orig);
+	/* constructors */	
+	TransformCamModel();
+	TransformCamModel(const TransformCamModel& orig);
 			
-	
 	void Reset();
-	POINT2D TransformCamModel::Pix2XY(POINTPIX uv);
+
+	POINT2D SPix2XY(POINTPIX uv);
+	POINT2D dSPix2XY(POINTPIX uv);
 	
 	float			S[2][MORPH_BASES][MORPH_BASES];
 	float			dSdz[2][MORPH_BASES][MORPH_BASES];

@@ -48,8 +48,8 @@ void TransformCamModel::CalculateInverse()
 
 	int ncbases(MORPH_BASES);
 	int nrbases(MORPH_BASES);
-	int nrows(vMax-vMin);
-	int ncols(uMax-uMin);  // It seems that [u,v]Min should always be 0
+	int nrows = (int)(vMax-vMin);
+	int ncols = (int)(uMax-uMin);  // It seems that [u,v]Min should always be 0
 
 	ndot = ncbases*nrbases;
 	npts = nxi*nyi;
@@ -79,7 +79,7 @@ void TransformCamModel::CalculateInverse()
 	  for (j=0; j<nxi; j++) {          /* uv.u value is image COL, parralel to CAD Y*/
 		 uv.u = (ncols-1)*j/(nxi-1);
 		 uvtemp.u = uv.u - 0.5*(ncols-1);
-		 xy = Pix2XY(uvtemp);   // xy.x, xy.y are in CAD directions
+		 xy = SPix2XY(uvtemp);   // xy.x, xy.y are in CAD directions
 		 //xy.x += 0.5*(ncols-1);
 		 //xy.y += 0.5*(nrows-1);
 		 xy.x -= xMin;				//remove offset
@@ -129,7 +129,7 @@ void TransformCamModel::CalculateInverse()
 	  for (j=0; j<nxi; j++) {          /* x */
 		 uv.u = (ncols-1)*j/(nxi-1);
 		 uvtemp.u = uv.u - 0.5*(ncols-1);
-		 xy = Pix2XY(uvtemp);
+		 xy = SPix2XY(uvtemp);
 		 //xy.x += 0.5*(ncols-1);
 		 //xy.y += 0.5*(nrows-1);
 		 xy.x -= xMin;				//remove offset
@@ -198,12 +198,12 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 	}
 	int ncbases(MORPH_BASES);
 	int nrbases(MORPH_BASES);
-	int nrows(vMax-vMin);
-	int ncols(uMax-uMin);
+	int nrows = (int)(vMax-vMin);
+	int ncols = (int)(uMax-uMin);
 	double *rhs, *sysmat, *sigma;
 	float *dots;
 	void *buf;
-	unsigned int  syssize, k, l, i, j, idot;
+	int  syssize, k, l, i, j, idot;
 	int retval;
 	
 	int ndot = ncbases*nrbases;
@@ -226,7 +226,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 	}
 	double ztemp;
 	POINT2D xyPseudo;		// pseudo pixel value (xy scaled from meters to points in an image like space
-	for (i=0; i<npts; i++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
+	for (i=0; i<(int)npts; i++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
 		
 		rhs[i] = xy[i].x; 
 
@@ -260,7 +260,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 			S[1][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
-	for (i=0; i<npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
+	for (i=0; i<(int)npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
 		
 		rhs[i] = xy[i].y; 
 
@@ -294,7 +294,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 		}
 	}
 	// Next populate the inverse direction....
-	for (i=0; i<npts; i++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
+	for (i=0; i<(int)npts; i++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
 		xyPseudo.x = xy[i].x;
 		xyPseudo.y = xy[i].y;
 		xyPseudo.x -= xMin;				//remove offset
@@ -334,7 +334,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 			SInverse[1][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
-	for (i=0; i<npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
+	for (i=0; i<(int)npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
 		xyPseudo.x = xy[i].x;
 		xyPseudo.y = xy[i].y;
 		xyPseudo.x -= xMin;				//remove offset
@@ -378,21 +378,23 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 
 
 }
-POINT2D TransformCamModel::Pix2XY(POINTPIX uv)
+
+// S for (col, row)->(y,x) in world space
+POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 {
 	float *xwarp;
 	float *ywarp;
-	xwarp = (float*)S[0];
-	ywarp = (float*)S[1];
-	
+	xwarp = (float*)S[1];		// X in S[1]
+	ywarp = (float*)S[0];		// Y in S[0]
+		
 	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
 	POINT2D xy;
-	xy.x = htcorrp(vMax-vMin, uMax-uMin, 
+	xy.x = htcorrp((int)(vMax-vMin), (int)(uMax-uMin),		// u is col and v is row
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					xwarp, 
 					MORPH_BASES);
-	xy.y = htcorrp(vMax-vMin, uMax-uMin, 
+	xy.y = htcorrp((int)(vMax-vMin), (int)(uMax-uMin), 
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					ywarp, 
@@ -400,10 +402,30 @@ POINT2D TransformCamModel::Pix2XY(POINTPIX uv)
 	return xy;
 
 }
-//unsigned int Transform::nTerms() const
-//{
-//	return static_cast<unsigned int>(N_TERMS_MAPPING);
-//}
+
+// dSdZ for (col, row)->(y,x) in world space
+POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
+{
+	float *xwarp;
+	float *ywarp;
+	xwarp = (float*)dSdz[1];		// X in S[1]
+	ywarp = (float*)dSdz[0];		// Y in S[0]
+		
+	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
+	POINT2D xy;
+	xy.x = htcorrp((int)(vMax-vMin), (int)(uMax-uMin),		// u is col and v is row
+					uv.u,uv.v,
+					MORPH_BASES, MORPH_BASES, 
+					xwarp, 
+					MORPH_BASES);
+	xy.y = htcorrp((int)(vMax-vMin), (int)(uMax-uMin), 
+					uv.u,uv.v,
+					MORPH_BASES, MORPH_BASES, 
+					ywarp, 
+					MORPH_BASES);
+	return xy;
+}
+
 
 TransformCamModel::TransformCamModel(const TransformCamModel& orig)
 {
