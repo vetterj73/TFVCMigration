@@ -555,14 +555,7 @@ void RobustSolverIterative::ConstrainPerTrig()
 			TransformCamModel camCal = 
 				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 			complexd xySensor;
-			xySensor.r = htcorrp(iRows, iCols,
-				dFovOriginU, dFovOriginV,
-				_iNumBasisFunctions, _iNumBasisFunctions,
-				(float *)camCal.S[CAL_ARRAY_X],  _iNumBasisFunctions);
-			xySensor.i = htcorrp(iRows, iCols,
-				dFovOriginU, dFovOriginV,
-				_iNumBasisFunctions, _iNumBasisFunctions,
-				(float *)camCal.S[CAL_ARRAY_Y],  _iNumBasisFunctions);
+			camCal.SPix2XY(dFovOriginU, dFovOriginV, &xySensor.r, &xySensor.i);
 			
 			// constrain x direction
 			double* begin_pin_in_image_center(&_dMatrixA[(_iCurrentRow) * _iMatrixWidth]);
@@ -648,16 +641,10 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 	TransformCamModel camCal = 
 				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 	complexd xySensor;
-	xySensor.r = htcorrp((int)camCal.vMax,(int)camCal.uMax,
-					pix.u, pix.v,
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float *)camCal.S[CAL_ARRAY_X],  _iNumBasisFunctions)
-					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 ];
-	xySensor.i = htcorrp((int)camCal.vMax,(int)camCal.uMax,
-					pix.u, pix.v,
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float *)camCal.S[CAL_ARRAY_Y],  _iNumBasisFunctions)
-					+ _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 + 1];
+	double x, y;
+	camCal.SPix2XY(pix.u, pix.v, &x, &y);
+	xySensor.r = x + _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 ];
+	xySensor.i = y + _dVectorX[_iCalDriftStartCol + (deviceNum * _iNumCameras + iCamIndex) * 2 + 1];
 
 	// use board transform to go to board x,y
 	if (_iIterationNumber==1)
@@ -680,16 +667,11 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 			Zestimate += _zCoef[deviceNum][j][k] * pow(xyBoard->x,(double)j) * pow(xyBoard->y,(double)k);
 
 	// accurate Z value allows accurate calc of xySensor
-	xySensor.r +=  Zestimate *
-			htcorrp((int)camCal.vMax,(int)camCal.uMax,
-					pix.u, pix.v,
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float *)camCal.dSdz[CAL_ARRAY_X],  _iNumBasisFunctions);
-	xySensor.i += Zestimate *
-			htcorrp((int)camCal.vMax,(int)camCal.uMax,
-					pix.u, pix.v,
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float *)camCal.dSdz[CAL_ARRAY_Y],  _iNumBasisFunctions);
+	double dx, dy;
+	camCal.dSPix2XY(pix.u, pix.v, &dx, &dy);
+	xySensor.r +=  Zestimate * dx;
+	xySensor.i += Zestimate * dy;
+ 
 	// accurate xySensor allows accurate xyBrd calc
 	//xyBoard->r = cos(VectorX[index+2]) * xySensor.r  - sin(VectorX[index+2]) * xySensor.i  + VectorX[index+0];
 	//xyBoard->i = sin(VectorX[index+2]) * xySensor.r  + cos(VectorX[index+2]) * xySensor.i  + VectorX[index+1];
@@ -782,57 +764,15 @@ bool RobustSolverIterative::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		colImgB += offsetCols;
 		// Add a equataions 
 		TransformCamModel camCalA = 
-				 _pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
+			_pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
+		camCalA.SPix2XY(colImgA, rowImgA, &_fitInfo[_iCorrelationNum].xSensorA, &_fitInfo[_iCorrelationNum].ySensorA);
+		camCalA.dSPix2XY(colImgA, rowImgA, &_fitInfo[_iCorrelationNum].dxSensordzA, &_fitInfo[_iCorrelationNum].dySensordzA);
+		
 		TransformCamModel camCalB = 
-				 _pSet->GetLayer(iLayerIndexB)->GetImage(iTrigIndexB, iCamIndexB)->GetTransformCamCalibration();
-		_fitInfo[_iCorrelationNum].xSensorA = 
-			htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-						colImgA, rowImgA, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalA.S[CAL_ARRAY_X],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].ySensorA = 
-			htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-						colImgA, rowImgA, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalA.S[CAL_ARRAY_Y],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].dxSensordzA = 
-			htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-						colImgA, rowImgA, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalA.dSdz[CAL_ARRAY_X],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].dySensordzA = 
-			htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-						colImgA, rowImgA, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalA.dSdz[CAL_ARRAY_Y],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].xSensorB = 
-			htcorrp((int)camCalB.vMax, (int)camCalB.uMax,
-						colImgB, rowImgB, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalB.S[CAL_ARRAY_X],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].ySensorB = 
-			htcorrp((int)camCalB.vMax, (int)camCalB.uMax,
-						colImgB, rowImgB, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalB.S[CAL_ARRAY_Y],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].dxSensordzB = 
-			htcorrp((int)camCalB.vMax, (int)camCalB.uMax,
-						colImgB, rowImgB, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalB.dSdz[CAL_ARRAY_X],
-						_iNumBasisFunctions);
-		_fitInfo[_iCorrelationNum].dySensordzB = 
-			htcorrp((int)camCalB.vMax, (int)camCalB.uMax,
-						colImgB, rowImgB, 
-						_iNumBasisFunctions, _iNumBasisFunctions,
-						(float*)camCalB.dSdz[CAL_ARRAY_Y],
-						_iNumBasisFunctions);
+			_pSet->GetLayer(iLayerIndexB)->GetImage(iTrigIndexB, iCamIndexB)->GetTransformCamCalibration();
+		camCalB.SPix2XY(colImgB, rowImgB, &_fitInfo[_iCorrelationNum].xSensorB, &_fitInfo[_iCorrelationNum].ySensorB);
+		camCalB.dSPix2XY(colImgB, rowImgB, &_fitInfo[_iCorrelationNum].dxSensordzB, &_fitInfo[_iCorrelationNum].dySensordzB);
+
 		pair<double, double> imgAOverlapCenter = i->GetFirstImg()->ImageToWorld(rowImgA,colImgA);
 		pair<double, double> imgBOverlapCenter = i->GetSecondImg()->ImageToWorld(rowImgB,colImgB);
 		_fitInfo[_iCorrelationNum].boardX = (imgAOverlapCenter.first + imgBOverlapCenter.first ) / 2.0;
@@ -841,7 +781,6 @@ bool RobustSolverIterative::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		_fitInfo[_iCorrelationNum].dFidRoiCenY = 0;
 		_fitInfo[_iCorrelationNum].w = w;
 		
-
 		_iCurrentRow++;
 		_iCurrentRow++;
 		_iCorrelationNum++;
@@ -901,30 +840,8 @@ bool RobustSolverIterative::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	// Add a equataions 
 	TransformCamModel camCalA = 
 				_pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
-	_fitInfo[_iCorrelationNum].xSensorA = 
-		htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					colImgA, rowImgA, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.S[CAL_ARRAY_X],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].ySensorA = 
-		htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					colImgA, rowImgA, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.S[CAL_ARRAY_Y],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].dxSensordzA = 
-		htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					colImgA, rowImgA, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.dSdz[CAL_ARRAY_X],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].dySensordzA = 
-		htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					colImgA, rowImgA, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.dSdz[CAL_ARRAY_Y],
-					_iNumBasisFunctions);
+	camCalA.SPix2XY(colImgA, rowImgA, &_fitInfo[_iCorrelationNum].xSensorA, &_fitInfo[_iCorrelationNum].ySensorA);
+	camCalA.dSPix2XY(colImgA, rowImgA, &_fitInfo[_iCorrelationNum].dxSensordzA, &_fitInfo[_iCorrelationNum].dySensordzA);
 
 	pair<double, double> imgAOverlapCenter = pPair->GetFirstImg()->ImageToWorld(rowImgA,colImgA);
 	_fitInfo[_iCorrelationNum].boardX = imgAOverlapCenter.first;
@@ -957,26 +874,9 @@ bool RobustSolverIterative::AddPanelEdgeContraints(
 	double w = Weights.wXbyEdge;
 	TransformCamModel camCalA = 
 				_pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
-	_fitInfo[_iCorrelationNum].xSensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					0.0, 0.0, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.S[CAL_ARRAY_X],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].ySensorA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					0.0, 0.0, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.S[CAL_ARRAY_Y],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].dxSensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					0.0, 0.0, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.dSdz[CAL_ARRAY_X],
-					_iNumBasisFunctions);
-	_fitInfo[_iCorrelationNum].dySensordzA = htcorrp((int)camCalA.vMax, (int)camCalA.uMax,
-					0.0, 0.0, 
-					_iNumBasisFunctions, _iNumBasisFunctions,
-					(float*)camCalA.dSdz[CAL_ARRAY_Y],
-					_iNumBasisFunctions);
+	camCalA.SPix2XY(0.0, 0.0, &_fitInfo[_iCorrelationNum].xSensorA, &_fitInfo[_iCorrelationNum].ySensorA);
+	camCalA.dSPix2XY(0.0, 0.0, &_fitInfo[_iCorrelationNum].dxSensordzA, &_fitInfo[_iCorrelationNum].dySensordzA);
+
 	// approximate position of the 0,0 pixel on the surface of the board
 	_fitInfo[_iCorrelationNum].boardX = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2);
 	_fitInfo[_iCorrelationNum].boardY = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5);
