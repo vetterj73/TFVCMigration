@@ -33,9 +33,21 @@
 	
 
 */
-typedef struct {
+struct POINTPIX
+{
+	POINTPIX()
+	{
+		u = 0;
+		v = 0;
+	}
+	POINTPIX(double du, double dv)
+	{
+		u = du;
+		v = dv;
+	}
+
    double u, v;
-} POINTPIX;
+};    
 
 
 // S and dSdZ for (col, row)<->(y,x) in world space
@@ -50,7 +62,9 @@ public:
 	void Reset();
 
 	POINT2D SPix2XY(POINTPIX uv);
+	void SPix2XY(double u, double v, double* px, double* py);
 	POINT2D dSPix2XY(POINTPIX uv);
+	void dSPix2XY(double u, double v, double* px, double* py);
 	
 	float			S[2][MORPH_BASES][MORPH_BASES];
 	float			dSdz[2][MORPH_BASES][MORPH_BASES];

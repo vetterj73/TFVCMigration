@@ -403,6 +403,14 @@ POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 
 }
 
+void TransformCamModel::SPix2XY(double u, double v, double* px, double* py)
+{
+	POINTPIX uv(u,v);
+	POINT2D xy = SPix2XY(uv);
+	*px = xy.x;
+	*py = xy.y;
+}
+
 // dSdZ for (col, row)->(y,x) in world space
 POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
 {
@@ -424,6 +432,14 @@ POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
 					ywarp, 
 					MORPH_BASES);
 	return xy;
+}
+
+void TransformCamModel::dSPix2XY(double u, double v, double* px, double* py)
+{
+	POINTPIX uv(u,v);
+	POINT2D xy = dSPix2XY(uv);
+	*px = xy.x;
+	*py = xy.y;
 }
 
 
