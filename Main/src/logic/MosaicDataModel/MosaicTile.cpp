@@ -102,6 +102,11 @@ namespace MosaicDM
 		_pImage->ResetTransformCamModel();
 	}
 
+	void MosaicTile::SetCamModelLinearCalib(double* pdVal)
+	{
+		_pImage->SetCamModelLinearCalib(pdVal);
+	}
+
 
 
 	bool MosaicTile::SetRawImageBuffer(unsigned char* pImageBuffer)

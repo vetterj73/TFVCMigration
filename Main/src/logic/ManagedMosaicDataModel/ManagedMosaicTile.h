@@ -83,6 +83,15 @@ namespace MMosaicDM
 				_pMosaicTile->ResetTransformCamModel();
 			}
 
+			void	SetCamModelLinearCalib(array<double>^ pdVal)
+			{
+				double trans[8];
+				for(int i=0; i<8; i++)
+					trans[i] = pdVal[i];
+
+				_pMosaicTile->SetCamModelLinearCalib(trans);
+			}
+
 		private:
 			MosaicDM::MosaicTile *_pMosaicTile;
 	};

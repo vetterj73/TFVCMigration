@@ -4,6 +4,7 @@
 #include "rtypes.h"
 #include "dot2d.h"
 #include "lsqrpoly.h"
+#include "ImgTransform.h"
 
 /*
 	Mapping between the two coordinate frames (image pixel and CAD meters)
@@ -78,6 +79,12 @@ public:
 
 	void	CalculateInverse(); // THIS FUNCTION ISN'T NEEEDED
 	void	CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int npts);
+
+	void SetLinerCalibration(double* pdVal);
+
+private:
+	ImgTransform _linearTrans;
+	bool _bCombinedCalibration;
 
 };
 

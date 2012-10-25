@@ -315,6 +315,27 @@ namespace SIMMosaicUtils
                         fovM[2] -= trigList[(int)iTrig - 1]; // This calcualtion is not very accurate
                     ManagedMosaicTile mmt = layer.GetTile(iTrig, iCam);
                     mmt.SetNominalTransform(fovM);
+
+                    // TODO 
+                    // modify to load u,v limits, m, dmdz, calc inverse
+                    // Load the Camera Model calibration into the mosaic tile's _tCamCalibration object
+                    mmt.ResetTransformCamCalibration();
+                    mmt.ResetTransformCamModel();
+                    mmt.SetTransformCamCalibrationUMax(set.GetImageWidthInPixels());  // column
+                    mmt.SetTransformCamCalibrationVMax(set.GetImageLengthInPixels()); // row
+                    // Nonlinear Parameter for SIM 110 only
+                    mmt.SetTransformCamCalibrationS(3, (float)-1.78e-5); // Y
+                    mmt.SetTransformCamCalibrationS(9, (float)-1.6e-5);
+                    mmt.SetTransformCamCalibrationS(22, (float)-2.21e-5); // X
+                    mmt.SetTransformCamCalibrationS(28, (float)-7.1e-6);
+                    double dPupilDistance = 0.3702;
+                    float fHalfW, fHalfH;
+                    CalFOVHalfSize(camM, set.GetImageWidthInPixels(), set.GetImageLengthInPixels(), out fHalfW, out fHalfH);
+                    mmt.SetTransformCamCalibrationdSdz(1, (float)(fHalfW / dPupilDistance));   // dY/dZ
+                    mmt.SetTransformCamCalibrationdSdz(20, (float)(fHalfH / dPupilDistance));  // dX/dZ
+
+                    // Linear part
+                    mmt.SetCamModelLinearCalib(camM);   
                 }
             }
 
@@ -418,6 +439,31 @@ namespace SIMMosaicUtils
 	        for(int i=0; i<8; i++)
 		        outM[i] = outM[i]/dScale;
         }
-        
+
+        private static void CalFOVHalfSize(double[] trans, uint iImW, uint iImH, out float fHalfW, out float fHalfH)
+        {
+            // calcualte width
+            double dLeftx, dLefty, dRightx, dRighty;
+            Pixel2World(trans, (iImH - 1) / 2.0, 0, out dLeftx, out dLefty);
+            Pixel2World(trans, (iImH - 1) / 2.0, iImW-1, out dRightx, out dRighty);
+            fHalfW = (float)((dRighty-dLefty)/2.0);
+
+            // calcualte height
+            double dTopx, dTopy, dBottomx, dBottomy;
+            Pixel2World(trans, 0, (iImW-1)/2.0, out dTopx, out dTopy);
+            Pixel2World(trans, iImH - 1, (iImW-1)/2.0, out dBottomx, out dBottomy);
+            fHalfH = (float)((dBottomx-dTopx)/2.0);
+        }
+
+        // (Row, Col) -> (x, y)
+        private static void Pixel2World(double[] trans, double row, double col, out double x, out double y)
+        {
+            double dScale = 1+ trans[6]*row+trans[7]*col;
+            dScale = 1/dScale;
+            x = trans[0] * row + trans[1] * col + trans[2];
+            x *= dScale;
+            y = trans[3] * row + trans[4] * col + trans[5];
+            y *= dScale;
+        }
     }
 }

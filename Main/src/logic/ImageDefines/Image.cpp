@@ -224,7 +224,7 @@ bool Image::Save(string sFileName)
 
 #pragma endregion
 
-#pragma region Transform related
+#pragma region camera model
 // transforms map (row, col) in image space to (x, y) in world space
 void Image::SetTransformCamCalibrationS(unsigned int i, float val)
 {
@@ -242,8 +242,14 @@ void Image::SetTransformCamCalibrationdSdz(unsigned int i, float val)
 	_tCamCalibration.dSdz[j][k][l] = val;
 }
 
+void Image::SetCamModelLinearCalib(double* pdVal)
+{
+	_tCamCalibration.SetLinerCalibration(pdVal);
+}
 
+#pragma endregion
 
+#pragma region Transform related
 // Map (row, col) in image space to (x, y) in world space
 pair<double, double> Image::ImageToWorld(double row, double col) const
 {

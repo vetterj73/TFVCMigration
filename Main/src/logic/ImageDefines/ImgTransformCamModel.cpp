@@ -27,6 +27,8 @@ void TransformCamModel::Reset()
 			}
 	uMin = vMin = xMin = yMin = 0;
 	uMax = vMax = xMax = yMax = 0;
+
+	_bCombinedCalibration = false;
 }
 
 void TransformCamModel::CalculateInverse()
@@ -375,8 +377,18 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 		}
 	}
 	free(buf);
+}
 
 
+void TransformCamModel::SetLinerCalibration(double* pdVal)
+{
+	double dT[9];
+	for(int i=0; i<8; i++)
+		dT[i] = pdVal[i];
+	dT[8] = 1;
+
+	_linearTrans.SetMatrix(dT);
+	_bCombinedCalibration = true;
 }
 
 // S for (col, row)->(y,x) in world space
@@ -399,8 +411,18 @@ POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 					MORPH_BASES, MORPH_BASES, 
 					ywarp, 
 					MORPH_BASES);
-	return xy;
 
+	// If calibration is combined
+	if(_bCombinedCalibration)
+	{
+		double dLinearX, dLinearY;
+		_linearTrans.Map(uv.v, uv.u, &dLinearX, &dLinearY);
+
+		xy.x += dLinearX;
+		xy.y += dLinearY;
+	}
+
+	return xy;
 }
 
 void TransformCamModel::SPix2XY(double u, double v, double* px, double* py)
@@ -467,5 +489,8 @@ void TransformCamModel::operator=(const TransformCamModel& b)
 	uMax = b.uMax;
 	vMin = b.vMin;
 	vMax = b.vMax;
+
+	_linearTrans = 	b._linearTrans;
+	_bCombinedCalibration = b._bCombinedCalibration;
 }
 

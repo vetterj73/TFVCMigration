@@ -126,6 +126,8 @@ public:
 
 	bool				Save(string sFileName);
 
+	void				SetCamModelLinearCalib(double* pdVal);
+
 protected:
 
 	pair<double,double> CalPerpendicalPoint(double dPuilDistance);  // return in (cloumn Row)
