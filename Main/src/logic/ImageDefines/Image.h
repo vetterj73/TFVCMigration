@@ -126,7 +126,7 @@ public:
 
 	bool				Save(string sFileName);
 
-	void				SetCamModelLinearCalib(double* pdVal);
+	void				SetCamModelLinearCalib(double pdVal[8]);
 
 protected:
 

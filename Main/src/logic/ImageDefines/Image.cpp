@@ -242,7 +242,7 @@ void Image::SetTransformCamCalibrationdSdz(unsigned int i, float val)
 	_tCamCalibration.dSdz[j][k][l] = val;
 }
 
-void Image::SetCamModelLinearCalib(double* pdVal)
+void Image::SetCamModelLinearCalib(double pdVal[8])
 {
 	_tCamCalibration.SetLinerCalibration(pdVal);
 }

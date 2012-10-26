@@ -76,7 +76,7 @@ namespace MosaicDM
 			void	SetTransformCamCalibrationVMax(double val);
 			void	ResetTransformCamCalibration();
 			void	ResetTransformCamModel();
-			void	SetCamModelLinearCalib(double* pdVal);
+			void	SetCamModelLinearCalib(double pdVal[8]);
 
 			Image* GetImagPtr() {return _pImage;};
 

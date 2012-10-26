@@ -316,18 +316,17 @@ namespace SIMMosaicUtils
                     ManagedMosaicTile mmt = layer.GetTile(iTrig, iCam);
                     mmt.SetNominalTransform(fovM);
 
-                    // TODO 
-                    // modify to load u,v limits, m, dmdz, calc inverse
-                    // Load the Camera Model calibration into the mosaic tile's _tCamCalibration object
+                    // For camera model 
                     mmt.ResetTransformCamCalibration();
                     mmt.ResetTransformCamModel();
                     mmt.SetTransformCamCalibrationUMax(set.GetImageWidthInPixels());  // column
                     mmt.SetTransformCamCalibrationVMax(set.GetImageLengthInPixels()); // row
-                    // Nonlinear Parameter for SIM 110 only
+                        // S (Nonlinear Parameter for SIM 110 only)
                     mmt.SetTransformCamCalibrationS(3, (float)-1.78e-5); // Y
                     mmt.SetTransformCamCalibrationS(9, (float)-1.6e-5);
                     mmt.SetTransformCamCalibrationS(22, (float)-2.21e-5); // X
                     mmt.SetTransformCamCalibrationS(28, (float)-7.1e-6);
+                        // dS
                     double dPupilDistance = 0.3702;
                     float fHalfW, fHalfH;
                     CalFOVHalfSize(camM, set.GetImageWidthInPixels(), set.GetImageLengthInPixels(), out fHalfW, out fHalfH);
