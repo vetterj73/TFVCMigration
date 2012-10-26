@@ -59,30 +59,32 @@ public:
 	/* constructors */	
 	TransformCamModel();
 	TransformCamModel(const TransformCamModel& orig);
-			
+	void operator=(const TransformCamModel& b);	
+	
 	void Reset();
+	bool SetS(int iIndex, float pfVal[16]);	// iIndex: 0 for Y and 1 for X
+	bool SetdSdz(int iIndex, float pfVal[16]);
+	void SetLinerCalibration(double* pdVal);
+	void SetUMax(double dVal) {_uMax = dVal;};
+	void SetVMax(double dVal) {_vMax = dVal;};
 
 	POINT2D SPix2XY(POINTPIX uv);
 	void SPix2XY(double u, double v, double* px, double* py);
 	POINT2D dSPix2XY(POINTPIX uv);
-	void dSPix2XY(double u, double v, double* px, double* py);
-	
-	float			S[2][MORPH_BASES][MORPH_BASES];
-	float			dSdz[2][MORPH_BASES][MORPH_BASES];
-
-	float			SInverse[2][MORPH_BASES][MORPH_BASES];
-	float			dSdzInverse[2][MORPH_BASES][MORPH_BASES];
-	double			uMin, uMax, vMin, vMax;
-	double			xMin, xMax, yMin, yMax;
-	void operator=(const TransformCamModel& b);
-
+	void dSPix2XY(double u, double v, double* px, double* py);	
 
 	void	CalculateInverse(); // THIS FUNCTION ISN'T NEEEDED
 	void	CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int npts);
 
-	void SetLinerCalibration(double* pdVal);
-
 private:
+	float			_S[2][MORPH_BASES][MORPH_BASES];
+	float			_dSdz[2][MORPH_BASES][MORPH_BASES];
+
+	float			_SInverse[2][MORPH_BASES][MORPH_BASES];
+	float			_dSdzInverse[2][MORPH_BASES][MORPH_BASES];
+	double			_uMin, _uMax, _vMin, _vMax;
+	double			_xMin, _xMax, _yMin, _yMax;
+
 	ImgTransform _linearTrans;
 	bool _bCombinedCalibration;
 

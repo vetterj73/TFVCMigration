@@ -58,13 +58,27 @@ namespace MMosaicDM
 			/// Set camera calibration parameters
 			///
 			//void	SetTransformCamCalibration(TransformCamModel t);
-			void	SetTransformCamCalibrationS(unsigned int i, float val)
+			bool	SetTransformCamCalibrationS(int iIndex, array<double>^ pdVal)
 			{
-				_pMosaicTile->SetTransformCamCalibrationS(i, val);
+				if(pdVal->Length != 16)
+					return(false);
+
+				float pfVal[16];
+				for(int i=0; i<16; i++)
+					pfVal[i] = (float)pdVal[i]; 
+
+				return(_pMosaicTile->SetTransformCamCalibrationS(iIndex, pfVal));
 			}
-			void	SetTransformCamCalibrationdSdz(unsigned int i, float val)
+			bool	SetTransformCamCalibrationdSdz(int iIndex, array<double>^ pdVal)
 			{
-				_pMosaicTile->SetTransformCamCalibrationdSdz(i, val);
+				if(pdVal->Length != 16)
+					return(false);
+
+				float pfVal[16];
+				for(int i=0; i<16; i++)
+					pfVal[i] = (float)pdVal[i]; 
+
+				return(_pMosaicTile->SetTransformCamCalibrationdSdz(iIndex, pfVal));
 			}
 			void	SetTransformCamCalibrationUMax(double val)
 			{

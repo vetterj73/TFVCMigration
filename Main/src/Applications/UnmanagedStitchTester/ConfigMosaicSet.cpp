@@ -99,15 +99,22 @@ int ConfigMosaicSet::AddDeviceToMosaic(MosaicSet* pSet, ISIMDevice *pDevice, int
                 pTile->ResetTransformCamModel();
                 pTile->SetTransformCamCalibrationUMax( pCamera->Columns());
                 pTile->SetTransformCamCalibrationVMax( pCamera->Rows());
+				
+				float pSy[16];
+                float pSx[16];
+                float pdSydz[16];
+                float pdSxdz[16];
                 for (unsigned int m = 0; m < 16; m++)
                 {
-					pTile->SetTransformCamCalibrationS(m,      (float)pCamera->HorizontalDistortion(m));
-                    pTile->SetTransformCamCalibrationS(m + 16, (float)pCamera->VerticalDistortion(m)  );
-                    pTile->SetTransformCamCalibrationdSdz(m,      (float)pCamera->HorizontalSensitivity(m));
-                    pTile->SetTransformCamCalibrationdSdz(m + 16, (float)pCamera->VerticalSensitivity(m)  );
+					pSy[m] = (float)pCamera->HorizontalDistortion(m);
+					pSx[m] = (float)pCamera->VerticalDistortion(m);
+					pdSydz[m] = (float)pCamera->HorizontalSensitivity(m);
+					pdSxdz[m] = (float)pCamera->VerticalSensitivity(m);
                 }
-                // TODO  *** inverse not yet used, is it really needed?
-                // calc Inverse // make sure that this works..
+				pTile->SetTransformCamCalibrationS(0, pSy);
+				pTile->SetTransformCamCalibrationS(1, pSx);
+				pTile->SetTransformCamCalibrationdSdz(0, pdSydz);
+				pTile->SetTransformCamCalibrationdSdz(0, pdSxdz);
             }
         }
 	}

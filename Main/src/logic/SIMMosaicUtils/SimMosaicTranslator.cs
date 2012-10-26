@@ -112,23 +112,31 @@ namespace SIMMosaicUtils
                         mmt.ResetTransformCamModel();
                         mmt.SetTransformCamCalibrationUMax( camera.Columns());
                         mmt.SetTransformCamCalibrationVMax( camera.Rows());
+                        
+                        double[] Sy = new double[16];
+                        double[] Sx = new double[16];
+                        double[] dSydz = new double[16];
+                        double[] dSxdz = new double[16];
                         for (uint m = 0; m < 16; m++)
                         {
+                            
                             //if(m==3 || m==9)
-                            //    mmt.SetTransformCamCalibrationS(m, 0);
+                            //    Sy[m] = 0;
                             //else
-                                mmt.SetTransformCamCalibrationS(m,      (float)camera.get_HorizontalDistortion(m));
+                                Sy[m] = camera.get_HorizontalDistortion(m);
 
                             //if (m == 6 || m == 12)
-                            //    mmt.SetTransformCamCalibrationS(m + 16, 0);
+                            //    Sx[m] = 0;
                             //else
-                                mmt.SetTransformCamCalibrationS(m + 16, (float)camera.get_VerticalDistortion(m));
+                                Sx[m] = camera.get_VerticalDistortion(m);
 
-                            mmt.SetTransformCamCalibrationdSdz(m,      (float)camera.get_HorizontalSensitivity(m));
-                            mmt.SetTransformCamCalibrationdSdz(m + 16, (float)camera.get_VerticalSensitivity(m)  );
+                            dSydz[m] = camera.get_HorizontalSensitivity(m);
+                            dSxdz[m] = camera.get_VerticalSensitivity(m);
                         }
-                        // TODO  *** inverse not yet used, is it really needed?
-                        // calc Inverse // make sure that this works...
+                        mmt.SetTransformCamCalibrationS(0, Sy);
+                        mmt.SetTransformCamCalibrationS(1, Sx);
+                        mmt.SetTransformCamCalibrationdSdz(0, dSydz);
+                        mmt.SetTransformCamCalibrationdSdz(1, dSxdz);
                     }
                 }
             }
@@ -321,19 +329,37 @@ namespace SIMMosaicUtils
                     mmt.ResetTransformCamModel();
                     mmt.SetTransformCamCalibrationUMax(set.GetImageWidthInPixels());  // column
                     mmt.SetTransformCamCalibrationVMax(set.GetImageLengthInPixels()); // row
+
+                    double[] Sy = new double[16];
+                    double[] Sx = new double[16];
+                    double[] dSydz = new double[16];
+                    double[] dSxdz = new double[16];
+                    for (uint m = 0; m < 16; m++)
+                    {
+                        Sy[m] = 0;
+                        Sx[m] = 0;
+                        dSydz[m] = 0;
+                        dSxdz[m] = 0;
+                    }
                         // S (Nonlinear Parameter for SIM 110 only)
-                    mmt.SetTransformCamCalibrationS(3, (float)-1.78e-5); // Y
-                    mmt.SetTransformCamCalibrationS(9, (float)-1.6e-5);
-                    mmt.SetTransformCamCalibrationS(22, (float)-2.21e-5); // X
-                    mmt.SetTransformCamCalibrationS(28, (float)-7.1e-6);
+                    Sy[3] = -1.78e-5;
+                    Sy[9] = -1.6e-5;
+                    Sx[6] = -2.21e-5;
+                    Sx[12] = -7.1e-6;
+
                         // dS
                     double dPupilDistance = 0.3702;
                     float fHalfW, fHalfH;
                     CalFOVHalfSize(camM, set.GetImageWidthInPixels(), set.GetImageLengthInPixels(), out fHalfW, out fHalfH);
-                    mmt.SetTransformCamCalibrationdSdz(1, (float)(fHalfW / dPupilDistance));   // dY/dZ
-                    mmt.SetTransformCamCalibrationdSdz(20, (float)(fHalfH / dPupilDistance));  // dX/dZ
+                    dSydz[1] = fHalfW / dPupilDistance;   // dY/dZ
+                    dSxdz[4] = fHalfH / dPupilDistance;  // dX/dZ
 
-                    // Linear part
+                    mmt.SetTransformCamCalibrationS(0, Sy);
+                    mmt.SetTransformCamCalibrationS(1, Sx);
+                    mmt.SetTransformCamCalibrationdSdz(0, dSydz);
+                    mmt.SetTransformCamCalibrationdSdz(1, dSxdz);
+                        
+                        // Linear part
                     mmt.SetCamModelLinearCalib(camM);   
                 }
             }

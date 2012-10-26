@@ -9,9 +9,34 @@ TransformCamModel::TransformCamModel()
 	Reset();
 }
 
-// TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  TODO !!  
-// add operations on dmdz and dmdzInverse
+TransformCamModel::TransformCamModel(const TransformCamModel& orig)
+{
+	*this = orig; 
+}
+			
+void TransformCamModel::operator=(const TransformCamModel& b)
+{
+	for (unsigned int i(0); i < 2; ++i)
+		for (unsigned int j(0); j < MORPH_BASES; ++j)
+			for (unsigned int k(0); k < MORPH_BASES; ++k)
+			{
+				_S[i][j][k]=b._S[i][j][k];
+				_dSdz[i][j][k]=b._dSdz[i][j][k];
+				_SInverse[i][j][k]=b._SInverse[i][j][k];
+				_dSdzInverse[i][j][k]=b._dSdzInverse[i][j][k];
+			}
+	_xMin = b._xMin;
+	_xMax = b._xMax;
+	_yMin = b._yMin;
+	_yMax = b._yMax;
+	_uMin = b._uMin;
+	_uMax = b._uMax;
+	_vMin = b._vMin;
+	_vMax = b._vMax;
 
+	_linearTrans = 	b._linearTrans;
+	_bCombinedCalibration = b._bCombinedCalibration;
+}
 
 void TransformCamModel::Reset()
 {
@@ -20,15 +45,58 @@ void TransformCamModel::Reset()
 		for (unsigned int j(0); j < MORPH_BASES; ++j)
 			for (unsigned int k(0); k < MORPH_BASES; ++k)
 			{
-				S[i][j][k]=0;
-				dSdz[i][j][k]=0;
-				SInverse[i][j][k]=0;
-				dSdzInverse[i][j][k]=0;
+				_S[i][j][k]=0;
+				_dSdz[i][j][k]=0;
+				_SInverse[i][j][k]=0;
+				_dSdzInverse[i][j][k]=0;
 			}
-	uMin = vMin = xMin = yMin = 0;
-	uMax = vMax = xMax = yMax = 0;
+	_uMin = _vMin = _xMin = _yMin = 0;
+	_uMax = _vMax = _xMax = _yMax = 0;
 
 	_bCombinedCalibration = false;
+}
+
+bool TransformCamModel::SetS(int iIndex, float pfVal[16])	// iIndex: 0 for Y and 1 for X
+{
+	// Validation check
+	if(iIndex<0 || iIndex>1)
+		return(false);
+
+	for(int i= 0; i<16; i++)
+	{
+		int i2 = i%4;
+		int i3 = i - i2*4;
+		_S[iIndex][i2][i3] = pfVal[i];
+	}
+
+	return(true);
+}
+
+bool TransformCamModel::SetdSdz(int iIndex, float pfVal[16])	// iIndex: 0 for Y and 1 for X
+{
+	// Validation check
+	if(iIndex<0 || iIndex>1)
+		return(false);
+
+	for(int i= 0; i<16; i++)
+	{
+		int i2 = i%4;
+		int i3 = i - i2*4;
+		_dSdz[iIndex][i2][i3] = pfVal[i];
+	}
+
+	return(true);
+}
+
+void TransformCamModel::SetLinerCalibration(double* pdVal)
+{
+	double dT[9];
+	for(int i=0; i<8; i++)
+		dT[i] = pdVal[i];
+	dT[8] = 1;
+
+	_linearTrans.SetMatrix(dT);
+	_bCombinedCalibration = true;
 }
 
 void TransformCamModel::CalculateInverse()
@@ -50,8 +118,8 @@ void TransformCamModel::CalculateInverse()
 
 	int ncbases(MORPH_BASES);
 	int nrbases(MORPH_BASES);
-	int nrows = (int)(vMax-vMin);
-	int ncols = (int)(uMax-uMin);  // It seems that [u,v]Min should always be 0
+	int nrows = (int)(_vMax-_vMin);
+	int ncols = (int)(_uMax-_uMin);  // It seems that [u,v]Min should always be 0
 
 	ndot = ncbases*nrbases;
 	npts = nxi*nyi;
@@ -71,7 +139,7 @@ void TransformCamModel::CalculateInverse()
 		 dots[l+k*nrbases] = 0.;
 	  }
 	}
-	// modify, take uv[], xy[], eval limits (xMin,max etc) as input
+	// modify, take uv[], xy[], eval limits (_xMin,max etc) as input
 	// make own function (it will be used when loading align fit to CAD)
 	/* xwarp */
 	// COPIED FROM MorphCofs()
@@ -84,11 +152,11 @@ void TransformCamModel::CalculateInverse()
 		 xy = SPix2XY(uvtemp);   // xy.x, xy.y are in CAD directions
 		 //xy.x += 0.5*(ncols-1);
 		 //xy.y += 0.5*(nrows-1);
-		 xy.x -= xMin;				//remove offset
-		 xy.x *= 1/(xMax - xMin);	// scale to 0 - 1 range
+		 xy.x -= _xMin;				//remove offset
+		 xy.x *= 1/(_xMax - _xMin);	// scale to 0 - 1 range
 		 xy.x *= nrows;				// scale to 
-		 xy.y -= yMin;
-		 xy.y *= 1/(yMax - yMin);
+		 xy.y -= _yMin;
+		 xy.y *= 1/(_yMax - _yMin);
 		 xy.y *= ncols;
 		 rhs[ipt] = xy.x;
 
@@ -119,7 +187,7 @@ void TransformCamModel::CalculateInverse()
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			SInverse[1][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_SInverse[1][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 
@@ -134,11 +202,11 @@ void TransformCamModel::CalculateInverse()
 		 xy = SPix2XY(uvtemp);
 		 //xy.x += 0.5*(ncols-1);
 		 //xy.y += 0.5*(nrows-1);
-		 xy.x -= xMin;				//remove offset
-		 xy.x *= 1/(xMax - xMin);	// scale to 0 - 1 range
+		 xy.x -= _xMin;				//remove offset
+		 xy.x *= 1/(_xMax - _xMin);	// scale to 0 - 1 range
 		 xy.x *= nrows;				// scale to pseudo image size
-		 xy.y -= yMin;
-		 xy.y *= 1/(yMax - yMin);
+		 xy.y -= _yMin;
+		 xy.y *= 1/(_yMax - _yMin);
 		 xy.y *= ncols;
 		 rhs[ipt] = xy.y;
 
@@ -169,39 +237,36 @@ void TransformCamModel::CalculateInverse()
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			SInverse[0][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_SInverse[0][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 
-
 	free(buf);
 	//return 0;
-
-
-
 }
+
 // given a field of points uv, xy, (assumed to include corners?) calc uv2xy transform (m), u/v/x/y Min/Max
 void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int npts)
 {
 	// find min, max values
-	uMin = vMin = yMin = xMin = 100000;
-	uMax = vMax = xMax = yMax = -100000;
+	_uMin = _vMin = _yMin = _xMin = 100000;
+	_uMax = _vMax = _xMax = _yMax = -100000;
 	for (unsigned int i(0); i < npts; ++i)
 	{
-		if (uv[i].u < uMin) uMin = uv[i].u;
-		if (uv[i].u > uMax) uMax = uv[i].u;
-		if (uv[i].v < vMin) vMin = uv[i].v;
-		if (uv[i].v > vMax) vMax = uv[i].v;
+		if (uv[i].u < _uMin) _uMin = uv[i].u;
+		if (uv[i].u > _uMax) _uMax = uv[i].u;
+		if (uv[i].v < _vMin) _vMin = uv[i].v;
+		if (uv[i].v > _vMax) _vMax = uv[i].v;
 		
-		if (xy[i].x < xMin) xMin = xy[i].x;
-		if (xy[i].x > xMax) xMax = xy[i].x;
-		if (xy[i].y < yMin) yMin = xy[i].y;
-		if (xy[i].y > yMax) yMax = xy[i].y;
+		if (xy[i].x < _xMin) _xMin = xy[i].x;
+		if (xy[i].x > _xMax) _xMax = xy[i].x;
+		if (xy[i].y < _yMin) _yMin = xy[i].y;
+		if (xy[i].y > _yMax) _yMax = xy[i].y;
 	}
 	int ncbases(MORPH_BASES);
 	int nrbases(MORPH_BASES);
-	int nrows = (int)(vMax-vMin);
-	int ncols = (int)(uMax-uMin);
+	int nrows = (int)(_vMax-_vMin);
+	int ncols = (int)(_uMax-_uMin);
 	double *rhs, *sysmat, *sigma;
 	float *dots;
 	void *buf;
@@ -259,7 +324,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			S[1][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_S[1][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 	for (i=0; i<(int)npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
@@ -292,18 +357,18 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			S[0][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_S[0][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 	// Next populate the inverse direction....
 	for (i=0; i<(int)npts; i++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
 		xyPseudo.x = xy[i].x;
 		xyPseudo.y = xy[i].y;
-		xyPseudo.x -= xMin;				//remove offset
-		xyPseudo.x *= 1/(xMax - xMin);	// scale to 0 - 1 range
+		xyPseudo.x -= _xMin;				//remove offset
+		xyPseudo.x *= 1/(_xMax - _xMin);	// scale to 0 - 1 range
 		xyPseudo.x *= nrows;				// scale to 
-		xyPseudo.y -= yMin;
-		xyPseudo.y *= 1/(yMax - yMin);
+		xyPseudo.y -= _yMin;
+		xyPseudo.y *= 1/(_yMax - _yMin);
 		xyPseudo.y *= ncols;
 		rhs[i] = uv[i].v; 
 
@@ -333,17 +398,17 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			SInverse[1][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_SInverse[1][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 	for (i=0; i<(int)npts; i++) {      /*uv.u value is image ROW which is actually parallel to CAD Y */
 		xyPseudo.x = xy[i].x;
 		xyPseudo.y = xy[i].y;
-		xyPseudo.x -= xMin;				//remove offset
-		xyPseudo.x *= 1/(xMax - xMin);	// scale to 0 - 1 range
+		xyPseudo.x -= _xMin;				//remove offset
+		xyPseudo.x *= 1/(_xMax - _xMin);	// scale to 0 - 1 range
 		xyPseudo.x *= nrows;				// scale to 
-		xyPseudo.y -= yMin;
-		xyPseudo.y *= 1/(yMax - yMin);
+		xyPseudo.y -= _yMin;
+		xyPseudo.y *= 1/(_yMax - _yMin);
 		xyPseudo.y *= ncols;
 		rhs[i] = uv[i].u; 
 
@@ -373,22 +438,10 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 
 	for (i=0; i<MORPH_BASES; i++) {
 		for(j=0; j<MORPH_BASES; j++) {
-			SInverse[0][i][j] = (float)rhs[i*MORPH_BASES+j];
+			_SInverse[0][i][j] = (float)rhs[i*MORPH_BASES+j];
 		}
 	}
 	free(buf);
-}
-
-
-void TransformCamModel::SetLinerCalibration(double* pdVal)
-{
-	double dT[9];
-	for(int i=0; i<8; i++)
-		dT[i] = pdVal[i];
-	dT[8] = 1;
-
-	_linearTrans.SetMatrix(dT);
-	_bCombinedCalibration = true;
 }
 
 // S for (col, row)->(y,x) in world space
@@ -396,17 +449,17 @@ POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 {
 	float *xwarp;
 	float *ywarp;
-	xwarp = (float*)S[1];		// X in S[1]
-	ywarp = (float*)S[0];		// Y in S[0]
+	xwarp = (float*)_S[1];		// X in _S[1]
+	ywarp = (float*)_S[0];		// Y in _S[0]
 		
 	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
 	POINT2D xy;
-	xy.x = htcorrp((int)(vMax-vMin), (int)(uMax-uMin),		// u is col and v is row
+	xy.x = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin),		// u is col and v is row
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					xwarp, 
 					MORPH_BASES);
-	xy.y = htcorrp((int)(vMax-vMin), (int)(uMax-uMin), 
+	xy.y = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin), 
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					ywarp, 
@@ -438,17 +491,17 @@ POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
 {
 	float *xwarp;
 	float *ywarp;
-	xwarp = (float*)dSdz[1];		// X in S[1]
-	ywarp = (float*)dSdz[0];		// Y in S[0]
+	xwarp = (float*)_dSdz[1];		// X in _dSdz[1]
+	ywarp = (float*)_dSdz[0];		// Y in _dSdz[0]
 		
 	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
 	POINT2D xy;
-	xy.x = htcorrp((int)(vMax-vMin), (int)(uMax-uMin),		// u is col and v is row
+	xy.x = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin),		// u is col and v is row
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					xwarp, 
 					MORPH_BASES);
-	xy.y = htcorrp((int)(vMax-vMin), (int)(uMax-uMin), 
+	xy.y = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin), 
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
 					ywarp, 
@@ -465,32 +518,5 @@ void TransformCamModel::dSPix2XY(double u, double v, double* px, double* py)
 }
 
 
-TransformCamModel::TransformCamModel(const TransformCamModel& orig)
-{
-	*this = orig; 
-}
-			
-void TransformCamModel::operator=(const TransformCamModel& b)
-{
-	for (unsigned int i(0); i < 2; ++i)
-		for (unsigned int j(0); j < MORPH_BASES; ++j)
-			for (unsigned int k(0); k < MORPH_BASES; ++k)
-			{
-				S[i][j][k]=b.S[i][j][k];
-				dSdz[i][j][k]=b.dSdz[i][j][k];
-				SInverse[i][j][k]=b.SInverse[i][j][k];
-				dSdzInverse[i][j][k]=b.dSdzInverse[i][j][k];
-			}
-	xMin = b.xMin;
-	xMax = b.xMax;
-	yMin = b.yMin;
-	yMax = b.yMax;
-	uMin = b.uMin;
-	uMax = b.uMax;
-	vMin = b.vMin;
-	vMax = b.vMax;
 
-	_linearTrans = 	b._linearTrans;
-	_bCombinedCalibration = b._bCombinedCalibration;
-}
 

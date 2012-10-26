@@ -67,10 +67,10 @@ public:
 	void				ResetTransformCamCalibration(){ _tCamCalibration.Reset();};
 	void				ResetTransformCamModel(){ _tCamModelToWorld.Reset();};
 
-	void				SetTransformCamCalibrationS(unsigned int i, float val);
-	void				SetTransformCamCalibrationdSdz(unsigned int i, float val);
-	void				SetTransformCamCalibrationUMax(double val){	_tCamCalibration.uMax = val;};
-	void				SetTransformCamCalibrationVMax(double val){	_tCamCalibration.vMax = val;};
+	bool				SetTransformCamCalibrationS(int iIndex, float pfVal[16]);
+	bool				SetTransformCamCalibrationdSdz(int iIndex, float pfVal[16]);
+	void				SetTransformCamCalibrationUMax(double val){	_tCamCalibration.SetUMax(val);};
+	void				SetTransformCamCalibrationVMax(double val){	_tCamCalibration.SetVMax(val);};
 
 	void				CalInverseTransform() {_thisToWorld.CalInverse();};
 

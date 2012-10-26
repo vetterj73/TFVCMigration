@@ -77,13 +77,13 @@ namespace MosaicDM
 		_pImage->SetTransformCamCalibration(t);
 	}
 
-	void	MosaicTile::SetTransformCamCalibrationS(unsigned int i, float val)
+	bool	MosaicTile::SetTransformCamCalibrationS(int iIndex, float pfVal[16])
 	{
-		_pImage->SetTransformCamCalibrationS(i, val);
+		return(_pImage->SetTransformCamCalibrationS(iIndex, pfVal));
 	}
-	void	MosaicTile::SetTransformCamCalibrationdSdz(unsigned int i, float val)
+	bool	MosaicTile::SetTransformCamCalibrationdSdz(int iIndex, float pfVal[16])
 	{
-		_pImage->SetTransformCamCalibrationdSdz(i, val);
+		return(_pImage->SetTransformCamCalibrationdSdz(iIndex, pfVal));
 	}
 	void	MosaicTile::SetTransformCamCalibrationUMax(double val)
 	{

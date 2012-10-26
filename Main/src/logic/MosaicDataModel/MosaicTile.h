@@ -70,8 +70,8 @@ namespace MosaicDM
 			/// Set camera calibration parameters
 			///
 			void	SetTransformCamCalibration(TransformCamModel t);
-			void	SetTransformCamCalibrationS(unsigned int i, float val);
-			void	SetTransformCamCalibrationdSdz(unsigned int i, float val);
+			bool	SetTransformCamCalibrationS(int iIndex, float pfVal[16]);
+			bool	SetTransformCamCalibrationdSdz(int iIndex, float pfVal[16]);
 			void	SetTransformCamCalibrationUMax(double val);
 			void	SetTransformCamCalibrationVMax(double val);
 			void	ResetTransformCamCalibration();

@@ -226,20 +226,14 @@ bool Image::Save(string sFileName)
 
 #pragma region camera model
 // transforms map (row, col) in image space to (x, y) in world space
-void Image::SetTransformCamCalibrationS(unsigned int i, float val)
+bool Image::SetTransformCamCalibrationS(int iIndex, float pfVal[16])
 {
-	unsigned int j(i/16);
-	unsigned int k((i-j*16)/4);
-	unsigned int l(i-j*16-k*4);
-	_tCamCalibration.S[j][k][l] = val;
+	return(_tCamCalibration.SetS(iIndex, pfVal));
 }
 
-void Image::SetTransformCamCalibrationdSdz(unsigned int i, float val)
+bool Image::SetTransformCamCalibrationdSdz(int iIndex, float pfVal[16])
 {
-	unsigned int j(i/16);
-	unsigned int k((i-j*16)/4);
-	unsigned int l(i-j*16-k*4);
-	_tCamCalibration.dSdz[j][k][l] = val;
+	return(_tCamCalibration.SetdSdz(iIndex, pfVal));
 }
 
 void Image::SetCamModelLinearCalib(double pdVal[8])
