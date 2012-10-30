@@ -14,7 +14,6 @@ void inverse3x3(
 	const double* inMatrix,
 	double* outMatrix);
 
-
 // Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
 // Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 // Assume the center of image corresponding a vertical line from camera to object surface
@@ -54,6 +53,7 @@ bool ImageGrayNNMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 int GetNumPixels(double size, double pixelSize);
 
 // 2D Morphological process (a Warp up of Rudd's morpho2D) 
+// Dilation, erosion and so on
 void Morpho_2d(
 	unsigned char* pbBuf,
 	unsigned int iSpan,
@@ -117,3 +117,16 @@ void Smooth2d_B2L(
 	unsigned char* pcInBuf, unsigned int iInSpan,
 	unsigned char* pcOutBuf, unsigned int iOutSpan,
 	unsigned int iWidth, unsigned int iHeight);
+
+// Demosaic based on Gaussian interploation
+void Demosaic_Gaussian(
+	int				iNumCol,			// Image dimensions 
+	int				iNumRow,
+	unsigned char*	pcBayer,			// Input 8-bit Bayer image
+	int				iBayerStr,			// Addressed as bayer[col + row*bstride] 
+	BayerType		order,				// Bayer pattern order; use the enums in bayer.h
+	unsigned char*	pcOut,				// In/Out 24-bit BGR/YCrCb or 8-bit Y(luminance) image, 
+										// allocated outside and filled inside of function
+	int				iOutStr,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*iOutStr] if channels are combined
+										// or out[col + row*iOutStr + (ChannelIndex-1)*iOutStr*iNumRow] if channels are seperated
+	bool			bChannelSeperate);	// true, the channel stored seperated)

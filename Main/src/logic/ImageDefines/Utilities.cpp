@@ -400,6 +400,7 @@ int GetNumPixels(double sizeInMeters, double pixelSize)
 }
 
 // 2D Morphological process (a Warp up of Rudd's morpho2D)
+// Dilation, erosion and so on
 void Morpho_2d(
 	unsigned char* pbBuf,
 	unsigned int iSpan,
@@ -1095,3 +1096,295 @@ void Smooth2d_B2L(
 	delete [] pcTempInLine;
 	delete [] pcTempOutLine;
 }
+
+// Demosaic based on Gaussian interploation
+void Demosaic_Gaussian(
+	int				iNumCol,			// Image dimensions 
+	int				iNumRow,
+	unsigned char*	pcBayer,			// Input 8-bit Bayer image
+	int				iBayerStr,			// Addressed as bayer[col + row*bstride] 
+	BayerType		order,				// Bayer pattern order; use the enums in bayer.h
+	unsigned char*	pcOut,				// In/Out 24-bit BGR/YCrCb or 8-bit Y(luminance) image, 
+										// allocated outside and filled inside of function
+	int				iOutStr,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*iOutStr] if channels are combined
+										// or out[col + row*iOutStr + (ChannelIndex-1)*iOutStr*iNumRow] if channels are seperated
+	bool			bChannelSeperate)	// true, the channel stored seperated)
+{
+	/* Gaussian filter	[	1	2	1	] 
+						[	2	4	2	]
+						[	1	2	1	]
+	*/	
+	
+	// for pixel(1,1) with orign (0,0)
+	bool bRowR, bColG;
+	switch(order)
+	{
+	case BGGR:
+		bRowR = true;
+		bColG = false;
+		break;
+	case GBRG:
+		bRowR = true;
+		bColG = true;
+		break;
+	case GRBG:
+		bRowR = false;
+		bColG = true;
+		break;
+	case RGGB:
+		bRowR = false;
+		bColG = false;
+		break;
+	}
+
+	// For All pixele except ones on the edges
+	unsigned int iR, iG, iB;
+	unsigned char* pLine = pcBayer + iBayerStr;	// Second row
+	int iStep = 3;
+	if(bChannelSeperate)
+		iStep = 1;
+	unsigned char* pcLineB = pcOut + iOutStr; // Second row
+	unsigned char* pcLineG = pcLineB + 1;
+	unsigned char* pcLineR = pcLineG + 1;
+	if(bChannelSeperate)
+	{
+		pcLineG = pcLineB + iOutStr*iNumRow;
+		pcLineR = pcLineG + iOutStr*iNumRow;
+	}
+	unsigned char *pcR, *pcG, *pcB; 
+	for(int iy=1; iy<iNumRow-1; iy++)
+	{
+		// The second pixel in row
+		pcR = pcLineR + iStep;
+		pcG = pcLineG + iStep;
+		pcB = pcLineB + iStep;
+		for(int ix=1; ix<iNumCol-1; ix++)
+		{
+			if(bRowR)		
+			{				// G B G
+				if(bColG)	// R G R
+				{			// G B G
+					iR = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+					*pcR = (unsigned char)(iR/2);
+
+					iG = ((unsigned int)pLine[ix])*4 +
+						(unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
+						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+					*pcG = (unsigned char)(iG/8);
+
+					iB = (unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
+					*pcB = (unsigned char)(iB/2);
+				}			// B G B
+				else		// G R G
+				{			// B G B
+					*pcR = pLine[ix];
+
+					iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1] + 
+						(unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
+					*pcG = (unsigned char)(iG/4);
+
+					iB = (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
+						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+					*pcB = (unsigned char)(iB/4);
+				}
+			}
+			else
+			{				// G R G
+				if(bColG)	// B G B
+				{			// G R G
+					iR = (unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
+					*pcR = (unsigned char)(iR/2);
+
+					iG = ((unsigned int)pLine[ix])*4 +
+						(unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
+						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+					*pcG = (unsigned char)(iG/8);
+
+					iB = (unsigned int)pLine[ix-1]+ (unsigned int)pLine[ix+1];
+					*pcB = (unsigned char)(iB/2);
+				}			// R G R
+				else		// G B G
+				{			// R G R
+					iR = (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
+						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+					*pcR = (unsigned char)(iR/4);
+
+					iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1] + 
+						(unsigned int)pLine[ix-iBayerStr]+ (unsigned int)pLine[ix+iBayerStr];
+					*pcG = (unsigned char)(iG/4);
+
+					*pcB = pLine[ix];
+				}
+			}
+
+			bColG = !bColG;
+			pcR += iStep;	// Move one pixel in the same row
+			pcG	+= iStep;
+			pcB += iStep;
+		}
+		// Move one row
+		pLine += iBayerStr;
+		pcLineR += iOutStr;
+		pcLineG += iOutStr;
+		pcLineB += iOutStr;
+
+		bRowR = !bRowR;
+		bColG = !bColG;
+	}
+
+	// For first line begin with the second pixel
+	bRowR = !bRowR;			// pixel(0,1) relative to pixel(1,1)
+	bColG = !bColG;
+	pLine = pcBayer;		// first row
+	pcB = pcOut + iStep;	// Pixel(0,1)
+	pcG = pcB+1;
+	pcR = pcG+1;
+	if(bChannelSeperate)
+	{
+		pcG = pcB + iOutStr*iNumRow;
+		pcR = pcG + iOutStr*iNumRow;
+	}
+	for(int ix=1; ix<iNumCol-1; ix++)
+	{
+		if(bRowR)		
+		{
+			if(bColG)	// R G R
+			{			// G B G
+				iR = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcR = (unsigned char)(iR/2); 
+
+				*pcG = pLine[ix];
+
+				*pcB = pLine[ix+iBayerStr]; 
+			}
+			else		// G R G
+			{			// B G B
+				*pcR = pLine[ix];
+
+				iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcG = (unsigned char)(iG/2);
+
+				iB =  (unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+				*pcB = (unsigned char)(iB/2);
+			}	
+		}
+		else			 
+		{
+			if(bColG)	// B G B
+			{			// G R G
+				*pcR = pLine[ix+iBayerStr];
+
+				*pcG = pLine[ix];
+
+				iB = (unsigned int)pLine[ix-1]+(unsigned int)pLine[ix+1];
+				*pcB = (unsigned char)(iB/2); 
+			}
+			else		// G B G
+			{			// R G R
+				iR = (unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
+				*pcR = (unsigned char)(iR/2); 
+
+				iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcG = (unsigned char)(iG/2);
+
+				*pcB = pLine[ix];
+			}
+		}
+
+		// Move one pixel in the same row
+		bColG = !bColG;
+		pcR += iStep;
+		pcG += iStep;
+		pcB += iStep;
+	}
+
+	// For last line
+	bRowR = !bRowR; // pixel(iNumRow-1,1) relative to pixel (0,1)
+	bColG = !bColG;
+	pLine = pcBayer + (iNumRow-1)*iBayerStr;	// last row
+	pcB = pcOut + (iNumRow-1)*iOutStr+ iStep;	// pixel(iNumRow-1,1)
+	pcG = pcB+1;
+	pcR = pcG+1;
+	if(bChannelSeperate)
+	{
+		pcG = pcB + iOutStr*iNumRow;
+		pcR = pcG + iOutStr*iNumRow;
+	}
+	for(int ix=1; ix<iNumCol-1; ix++)
+	{
+		if(bRowR)		
+		{				// G B G
+			if(bColG)	// R G R
+			{			
+				iR = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcR = (unsigned char)(iR/2); 
+
+				*pcG = pLine[ix];
+
+				*pcB = pLine[ix-iBayerStr]; 
+			}			// B G B
+			else		// G R G
+			{			
+				*pcR = pLine[ix];
+
+				iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcG = (unsigned char)(iG/2);
+
+				iB =  (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1];
+				*pcB = (unsigned char)(iB/2);
+			}	
+		}
+		else			 
+		{				// G R G
+			if(bColG)	// B G B
+			{			
+				*pcR = pLine[ix-iBayerStr];
+
+				*pcG = pLine[ix];
+
+				iB = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcB = (unsigned char)(iB/2); 
+			}			// R G R
+			else		// G B G
+			{			
+				iR = (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1];
+				*pcR = (unsigned char)(iR/2); 
+
+				iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
+				*pcG = (unsigned char)(iG/2);
+
+				*pcB = pLine[ix];
+			}
+		}
+		// Move one pixel in the same row
+		bColG = !bColG;
+		pcR += iStep;
+		pcG += iStep;
+		pcB += iStep;
+	}
+	
+	// Copy to first and last rows
+	pcLineB = pcOut;
+	pcLineG = pcLineB+1;
+	pcLineR = pcLineG+1;
+	if(bChannelSeperate)
+	{
+		pcLineG = pcLineB + iOutStr*iNumRow;
+		pcLineR = pcLineG + iOutStr*iNumRow;
+	}
+	unsigned int iEnd = (iNumCol-1)*iStep;
+	for(int iy=0; iy<iNumRow; iy++)
+	{
+		pcLineR[0] = pcLineR[iStep];
+		pcLineG[0] = pcLineG[iStep];
+		pcLineB[0] = pcLineB[iStep];
+		pcLineR[iEnd] = pcLineR[iEnd-iStep];
+		pcLineG[iEnd] = pcLineG[iEnd-iStep];
+		pcLineB[iEnd] = pcLineB[iEnd-iStep];
+
+		pcLineR += iOutStr;
+		pcLineG += iOutStr;
+		pcLineB += iOutStr;
+	}
+}
+

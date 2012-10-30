@@ -189,6 +189,81 @@ bool ColorImage::DemosiacFrom(unsigned char* pBayerBuf, int iCols, int iRows, in
 	return(true);
 }
 
+bool  ColorImage::DemosaicFrom_Gaussian(const Image* bayerImg, BayerType type)
+{
+	int iRows = bayerImg->Rows();
+	int iCols = bayerImg->Columns();
+	int iBayerSpan = bayerImg->PixelRowStride();
+
+	// If size in pixel is not the same
+	if(_rows != iRows || iCols != iCols)
+	{
+		_rows = iRows;
+		_columns = iCols;
+		_pixelRowStride = iCols;
+
+		DeleteBufferIfOwner();
+		_buffer = new unsigned char[BufferSizeInBytes()];
+		_IOwnMyOwnBuffer = true;
+	}
+
+	_colorStyle = BGR;
+	_bChannelStoredSeperate = false;
+	
+	int iOutSpan =  _pixelRowStride;
+	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
+		iOutSpan = ByteRowStride();
+
+	Demosaic_Gaussian(
+		iCols,        
+		iRows,
+		bayerImg->GetBuffer(),      
+		bayerImg->PixelRowStride(),       
+		type,          
+		_buffer,         
+		iOutSpan,       				
+		_bChannelStoredSeperate);	// true, the channel stored seperated)
+
+	_thisToWorld = bayerImg->GetTransform(); 
+	_nominalTrans = bayerImg->GetNominalTransform();
+
+	return(true);
+}
+
+bool ColorImage::DemosiacFrom_Gaussian(unsigned char* pBayerBuf, int iCols, int iRows, int iSpan, BayerType type)
+{
+	// If size in pixel is not the same
+	if(_rows != iRows || _columns != iCols)
+	{
+		_rows = iRows;
+		_columns = iCols;
+		_pixelRowStride = iCols;
+
+		DeleteBufferIfOwner();
+		_buffer = new unsigned char[BufferSizeInBytes()];
+		_IOwnMyOwnBuffer = true;
+	}
+
+	_colorStyle = BGR;
+	_bChannelStoredSeperate = false;
+
+	int iOutSpan =  _pixelRowStride;
+	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
+		iOutSpan = ByteRowStride();
+	
+	Demosaic_Gaussian(
+		iCols,        
+		iRows,
+		pBayerBuf,      
+		iSpan,       
+		type,          
+		_buffer,         
+		iOutSpan,       				
+		_bChannelStoredSeperate);	// true, the channel stored seperated)
+
+	return(true);
+}
+
 // Convert Color image into greyscal image, 
 // greyscale image will be configurated and its buffer will be allocated 
 bool ColorImage::Color2Luminance(Image* pGreyImg)
@@ -202,7 +277,7 @@ bool ColorImage::Color2Luminance(Image* pGreyImg)
 	{
 		for(unsigned int ix=0; ix<_columns; ix++)
 		{
-			unsigned char Y = (pColorLine[ix*_bytesPerPixel] + pColorLine[ix*_bytesPerPixel+1]*2 + pColorLine[ix*_bytesPerPixel+2])>>2;	// Y	
+			unsigned char Y = (unsigned char)(((int)pColorLine[ix*_bytesPerPixel] + ((int)pColorLine[ix*_bytesPerPixel+1])<<1 + (int)pColorLine[ix*_bytesPerPixel+2])>>2);	// Y	
 			pGreyLine[ix] = Y;
 		}
 		pColorLine += ByteRowStride();		

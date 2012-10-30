@@ -120,6 +120,7 @@ public:
 							double dPupilDistance);
 
 	// Fast version of morph for grayscale image and use Nearest neightborhood
+	// For mask image creation
 	bool				GrayNNMorphFrom(Image* pImgIn, UIRect roi);
 
 	bool				Bayer2Lum(BayerType type);

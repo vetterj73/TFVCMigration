@@ -425,6 +425,7 @@ bool Image::MorphFrom(
 
 
 // Fast version of morph for grayscale image and use Nearest neightborhood
+// For mask image creation
 bool Image::GrayNNMorphFrom(Image* pImgIn, UIRect roi)
 {
 	/*
