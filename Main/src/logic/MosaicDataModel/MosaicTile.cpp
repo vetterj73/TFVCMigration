@@ -48,7 +48,6 @@ namespace MosaicDM
 
 	}
 
-
 	/// Set nominal transform pTrans is a size 8 arrary for projecitve transform
 	void MosaicTile::SetNominalTransform(double dTrans[9])
 	{
@@ -119,9 +118,14 @@ namespace MosaicDM
 				_pImage->CreateOwnBuffer();
 			}	
 
-			((ColorImage*)_pImage)->DemosiacFrom(pImageBuffer, 
-				_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
-				(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			if(!_pMosaicLayer->GetMosaicSet()->IsGaussianDemosaic())
+				((ColorImage*)_pImage)->DemosiacFrom(pImageBuffer, 
+					_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
+					(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			else
+				((ColorImage*)_pImage)->DemosaicFrom_Gaussian(pImageBuffer, 
+					_pImage->Columns(), _pImage->Rows(), _pImage->Columns(),
+					(BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
 
 			/*/ for debug
 			ImgTransform trans;
@@ -140,7 +144,7 @@ namespace MosaicDM
 			//*/
 
 			/*/ For debug
-			((ColorImage*)_pImage)->SetColorStyle(RGB);
+			((ColorImage*)_pImage)->SetColorStyle(BGR);
 			((ColorImage*)_pImage)->SetChannelStoreSeperated(false);
 			_pImage->Save("C:\\Temp\\ColorFov.bmp"); 
 			//*/
@@ -155,6 +159,17 @@ namespace MosaicDM
 			{
 				_pImage->SetBuffer(pImageBuffer);
 			}
+
+			/* for debug
+			ColorImage image(BGR, false);
+			image.DemosaicFrom_Gaussian(_pImage, (BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			image.Save("C:\\Temp\\ColorFov.bmp");
+			ColorImage image2(YCrCb, true);
+			image2.DemosaicFrom(_pImage, (BayerType)_pMosaicLayer->GetMosaicSet()->GetBayerType());
+			image2.SetColorStyle(BGR);
+			image2.SetChannelStoreSeperated(false);
+			image2.Save("C:\\Temp\\ColorFov2.bmp");
+			//*/
 		}
 
 		_containsImage = true;

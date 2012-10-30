@@ -202,6 +202,11 @@ namespace MMosaicDM
 					iID, iLayer, iTrig, iCam, dCol, dRow));
 			}
 
+			void SetGaussianDemosaic(bool bValue)
+			{
+				_pMosaicSet->SetGaussianDemosaic(bValue);
+			}
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		

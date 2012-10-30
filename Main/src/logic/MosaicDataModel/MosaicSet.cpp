@@ -78,6 +78,7 @@ namespace MosaicDM
 		_bBayerPattern = bBayerPattern;
 		_iBayerType = iBayerType;
 		_bSkipDemosaic = bSkipDemosaic;
+		_bGaussianDemosaic = false;
 
 		_pDemosaicJobManager = NULL;
 		_demosaicJobPtrList.clear();

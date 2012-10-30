@@ -133,6 +133,8 @@ namespace MosaicDM
 			int GetBayerType(){return _iBayerType;};
 			void SetSeperateProcessStages(bool bValue) { _bSeperateProcessStages = bValue;};
 			bool IsSkipDemosaic() { return _bSkipDemosaic;};
+			bool IsGaussianDemosaic() { return _bGaussianDemosaic;};
+			void SetGaussianDemosaic(bool bValue) { _bGaussianDemosaic = bValue;};
 			
 			///
 			/// Calculate the total number of triggers in the MosaicSet
@@ -212,6 +214,7 @@ namespace MosaicDM
 			bool _bBayerPattern;
 			int _iBayerType;
 			bool _bSkipDemosaic;
+			bool _bGaussianDemosaic;
 
 			CyberJob::JobManager *_pDemosaicJobManager;
 			list<DemosaicJob*> _demosaicJobPtrList;
