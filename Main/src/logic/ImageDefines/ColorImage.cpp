@@ -54,7 +54,7 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 			if(_colorStyle ==  BGR && value == YCrCb)
 			{
 				iTemp[0] = (pLine[iAddress[2]] + pLine[iAddress[1]]*2 + pLine[iAddress[0]])>>2;	// Y	
-				iTemp[1] = pLine[iAddress[2]] - iTemp[0] + 128;										// Cr
+				iTemp[1] = pLine[iAddress[2]] - iTemp[0] + 128;									// Cr
 				iTemp[2] = pLine[iAddress[0]] - iTemp[0] + 128;									// Cb
 			}
 
@@ -277,7 +277,7 @@ bool ColorImage::Color2Luminance(Image* pGreyImg)
 	{
 		for(unsigned int ix=0; ix<_columns; ix++)
 		{
-			unsigned char Y = (unsigned char)(((int)pColorLine[ix*_bytesPerPixel] + ((int)pColorLine[ix*_bytesPerPixel+1])<<1 + (int)pColorLine[ix*_bytesPerPixel+2])>>2);	// Y	
+			unsigned char Y = (unsigned char)(((int)pColorLine[ix*_bytesPerPixel] + (((int)pColorLine[ix*_bytesPerPixel+1])<<1) + (int)pColorLine[ix*_bytesPerPixel+2])>>2);	// Y	
 			pGreyLine[ix] = Y;
 		}
 		pColorLine += ByteRowStride();		
