@@ -13,7 +13,10 @@ ColorImage::~ColorImage(void)
 
 void ColorImage::SetColorStyle(COLORSTYLE value)
 {
-	if(_colorStyle == value)
+	// Validation check
+	if((_colorStyle == value) ||
+		(_colorStyle != YCrCb && _colorStyle != BGR) ||
+		(value != YCrCb && value != BGR))
 		return;
 	
 	unsigned char* pLine = _buffer;
@@ -70,7 +73,7 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 		if(_bChannelStoredSeperate)
 			pLine += PixelRowStride();
 		else
-			pLine += ByteRowStride();		
+			pLine += PixelRowStride()*3;		
 	}
 
 	_colorStyle = value;
@@ -103,11 +106,11 @@ void ColorImage::SetChannelStoreSeperated(bool bValue)
 		if(_bChannelStoredSeperate)
 		{			
 			pInLine += PixelRowStride();
-			pOutLine += ByteRowStride();
+			pOutLine += PixelRowStride()*3;
 		}
 		else
 		{
-			pInLine += ByteRowStride();
+			pInLine += PixelRowStride()*3;
 			pOutLine += PixelRowStride();
 		}
 	}
@@ -137,7 +140,7 @@ bool  ColorImage::DemosaicFrom(const Image* bayerImg, BayerType type)
 	}
 
 	int iOutSpan =  _pixelRowStride;
-	if(_colorStyle!=YONLY && _bChannelStoredSeperate)
+	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
 		iOutSpan = ByteRowStride();
 	
 	BayerLum(                  
