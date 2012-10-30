@@ -1165,15 +1165,15 @@ void Demosaic_Gaussian(
 				if(bColG)	// R G R
 				{			// G B G
 					iR = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1];
-					*pcR = (unsigned char)(iR/2);
+					*pcR = (unsigned char)(iR>>1);
 
-					iG = ((unsigned int)pLine[ix])*4 +
+					iG = (((unsigned int)pLine[ix])<<2) +
 						(unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
 						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
-					*pcG = (unsigned char)(iG/8);
+					*pcG = (unsigned char)(iG>>3);
 
 					iB = (unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
-					*pcB = (unsigned char)(iB/2);
+					*pcB = (unsigned char)(iB>>1);
 				}			// B G B
 				else		// G R G
 				{			// B G B
@@ -1181,11 +1181,11 @@ void Demosaic_Gaussian(
 
 					iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1] + 
 						(unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
-					*pcG = (unsigned char)(iG/4);
+					*pcG = (unsigned char)(iG>>2);
 
 					iB = (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
 						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
-					*pcB = (unsigned char)(iB/4);
+					*pcB = (unsigned char)(iB>>2);
 				}
 			}
 			else
@@ -1193,25 +1193,25 @@ void Demosaic_Gaussian(
 				if(bColG)	// B G B
 				{			// G R G
 					iR = (unsigned int)pLine[ix-iBayerStr] + (unsigned int)pLine[ix+iBayerStr];
-					*pcR = (unsigned char)(iR/2);
+					*pcR = (unsigned char)(iR>>1);
 
-					iG = ((unsigned int)pLine[ix])*4 +
+					iG = (((unsigned int)pLine[ix])<<2) +
 						(unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
 						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
-					*pcG = (unsigned char)(iG/8);
+					*pcG = (unsigned char)(iG>>3);
 
 					iB = (unsigned int)pLine[ix-1]+ (unsigned int)pLine[ix+1];
-					*pcB = (unsigned char)(iB/2);
+					*pcB = (unsigned char)(iB>>1);
 				}			// R G R
 				else		// G B G
 				{			// R G R
 					iR = (unsigned int)pLine[ix-iBayerStr-1] + (unsigned int)pLine[ix-iBayerStr+1]+
 						(unsigned int)pLine[ix+iBayerStr-1] + (unsigned int)pLine[ix+iBayerStr+1];
-					*pcR = (unsigned char)(iR/4);
+					*pcR = (unsigned char)(iR>>2);
 
 					iG = (unsigned int)pLine[ix-1] + (unsigned int)pLine[ix+1] + 
 						(unsigned int)pLine[ix-iBayerStr]+ (unsigned int)pLine[ix+iBayerStr];
-					*pcG = (unsigned char)(iG/4);
+					*pcG = (unsigned char)(iG>>2);
 
 					*pcB = pLine[ix];
 				}
