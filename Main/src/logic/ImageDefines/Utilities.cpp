@@ -1108,6 +1108,7 @@ void Demosaic_Gaussian(
 										// allocated outside and filled inside of function
 	int				iOutStr,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*iOutStr] if channels are combined
 										// or out[col + row*iOutStr + (ChannelIndex-1)*iOutStr*iNumRow] if channels are seperated
+	COLORSTYLE		type,				// Type of color BGR/YCrCb
 	bool			bChannelSeperate)	// true, the channel stored seperated)
 {
 	/* Gaussian filter	[	1	2	1	] 
@@ -1217,6 +1218,27 @@ void Demosaic_Gaussian(
 				}
 			}
 
+			if(type == YCrCb)
+			{
+				int iTemp[3];
+				iTemp[0] = ((int)(*pcR) + (int)(*pcG)*2 + (int)(*pcB))>>2;		// Y	
+				iTemp[1] = (int)(*pcR) - iTemp[0] + 128;			// Cr
+				iTemp[2] = (int)(*pcB) - iTemp[0] + 128;			// Cb
+
+				// Write back
+				for(int i=0; i<3; i++)
+				{
+					if(iTemp[i]<0) iTemp[i]=0;
+					if(iTemp[i]>255) iTemp[i]=255;
+					if(i==0)
+						*pcB = (unsigned char)iTemp[i];
+					else if(i==1)
+						*pcG = (unsigned char)iTemp[i];
+					else
+						*pcR = (unsigned char)iTemp[i];
+				}
+			}
+		
 			bColG = !bColG;
 			pcR += iStep;	// Move one pixel in the same row
 			pcG	+= iStep;

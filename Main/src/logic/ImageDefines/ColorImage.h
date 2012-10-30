@@ -13,7 +13,7 @@ public:
 	bool DemosaicFrom(const Image* bayerImg, BayerType type);
 	bool DemosiacFrom(unsigned char* pBayerBuf, int iColums, int iRows, int iSpan, BayerType type);
 	bool DemosaicFrom_Gaussian(const Image* bayerImg, BayerType type);
-	bool DemosiacFrom_Gaussian(unsigned char* pBayerBuf, int iColums, int iRows, int iSpan, BayerType type);
+	bool DemosaicFrom_Gaussian(unsigned char* pBayerBuf, int iColums, int iRows, int iSpan, BayerType type);
 
 	COLORSTYLE GetColorStyle() {return _colorStyle;};
 	void SetColorStyle(COLORSTYLE value);

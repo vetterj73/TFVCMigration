@@ -41,7 +41,7 @@ namespace CyberStitchFidTester
         private static int _iLayerIndex4Edge = 0;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
-        private static bool _bSkipDemosaic = true; // true: skip demosaic for bayer image
+        private static bool _bSkipDemosaic = false; // true: skip demosaic for bayer image
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
         private static string _simulationFile = "";

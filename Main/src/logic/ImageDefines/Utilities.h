@@ -129,4 +129,5 @@ void Demosaic_Gaussian(
 										// allocated outside and filled inside of function
 	int				iOutStr,			// Addressed as out[col*NumOfChannel+ChannelIndex + row*iOutStr] if channels are combined
 										// or out[col + row*iOutStr + (ChannelIndex-1)*iOutStr*iNumRow] if channels are seperated
+	COLORSTYLE		type,				// Type of color BGR/YCrCb
 	bool			bChannelSeperate);	// true, the channel stored seperated)

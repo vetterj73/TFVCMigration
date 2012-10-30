@@ -56,9 +56,9 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 			*/
 			if(_colorStyle ==  BGR && value == YCrCb)
 			{
-				iTemp[0] = (pLine[iAddress[2]] + pLine[iAddress[1]]*2 + pLine[iAddress[0]])>>2;	// Y	
-				iTemp[1] = pLine[iAddress[2]] - iTemp[0] + 128;									// Cr
-				iTemp[2] = pLine[iAddress[0]] - iTemp[0] + 128;									// Cb
+				iTemp[0] = ((int)pLine[iAddress[2]] + (int)pLine[iAddress[1]]*2 + (int)pLine[iAddress[0]])>>2;	// Y	
+				iTemp[1] = (int)pLine[iAddress[2]] - (int)iTemp[0] + 128;									// Cr
+				iTemp[2] = (int)pLine[iAddress[0]] - (int)iTemp[0] + 128;									// Cb
 			}
 
 			// Write back
@@ -66,7 +66,7 @@ void ColorImage::SetColorStyle(COLORSTYLE value)
 			{
 				if(iTemp[i]<0) iTemp[i]=0;
 				if(iTemp[i]>255) iTemp[i]=255;
-				pLine[iAddress[i]] = iTemp[i];
+				pLine[iAddress[i]] = (unsigned char)iTemp[i];
 			}
 		}
 		// Next line in the output buffer
@@ -209,9 +209,6 @@ bool  ColorImage::DemosaicFrom_Gaussian(const Image* bayerImg, BayerType type)
 		_buffer = new unsigned char[BufferSizeInBytes()];
 		_IOwnMyOwnBuffer = true;
 	}
-
-	_colorStyle = BGR;
-	_bChannelStoredSeperate = false;
 	
 	int iOutSpan =  _pixelRowStride;
 	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
@@ -224,7 +221,8 @@ bool  ColorImage::DemosaicFrom_Gaussian(const Image* bayerImg, BayerType type)
 		bayerImg->PixelRowStride(),       
 		type,          
 		_buffer,         
-		iOutSpan,       				
+		iOutSpan,  
+		_colorStyle,
 		_bChannelStoredSeperate);	// true, the channel stored seperated)
 
 	_thisToWorld = bayerImg->GetTransform(); 
@@ -233,7 +231,7 @@ bool  ColorImage::DemosaicFrom_Gaussian(const Image* bayerImg, BayerType type)
 	return(true);
 }
 
-bool ColorImage::DemosiacFrom_Gaussian(unsigned char* pBayerBuf, int iCols, int iRows, int iSpan, BayerType type)
+bool ColorImage::DemosaicFrom_Gaussian(unsigned char* pBayerBuf, int iCols, int iRows, int iSpan, BayerType type)
 {
 	// If size in pixel is not the same
 	if(_rows != iRows || _columns != iCols)
@@ -247,9 +245,6 @@ bool ColorImage::DemosiacFrom_Gaussian(unsigned char* pBayerBuf, int iCols, int 
 		_IOwnMyOwnBuffer = true;
 	}
 
-	_colorStyle = BGR;
-	_bChannelStoredSeperate = false;
-
 	int iOutSpan =  _pixelRowStride;
 	if(_colorStyle!=YONLY && !_bChannelStoredSeperate)
 		iOutSpan = ByteRowStride();
@@ -261,7 +256,8 @@ bool ColorImage::DemosiacFrom_Gaussian(unsigned char* pBayerBuf, int iCols, int 
 		iSpan,       
 		type,          
 		_buffer,         
-		iOutSpan,       				
+		iOutSpan,    
+		_colorStyle, 
 		_bChannelStoredSeperate);	// true, the channel stored seperated)
 
 	return(true);
