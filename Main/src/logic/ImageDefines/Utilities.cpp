@@ -38,7 +38,7 @@ void inverse3x3(
 }
 
 // Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
-// Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
+// Support convert YCrCb/BGR seperate channel to BGR combined channels, or grayscale (one channel) only
 // Assume the center of image corresponding a vertical line from camera to object surface
 // Both output image and input image are 8bits/pixel (can add 16bits/pixel support easily)
 // pInBuf, iInSpan, iInWidth and iInHeight: input buffer and its span, width and height
@@ -58,6 +58,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3], unsigned int iNumChannels,
+	bool bIsYCrCb,
 	unsigned char* pHeightImage, unsigned int iHeightSpan,
 	double dHeightResolution, double dPupilDistance,
 	double dPerpendicalPixelX, double dPerpendicalPixelY) 
@@ -260,7 +261,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
     } // else
 
 	// YCrCb to BGR
-	if(iNumChannels==3)
+	if(bIsYCrCb && (iNumChannels==3))
 	{
 		pOutLine = pOutBuf + iOutROIStartY*iOutSpan;
 		for (iY=iOutROIStartY; iY<iOutROIStartY+iOutROIHeight; ++iY) 

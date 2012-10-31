@@ -113,7 +113,8 @@ public:
 
 	DRect				GetBoundBoxInWorld() const;
 	bool				MorphFrom(
-							Image* pImgIn, 
+							Image* pImgIn,
+							bool bIsYCrCb,
 							UIRect roi,
 							const Image* pHeightImg, 
 							double dHeightResolution, 

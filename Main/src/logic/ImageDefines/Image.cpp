@@ -340,6 +340,7 @@ DRect Image::GetBoundBoxInWorld() const
 // Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 bool Image::MorphFrom(
 	Image* pImgIn, 
+	bool bIsYCrCb,
 	UIRect roi,
 	const Image* pHeightImg, 
 	double dHeightResolution, 
@@ -404,7 +405,8 @@ bool Image::MorphFrom(
 			_buffer, ByteRowStride(),
 			roi.FirstColumn, roi.FirstRow,
 			roi.Columns(), roi.Rows(),
-			dT, GetBytesPerPixel());
+			dT, GetBytesPerPixel(),
+			bIsYCrCb);
 	}
 	else
 	{
@@ -415,6 +417,7 @@ bool Image::MorphFrom(
 			roi.FirstColumn, roi.FirstRow,
 			roi.Columns(), roi.Rows(),
 			dT, GetBytesPerPixel(),
+			bIsYCrCb,
 			pHeightImg->GetBuffer(), pHeightImg->PixelRowStride(),
 			dHeightResolution, dPupilDistance,
 			dPerpendicalPixelX, dPerpendicalPixelY);

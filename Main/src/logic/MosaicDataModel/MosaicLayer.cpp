@@ -139,7 +139,7 @@ namespace MosaicDM
 		if(_pStitchedImage != NULL)
 			return;
 
-		if(GetMosaicSet()->IsBayerPattern() && !GetMosaicSet()->IsSkipDemosaic())
+		if(GetMosaicSet()->IsBayerPattern())
 			_pStitchedImage = new ColorImage(BGR, false);
 		else 
 			_pStitchedImage = new Image();		
@@ -334,12 +334,14 @@ namespace MosaicDM
 				// For test purpose, it will modify the image buffer, 
 				// It isn't optimized
 				// When bayer patern without demosaic
-				if(_pMosaicSet->IsBayerPattern() && _pMosaicSet->IsSkipDemosaic())
-					pFOV->Bayer2Lum((BayerType)_pMosaicSet->GetBayerType());
+				//if(_pMosaicSet->IsBayerPattern() && _pMosaicSet->IsSkipDemosaic())
+				//	pFOV->Bayer2Lum((BayerType)_pMosaicSet->GetBayerType());
 
+				bool bDemosaic = _pMosaicSet->IsBayerPattern() && _pMosaicSet->IsSkipDemosaic();
 				MorphJob *pJob = new MorphJob(_pStitchedImage, pFOV,
 					(unsigned int)_piStitchGridCols[iCam], (unsigned int)_piStitchGridRows[iTrig+1], 
 					(unsigned int)(_piStitchGridCols[iCam+1]-1), (unsigned int)(_piStitchGridRows[iTrig]-1),
+					bDemosaic, (BayerType)_pMosaicSet->GetBayerType(),	_pMosaicSet->IsGaussianDemosaic(),
 					pHeightImage, dHeightResolution, dPupilDistance);
 				jm.AddAJob((Job*)pJob);
 				morphJobs.push_back(pJob);
@@ -1163,7 +1165,7 @@ namespace MosaicDM
 					continue;
 
 				Image* pFovImg = GetImage(_numTriggers-1-iInvTrig, iCam);
-				pImage->MorphFrom(pFovImg, roi, pHeightImage, dHeightResolution, dPupilDistance);
+				pImage->MorphFrom(pFovImg, true, roi, pHeightImage, dHeightResolution, dPupilDistance);
 			}
 		}
 

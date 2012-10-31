@@ -359,6 +359,8 @@ namespace CyberStitchTester
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
 
+            //_mosaicSet.SetGaussianDemosaic(true);
+
             // Fill mosaicset
             if (_bUseCoreAPI)
                 SimMosaicTranslator.InitializeMosaicFromCurrentSimConfig(_mosaicSet, _bMaskForDiffDevices);
@@ -573,15 +575,15 @@ namespace CyberStitchTester
                 Output("Begin morph");
 
                 if (_bBayerPattern) // for bayer pattern
-                {
-                    /* if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1)) == false)
-                        {
-                            Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1));
-                        }
-
-                        if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
-                            Output("Could not save mosaic images");
-                        */
+                {   /*
+                    if (Directory.Exists("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1)) == false)
+                    {
+                        Directory.CreateDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1));
+                    }
+                    
+                    if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
+                        Output("Could not save mosaic images");
+                    */
                 }
 
                 _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + iCycleCount + ".bmp",

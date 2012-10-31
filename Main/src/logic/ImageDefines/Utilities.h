@@ -35,6 +35,7 @@ bool ImageMorph(unsigned char* pInBuf,  unsigned int iInSpan,
 	unsigned int iOutROIStartX, unsigned int iOutROIStartY,
 	unsigned int iOutROIWidth, unsigned int iOutROIHeight,
 	double dInvTrans[3][3], unsigned int iNumChannels,
+	bool bIsYCrCb = true,
 	unsigned char* pHeightImage=0, unsigned int iHeightSpan=0,
 	double dHeightResolution=0, double dPupilDistance=0,
 	double dPerpendicalPixelX=0, double dPerpendicalPixelY=0);
