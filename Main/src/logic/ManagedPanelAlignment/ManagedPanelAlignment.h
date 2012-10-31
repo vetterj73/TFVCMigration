@@ -146,6 +146,8 @@ namespace PanelAlignM {
 		// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
 		double GetAlignmentTime();
 
+		bool GetCamModelPanelHeight(unsigned int iDeviceIndex, array<double>^ pZCoef);
+
 	private:
 		PanelAligner* _pAligner;
 		double _pixelSizeX;

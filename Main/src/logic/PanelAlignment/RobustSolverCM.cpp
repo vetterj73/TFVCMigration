@@ -427,8 +427,6 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	else
 		pPairList = pOverlap->GetFinePairListPtr();
 
-	
-
 	for(list<CorrelationPair>::iterator i= pPairList->begin(); i!=pPairList->end(); i++)
 	{
 		// Skip any fine that is not processed or not good
@@ -1438,5 +1436,18 @@ void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
 		of.close();
 	} */
 	delete [] workspace;
+}
+
+
+bool RobustSolverCM::GetPanelHeight(unsigned int iDeviceIndex, double pZCoef[16])
+{
+	if(iDeviceIndex >= _iNumDevices)
+		return(false);
+
+	for(int i=0; i<4; i++)
+		for(int j=0; j<4; j++)
+			pZCoef[i*4+j] = _zCoef[iDeviceIndex][i][j];
+
+	return(true);
 }
 

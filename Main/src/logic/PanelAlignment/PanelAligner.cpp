@@ -285,6 +285,14 @@ void PanelAligner::SetSkipDemosaic(bool bValue)
 	CorrelationParametersInst.bSkipDemosaic = bValue;
 }
 
+bool PanelAligner::GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16])
+{
+	if(!CorrelationParametersInst.bUseCameraModelStitch && !CorrelationParametersInst.bUseCameraModelIterativeStitch)
+		return(false);
+
+	return ((RobustSolverCM*)_pSolver)->GetPanelHeight(iDeviceIndex, pZCoef);
+}
+
 #pragma endregion
 
 

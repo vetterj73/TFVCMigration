@@ -273,4 +273,19 @@ namespace PanelAlignM {
 	{
 		return _pAligner->GetAlignmentTime(); 
 	};
+
+	bool ManagedPanelAlignment::GetCamModelPanelHeight(unsigned int iDeviceIndex, array<double>^ pZCoef)
+	{
+		if(pZCoef->Length < 16)
+			return(false);
+
+		double pZ[16];
+		if(!_pAligner->GetCamModelPanelHeight(iDeviceIndex, pZ))
+			return(false);
+
+		for(int i=0; i<16; i++)
+			pZCoef[i] = pZ[i];
+
+		return(true);
+	}
 }

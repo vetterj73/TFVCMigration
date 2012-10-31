@@ -84,6 +84,8 @@ public:
 
 	// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
 	double GetAlignmentTime() {return _dAlignmentTime;};
+	
+	bool GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
 protected:
 	// CleanUp internal stuff for new production or desctructor

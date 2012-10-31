@@ -571,6 +571,12 @@ namespace CyberStitchTester
                 iCycleCount++;
                 // After a panel is stitched and before aligner is reset for next panel
                 ManagedPanelFidResultsSet fidResultSet = _aligner.GetFiducialResultsSet();
+                if (_bUseCameraModel || _bUseIterativeCameraModel)
+                {
+                    double[] zCof = new double[16];
+                    if (!_aligner.GetCamModelPanelHeight(0, zCof))
+                        Output("Failed to get panel Z Coff for camera model!");
+                }
 
                 Output("Begin morph");
 

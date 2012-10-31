@@ -44,7 +44,7 @@ public:
 	virtual void SolveXAlgH();
 	virtual void			FlattenFiducials(PanelFiducialResultsSet* fiducialSet);
 
-	
+	bool GetPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
 protected:
 	void	ReorderAndTranspose(bool bRemoveEmptyRows);
