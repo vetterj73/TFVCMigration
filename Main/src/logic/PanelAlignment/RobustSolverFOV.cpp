@@ -431,11 +431,11 @@ bool RobustSolverFOV::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			continue;
 
 		// Get Centers of ROIs
-		double rowImgA = (i->GetFirstRoi().FirstRow + i->GetFirstRoi().LastRow)/ 2.0;
-		double colImgA = (i->GetFirstRoi().FirstColumn + i->GetFirstRoi().LastColumn)/ 2.0;
+		double rowImgA = i->GetFirstRoi().RowCenter();
+		double colImgA = i->GetFirstRoi().ColumnCenter();
 
-		double rowImgB = (i->GetSecondRoi().FirstRow + i->GetSecondRoi().LastRow)/ 2.0;
-		double colImgB = (i->GetSecondRoi().FirstColumn + i->GetSecondRoi().LastColumn)/ 2.0;
+		double rowImgB = i->GetSecondRoi().RowCenter();
+		double colImgB = i->GetSecondRoi().ColumnCenter();
 
 		// Get offset
 		double offsetRows = result.RowOffset;
@@ -515,11 +515,11 @@ bool RobustSolverFOV::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 		return(false);
 
 	// Get Centers of ROIs
-	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
-	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+	double rowImgA = pPair->GetFirstRoi().RowCenter();
+	double colImgA = pPair->GetFirstRoi().ColumnCenter();
 
-	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
-	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+	double rowImgB = pPair->GetSecondRoi().RowCenter();
+	double colImgB = pPair->GetSecondRoi().ColumnCenter();
 	double dCadCenX, dCadCenY;
 	pOverlap->GetCadImage()->ImageToWorld(rowImgB, colImgB, &dCadCenX, &dCadCenY);
 
@@ -590,11 +590,11 @@ bool RobustSolverFOV::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		return(false);
 
 	// Get Centers of ROIs (fiducial image is always the second one)
-	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
-	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+	double rowImgA = pPair->GetFirstRoi().RowCenter();
+	double colImgA = pPair->GetFirstRoi().ColumnCenter();
 
-	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
-	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+	double rowImgB = pPair->GetSecondRoi().RowCenter();
+	double colImgB = pPair->GetSecondRoi().ColumnCenter();
 	double dFidRoiCenX, dFidRoiCenY; // ROI center of fiducial image (not fiducail center or image center) in world space
 	pOverlap->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidRoiCenX, &dFidRoiCenY);
 
