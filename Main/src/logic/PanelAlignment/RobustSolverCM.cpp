@@ -40,43 +40,45 @@ RobustSolverCM::RobustSolverCM(
 		unsigned int iMaxNumCorrelations,
 		MosaicSet* pSet): 	RobustSolver( pFovOrderMap)
 {
-	// constructor, matrix size is changed, setup up all of the same variables
+
+	// Constant parameter
 	_iNumBasisFunctions = 4;
 	_iNumZTerms = 10;		// Z terms -- 3rd order bi-variate polynomial
 	_iNumParamsPerIndex = 3;  // per trigger X, Y, theta_Z values
+
+	// Input 
 	_pSet = pSet;
+	_iMaxNumCorrelations = iMaxNumCorrelations;
+
+	// Max Camera number per device, device number and trigger number
 	_iNumCameras = CountCameras();  // number per SIM, must be the same for All SIMs
 	_iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
-	_iMaxNumCorrelations = iMaxNumCorrelations;
-	
-	// numbers of combinations of SIM pairs
-	int nCombinations[6] = {0,0,1,3,6,10}; // zero or 1 SIM have 0 pairs, never expect more than 5 SIMs
-	// have only implemented through 3 SIMs
+		// have only implemented through 3 SIMs
 	int numLayers = _pSet->GetNumMosaicLayers();
-	_iNumDevices = 0;
-	for (int i=0; i<numLayers; i++)
-		if (_pSet->GetLayer(i)->DeviceIndex() > _iNumDevices)
-			_iNumDevices = _pSet->GetLayer(i)->DeviceIndex();
-	_iNumDevices += 1;
+	_iNumDevices = _pSet->GetNumDevice();
 	if (_iNumDevices > 3)
 			LOG.FireLogEntry(LogTypeError, "More than 3 SIMs");	
+	
+	// Decide Matrics sizes
+		// numbers of combinations of SIM pairs
+	int nCombinations[6] = {0,0,1,3,6,10}; // zero or 1 SIM have 0 pairs, never expect more than 5 SIMs
 	_iNumCalDriftTerms = _iNumDevices * _iNumCameras * 2;
-	// adapt to SIM to SIM mounting differences 
-	// width needed for CM fit
+		// adapt to SIM to SIM mounting differences 
+		// width needed for CM fit
 	_iStartColZTerms = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
 	_iMatrixWidth = _iStartColZTerms + _iNumZTerms + (_iNumDevices-1)*2;// additional width needed for Z mount differences
-	// allocate larger block for iterative solver, 
-	// later will merge the two methods and get rid of this step
+		// allocate larger block for iterative solver, 
+		// later will merge the two methods and get rid of this step
 	unsigned int iMatrixWidthAllocated = _iTotalNumberOfTriggers * _iNumParamsPerIndex + _iNumZTerms + _iNumCalDriftTerms;
 	_iMatrixHeight = _iNumZTerms										// constrain Z
 					+ _iTotalNumberOfTriggers * _iNumParamsPerIndex		// constrain Xtrig, Ytrig, theta_trig
 					+ _iNumCalDriftTerms + _iNumDevices*2				// constrain cal drift to 0, sums per device and direction to 0
 					+ 2 * nCombinations[_iNumDevices]					// constrain z mount terms
 					+ 2*_iMaxNumCorrelations;
-	// TODO add height for total number of constraint terms
-
+		// TODO add height for total number of constraint terms
 	_iMatrixSize = iMatrixWidthAllocated * _iMatrixHeight;
 
+	// Allocate matrics
 	_dMatrixA = new double[_iMatrixSize];
 	_dMatrixACopy = new double[_iMatrixSize];
 	
@@ -86,6 +88,8 @@ RobustSolverCM::RobustSolverCM(
 	_dVectorX = new double[iMatrixWidthAllocated];
 	
 	_iLengthNotes = 200;
+
+	// For debug
 	//if(true)  // TODO make this selectable
 	//{
 	_pdWeights = new double[_iMatrixHeight];
@@ -94,6 +98,7 @@ RobustSolverCM::RobustSolverCM(
 		_pcNotes[i] = new char[_iLengthNotes];
 	//}
 
+	// Set to default values
 	ZeroTheSystem();
 
 }
@@ -133,7 +138,6 @@ void RobustSolverCM::ZeroTheSystem()
 				_zCoef[dev][i][j] = 0.0;
 	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
 	_Board2CAD.SetMatrix( resetTransformValues );
-	
 }
 
 void RobustSolverCM::ConstrainZTerms()
@@ -160,86 +164,69 @@ void RobustSolverCM::ConstrainZTerms()
 		ZfitTerms = 9;
 	else
 		ZfitTerms = 10;
-	double* Zterm; // pointer to location in A for setting Z
-	for(unsigned int row(0); row< _iNumZTerms + (_iNumDevices-1)*2; ++row)// must constrain for each SIM
+
+	double* pdRow; // pointer to location in A for setting Z
+	for(unsigned int zIndex(0); zIndex< _iNumZTerms + (_iNumDevices-1)*2; ++zIndex)// must constrain for each SIM
 	{
 		// adding Z control terms to the top of the array (for now), so row num is equal to row in A
-		unsigned int Acol(_iStartColZTerms + row);
-		Zterm = &_dMatrixA[(row) * _iMatrixWidth];
-		if (row < ZfitTerms)
-			Zterm[Acol] = Weights.wZConstrain;
-		else if (row < _iNumZTerms)
-			Zterm[Acol] = Weights.wZConstrainZero;
+		unsigned int Acol(_iStartColZTerms + zIndex);
+		pdRow = _dMatrixA + _iCurrentRow * _iMatrixWidth;
+		if (zIndex < ZfitTerms)
+			pdRow[Acol] = Weights.wZConstrain;
+		else if (zIndex < _iNumZTerms)
+			pdRow[Acol] = Weights.wZConstrainZero;
 		else
-			Zterm[Acol] = Weights.wZConstrain;
+			pdRow[Acol] = Weights.wZConstrain;
+
 		// add log of weights and debug notes
-		_pdWeights[_iCurrentRow] = Zterm[Acol];
+		_pdWeights[_iCurrentRow] = pdRow[Acol];
 		_iCurrentRow++; // track how many rows of MatrixA have been used
-				
 	}
-	if (_iNumDevices < 2)
-		return;
-	else 
-	{
-		// 2 devices add matching terms
-		double* pdRow(&_dMatrixA[(_iCurrentRow) * _iMatrixWidth]);
+
+	// Match between different devices
+	if (_iNumDevices > 1)
+	{	
 		double wt(Weights.wSimMountZMatch); // TODO TODO !!! add parameter
-		// tie 0 to 1
-		pdRow[ ColumnZTerm(0, 0) ] = wt;  // term 0 should match
-		pdRow[ ColumnZTerm(0, 1) ] = -wt;
-		_pdWeights[_iCurrentRow] = wt;
-		_iCurrentRow++; // 
-		pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-		pdRow[ ColumnZTerm(4, 0) ] = wt;
-		pdRow[ ColumnZTerm(4, 1) ] = -wt;
-		_pdWeights[_iCurrentRow] = wt;
-		_iCurrentRow++; 
-		if (_iNumDevices > 2)
+
+		for(unsigned int iIndex1=0; iIndex1<_iNumDevices-1; iIndex1++)
 		{
-			// tie 0 to 2
-			pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			pdRow[ ColumnZTerm(0, 0) ] = wt;
-			pdRow[ ColumnZTerm(0, 2) ] = -wt;
-			_pdWeights[_iCurrentRow] = wt;
-			_iCurrentRow++; 
-			pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			pdRow[ ColumnZTerm(4, 0) ] = wt;
-			pdRow[ ColumnZTerm(4, 2) ] = -wt;
-			_pdWeights[_iCurrentRow] = wt;
-			_iCurrentRow++; 
-			// tie 1 to 2
-			pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			pdRow[ ColumnZTerm(0, 1) ] = wt;
-			pdRow[ ColumnZTerm(0, 2) ] = -wt;
-			_pdWeights[_iCurrentRow] = wt;
-			_iCurrentRow++; 
-			pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			pdRow[ ColumnZTerm(4, 1) ] = wt;
-			pdRow[ ColumnZTerm(4, 2) ] = -wt;
-			_pdWeights[_iCurrentRow] = wt;
-			_iCurrentRow++; 
+			for(unsigned int iIndex2 = iIndex1+1; iIndex2<_iNumDevices; iIndex2++)
+			{	
+				// term 0 should match
+				pdRow = _dMatrixA + _iCurrentRow * _iMatrixWidth;	
+				pdRow[ ColumnZTerm(0, iIndex1) ] = wt; 
+				pdRow[ ColumnZTerm(0, iIndex2) ] = -wt;
+				_pdWeights[_iCurrentRow] = wt;
+				_iCurrentRow++; // 
+
+				// term 4 should match
+				pdRow = &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
+				pdRow[ ColumnZTerm(4, iIndex1) ] = wt;
+				pdRow[ ColumnZTerm(4, iIndex2) ] = -wt;
+				_pdWeights[_iCurrentRow] = wt;
+				_iCurrentRow++; 
+			}
 		}
+
 		if (_iNumDevices > 3)
 			LOG.FireLogEntry(LogTypeError, "More than 3 SIMs");	
 	}
-	
 }
+
 unsigned int RobustSolverCM::CountCameras()
 {
-	unsigned int minCameraNum(1000000);
-	unsigned int maxCameraNum(0);
-	// TODO WHAT IF STARTING CAMERA NUMBER VARIES BETWEEN Layer?
-	// Other failure conditions?
-	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
+	unsigned int iNumLayer = _pSet->GetNumMosaicLayers();
+	unsigned int iMaxNumCam = 0;
+	for(unsigned int i =0; i<iNumLayer; i++)
 	{
-		if (minCameraNum > k->first.CameraIndex )
-			minCameraNum = k->first.CameraIndex;
-		if (maxCameraNum < k->first.CameraIndex )
-			maxCameraNum = k->first.CameraIndex;
+		unsigned int iNumCam = _pSet->GetLayer(i)->GetNumberOfCameras();
+		if(iMaxNumCam < iNumCam) 
+			iMaxNumCam = iNumCam;
 	}
-	return (maxCameraNum - minCameraNum)+1;
 
+	return(iMaxNumCam);
 }
+
 unsigned int RobustSolverCM::ColumnZTerm(unsigned int term, unsigned int deviceNum)
 {
 	// calculate which column a particular Z term is in based on term number and devcie number
@@ -258,6 +245,7 @@ unsigned int RobustSolverCM::ColumnZTerm(unsigned int term, unsigned int deviceN
 		return col;
 	}
 }
+
 /// <summary>
 /// Add contraints for panel X, Y, theta for each trigger
 /// </summary>
@@ -279,37 +267,36 @@ void RobustSolverCM::ConstrainPerTrig()
 			unsigned int indexID( k->second );
 			unsigned int iLayerIndex( k->first.LayerIndex);
 			unsigned int iTrigIndex( k->first.TriggerIndex);
-			unsigned int iCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->Columns();
-			unsigned int iRows = _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->Rows();
 			TransformCamModel camCal = 
 				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 			complexd xySensor;
 			camCal.SPix2XY(dFovOriginU, dFovOriginV, &xySensor.r, &xySensor.i);
 			
 			// constrain x direction
-			double* begin_pin_in_image_center(&_dMatrixA[(_iCurrentRow) * _iMatrixWidth]);
+			double* pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
 			unsigned int beginIndex( indexID * _iNumParamsPerIndex);
-			begin_pin_in_image_center[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			begin_pin_in_image_center[beginIndex+2] = -Weights.wXIndex * xySensor.i;
+			pdRow[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
+			pdRow[beginIndex+2] = -Weights.wXIndex * xySensor.i;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2)
 				- xySensor.r);
 
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
-
-			// constrain yTrig value
 			_iCurrentRow++;
-			begin_pin_in_image_center= &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			begin_pin_in_image_center[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex * xySensor.r;
+			// constrain yTrig value
+			
+			pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
+			pdRow[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
+			pdRow[beginIndex+2] = Weights.wXIndex * xySensor.r;
 			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5)
 				- xySensor.i);
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
-			// constrain theata to zero
 			_iCurrentRow++;
-			begin_pin_in_image_center= &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex;
+			
+			// constrain theata to zero
+			pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
+			pdRow[beginIndex+2] = Weights.wXIndex;
 			_pdWeights[_iCurrentRow] = Weights.wXIndex;
 			_iCurrentRow++;
 		}
@@ -328,8 +315,6 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	FovIndex index(pLayer->Index(), iTrigIndex, iCamIndex); 
 	unsigned int indexID( (*_pFovOrderMap)[index] );
 	unsigned int deviceNum = _pSet->GetLayer(index.LayerIndex)->DeviceIndex();
-	unsigned int iCols = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->Columns();
-	unsigned int iRows = _pSet->GetLayer(index.LayerIndex)->GetImage(iTrigIndex, iCamIndex)->Rows();
 	double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	unsigned int iFOVPosA( indexID * _iNumParamsPerIndex);
 	
@@ -359,6 +344,7 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	Zpoly[8] = pow(boardX,1) * pow(boardY,2);
 	Zpoly[9] = pow(boardX,0) * pow(boardY,3);
 
+	//  for X_trig
 	if(!bSlopeOnly)
 	{
 		pdRow[iFOVPosA] += w;
@@ -369,7 +355,8 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 		_pdWeights[_iCurrentRow] = w;
 		_iCurrentRow++;
 	}
-	// constrain theta_trig
+
+	// for theta_trig
 	w = Weights.wRbyEdge; 
 	pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	pdRow[iFOVPosA+2] += w;
@@ -394,6 +381,7 @@ bool RobustSolverCM::AddCalibationConstraints(
 	// there are no per FOV calib constraints in the camera model fit
 	return true;
 }
+
 bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 {
 	// Validation check for overlap
@@ -443,7 +431,7 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		// include 0 weight rows for now....
 		//if(w <= 0) 
 		//	continue;
-		pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+		
 		// Get Centers of ROIs
 		double rowImgA = (i->GetFirstRoi().FirstRow + i->GetFirstRoi().LastRow)/ 2.0;
 		double colImgA = (i->GetFirstRoi().FirstColumn + i->GetFirstRoi().LastColumn)/ 2.0;
@@ -456,7 +444,8 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		double offsetCols = result.ColOffset;
 		rowImgB += offsetRows;
 		colImgB += offsetCols;
-		// Add a equataions 
+
+		// S and dS/dz in SIM space
 		TransformCamModel camCalA = 
 				 _pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
 		double xSensorA, ySensorA, dxSensordzA, dySensordzA;
@@ -469,6 +458,7 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		camCalB.SPix2XY(colImgB, rowImgB, &xSensorB, &ySensorB);
 		camCalB.dSPix2XY(colImgB, rowImgB, &dxSensordzB, &dySensordzB);
 
+		// Approximate X and y in board space for Z calculation
 		pair<double, double> imgAOverlapCenter = i->GetFirstImg()->ImageToWorld(rowImgA,colImgA);
 		pair<double, double> imgBOverlapCenter = i->GetSecondImg()->ImageToWorld(rowImgB,colImgB);
 		double boardX = (imgAOverlapCenter.first + imgBOverlapCenter.first ) / 2.0;
@@ -494,6 +484,8 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		Zpoly[8] = pow(boardX,1) * pow(boardY,2);
 		Zpoly[9] = pow(boardX,0) * pow(boardY,3);
 
+		// X direction
+		pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 		pdRow[iFOVPosA] += w;
 		pdRow[iFOVPosB] -= w;  // may be in same trigger number
 		pdRow[iFOVPosA+2] += -ySensorA * w;
@@ -515,10 +507,10 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 			i->GetIndex(),
 			colImgA, rowImgA, colImgB, rowImgB, xSensorA, ySensorA, xSensorB, ySensorB);
 		_pdWeights[_iCurrentRow] = w;
-	
 		_iCurrentRow++;
+
+		// Y direction
 		pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
-		
 		pdRow[iFOVPosA+1] += w;
 		pdRow[iFOVPosB+1] -= w;  // may be in same trigger number
 		pdRow[iFOVPosA+2] += xSensorA * w;
@@ -543,18 +535,18 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	
 		_iCurrentRow++;
 		
-
-	
 		delete [] Zpoly;
 	}
 	return( true );
 }
+
 bool RobustSolverCM::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 {
 	// there are no CAD apperture fits in the camera model fit
 	// TODO TODO   is this true????????
 	return( true );
 }
+
 bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 {
 	// Validation check for overlap
@@ -594,13 +586,15 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	double offsetCols = result.ColOffset;
 	rowImgA -= offsetRows;
 	colImgA -= offsetCols;
-	// Add a equataions 
+	
+	//  S and dS/dz in SIM space
 	TransformCamModel camCalA = 
 				_pSet->GetLayer(iLayerIndexA)->GetImage(iTrigIndexA, iCamIndexA)->GetTransformCamCalibration();
 	double xSensorA, ySensorA, dxSensordzA, dySensordzA;
 	camCalA.SPix2XY(colImgA, rowImgA, &xSensorA, &ySensorA);
 	camCalA.dSPix2XY(colImgA, rowImgA, &dxSensordzA, &dySensordzA);
 		
+	// Approximate x and y in board space for Z calculation
 	pair<double, double> imgAOverlapCenter = pPair->GetFirstImg()->ImageToWorld(rowImgA,colImgA);
 	double boardX = imgAOverlapCenter.first;
 	double boardY = imgAOverlapCenter.second;
@@ -635,9 +629,11 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		pOverlap->GetMosaicLayer()->Index(),
 		pOverlap->GetTriggerIndex(), pOverlap->GetCameraIndex(),
 		colImgA, rowImgA, xSensorA, ySensorA, pOverlap->GetFiducialXPos(),pOverlap->GetFiducialYPos() );
+	
 	_pdWeights[_iCurrentRow] = w;
-	// Y direction equations
 	_iCurrentRow++;
+	
+	// Y direction equations
 	pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 	pdRow[iFOVPosA+1] += w;
 	pdRow[iFOVPosA+2] += +xSensorA * w;
@@ -651,13 +647,14 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		offsetRows, offsetCols,
 		pPair->GetCorrelationResult().CorrCoeff, pPair->GetCorrelationResult().AmbigScore,
 		boardX,boardY);
+
 	_pdWeights[_iCurrentRow] = w;
-	
 	_iCurrentRow++;
 
 	delete [] Zpoly;
 	return( true );
 }
+
 /// <summary>
 /// return image to CAD space transform (projective 3x3 array) for selected FOV
 ///</summary>
@@ -696,14 +693,15 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	POINTPIX* uv = new POINTPIX[iNumX*iNumY];
 	POINT2D* xy =  new POINT2D[iNumX*iNumY];
 	int i, j, k;
+	double dScale;
 	//LOG.FireLogEntry(LogTypeSystem, "ResultFOVCamModel m %d, %d, %d",
 	//	iLayerIndex, iTriggerIndex, iCameraIndex);
 	for (j=0, i=0; j<iNumY; j++) {      /*uv.v value is image ROW which is actually parallel to CAD X */
 	  for (k=0; k<iNumX; k++) {          /* uv.u value is image COL, parralel to CAD Y*/
-			uv[i].v = (cos(-PI + angleStepX*k) + 1.0 )/2.0; // scaled 0 to 1
-			uv[i].v *= stopX - startX;
-	  		uv[i].u = (cos(-PI + angleStepY*j) + 1.0 )/2.0; // scaled 0 to 1
-			uv[i].u *= stopY - startY;
+			dScale = (cos(-PI + angleStepX*k) + 1.0 )/2.0; // scaled 0 to 1
+			uv[i].v = (stopX - startX)* dScale + startX;
+	  		dScale = (cos(-PI + angleStepY*j) + 1.0 )/2.0; // scaled 0 to 1
+			uv[i].u = (stopY - startY)*dScale + startY;
 		 POINT2D xyBoard;
 		 Pix2Board(uv[i], fovIndex, &xyBoard); 
 		// Now have position on flattened board,
@@ -720,6 +718,7 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	delete [] xy;
 	return(trans);
 }
+
 /// <summary>
 /// Calculate the FOV to CAD space transform (projective 3x3 array) for selected FOV
 ///</summary>
@@ -756,14 +755,15 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	double XSampleFraction(0.80);  // we want to avoid the actual corners as they aren't used
 	double YSampleFraction(0.85);  // this sets the fraction of the image size where the fit occurs
 	int i(0);
+	double dScale;
 	for(unsigned int j=0; j<iNumY; j++)
 	{
 		for(unsigned int k=0; k<iNumX; k++)
 		{
-			p[i].r = (XSampleFraction * cos(-PI + angleStepX*j) + 1.0 )/2.0; // scaled 0 to 1
-			p[i].r *= stopX - startX;
-			p[i].i = (YSampleFraction * cos(-PI + angleStepY*k) + 1.0 )/2.0; // scaled 0 to 1
-			p[i].i *= stopY - startY;
+			dScale = (XSampleFraction * cos(-PI + angleStepX*j) + 1.0 )/2.0; // scaled 0 to 1
+			p[i].r = (stopX - startX)*dScale + startX;
+			dScale = (YSampleFraction * cos(-PI + angleStepY*k) + 1.0 )/2.0; // scaled 0 to 1
+			p[i].i = (stopY - startY)*dScale + startY;
 			// now find the matching point in CAD space
 			// order is:
 			// pixel -> xySensor -> xyBoard -> xyCAD
@@ -811,53 +811,6 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	else
 		return(true);
 }
-
-#pragma region Debug
-// Debug
-// Vector X output
-void RobustSolverCM::OutputVectorXCSV(string filename) const
-{
-	ofstream of(filename.c_str());
-
-	of << std::scientific;
-
-	string line;
-	unsigned int j;
-	
-	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
-	{
-		unsigned int iCamIndex( k->first.CameraIndex);
-		unsigned int iIndexID( k->second );
-		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
-		{
-			of << "I_" << k->first.LayerIndex 
-				<< "T_" << k->first.TriggerIndex 
-				<< "C_" << k->first.CameraIndex
-				<< ",";
-			of << iIndexID;  // record index ID
-			of << ",";
-			for(j=0; j<_iNumParamsPerIndex; ++j)
-			{
-				if( j!=0 )
-					of << ",";
-				double d = _dVectorX[iIndexID * _iNumParamsPerIndex +j];
-				of << d;
-			}
-			of <<  std::endl;
-		}
-	}
-		// TODO TODO terms 0 and 4 based on SIM number !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	for(unsigned int j=0; j<_iNumZTerms + (_iNumDevices-1)*2; ++j) 
-	{
-		of << ",";
-
-		double d = _dVectorX[_iStartColZTerms + j];
-		of << d;
-	}
-	of <<  std::endl;
-	of.close();
-}
-#pragma endregion
 
 // Robust regression by Huber's "Algorithm H"
 // Banded version
@@ -1450,4 +1403,51 @@ bool RobustSolverCM::GetPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]
 
 	return(true);
 }
+
+#pragma region Debug
+// Debug
+// Vector X output
+void RobustSolverCM::OutputVectorXCSV(string filename) const
+{
+	ofstream of(filename.c_str());
+
+	of << std::scientific;
+
+	string line;
+	unsigned int j;
+	
+	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
+	{
+		unsigned int iCamIndex( k->first.CameraIndex);
+		unsigned int iIndexID( k->second );
+		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
+		{
+			of << "I_" << k->first.LayerIndex 
+				<< "T_" << k->first.TriggerIndex 
+				<< "C_" << k->first.CameraIndex
+				<< ",";
+			of << iIndexID;  // record index ID
+			of << ",";
+			for(j=0; j<_iNumParamsPerIndex; ++j)
+			{
+				if( j!=0 )
+					of << ",";
+				double d = _dVectorX[iIndexID * _iNumParamsPerIndex +j];
+				of << d;
+			}
+			of <<  std::endl;
+		}
+	}
+		// TODO TODO terms 0 and 4 based on SIM number !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	for(unsigned int j=0; j<_iNumZTerms + (_iNumDevices-1)*2; ++j) 
+	{
+		of << ",";
+
+		double d = _dVectorX[_iStartColZTerms + j];
+		of << d;
+	}
+	of <<  std::endl;
+	of.close();
+}
+#pragma endregion
 
