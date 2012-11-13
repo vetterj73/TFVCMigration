@@ -319,13 +319,6 @@ void PanelAligner::CalTransformsWithMask()
 	// Reset solver
 	_pSolver->Reset();
 
-	// Create matrix and vector for solver
-	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch)
-	{
-		_pSolver->ConstrainZTerms();
-		_pSolver->ConstrainPerTrig();
-	}
-
 	// Fill the solver
 	bool bUseFiducials = true; 
 	bool bPinPanelWithCalibration = false;
@@ -373,13 +366,6 @@ void PanelAligner::CalTransformsWithMask()
 // Align panel with panel leading edge information
 bool PanelAligner::AlignWithPanelEdge(const EdgeInfo* pEdgeInfo, int iFidIndex)
 {
-	// Create matrix and vector for solver
-	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch)
-	{
-		_pSolver->ConstrainZTerms();
-		_pSolver->ConstrainPerTrig();
-	}
-
 	// Not use fiducial, not pin panel with calibration 
 	// since panel leading edge will be used
 	AddOverlapResults2Solver(_pSolver, false, false);
@@ -554,27 +540,23 @@ void PanelAligner::AddOverlapResults2Solver(
 	bool bPinPanelWithCalibration,
 	bool bUseNominalTransform)
 {
+	if(bUseFiducials)
+		bPinPanelWithCalibration = false;
+
+	// Add all loose constraints
+	solver->AddAllLooseConstraints(	
+		bPinPanelWithCalibration,
+		bUseNominalTransform);
+
+	// Add Fiducal and FOV, and CAD and Fov overlaps result
 	int iNumLayer = _pSet->GetNumMosaicLayers();
 	for(int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
 	{
-		if(bUseFiducials)
-			bPinPanelWithCalibration = false;
-
 		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
 		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
 		{
 			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
 			{
-				// Add calibration constraints
-				bool bPinFov = false;
-				if (bPinPanelWithCalibration &&
-					pLayer->Index() == 0 && iTrig == 1 && iCam == 1)
-				{
-					bPinFov = true;
-				}
-
-				solver->AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov, bUseNominalTransform);
-
 				// Add Cad and Fov overlap results
 				CadFovOverlapList* pCadFovList =_pOverlapManager->GetCadFovListForFov(iLayerIndex, iTrig, iCam);
 				for(CadFovOverlapListIterator ite = pCadFovList->begin(); ite != pCadFovList->end(); ite++)
@@ -698,13 +680,6 @@ bool PanelAligner::CreateTransforms()
 	// Must after CreateFiducialResultSet()
 	PickOneAlign4EachPanelFiducial();
 
-	// Create matrix and vector for solver
-	if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch  )
-	{
-		_pSolver->ConstrainZTerms();
-		_pSolver->ConstrainPerTrig();
-	}
-	
 	// Use nominal fiducail overlaps if edge info is not available
 	AddOverlapResults2Solver(_pSolver, !bUseEdgeInfo);
 	
@@ -755,8 +730,6 @@ bool PanelAligner::CreateTransforms()
 		_pOverlapManager->AlignFovFovOverlap_FineOnly();
 
 		_pSolver->Reset();
-		_pSolver->ConstrainZTerms();
-		_pSolver->ConstrainPerTrig();
 		_pOverlapManager->FinishOverlaps();
 		AddOverlapResults2Solver(_pSolver, true);  // default to use fiducials instead of edge or calculated positions?
 		// Solve transforms

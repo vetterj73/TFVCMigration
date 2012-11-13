@@ -52,12 +52,10 @@ public:
 		map<FovIndex, unsigned int>* pFovOrderMap);
 	~RobustSolver(void);
 
-	virtual bool AddCalibationConstraints(
-		MosaicLayer* pLayer, 
-		unsigned int iCamIndex, 
-		unsigned int iTrigIndex, 
-		bool bPinFov=false, 
+	virtual bool AddAllLooseConstraints(
+		bool bPinPanelWithCalibration=false, 
 		bool bUseNominalTransform=true)=0;
+
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
 		double dXOffset, double dSlope, bool bSlopeOnly=false)=0;
@@ -71,9 +69,6 @@ public:
 		unsigned int iLlluminationIndex,
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex) =0;
-
-	virtual void			ConstrainZTerms()=0;
-	virtual void			ConstrainPerTrig()=0;
 
 	// Debug
 	virtual void OutputVectorXCSV(string filename) const=0;
@@ -106,13 +101,13 @@ protected:
 	double*			_dVectorB;
 	double*			_dVectorBCopy;
 	double*			_dVectorX;
-	double*				_pdWeights;  // debug notes
-	char**				_pcNotes;
+	double*			_pdWeights;  // debug notes
+	char**			_pcNotes;
 
 	bool			_bSaveMatrixCSV;
 	bool			_bVerboseLogging;
 
-	
+	MosaicSet*		_pSet;
 };
 
 

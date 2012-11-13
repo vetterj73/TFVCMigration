@@ -19,12 +19,10 @@ public:
 
 	~RobustSolverFOV(void);
 
-	bool AddCalibationConstraints(
-		MosaicLayer* pLayer, 
-		unsigned int iCamIndex, 
-		unsigned int iTrigIndex, 
-		bool bPinFov=false, 
+	bool AddAllLooseConstraints(
+		bool bPinPanelWithCalibration=false, 
 		bool bUseNominalTransform=true);
+
 	bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		double dXOffset, double dSlope, bool bSlopeOnly=false);
@@ -50,13 +48,17 @@ protected:
 	void ZeroTheSystem();
 	void SolveXAlgHB();
 	
-	MosaicSet*		_pSet;
-
-private:
 	bool MatchProjeciveTransform(const double pPara[12], 
 		unsigned int iLayerIndex,
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex, 
 		double dTrans[3][3]) const;
+
+	bool AddCalibationConstraints(
+		MosaicLayer* pLayer, 
+		unsigned int iCamIndex, 
+		unsigned int iTrigIndex, 
+		bool bPinFov=false, 
+		bool bUseNominalTransform=true);
 
 };

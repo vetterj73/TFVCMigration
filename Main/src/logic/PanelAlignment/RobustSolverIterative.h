@@ -37,6 +37,10 @@ public:
 
 	virtual ~RobustSolverIterative(void);
 	void	SolveXAlgH();
+	
+	bool AddAllLooseConstraints(
+		bool bPinPanelWithCalibration=false, 
+		bool bUseNominalTransform=true);
 
 	//bool AddCalibationConstraints(MosaicLayer* pMosaic, unsigned int iCamIndex, unsigned int iTrigIndex, bool bUseFiducials);
 	bool AddPanelEdgeContraints(

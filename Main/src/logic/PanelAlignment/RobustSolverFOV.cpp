@@ -353,6 +353,35 @@ bool RobustSolverFOV::AddCalibationConstraints(
 	return(true);
 }
 
+bool RobustSolverFOV::AddAllLooseConstraints(
+	bool bPinPanelWithCalibration, 
+	bool bUseNominalTransform)
+{
+	int iNumLayer = _pSet->GetNumMosaicLayers();
+	for(int iLayerIndex=0; iLayerIndex<iNumLayer; iLayerIndex++)
+	{
+		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
+		for(unsigned iTrig=0; iTrig<pLayer->GetNumberOfTriggers(); iTrig++)
+		{
+			for(unsigned iCam=0; iCam<pLayer->GetNumberOfCameras(); iCam++)
+			{
+				// Add calibration constraints
+				bool bPinFov = false;
+				if (bPinPanelWithCalibration &&
+					pLayer->Index() == 0 && iTrig == 1 && iCam == 1)
+				{
+					bPinFov = true;
+				}
+
+				AddCalibationConstraints(pLayer, iCam, iTrig, bPinFov, bUseNominalTransform);
+			}
+		}
+	}
+
+	return(true);
+}
+
+
 // Add constraint base on panel edge
 bool RobustSolverFOV::AddPanelEdgeContraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,

@@ -303,6 +303,16 @@ void RobustSolverCM::ConstrainPerTrig()
 	}
 }
 
+bool RobustSolverCM::AddAllLooseConstraints(
+	bool bPinPanelWithCalibration, 
+	bool bUseNominalTransform)
+{
+	ConstrainZTerms();
+	ConstrainPerTrig();
+
+	return(true);
+}
+
 // Add constraint base on panel edge
 bool RobustSolverCM::AddPanelEdgeContraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
@@ -368,18 +378,6 @@ bool RobustSolverCM::AddPanelEdgeContraints(
 	_pdWeights[_iCurrentRow] = w;
 	_iCurrentRow++;
 	return(true);
-}
-
-
-bool RobustSolverCM::AddCalibationConstraints(
-	MosaicLayer* pLayer, 
-	unsigned int iCamIndex, 
-	unsigned int iTrigIndex, 		
-	bool bPinFov, 
-	bool bUseOrgTransform)
-{
-	// there are no per FOV calib constraints in the camera model fit
-	return true;
 }
 
 bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)

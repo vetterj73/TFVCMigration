@@ -110,6 +110,17 @@ void RobustSolverIterative::ZeroTheSystem()
 	_iCorrelationNum = 0;
 }
 
+
+bool RobustSolverIterative::AddAllLooseConstraints(
+		bool bPinPanelWithCalibration, 
+		bool bUseNominalTransform)
+{
+	ConstrainZTerms();
+	ConstrainPerTrig();
+
+	return(true);
+}
+
 void RobustSolverIterative::SolveXAlgH()
 {
 	// algH iterative wrapper
@@ -139,7 +150,7 @@ void RobustSolverIterative::SolveXAlgH()
 	int iMaxIter = _iMaxIterations; // local copy
 	if (CorrelationParametersInst.bUseTwoPassStitch && !CorrelationParametersInst.bCoarsePassDone)
 		iMaxIter = 1;			// first time through two pass align (the coarse pass), only one iteration
-	for (_iIterationNumber=0; _iIterationNumber< iMaxIter; _iIterationNumber++)
+	for (_iIterationNumber=0; _iIterationNumber< (unsigned int)iMaxIter; _iIterationNumber++)
 	{
 		// zero out A, b, x, and notes
 		_iCurrentRow = 0;

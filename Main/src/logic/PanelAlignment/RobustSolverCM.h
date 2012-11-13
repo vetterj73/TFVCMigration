@@ -19,12 +19,10 @@ public:
 
 	virtual ~RobustSolverCM(void);
 
-	virtual bool AddCalibationConstraints(
-		MosaicLayer* pLayer, 
-		unsigned int iCamIndex, 
-		unsigned int iTrigIndex,	
-		bool bPinFov=false, 
+	virtual bool AddAllLooseConstraints(
+		bool bPinPanelWithCalibration=false, 
 		bool bUseNominalTransform=true);
+
 	virtual bool AddPanelEdgeContraints(
 		MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex, 
 		double dXOffset, double dSlope, bool bSlopeOnly=false);
@@ -36,10 +34,8 @@ public:
 	virtual ImgTransform GetResultTransform(
 		unsigned int iLlluminationIndex,
 		unsigned int iTriggerIndex,
-		unsigned int iCameraIndex) ;
+		unsigned int iCameraIndex);
 	virtual void OutputVectorXCSV(string filename) const;
-	virtual void			ConstrainZTerms();
-	virtual void			ConstrainPerTrig();
 	virtual void Reset() {ZeroTheSystem();};
 	virtual void SolveXAlgH();
 	virtual void			FlattenFiducials(PanelFiducialResultsSet* fiducialSet);
@@ -47,14 +43,14 @@ public:
 	bool GetPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
 protected:
-	void	ReorderAndTranspose(bool bRemoveEmptyRows);
-	unsigned int ColumnZTerm(unsigned int term, unsigned int deviceNum);
-	virtual void ZeroTheSystem();
+	void			ReorderAndTranspose(bool bRemoveEmptyRows);
+	unsigned int	ColumnZTerm(unsigned int term, unsigned int deviceNum);
+	virtual void	ZeroTheSystem();
+	virtual void	ConstrainZTerms();
+	virtual void	ConstrainPerTrig();
 	
-
-	MosaicSet*		_pSet;
 	unsigned int	CountCameras();
-	virtual void			Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
+	virtual void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
 	void			LstSqFit(double *FidFitA, unsigned int FidFitRows, unsigned int FidFitCols, double *FidFitb, double *FidFitX, double *resid);
 	bool MatchProjeciveTransform(	
 		unsigned int iLayerIndex,
