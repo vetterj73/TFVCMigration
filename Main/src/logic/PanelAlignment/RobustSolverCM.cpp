@@ -433,11 +433,11 @@ bool RobustSolverCM::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 		//	continue;
 		
 		// Get Centers of ROIs
-		double rowImgA = (i->GetFirstRoi().FirstRow + i->GetFirstRoi().LastRow)/ 2.0;
-		double colImgA = (i->GetFirstRoi().FirstColumn + i->GetFirstRoi().LastColumn)/ 2.0;
+		double rowImgA = i->GetFirstRoi().RowCenter();
+		double colImgA = i->GetFirstRoi().ColumnCenter();
 
-		double rowImgB = (i->GetSecondRoi().FirstRow + i->GetSecondRoi().LastRow)/ 2.0;
-		double colImgB = (i->GetSecondRoi().FirstColumn + i->GetSecondRoi().LastColumn)/ 2.0;
+		double rowImgB = i->GetSecondRoi().RowCenter();
+		double colImgB = i->GetSecondRoi().ColumnCenter();
 
 		// Get offset
 		double offsetRows = result.RowOffset;
@@ -573,11 +573,11 @@ bool RobustSolverCM::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 		return(false);
 
 	// Get Centers of ROIs (fiducial image is always the second one)
-	double rowImgA = (pPair->GetFirstRoi().FirstRow + pPair->GetFirstRoi().LastRow)/ 2.0;
-	double colImgA = (pPair->GetFirstRoi().FirstColumn + pPair->GetFirstRoi().LastColumn)/ 2.0;
+	double rowImgA = pPair->GetFirstRoi().RowCenter();
+	double colImgA = pPair->GetFirstRoi().ColumnCenter();
 
-	double rowImgB = (pPair->GetSecondRoi().FirstRow + pPair->GetSecondRoi().LastRow)/ 2.0;
-	double colImgB = (pPair->GetSecondRoi().FirstColumn + pPair->GetSecondRoi().LastColumn)/ 2.0;
+	double rowImgB = pPair->GetSecondRoi().RowCenter();
+	double colImgB = pPair->GetSecondRoi().ColumnCenter();
 	double dFidRoiCenX, dFidRoiCenY; // ROI center of fiducial image (not fiducail center or image center) in world space
 	pOverlap->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidRoiCenX, &dFidRoiCenY);
 
@@ -1010,32 +1010,17 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 			fidOK = (*j)->IsGoodForSolver() && (w > 0);
 			if (fidOK)
 			{
-				// add CAD locations
-				double rowImgB = ((*j)->GetCoarsePair()->GetSecondRoi().FirstRow + (*j)->GetCoarsePair()->GetSecondRoi().LastRow)/ 2.0;
-				double colImgB = ((*j)->GetCoarsePair()->GetSecondRoi().FirstColumn + (*j)->GetCoarsePair()->GetSecondRoi().LastColumn)/ 2.0;
+				// CAD locations
+				double rowImgB = (*j)->GetCoarsePair()->GetSecondRoi().RowCenter();
+				double colImgB = (*j)->GetCoarsePair()->GetSecondRoi().ColumnCenter();
 				double dFidRoiCenX, dFidRoiCenY; // ROI center of fiducial image (not fiducail center or image center) in world space
 				(*j)->GetFidImage()->ImageToWorld(rowImgB, colImgB, &dFidRoiCenX, &dFidRoiCenY);
 				fidCAD2D [nGoodFids].x = dFidRoiCenX;
 				fidCAD2D [nGoodFids].y = dFidRoiCenY;
-				//fidCAD2D [nGoodFids].x = (*j)->GetFiducialXPos();
-				//fidCAD2D [nGoodFids].y = (*j)->GetFiducialYPos();
-
-				// now find board locations
-				// given pixel location and S, dSdz find xySensor (assume Z = 0 to begin with)
-				// Offset of unclipped center and clipped center (copied from DoImgFidCorrelationResult() )
-				// TODO TODO Are these values ever != 0 ???? (firstcolumn !=0) ???
-				double dCenOffsetX = ( (*j)->GetCoarsePair()->GetSecondRoi().Columns() - 1.0 )/2.0 - 
-					((*j)->GetCoarsePair()->GetSecondRoi().FirstColumn + (*j)->GetCoarsePair()->GetSecondRoi().LastColumn)/2.0;
-				double dCenOffsetY = ( (*j)->GetCoarsePair()->GetSecondRoi().Rows() - 1.0 )/2.0 - 
-					((*j)->GetCoarsePair()->GetSecondRoi().FirstRow + (*j)->GetCoarsePair()->GetSecondRoi().LastRow)/2.0;
 				
-				// Unclipped image patch (first image of overlap) center in the overlap + alignment offset
-				//double colImg = (overlap._firstOverlap.FirstColumn  + overlap._firstOverlap.LastColumn)  / 2.0 + dCenOffsetX;
-				//double rowImg = (overlap._firstOverlap.FirstRow     + overlap._firstOverlap.LastRow)     / 2.0 + dCenOffsetY;
-				double colImg = ( (*j)->GetCoarsePair()->GetFirstRoi().FirstColumn + 
-					(*j)->GetCoarsePair()->GetFirstRoi().LastColumn )/2.0;//  + dCenOffsetX;
-				double rowImg = ( (*j)->GetCoarsePair()->GetFirstRoi().FirstRow +
-					(*j)->GetCoarsePair()->GetFirstRoi().LastRow )/2.0; //  + dCenOffsetY;
+				// Panel locations
+				double rowImg = (*j)->GetCoarsePair()->GetFirstRoi().RowCenter();
+				double colImg = (*j)->GetCoarsePair()->GetFirstRoi().ColumnCenter();
 				double regoffCol = (*j)->GetCoarsePair()->GetCorrelationResult().ColOffset;
 				double regoffRow = (*j)->GetCoarsePair()->GetCorrelationResult().RowOffset;
 				double rowPeak( rowImg - regoffRow );
