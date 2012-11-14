@@ -103,6 +103,11 @@ namespace MosaicDM
 		}
 	}
 
+	list<SubDevicCams>* MosaicLayer::GetSubDeviceInfo() 
+	{ 
+		return _pMosaicSet->GetSubDeviceInfo(_deviceIndex);
+	}
+
 #pragma endregion 
 
 #pragma  region Create stitched image 
@@ -1183,7 +1188,7 @@ namespace MosaicDM
 
 #pragma endregion
 
-#pragma region FOV  and mask related
+#pragma region FOV and mask related
 
 	MosaicTile* MosaicLayer::GetTile(unsigned int triggerIndex, unsigned int cameraIndex)
 	{

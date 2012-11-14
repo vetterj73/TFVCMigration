@@ -2,10 +2,13 @@
 
 #include "Image.h"
 #include <map>
+#include <list>
 using std::map;
+using std::list;
 
 namespace MosaicDM 
 {
+	class SubDevicCams;
 	class MosaicSet;
 	class MosaicTile;
 
@@ -107,6 +110,8 @@ namespace MosaicDM
 			// After stitching image is created, following two functions are valid
 			int* GetStitchGridColumns() {return _piStitchGridCols;};
 			int* GetStitchGridRows() {return _piStitchGridRows;};
+
+			list<SubDevicCams>* GetSubDeviceInfo();
 
 			///
 			///	Clears all images from this layer
