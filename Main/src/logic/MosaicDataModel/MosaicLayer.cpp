@@ -103,7 +103,7 @@ namespace MosaicDM
 		}
 	}
 
-	list<SubDevicCams>* MosaicLayer::GetSubDeviceInfo() 
+	list<SubDeviceCams>* MosaicLayer::GetSubDeviceInfo() 
 	{ 
 		return _pMosaicSet->GetSubDeviceInfo(_deviceIndex);
 	}

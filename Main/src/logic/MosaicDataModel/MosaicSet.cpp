@@ -53,14 +53,14 @@ namespace MosaicDM
 #pragma endregion
 
 
-#pragma region class SubDevicCams
-	SubDevicCams::SubDevicCams(unsigned int firstCam, unsigned int lastCam)
+#pragma region class SubDeviceCams
+	SubDeviceCams::SubDeviceCams(unsigned int firstCam, unsigned int lastCam)
 	{
 		iFirstCamIndex = firstCam;
 		iLastCamIndex = lastCam;
 	}
 
-	bool SubDevicCams::operator==(const SubDevicCams  a)
+	bool SubDeviceCams::operator==(const SubDeviceCams  a)
 	{
 		if( iFirstCamIndex == a.iFirstCamIndex &&
 			iLastCamIndex == a.iLastCamIndex)
@@ -69,7 +69,7 @@ namespace MosaicDM
 			return(false);
 	}
 
-	unsigned int SubDevicCams::NumCams()
+	unsigned int SubDeviceCams::NumCams()
 	{
 		return(iLastCamIndex-iFirstCamIndex+1);
 	}
@@ -600,13 +600,13 @@ namespace MosaicDM
 		if(lastCameraList.size() < 2)
 			return;
 
-		list<SubDevicCams> tempList;
+		list<SubDeviceCams> tempList;
 		unsigned int iFirstCam = 0;
 		for(list<unsigned int>::iterator i = lastCameraList.begin(); i != lastCameraList.end(); i++)
 		{
 			// Add for one subdevice
 			unsigned int iLastCam = *i;
-			SubDevicCams cams(iFirstCam, iLastCam);
+			SubDeviceCams cams(iFirstCam, iLastCam);
 			tempList.push_back(cams);
 
 			// Update for next subdevice
@@ -616,7 +616,7 @@ namespace MosaicDM
 		_subDeviceInfos[iDeviceIndex] = tempList;
 	}
 
-	list<SubDevicCams>* MosaicSet::GetSubDeviceInfo(unsigned int iDeviceIndex)
+	list<SubDeviceCams>* MosaicSet::GetSubDeviceInfo(unsigned int iDeviceIndex)
 	{
 		if(_subDeviceInfos.find(iDeviceIndex) == _subDeviceInfos.end())
 			return NULL;
