@@ -600,7 +600,7 @@ namespace CyberStitchTester
 
                 if (_bUseDualIllumination)
                 {
-                    //*
+                    /*
                     _aligner.Save3ChannelImage("c:\\temp\\Beforecycle" + iCycleCount + ".bmp",
                         _mosaicSet.GetLayer(0).GetGreyStitchedBuffer(),
                         _mosaicSet.GetLayer(1).GetGreyStitchedBuffer(),

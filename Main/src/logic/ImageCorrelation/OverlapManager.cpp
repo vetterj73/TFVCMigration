@@ -1600,27 +1600,91 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	if(iLayer1 == iLayer2 && iTrig1 == iTrig2)
 		bSameTrig = true;
 
-	int iNumCam = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfCameras();
-	
-	// No enough informaiton for consistent check 
-	if(iNumCam<=2 || (bSameTrig && iNumCam<=3))
-		return(0);
+	list<SubDeviceCams>* pSubDeviceCams1 = _pMosaicSet->GetLayer(iLayer1)->GetSubDeviceInfo();
 
-	// Collect all overlaps for consistent check
-	list<FovFovOverlap*> trigOverlapPtrList;
-
-	for(FovFovOverlapList::iterator i = _fovFovOverlapSet.begin(); i != _fovFovOverlapSet.end(); i++)
+	// Validation check, For now the subDevice must match
+	if(pSubDeviceCams1 != NULL)
 	{
-		bool bFlag = i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed();
-		if(bFlag)
-			trigOverlapPtrList.push_back(&(*i));
+		unsigned int iDevice1 = _pMosaicSet->GetLayer(iLayer1)->DeviceIndex();
+		unsigned int iDevice2 = _pMosaicSet->GetLayer(iLayer2)->DeviceIndex();
+		if(iDevice1 != iDevice2)
+		{
+			list<SubDeviceCams>* pSubDeviceCams2 = _pMosaicSet->GetLayer(iLayer2)->GetSubDeviceInfo();
+			if(pSubDeviceCams1->size() != pSubDeviceCams2->size())
+			{
+				LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovAlignConsistChekcForTwoTrig: SubDevice mismatch between (Layer=%d, Trig=%d) and (Layer=%d, Trig=%d)",
+					iLayer1, iTrig1, iLayer2, iTrig2);
+				return(false);
+			}
+
+			list<SubDeviceCams>::iterator i2 = pSubDeviceCams2->begin();
+			for(list<SubDeviceCams>::iterator i1 = pSubDeviceCams1->begin();
+				i1 != pSubDeviceCams1->end(); i1++, i2++)
+			{
+				if(!(*i1==*i2))
+				{
+					LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovAlignConsistChekcForTwoTrig: SubDvice mismatch between (Layer=%d, Trig=%d) and (Layer=%d, Trig=%d)",
+						iLayer1, iTrig1, iLayer2, iTrig2);
+					return(false);
+				}
+			}
+		}
 	}
 
-	// Coarse should in front of fine
-	if(!bTrustCoarse)
-		*piCoarseInconsistNum = FovFovCoarseInconsistCheck(&trigOverlapPtrList);
+	// Cam list for subTrig
+	list<SubDeviceCams> camList;
+	unsigned int iNumCamInTrig = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfCameras();
+	if(pSubDeviceCams1 == NULL)
+	{
+		MosaicDM::SubDeviceCams cams(0, iNumCamInTrig-1);
+		camList.push_back(cams);
+	}
+	else
+	{
+		for(list<SubDeviceCams>::iterator i1 = pSubDeviceCams1->begin(); i1 != pSubDeviceCams1->end(); i1++)
+		{
+			if(i1->iFirstCamIndex < iNumCamInTrig)
+			{
+				unsigned int iFirstCam = i1->iFirstCamIndex;
+				unsigned int iLastCam = i1->iLastCamIndex < iNumCamInTrig-1 ? i1->iLastCamIndex : iNumCamInTrig-1;
+				MosaicDM::SubDeviceCams cams(iFirstCam, iLastCam);
+				camList.push_back(cams);
+			}
+		}
+	}
+		
+	*piCoarseInconsistNum = 0;
+	*piFineInconsistNum = 0;
+	for(list<SubDeviceCams>::iterator iSub=camList.begin(); iSub!=camList.end(); iSub++)
+	{
+		// No enough informaiton for consistent check 
+		if(iSub->NumCams()<=2 || (bSameTrig && iSub->NumCams()<=3))
+			continue;
+	
+		// Collect all overlaps for consistent check
+		list<FovFovOverlap*> trigOverlapPtrList;
 
-	*piFineInconsistNum = FovFovFineInconsistCheck(&trigOverlapPtrList, bTrustCoarse);
+		for(FovFovOverlapList::iterator i = _fovFovOverlapSet.begin(); i != _fovFovOverlapSet.end(); i++)
+		{
+			// Fov in the trigger list
+			bool bFlag = i->IsFromLayerTrigs(iLayer1, iTrig1, iLayer2, iTrig2) && i->IsProcessed();
+			if(!bFlag)
+				continue;
+			
+			// Fov in subtrigger list
+			if(i->GetFirstCameraIndex() >= iSub->iFirstCamIndex &&
+				i->GetFirstCameraIndex() <= iSub->iLastCamIndex &&
+				i->GetSecondCameraIndex() >= iSub->iFirstCamIndex &&
+				i->GetSecondCameraIndex() <= iSub->iLastCamIndex)
+				trigOverlapPtrList.push_back(&(*i));
+		}
+
+		// Coarse should in front of fine
+		if(!bTrustCoarse)
+			*piCoarseInconsistNum += FovFovCoarseInconsistCheck(&trigOverlapPtrList);
+
+		*piFineInconsistNum += FovFovFineInconsistCheck(&trigOverlapPtrList, bTrustCoarse);
+	}
 
 	return(true);
 }
