@@ -103,10 +103,37 @@ namespace MosaicDM
 		}
 	}
 
-	list<SubDeviceCams>* MosaicLayer::GetSubDeviceInfo() 
+	list<SubSetCams>* MosaicLayer::GetSubDeviceInfo() 
 	{ 
 		return _pMosaicSet->GetSubDeviceInfo(_deviceIndex);
 	}
+
+	list<SubSetCams> MosaicLayer::GetSubTrigInfo()
+	{
+		list<SubSetCams>* pSubDeviceInfo = GetSubDeviceInfo();
+		
+		list<SubSetCams> subTrigInfo;
+		if(pSubDeviceInfo == NULL)
+		{
+			SubSetCams cams(0, _numCameras-1);
+			subTrigInfo.push_back(cams);
+		}
+		else
+		{
+			for(list<SubSetCams>::iterator i1 = pSubDeviceInfo->begin(); i1 != pSubDeviceInfo->end(); i1++)
+			{
+				if(i1->iFirstCamIndex < _numCameras)
+				{
+					unsigned int iFirstCam = i1->iFirstCamIndex;
+					unsigned int iLastCam = i1->iLastCamIndex < _numCameras-1 ? i1->iLastCamIndex : _numCameras-1;
+					SubSetCams cams(iFirstCam, iLastCam);
+					subTrigInfo.push_back(cams);
+				}
+			}
+		}
+
+		return(subTrigInfo);
+	}	
 
 #pragma endregion 
 

@@ -8,7 +8,7 @@ using std::list;
 
 namespace MosaicDM 
 {
-	class SubDeviceCams;
+	class SubSetCams;
 	class MosaicSet;
 	class MosaicTile;
 
@@ -111,7 +111,8 @@ namespace MosaicDM
 			int* GetStitchGridColumns() {return _piStitchGridCols;};
 			int* GetStitchGridRows() {return _piStitchGridRows;};
 
-			list<SubDeviceCams>* GetSubDeviceInfo();
+			list<SubSetCams>* GetSubDeviceInfo();
+			list<SubSetCams> GetSubTrigInfo();
 
 			///
 			///	Clears all images from this layer

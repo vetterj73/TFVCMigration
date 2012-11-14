@@ -50,11 +50,11 @@ namespace MosaicDM
 		double dCadY;
 	};
 
-	class SubDeviceCams
+	class SubSetCams
 	{
 	public: 
-		SubDeviceCams(unsigned int firstCam, unsigned int lastCam);
-		bool operator==(const SubDeviceCams  a);
+		SubSetCams(unsigned int firstCam, unsigned int lastCam);
+		bool operator==(const SubSetCams  a);
 		unsigned int iFirstCamIndex;
 		unsigned int iLastCamIndex;
 		unsigned int NumCams();
@@ -209,7 +209,7 @@ namespace MosaicDM
 
 			// For SubDvices (more than 1 SIMs for a layer)
 			void AddSubDeviceInfo(unsigned int iDeviceIndex, list<unsigned int> lastCameraList);
-			list<SubDeviceCams>* GetSubDeviceInfo(unsigned int iDeviceIndex);
+			list<SubSetCams>* GetSubDeviceInfo(unsigned int iDeviceIndex);
 
 		private:
 			unsigned int _imageWidth;
@@ -242,6 +242,6 @@ namespace MosaicDM
 			map<int, FiducialLocation> _inputFidLocMap;
 
 			// For SubDvices (more than 1 SIMs for a layer)
-			map<unsigned int, list<SubDeviceCams>> _subDeviceInfos;
+			map<unsigned int, list<SubSetCams>> _subDeviceInfos;
 	};
 }

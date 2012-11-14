@@ -1600,26 +1600,29 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 	if(iLayer1 == iLayer2 && iTrig1 == iTrig2)
 		bSameTrig = true;
 
-	list<SubDeviceCams>* pSubDeviceCams1 = _pMosaicSet->GetLayer(iLayer1)->GetSubDeviceInfo();
+	list<SubSetCams> subSetCams1 = _pMosaicSet->GetLayer(iLayer1)->GetSubTrigInfo();
 
 	// Validation check, For now the subDevice must match
-	if(pSubDeviceCams1 != NULL)
+	unsigned int iDevice1 = _pMosaicSet->GetLayer(iLayer1)->DeviceIndex();
+	unsigned int iDevice2 = _pMosaicSet->GetLayer(iLayer2)->DeviceIndex();
+	if(iDevice1 != iDevice2)
 	{
-		unsigned int iDevice1 = _pMosaicSet->GetLayer(iLayer1)->DeviceIndex();
-		unsigned int iDevice2 = _pMosaicSet->GetLayer(iLayer2)->DeviceIndex();
-		if(iDevice1 != iDevice2)
+		list<SubSetCams> subSetCams2 = _pMosaicSet->GetLayer(iLayer2)->GetSubTrigInfo();
+		
+		// Subtrig number match
+		if(subSetCams1.size() != subSetCams2.size())
 		{
-			list<SubDeviceCams>* pSubDeviceCams2 = _pMosaicSet->GetLayer(iLayer2)->GetSubDeviceInfo();
-			if(pSubDeviceCams1->size() != pSubDeviceCams2->size())
-			{
-				LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovAlignConsistChekcForTwoTrig: SubDevice mismatch between (Layer=%d, Trig=%d) and (Layer=%d, Trig=%d)",
-					iLayer1, iTrig1, iLayer2, iTrig2);
-				return(false);
-			}
+			LOG.FireLogEntry(LogTypeDiagnostic, "OverlapManager::FovFovAlignConsistChekcForTwoTrig: SubDevice mismatch between (Layer=%d, Trig=%d) and (Layer=%d, Trig=%d)",
+				iLayer1, iTrig1, iLayer2, iTrig2);
+			return(false);
+		}
 
-			list<SubDeviceCams>::iterator i2 = pSubDeviceCams2->begin();
-			for(list<SubDeviceCams>::iterator i1 = pSubDeviceCams1->begin();
-				i1 != pSubDeviceCams1->end(); i1++, i2++)
+		// Each subtrig match
+		if(subSetCams1.size() >1)
+		{
+			list<SubSetCams>::iterator i2 = subSetCams2.begin();
+			for(list<SubSetCams>::iterator i1 = subSetCams1.begin();
+				i1 != subSetCams1.end(); i1++, i2++)
 			{
 				if(!(*i1==*i2))
 				{
@@ -1630,32 +1633,11 @@ bool OverlapManager::FovFovAlignConsistChekcForTwoTrig(
 			}
 		}
 	}
-
-	// Cam list for subTrig
-	list<SubDeviceCams> camList;
-	unsigned int iNumCamInTrig = _pMosaicSet->GetLayer(iLayer1)->GetNumberOfCameras();
-	if(pSubDeviceCams1 == NULL)
-	{
-		MosaicDM::SubDeviceCams cams(0, iNumCamInTrig-1);
-		camList.push_back(cams);
-	}
-	else
-	{
-		for(list<SubDeviceCams>::iterator i1 = pSubDeviceCams1->begin(); i1 != pSubDeviceCams1->end(); i1++)
-		{
-			if(i1->iFirstCamIndex < iNumCamInTrig)
-			{
-				unsigned int iFirstCam = i1->iFirstCamIndex;
-				unsigned int iLastCam = i1->iLastCamIndex < iNumCamInTrig-1 ? i1->iLastCamIndex : iNumCamInTrig-1;
-				MosaicDM::SubDeviceCams cams(iFirstCam, iLastCam);
-				camList.push_back(cams);
-			}
-		}
-	}
-		
+	
+	// Consistent check for each subtrigs/subCamSet
 	*piCoarseInconsistNum = 0;
 	*piFineInconsistNum = 0;
-	for(list<SubDeviceCams>::iterator iSub=camList.begin(); iSub!=camList.end(); iSub++)
+	for(list<SubSetCams>::iterator iSub=subSetCams1.begin(); iSub!=subSetCams1.end(); iSub++)
 	{
 		// No enough informaiton for consistent check 
 		if(iSub->NumCams()<=2 || (bSameTrig && iSub->NumCams()<=3))
