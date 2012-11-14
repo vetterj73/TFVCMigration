@@ -34,4 +34,18 @@ namespace MMosaicDM
 		MosaicDM::MosaicSet* pSet =(MosaicDM::MosaicSet*)(void*)pManagedMosaicSet->UnmanagedMosaicSet;
 		return _pMosaicSet->CopyBuffers(pSet);
 	}
+
+	bool ManagedMosaicSet::AddSubDeviceInfo(unsigned int iDeviceIndex, array<unsigned int>^ pLastCameras)
+	{
+		if(pLastCameras->Length <= 1)
+			return(false);
+
+		list<unsigned int> tempList;
+		for(int i=0; i<pLastCameras->Length; i++)
+			tempList.push_back(pLastCameras[i]);
+
+		_pMosaicSet->AddSubDeviceInfo(iDeviceIndex, tempList);
+
+		return(true);
+	}
 }

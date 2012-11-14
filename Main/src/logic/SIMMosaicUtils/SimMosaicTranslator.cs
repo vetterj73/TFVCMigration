@@ -52,6 +52,13 @@ namespace SIMMosaicUtils
                     bAlignWithFiducial = true;
             //*/
                 ManagedMosaicLayer layer = set.AddLayer(numCameras, (uint)pSpec.NumberOfTriggers, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+                
+                // Set subDevice
+                if (numCameras > 8)
+                {
+                    uint[] iLastCams = new uint[2] { 7, 15 };
+                    set.AddSubDeviceInfo(deviceIndex, iLastCams);
+                }
 
                 if (layer == null)
                     throw new ApplicationException("AddDeviceToMosaic - Layer was null - this should never happen!");
@@ -291,6 +298,13 @@ namespace SIMMosaicUtils
             bool bFiducialBrighterThanBackground = true;
             uint deviceIndex = 0;
             ManagedMosaicLayer layer = set.AddLayer(iNumCam, iNumTrig, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+
+            // Set subDevice
+            if (iNumCam > 8)
+            {
+                uint [] iLastCams = new uint[2] {7, 15};
+                set.AddSubDeviceInfo(deviceIndex, iLastCams);
+            }
 
             // Set nominal transforms
             uint iImageRows = set.GetImageLengthInPixels();

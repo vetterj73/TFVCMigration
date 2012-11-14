@@ -196,7 +196,11 @@ namespace MosaicDM
 			bool IsValidInputFidLocations();
 			void ResetInputFidLocMap();
 			map<int, FiducialLocation>* GetInputFidLocMap();
-			
+
+			// For SubDvices (more than 1 SIMs for a layer)
+			void AddSubDeviceInfo(unsigned int iDeviceIndex, list<unsigned int> lastCameraList);
+			list<unsigned int>* GetSubDeviceLastCams(unsigned int iDeviceIndex);
+
 		private:
 			unsigned int _imageWidth;
 			unsigned int _imageHeight;
@@ -226,5 +230,9 @@ namespace MosaicDM
 
 			// For input fiducial information
 			map<int, FiducialLocation> _inputFidLocMap;
+
+			// For SubDvices (more than 1 SIMs for a layer)
+			bool _bHasSubDevices;
+			map<unsigned int, list<unsigned int>> _subDeviceInfos;
 	};
 }

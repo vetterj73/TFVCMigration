@@ -87,6 +87,8 @@ namespace MosaicDM
 		_bSeperateProcessStages = false;
 
 		_inputFidLocMap.clear();
+
+		_bHasSubDevices = false;
 	}
 
 	MosaicSet::~MosaicSet()
@@ -568,5 +570,23 @@ namespace MosaicDM
 	map<int, FiducialLocation>* MosaicSet::GetInputFidLocMap()
 	{
 		return(&_inputFidLocMap);
+	}
+
+	// For SubDvices (more than 1 SIMs for a layer)
+	void MosaicSet::AddSubDeviceInfo(unsigned int iDeviceIndex, list<unsigned int> lastCameraList)
+	{
+		_subDeviceInfos[iDeviceIndex] = lastCameraList;
+		_bHasSubDevices = true;
+	}
+
+	list<unsigned int>* MosaicSet::GetSubDeviceLastCams(unsigned int iDeviceIndex)
+	{
+		if(!_bHasSubDevices)
+			return NULL;
+
+		if(_subDeviceInfos.find(iDeviceIndex) == _subDeviceInfos.end())
+			return NULL;
+
+		return(&_subDeviceInfos[iDeviceIndex]);
 	}
 }

@@ -207,6 +207,8 @@ namespace MMosaicDM
 				_pMosaicSet->SetGaussianDemosaic(bValue);
 			}
 
+			bool AddSubDeviceInfo(unsigned int iDeviceIndex, array<unsigned int>^ pLastCameras);
+
 		private:
 			MosaicDM::MosaicSet *_pMosaicSet;
 		
