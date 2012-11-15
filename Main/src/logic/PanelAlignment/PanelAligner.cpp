@@ -911,16 +911,19 @@ bool PanelAligner::CreateImageOrderInSolver(
 		unsigned int iLayerIndex = k->first.LayerIndex;
 		unsigned int iTrigIndex = k->first.TriggerIndex;
 		MosaicLayer* pLayer = _pSet->GetLayer(iLayerIndex);
-		unsigned int iNumCams = pLayer->GetNumberOfCameras();
-		for(i=0; i<iNumCams; i++)
+		list<SubSetCams> subTrigInfo = pLayer->GetSubTrigInfo();
+		for(list<SubSetCams>::iterator iSub=subTrigInfo.begin(); iSub!=subTrigInfo.end(); iSub++)
 		{
-			FovIndex index(iLayerIndex, iTrigIndex, i);
-			(*pOrderMap)[index] = iCount;
-			if( !CorrelationParametersInst.bUseCameraModelStitch  && !CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
+			for(i=iSub->iFirstCamIndex; i<=iSub->iLastCamIndex; i++)
+			{
+				FovIndex index(iLayerIndex, iTrigIndex, i);
+				(*pOrderMap)[index] = iCount;
+				if( !CorrelationParametersInst.bUseCameraModelStitch  && !CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
+					iCount++;
+			}
+			if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
 				iCount++;
 		}
-		if( CorrelationParametersInst.bUseCameraModelStitch || CorrelationParametersInst.bUseCameraModelIterativeStitch ) 
-			iCount++;
 	}
 		
 	return(true);

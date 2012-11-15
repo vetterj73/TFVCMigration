@@ -113,6 +113,8 @@ namespace MosaicDM
 
 			list<SubSetCams>* GetSubDeviceInfo();
 			list<SubSetCams> GetSubTrigInfo();
+			unsigned int GetNumberOfSubTriggers();
+			bool IsFirstCamOfSubTrigger(unsigned int iCamIndex);
 
 			///
 			///	Clears all images from this layer

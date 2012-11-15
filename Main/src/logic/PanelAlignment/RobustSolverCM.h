@@ -66,7 +66,7 @@ protected:
 	unsigned int	_iNumFids;
 	unsigned int	_iNumCameras; // Is number of cameras the same for all devices?,  Does the first camera always start at 0?
 	unsigned int	_iNumDevices;
-	unsigned int	_iTotalNumberOfTriggers;
+	unsigned int	_iTotalNumberOfSubTriggers;
 	unsigned int	_iNumCalDriftTerms;
 	unsigned int	_iMaxNumCorrelations;
 	unsigned int	_iMatrixALastRowUsed;  // 

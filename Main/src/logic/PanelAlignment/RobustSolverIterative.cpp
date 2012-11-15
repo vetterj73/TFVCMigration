@@ -14,7 +14,7 @@ extern "C" {
 /*
 Matrix A layout has changed
 
-Columns 0 through  _iTotalNumberOfTriggers * _iNumParamsPerIndex -1
+Columns 0 through  _iTotalNumberOfSubTriggers * _iNumParamsPerIndex -1
 x_trig, y_trig, dtheta_trig
  note that theta_trig is now theta_est + dtheta_trig
 
@@ -35,11 +35,11 @@ RobustSolverIterative::RobustSolverIterative(
 		MosaicSet* pSet): 	RobustSolverCM( pFovOrderMap,  iMaxNumCorrelations, pSet)
 {
 	_iMaxIterations = CorrelationParametersInst.iSolverMaxIterations;
-	_iCalDriftStartCol = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
+	_iCalDriftStartCol = _iTotalNumberOfSubTriggers * _iNumParamsPerIndex;
 	_iStartColZTerms = _iCalDriftStartCol + _iNumCalDriftTerms;
 	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + (_iNumDevices-1)*2 + _iNumCalDriftTerms;
 	
-	_dThetaEst = new double[_iTotalNumberOfTriggers];
+	_dThetaEst = new double[_iTotalNumberOfSubTriggers];
 	_fitInfo = new fitInfo[_iMaxNumCorrelations];
 	ZeroTheSystem();
 }
@@ -136,14 +136,14 @@ void RobustSolverIterative::SolveXAlgH()
 	// 
 
 	// Column order for MatrixA and VectorX
-	// first _iTotalNumberOfTriggers * _iNumParamsPerIndex columns
+	// first _iTotalNumberOfSubTriggers * _iNumParamsPerIndex columns
 	// contain Xtrig, Ytrig, dTheta
 	// next _iNumCalDriftTerms = _iNumDevices * _iNumCameras * 2
 	// contain ds_x, ds_y [device][camera] 
 	// last _iNumZTerms = 10;	are Z terms
 	unsigned int i;
 	_iIterationNumber = 0;
-	for(i =0; i<_iTotalNumberOfTriggers; i++)
+	for(i =0; i<_iTotalNumberOfSubTriggers; i++)
 		_dThetaEst[i]=0;
 	//for(i =0; i<_iNumCalDriftTerms; i++)
 	//	_dCalDriftEst[i]=0;
@@ -172,7 +172,7 @@ void RobustSolverIterative::SolveXAlgH()
 		// extract deltas of cal and theta, update total estimates
 		// Update theta_estimate
 		unsigned int indexX;
-		for(i=0; i<_iTotalNumberOfTriggers; i++)
+		for(i=0; i<_iTotalNumberOfSubTriggers; i++)
 		{
 			// index of dThetaEst matches order of triggers in A matrix x,y,theta section
 			indexX = i * _iNumParamsPerIndex + 2;
@@ -554,11 +554,11 @@ void RobustSolverIterative::ConstrainPerTrig()
 	
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
-		unsigned int iCamIndex( k->first.CameraIndex);
-		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
+		unsigned int iLayerIndex = k->first.LayerIndex;
+		unsigned int iCamIndex = k->first.CameraIndex;
+		if (_pSet->GetLayer(iLayerIndex)->IsFirstCamOfSubTrigger(iCamIndex))  // first camera of subtrig
 		{
 			unsigned int indexID( k->second );
-			unsigned int iLayerIndex( k->first.LayerIndex);
 			unsigned int iTrigIndex( k->first.TriggerIndex);
 			unsigned int deviceNum = _pSet->GetLayer(iLayerIndex)->DeviceIndex();
 			unsigned int iCols = _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->Columns();
@@ -929,7 +929,7 @@ void RobustSolverIterative::OutputVectorXCSV(string filename) const
 	{
 		unsigned int iCamIndex( k->first.CameraIndex);
 		unsigned int iIndexID( k->second );
-		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
+		if (_pSet->GetLayer(k->first.LayerIndex)->IsFirstCamOfSubTrigger(k->first.CameraIndex)) 
 		{
 			of << "I_" << k->first.LayerIndex 
 				<< "T_" << k->first.TriggerIndex 

@@ -135,6 +135,24 @@ namespace MosaicDM
 		return(subTrigInfo);
 	}	
 
+	unsigned int MosaicLayer::GetNumberOfSubTriggers()
+	{
+		return (GetSubTrigInfo().size()*GetNumberOfTriggers());
+	}
+
+	bool MosaicLayer::IsFirstCamOfSubTrigger(unsigned int iCamIndex)
+	{
+		list<SubSetCams> subsetCams = GetSubTrigInfo();
+		for(list<SubSetCams>::iterator i=subsetCams.begin(); i!=subsetCams.end(); i++)
+		{
+			if(iCamIndex == i->iFirstCamIndex)
+				return(true);
+		}
+
+		return(false);
+	}
+
+
 #pragma endregion 
 
 #pragma  region Create stitched image 

@@ -150,7 +150,7 @@ namespace MosaicDM
 			/// Calculate the total number of triggers in the MosaicSet
 			///
 			unsigned int GetMosaicTotalNumberOfTriggers();
-			
+			unsigned int GetMosaicTotalNumberOfSubTriggers();
 
 			///
 			///	Get the correlation flags associated with the certain layers

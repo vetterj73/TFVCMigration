@@ -52,7 +52,7 @@ RobustSolverCM::RobustSolverCM(
 
 	// Max Camera number per device, device number and trigger number
 	_iNumCameras = CountCameras();  // number per SIM, must be the same for All SIMs
-	_iTotalNumberOfTriggers = _pSet->GetMosaicTotalNumberOfTriggers();
+	_iTotalNumberOfSubTriggers = _pSet->GetMosaicTotalNumberOfSubTriggers();
 		// have only implemented through 3 SIMs
 	int numLayers = _pSet->GetNumMosaicLayers();
 	_iNumDevices = _pSet->GetNumDevice();
@@ -65,13 +65,13 @@ RobustSolverCM::RobustSolverCM(
 	_iNumCalDriftTerms = _iNumDevices * _iNumCameras * 2;
 		// adapt to SIM to SIM mounting differences 
 		// width needed for CM fit
-	_iStartColZTerms = _iTotalNumberOfTriggers * _iNumParamsPerIndex;
+	_iStartColZTerms = _iTotalNumberOfSubTriggers * _iNumParamsPerIndex;
 	_iMatrixWidth = _iStartColZTerms + _iNumZTerms + (_iNumDevices-1)*2;// additional width needed for Z mount differences
 		// allocate larger block for iterative solver, 
 		// later will merge the two methods and get rid of this step
-	unsigned int iMatrixWidthAllocated = _iTotalNumberOfTriggers * _iNumParamsPerIndex + _iNumZTerms + _iNumCalDriftTerms;
+	unsigned int iMatrixWidthAllocated = _iTotalNumberOfSubTriggers * _iNumParamsPerIndex + _iNumZTerms + _iNumCalDriftTerms;
 	_iMatrixHeight = _iNumZTerms										// constrain Z
-					+ _iTotalNumberOfTriggers * _iNumParamsPerIndex		// constrain Xtrig, Ytrig, theta_trig
+					+ _iTotalNumberOfSubTriggers * _iNumParamsPerIndex		// constrain Xtrig, Ytrig, theta_trig
 					+ _iNumCalDriftTerms + _iNumDevices*2				// constrain cal drift to 0, sums per device and direction to 0
 					+ 2 * nCombinations[_iNumDevices]					// constrain z mount terms
 					+ 2*_iMaxNumCorrelations;
@@ -261,11 +261,11 @@ void RobustSolverCM::ConstrainPerTrig()
 	
 	for(map<FovIndex, unsigned int>::iterator k=_pFovOrderMap->begin(); k!=_pFovOrderMap->end(); k++)
 	{
-		unsigned int iCamIndex( k->first.CameraIndex);
-		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
+		unsigned int iLayerIndex = k->first.LayerIndex;
+		unsigned int iCamIndex = k->first.CameraIndex;
+		if (_pSet->GetLayer(iLayerIndex)->IsFirstCamOfSubTrigger(iCamIndex))  // first camera of subtrig
 		{
 			unsigned int indexID( k->second );
-			unsigned int iLayerIndex( k->first.LayerIndex);
 			unsigned int iTrigIndex( k->first.TriggerIndex);
 			TransformCamModel camCal = 
 				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
@@ -1403,7 +1403,8 @@ void RobustSolverCM::OutputVectorXCSV(string filename) const
 	{
 		unsigned int iCamIndex( k->first.CameraIndex);
 		unsigned int iIndexID( k->second );
-		if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
+		if (_pSet->GetLayer(k->first.LayerIndex)->IsFirstCamOfSubTrigger(k->first.CameraIndex)) 
+		//if (iCamIndex == 0)  // first camera (logical camera) is always numbered 0
 		{
 			of << "I_" << k->first.LayerIndex 
 				<< "T_" << k->first.TriggerIndex 
