@@ -10,9 +10,6 @@ extern "C" {
 #include "ucxform.h"
 }
 
-
-
-
 #pragma region Operateors
 bool operator<(const FovIndex& a, const FovIndex& b)
 {
@@ -61,42 +58,7 @@ bool operator>(const FovIndex& a, const FovIndex& b)
 			
 	return(false);
 }
-#pragma endregion
 
-#pragma region constructor
-/// <summary>
-/// Constructor for RobustSolver -- a base class for FOV, CM, and Iterative solvers
-/// </summary>
-/// <param name="pFovOrderMap"></param>
-
-RobustSolver::RobustSolver(		
-	map<FovIndex, unsigned int>* pFovOrderMap)
-{
-	
-	_pFovOrderMap = pFovOrderMap;
-	_bSaveMatrixCSV = false;
-	_bVerboseLogging = false;
-	_iNumFovs = (unsigned int)pFovOrderMap->size();
-	iFileSaveIndex = 0;	
-}
-
-
-RobustSolver::~RobustSolver(void)
-{
-	/*delete [] _dMatrixA;
-	delete [] _dMatrixACopy;
-	delete [] _dVectorB;
-	delete [] _dVectorBCopy;
-	delete [] _dVectorX;*/
-}
-
-
-
-#pragma endregion
-
-#pragma endregion
-
-#pragma region Solver and transform
 struct LeftIndex
 {
 	unsigned int iLeft;
@@ -108,6 +70,38 @@ bool operator<(const LeftIndex& a, const LeftIndex& b)
 {
 	return(a.iLeft < b.iLeft);
 };
+
+#pragma endregion
+
+#pragma region constructor
+/// <summary>
+/// Constructor for RobustSolver -- a base class for FOV, CM, and Iterative solvers
+/// </summary>
+/// <param name="pFovOrderMap"></param>
+
+RobustSolver::RobustSolver(		
+	map<FovIndex, unsigned int>* pFovOrderMap)
+{
+	_pFovOrderMap = pFovOrderMap;
+	_bSaveMatrixCSV = false;
+	_bVerboseLogging = false;
+	_iNumFovs = (unsigned int)pFovOrderMap->size();
+	iFileSaveIndex = 0;	
+}
+
+RobustSolver::~RobustSolver(void)
+{
+	/*delete [] _dMatrixA;
+	delete [] _dMatrixACopy;
+	delete [] _dVectorB;
+	delete [] _dVectorBCopy;
+	delete [] _dVectorX;*/
+}
+
+#pragma endregion
+
+
+#pragma region Solver and transform
 
 // Reorder the matrix A and vector B, and transpose Matrix A for banded solver
 // bRemoveEmptyRows, flag for removing empty equations from Matrix A

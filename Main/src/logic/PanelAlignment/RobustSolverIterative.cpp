@@ -37,12 +37,14 @@ RobustSolverIterative::RobustSolverIterative(
 	_iMaxIterations = CorrelationParametersInst.iSolverMaxIterations;
 	_iCalDriftStartCol = _iTotalNumberOfSubTriggers * _iNumParamsPerIndex;
 	_iStartColZTerms = _iCalDriftStartCol + _iNumCalDriftTerms;
-	_iMatrixWidth = _iCalDriftStartCol + _iNumZTerms + (_iNumDevices-1)*2 + _iNumCalDriftTerms;
+	_iMatrixWidth = _iStartColZTerms + _iNumZTerms + (_iNumDevices-1)*2;
 	
 	_dThetaEst = new double[_iTotalNumberOfSubTriggers];
 	_fitInfo = new fitInfo[_iMaxNumCorrelations];
+
 	ZeroTheSystem();
 }
+
 RobustSolverIterative::~RobustSolverIterative()
 {
 	delete [] _dThetaEst;
@@ -58,29 +60,10 @@ RobustSolverIterative::~RobustSolverIterative()
 
 void RobustSolverIterative::ZeroTheSystem()
 {
-	_iCurrentRow = 0;
 
-	unsigned int i;
-	for(i=0; i<_iMatrixSize; i++)
-		_dMatrixA[i] = 0.0;
-
-	for(i=0; i<_iMatrixHeight; i++)
-	{
-		_dVectorB[i] = 0.0;
-		_pdWeights[i] = 0.0;
-		sprintf_s(_pcNotes[i], _iLengthNotes, "");
-	}
-	for (unsigned int dev(0); dev < MAX_NUMBER_DEVICES; dev++)
-		for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
-			for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
-				_zCoef[dev][i][j] = 0.0;
-	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
-	_Board2CAD.SetMatrix( resetTransformValues );
+	RobustSolverCM::ZeroTheSystem();
 	
-
-	for(i =0; i<_iMatrixWidth; i++)
-		_dVectorX[i] = 0.0;
-	for(i =0; i<_iMaxNumCorrelations; i++)
+	for(unsigned int i =0; i<_iMaxNumCorrelations; i++)
 	{
 		// reset the fit info struct
 		_fitInfo[i].fitType=0;	
@@ -107,6 +90,7 @@ void RobustSolverIterative::ZeroTheSystem()
 		_fitInfo[i].dFidRoiCenX=0;
 		_fitInfo[i].dFidRoiCenY=0;
 	}
+
 	_iCorrelationNum = 0;
 }
 
@@ -167,8 +151,11 @@ void RobustSolverIterative::SolveXAlgH()
 
 		for(i =0; i<_iMatrixWidth; i++)
 			_dVectorX[i] = 0.0;
+
 		FillMatrixA();  
+		
 		SolveXOneIteration();
+		
 		// extract deltas of cal and theta, update total estimates
 		// Update theta_estimate
 		unsigned int indexX;
@@ -178,13 +165,13 @@ void RobustSolverIterative::SolveXAlgH()
 			indexX = i * _iNumParamsPerIndex + 2;
 			_dThetaEst[i] += _dVectorX[indexX];
 		}
+
 		// update cal drift estimates
 		//for(i=0; i<_iNumCalDriftTerms; i++)
 		//{
 		//	_dCalDriftEst[i] += _dVectorX[_iCalDriftStartCol + i];
 		//}
 		iFileSaveIndex++;  
-		
 	}	
 	// spoof some later code !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//_iIterationNumber++;  
@@ -194,8 +181,8 @@ void RobustSolverIterative::FillMatrixA()
 {
 	// fill in Matrix A,b
 	_iCurrentRow = 0;
-	ConstrainZTerms();
-	ConstrainPerTrig();
+	AddAllLooseConstraints(false, true);
+	
 	double* Zpoly;
 	Zpoly = new double[_iNumZTerms];
 	// the z poly can be thought of as a partially populated 4x4 matrix:
@@ -236,6 +223,7 @@ void RobustSolverIterative::FillMatrixA()
 			double* pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			double	dFidRoiCenX  = _fitInfo[i].dFidRoiCenX;
 			double	dFidRoiCenY  = _fitInfo[i].dFidRoiCenY;
+			
 			// X direction equations
 			pdRow[iColInMatrixA] = w;  //X_trig
 			// Ytrig = 0
@@ -260,9 +248,10 @@ void RobustSolverIterative::FillMatrixA()
 				_fitInfo[i].fovIndexA.LayerIndex,
 				_fitInfo[i].fovIndexA.TriggerIndex, _fitInfo[i].fovIndexA.CameraIndex,
 				xSensorA, ySensorA,dxSensordzA,dySensordzA,dFidRoiCenX,dFidRoiCenY, _dThetaEst[orderedTrigIndexA] );
-			_pdWeights[_iCurrentRow] = w;
-			// Y direction equations
+			_pdWeights[_iCurrentRow] = w;	
 			_iCurrentRow++;
+			
+			// Y direction equations
 			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			pdRow[iColInMatrixA+1] = w;  //Y_trig
 			pdRow[iColInMatrixA+2] = + w * (xSensorA * cos(_dThetaEst[orderedTrigIndexA]) 
@@ -285,10 +274,7 @@ void RobustSolverIterative::FillMatrixA()
 				w,
 				boardX,boardY,  calDriftCol, deviceNumA);
 			_pdWeights[_iCurrentRow] = w;
-	
 			_iCurrentRow++;
-
-			
 		}
 		else if (_fitInfo[i].fitType == 2) // FOV to FOV fit
 		{
@@ -310,6 +296,8 @@ void RobustSolverIterative::FillMatrixA()
 				eqSign = +1;
 			else
 				eqSign = -1;
+
+			// X direction
 			pdRow[iColInMatrixA] += w * eqSign;	// X_trig,   Y_trig wt = 0
 			pdRow[iColInMatrixB] -= w * eqSign;  // may be in same trigger number
 			pdRow[iColInMatrixA+2] += -w * eqSign * (xSensorA*sin(_dThetaEst[orderedTrigIndexA]) 
@@ -342,10 +330,10 @@ void RobustSolverIterative::FillMatrixA()
 				_fitInfo[i].fovIndexB.TriggerIndex, _fitInfo[i].fovIndexB.CameraIndex,
 				xSensorA, ySensorA, xSensorB, ySensorB);
 			_pdWeights[_iCurrentRow] = w * eqSign;
-	
 			_iCurrentRow++;
-			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
+			
 			// Y direction
+			pdRow = _dMatrixA + _iCurrentRow*_iMatrixWidth;
 			pdRow[iColInMatrixA+1] += w * eqSign;
 			pdRow[iColInMatrixB+1] -= w * eqSign;  // may be in same trigger number
 			pdRow[iColInMatrixA+2] += w * eqSign * (xSensorA * cos(_dThetaEst[orderedTrigIndexA]) 
@@ -380,9 +368,7 @@ void RobustSolverIterative::FillMatrixA()
 				w,
 				boardX,boardY, calDriftColA, calDriftColB, deviceNumA, deviceNumB);
 			_pdWeights[_iCurrentRow] = w * eqSign;
-	
 			_iCurrentRow++;
-		
 		}
 		else if (_fitInfo[i].fitType == 3 || _fitInfo[i].fitType == 4) // Constrain board edge
 		{
@@ -391,6 +377,7 @@ void RobustSolverIterative::FillMatrixA()
 			double	dXOffset  = _fitInfo[i].dFidRoiCenX;
 			double	dSlope    = _fitInfo[i].dFidRoiCenY;
 			bool bSlopeOnly( _fitInfo[i].fitType == 4 );  // slope only fit
+			
 			// X direction equations
 			if(!bSlopeOnly)
 			{		
@@ -426,6 +413,7 @@ void RobustSolverIterative::FillMatrixA()
 	}
 	delete [] Zpoly;
 }
+
 // Robust regression by Huber's "Algorithm H"
 // Banded version
 void RobustSolverIterative::SolveXOneIteration()
@@ -540,7 +528,6 @@ void RobustSolverIterative::SolveXOneIteration()
 	}
 }
 
-
 void RobustSolverIterative::ConstrainPerTrig()
 {
 	// need local copy of this as we are solving for delta_Theta instead of theta
@@ -633,6 +620,7 @@ void RobustSolverIterative::ConstrainPerTrig()
 		_iCurrentRow++;
 	}
 }
+
 void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
 {
 	// Pix2Board in Iterative overloads the same function in the CM version
@@ -701,7 +689,6 @@ void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D 
 		xyBoard->x = cos(_dThetaEst[iOrderedTrigIndex]) * xySensor.r  - sin(_dThetaEst[iOrderedTrigIndex]) * xySensor.i  + _dVectorX[iVectorXIndex+0];
 		xyBoard->y = sin(_dThetaEst[iOrderedTrigIndex]) * xySensor.r  + cos(_dThetaEst[iOrderedTrigIndex]) * xySensor.i  + _dVectorX[iVectorXIndex+1];
 	}
-
 }
 
 // don't actually fill in MatrixA, b  -- add info _fitInfo array
@@ -798,12 +785,14 @@ bool RobustSolverIterative::AddFovFovOvelapResults(FovFovOverlap* pOverlap)
 	}
 	return( true );
 }
+
 bool RobustSolverIterative::AddCadFovOvelapResults(CadFovOverlap* pOverlap)
 {
 	// there are no CAD apperture fits in the camera model fit
 	// TODO TODO   is this true????????
 	return( true );
 }
+
 bool RobustSolverIterative::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 {
 	// Validation check for overlap
@@ -863,6 +852,7 @@ bool RobustSolverIterative::AddFidFovOvelapResults(FidFovOverlap* pOverlap)
 	_iCorrelationNum++;
 	return( true );
 }
+
 // Add constraint base on panel edge
 bool RobustSolverIterative::AddPanelEdgeContraints(
 	MosaicLayer* pLayer, unsigned int iCamIndex, unsigned int iTrigIndex,
@@ -910,7 +900,6 @@ bool RobustSolverIterative::AddPanelEdgeContraints(
 	
 	return(true);
 }
-
 
 #pragma region Debug
 // Debug

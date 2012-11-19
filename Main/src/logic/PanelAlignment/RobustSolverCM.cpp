@@ -69,7 +69,7 @@ RobustSolverCM::RobustSolverCM(
 	_iMatrixWidth = _iStartColZTerms + _iNumZTerms + (_iNumDevices-1)*2;// additional width needed for Z mount differences
 		// allocate larger block for iterative solver, 
 		// later will merge the two methods and get rid of this step
-	unsigned int iMatrixWidthAllocated = _iTotalNumberOfSubTriggers * _iNumParamsPerIndex + _iNumZTerms + _iNumCalDriftTerms;
+	unsigned int iMatrixWidthAllocated = _iMatrixWidth  + _iNumCalDriftTerms;
 	_iMatrixHeight = _iNumZTerms										// constrain Z
 					+ _iTotalNumberOfSubTriggers * _iNumParamsPerIndex		// constrain Xtrig, Ytrig, theta_trig
 					+ _iNumCalDriftTerms + _iNumDevices*2				// constrain cal drift to 0, sums per device and direction to 0
