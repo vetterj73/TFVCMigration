@@ -43,7 +43,7 @@ public:
 	bool GetPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
 protected:
-	void			ReorderAndTranspose(bool bRemoveEmptyRows);
+	void			TransposeMatrixA(bool bRemoveEmptyRows);
 	unsigned int	ColumnZTerm(unsigned int term, unsigned int deviceNum);
 	virtual void	ZeroTheSystem();
 	virtual void	ConstrainZTerms();

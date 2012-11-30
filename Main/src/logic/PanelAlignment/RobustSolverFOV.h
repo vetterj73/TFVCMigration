@@ -43,10 +43,9 @@ public:
 	void Reset() {ZeroTheSystem();};
 	void SolveXAlgH() {SolveXAlgHB();};
 	
-
 protected:
-	void ZeroTheSystem();
 	void SolveXAlgHB();
+	unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
 	
 	bool MatchProjeciveTransform(const double pPara[12], 
 		unsigned int iLayerIndex,

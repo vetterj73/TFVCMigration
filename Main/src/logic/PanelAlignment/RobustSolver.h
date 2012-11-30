@@ -17,6 +17,7 @@
 #define MAX_NUMBER_DEVICES 3
 
 using namespace MosaicDM;
+
 class FovIndex
 {
 public:
@@ -50,7 +51,7 @@ class RobustSolver
 public:
 	RobustSolver(
 		map<FovIndex, unsigned int>* pFovOrderMap);
-	~RobustSolver(void);
+	virtual ~RobustSolver(void);
 
 	virtual bool AddAllLooseConstraints(
 		bool bPinPanelWithCalibration=false, 
@@ -77,10 +78,8 @@ public:
 	int				iFileSaveIndex;  // mark output files with this number
 
 protected:
-	virtual void ZeroTheSystem() =0;
-	virtual unsigned int ReorderAndTranspose(bool bRemoveEmptyRows, int* piCounts, unsigned int* piEmptyRows);
-	//virtual bool MatchProjeciveTransform(const double pPara[12], double dTrans[3][3]) const=0;
-
+	virtual void ZeroTheSystem();
+	
 //private:   // protected so they can be inherited ?!
 	map<FovIndex, unsigned int>* _pFovOrderMap;
 	bool			_bProjectiveTrans;	

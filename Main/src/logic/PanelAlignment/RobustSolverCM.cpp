@@ -104,11 +104,6 @@ RobustSolverCM::RobustSolverCM(
 }
 RobustSolverCM::~RobustSolverCM()
 {
-	delete [] _dMatrixA;
-	delete [] _dMatrixACopy;
-	delete [] _dVectorB;
-	delete [] _dVectorBCopy;
-	delete [] _dVectorX;
 	delete [] _pdWeights;
 	for(unsigned int i=0; i<_iMatrixHeight; i++)
 		delete [] _pcNotes[i] ;
@@ -117,23 +112,16 @@ RobustSolverCM::~RobustSolverCM()
 
 void RobustSolverCM::ZeroTheSystem()
 {
-	_iCurrentRow = 0;
+	RobustSolver::ZeroTheSystem();
 
-	unsigned int i;
-	for(i=0; i<_iMatrixSize; i++)
-		_dMatrixA[i] = 0.0;
-
-	for(i=0; i<_iMatrixHeight; i++)
+	for(unsigned int i=0; i<_iMatrixHeight; i++)
 	{
-		_dVectorB[i] = 0.0;
 		_pdWeights[i] = 0.0;
 		sprintf_s(_pcNotes[i], _iLengthNotes, "");
 	}
 
-	for(i =0; i<_iMatrixWidth; i++)
-		_dVectorX[i] = 0.0;
 	for (unsigned int dev(0); dev < MAX_NUMBER_DEVICES; dev++)
-		for (i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
+		for (unsigned int i=0; i < NUMBER_Z_BASIS_FUNCTIONS; i++)
 			for (unsigned int j(0); j < NUMBER_Z_BASIS_FUNCTIONS; j++)
 				_zCoef[dev][i][j] = 0.0;
 	double resetTransformValues[3][3] =  {{1.0,0,0},{0,1.0,0},{0,0,1}};
@@ -824,7 +812,7 @@ void RobustSolverCM::SolveXAlgH()
 	//bRemoveEmptyRows = false;
 	//int* mb = new int[_iMatrixWidth];
 	//unsigned int iEmptyRows;
-	ReorderAndTranspose(bRemoveEmptyRows);
+	TransposeMatrixA(bRemoveEmptyRows);
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
@@ -1257,7 +1245,7 @@ void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols,
 ///Name doesn't match function as this routine no longer reorders matrix (not needed in Camera Model solver)
 /// Transpose is still needed for call to solver
 
-void RobustSolverCM::ReorderAndTranspose(bool bRemoveEmptyRows)
+void RobustSolverCM::TransposeMatrixA(bool bRemoveEmptyRows)
 {
 	string fileName;
 	char cTemp[100];

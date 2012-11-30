@@ -49,13 +49,6 @@ RobustSolverIterative::~RobustSolverIterative()
 {
 	delete [] _dThetaEst;
 	delete [] _fitInfo;
-	//delete [] _dMatrixA;
-	//delete [] _dMatrixACopy;
-	//delete [] _dVectorB;
-	//delete [] _dVectorBCopy;
-	//delete [] _dVectorX;
-	//delete [] _pdWeights;
-	//delete [] _pcNotes;
 }
 
 void RobustSolverIterative::ZeroTheSystem()
@@ -137,20 +130,13 @@ void RobustSolverIterative::SolveXAlgH()
 	for (_iIterationNumber=0; _iIterationNumber< (unsigned int)iMaxIter; _iIterationNumber++)
 	{
 		// zero out A, b, x, and notes
-		_iCurrentRow = 0;
-		//iFileSaveIndex = _iIterationNumber;
-		for(i=0; i<_iMatrixSize; i++)
-			_dMatrixA[i] = 0.0;
+		RobustSolver::ZeroTheSystem();
 
 		for(i=0; i<_iMatrixHeight; i++)
 		{
-			_dVectorB[i] = 0.0;
 			_pdWeights[i] = 0.0;
 			sprintf_s(_pcNotes[i], _iLengthNotes, "");
 		}
-
-		for(i =0; i<_iMatrixWidth; i++)
-			_dVectorX[i] = 0.0;
 
 		FillMatrixA();  
 		
@@ -428,7 +414,7 @@ void RobustSolverIterative::SolveXOneIteration()
 	//bRemoveEmptyRows = false;
 	//int* mb = new int[_iMatrixWidth];
 	//unsigned int iEmptyRows;
-	ReorderAndTranspose(bRemoveEmptyRows);
+	TransposeMatrixA(bRemoveEmptyRows);
 
 	double*	resid = new double[_iMatrixHeight];
 	double scaleparm = 0;
