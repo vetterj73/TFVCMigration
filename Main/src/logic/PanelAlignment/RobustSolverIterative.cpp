@@ -93,7 +93,7 @@ bool RobustSolverIterative::AddAllLooseConstraints(
 		bool bUseNominalTransform)
 {
 	ConstrainZTerms();
-	ConstrainPerTrig();
+	ConstrainPerTrig(bPinPanelWithCalibration);
 
 	return(true);
 }
@@ -514,7 +514,7 @@ void RobustSolverIterative::SolveXOneIteration()
 	}
 }
 
-void RobustSolverIterative::ConstrainPerTrig()
+void RobustSolverIterative::ConstrainPerTrig(bool bPinPanelWithCalibration)
 {
 	// need local copy of this as we are solving for delta_Theta instead of theta
 	// and to constrain cal drift terms

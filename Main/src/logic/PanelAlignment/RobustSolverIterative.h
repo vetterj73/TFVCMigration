@@ -57,7 +57,7 @@ protected:
 	void	SolveXOneIteration();
 	void	ZeroTheSystem();
 	void	FillMatrixA();
-	void	ConstrainPerTrig();
+	void	ConstrainPerTrig(bool bPinPanelWithCalibration);
 	//void	ConstrainCalDrift(); // merge into ConstrainPerTrig
 
 private:
