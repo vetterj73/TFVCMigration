@@ -39,9 +39,12 @@ EquationWeights::EquationWeights(void)
 	wRbyEdge = wRcal*1e3;	// FOV rotation based on edge detection
 
 	// For Camera Model
-	wZConstrain = 100;   // lightly constrain Z model to flat
+	wZConstrain = 100;		// lightly constrain Z model to flat
 	wZConstrainZero = 1e6;  // strongly constrain unused Z model terms to flat
-	wXIndex = 0.01;		// constrain xTrig, yTrig, thetaTrig to match expected values
+	wXIndex = 0.01;			// constrain xTrig, yTrig, thetaTrig to match expected values
+	wXIndex_PinXY = 1e3;	// constrain xTrig, yTrig for first trig when no fiducial
+	wXINdex_PinTheta = 1e4;	// constrain theta for first trig when no fiducial
+
 	wFidFlatBoardScale   = 1e3;
 	wFidFlatBoardRotation = 1e2;
 	wFidFlatFiducialLateralShift = 1e3;

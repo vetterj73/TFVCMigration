@@ -238,7 +238,7 @@ unsigned int RobustSolverCM::ColumnZTerm(unsigned int term, unsigned int deviceN
 /// Add contraints for panel X, Y, theta for each trigger
 /// </summary>
 /// Each trigger is constrained toward 0 angle and X and Y locations that match the expected locations.
-void RobustSolverCM::ConstrainPerTrig()
+void RobustSolverCM::ConstrainPerTrig(bool bPinPanelWithCalibration)
 {
 	// add constraints for each trigger  
 	double dFovOriginU = 0.0;
@@ -259,33 +259,42 @@ void RobustSolverCM::ConstrainPerTrig()
 				 _pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetTransformCamCalibration();
 			complexd xySensor;
 			camCal.SPix2XY(dFovOriginU, dFovOriginV, &xySensor.r, &xySensor.i);
+
+			double dWeight = Weights.wXIndex;
+			// Pin the first sub-trig if it is necessary
+			if(bPinPanelWithCalibration && iTrigIndex == 0 && iCamIndex == 0)
+				dWeight = Weights.wXIndex_PinXY;
 			
 			// constrain x direction
 			double* pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
 			unsigned int beginIndex( indexID * _iNumParamsPerIndex);
-			pdRow[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			pdRow[beginIndex+2] = -Weights.wXIndex * xySensor.i;
-			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
+			pdRow[beginIndex+0] = dWeight;	// b VALUE IS NON_ZERO!!
+			pdRow[beginIndex+2] = -dWeight * xySensor.i;
+			_dVectorB[_iCurrentRow] = dWeight * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2)
 				- xySensor.r);
 
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+			_pdWeights[_iCurrentRow] = dWeight;
 			_iCurrentRow++;
+
 			// constrain yTrig value
-			
 			pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
-			pdRow[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			pdRow[beginIndex+2] = Weights.wXIndex * xySensor.r;
-			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
+			pdRow[beginIndex+1] = dWeight;	// b VALUE IS NON_ZERO!!
+			pdRow[beginIndex+2] = dWeight * xySensor.r;
+			_dVectorB[_iCurrentRow] = dWeight * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5)
 				- xySensor.i);
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+			_pdWeights[_iCurrentRow] = dWeight;
 			_iCurrentRow++;
 			
 			// constrain theata to zero
+				// Pin the first sub-trig if it is necessary
+			if(bPinPanelWithCalibration && iTrigIndex == 0 && iCamIndex == 0)
+				dWeight = Weights.wXINdex_PinTheta;
+
 			pdRow = _dMatrixA +_iCurrentRow*_iMatrixWidth;
-			pdRow[beginIndex+2] = Weights.wXIndex;
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+			pdRow[beginIndex+2] = dWeight;
+			_pdWeights[_iCurrentRow] = dWeight;
 			_iCurrentRow++;
 		}
 	}
@@ -296,7 +305,7 @@ bool RobustSolverCM::AddAllLooseConstraints(
 	bool bUseNominalTransform)
 {
 	ConstrainZTerms();
-	ConstrainPerTrig();
+	ConstrainPerTrig(bPinPanelWithCalibration);
 
 	return(true);
 }
@@ -970,6 +979,12 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	// uses warpxy.c to do this translation
 	// then do a least sq. fit to do an affine xform between board and CAD 
 
+	if(fiducialSet->Size() == 0)
+	{
+		LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial: No fiducial information, skip!"); 
+		return;
+	}
+
 	// count the number fiducial overlaps in the data set 
 	unsigned int nFidOverlaps(0);
 	int iNumPhyFid = fiducialSet->Size();
@@ -1121,7 +1136,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	delete [] resid;
 		
 	// log results for debug
-	if (_bVerboseLogging)
+	//if (_bVerboseLogging)
 		LOG.FireLogEntry(LogTypeSystem, "Flatten Fiducial _Board2CAD %.5e,%.5e,%.5e,   %.5e,%.5e,%.5e    ", 
 			_Board2CAD.GetItem(0), _Board2CAD.GetItem(1), _Board2CAD.GetItem(2), _Board2CAD.GetItem(3), _Board2CAD.GetItem(4), _Board2CAD.GetItem(5));
 		
@@ -1152,6 +1167,18 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): Y stretch excessive = %f", yStretch);
 	if( abs(skew) > CorrelationParametersInst.dAlignBoardSkewLimit )
 		LOG.FireLogEntry(LogTypeError, "RobustSolverCM::FlattenFiducials(): skew excessive = %f", skew);
+
+	// For debug
+	if(CorrelationParametersInst.bSaveTransformVectors)
+	{
+		_mkdir(CorrelationParametersInst.sDiagnosticPath.c_str());
+		char cTemp[255];
+		string s;
+		sprintf_s(cTemp, 100, "%sBoardToCAD_%d.csv", CorrelationParametersInst.sDiagnosticPath.c_str(), iFileSaveIndex); 
+		s.clear();
+		s.assign(cTemp);
+		OutputBoardToCAD(s);
+	}
 }
 
 void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols, double *b, double *X, double *resid)
@@ -1417,6 +1444,20 @@ void RobustSolverCM::OutputVectorXCSV(string filename) const
 
 		double d = _dVectorX[_iStartColZTerms + j];
 		of << d;
+	}
+	of <<  std::endl;
+	of.close();
+}
+
+void RobustSolverCM::OutputBoardToCAD(string filename) const
+{
+	ofstream of(filename.c_str());
+
+	of << std::scientific;
+	
+	for(unsigned int j=0; j<9; j++) 
+	{
+		of << _Board2CAD.GetItem(j) << ",";
 	}
 	of <<  std::endl;
 	of.close();

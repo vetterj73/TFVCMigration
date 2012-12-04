@@ -36,6 +36,7 @@ public:
 		unsigned int iTriggerIndex,
 		unsigned int iCameraIndex);
 	virtual void OutputVectorXCSV(string filename) const;
+	virtual void OutputBoardToCAD(string filename) const;
 	virtual void Reset() {ZeroTheSystem();};
 	virtual void SolveXAlgH();
 	virtual void			FlattenFiducials(PanelFiducialResultsSet* fiducialSet);
@@ -47,7 +48,7 @@ protected:
 	unsigned int	ColumnZTerm(unsigned int term, unsigned int deviceNum);
 	virtual void	ZeroTheSystem();
 	virtual void	ConstrainZTerms();
-	virtual void	ConstrainPerTrig();
+	virtual void	ConstrainPerTrig(bool bPinPanelWithCalibration);
 	
 	unsigned int	CountCameras();
 	virtual void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);

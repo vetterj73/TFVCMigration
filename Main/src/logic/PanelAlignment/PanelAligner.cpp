@@ -323,6 +323,12 @@ void PanelAligner::CalTransformsWithMask()
 	bool bUseFiducials = true; 
 	bool bPinPanelWithCalibration = false;
 	bool bUseNominalTransform = false;
+		// If no fiducial, pin the panel
+	if(_pPanel->NumberOfFiducials() == 0)
+	{
+		bUseFiducials = false; 
+		bPinPanelWithCalibration = true;
+	}
 	AddOverlapResults2Solver(
 		_pSolver,
 		bUseFiducials, 
@@ -334,7 +340,7 @@ void PanelAligner::CalTransformsWithMask()
 	//if camera model, must flatten fiducials
 	_pSolver->FlattenFiducials( GetFidResultsSetPoint() );
 
-	// Set transform tos Fov images
+	// Set transform to Fov images
 	// For each mosaic image
 	int iNumLayer = _pSet->GetNumMosaicLayers();
 	for(int i=0; i<iNumLayer; i++)
@@ -681,7 +687,15 @@ bool PanelAligner::CreateTransforms()
 	PickOneAlign4EachPanelFiducial();
 
 	// Use nominal fiducail overlaps if edge info is not available
-	AddOverlapResults2Solver(_pSolver, !bUseEdgeInfo);
+	bool bUseFiducials = !bUseEdgeInfo; 
+	bool bPinPanelWithCalibration = false;
+		// If no fiducail available, pin the panel
+	if(_pPanel->NumberOfFiducials() == 0)
+	{
+		bUseFiducials = false; 
+		bPinPanelWithCalibration = true;
+	}
+	AddOverlapResults2Solver(_pSolver, bUseFiducials, bPinPanelWithCalibration);
 	
 	// Use current panel fiducial overlaps if edge information is available
 	if(bUseEdgeInfo)

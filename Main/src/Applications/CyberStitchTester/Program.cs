@@ -46,6 +46,7 @@ namespace CyberStitchTester
         private static bool _bUseIterativeCameraModel = false;
         private static bool _bSeperateProcessStages = false;
         private static bool _bUseTwoPassStitch = false;
+        private static bool _bNoFiducial = false;
         
         // Internal variable
         private static ManagedMosaicSet _mosaicSet = null;
@@ -87,6 +88,8 @@ namespace CyberStitchTester
                     _bUseProjective = false;
                 else if (args[i] == "-nh")
                     _bAdjustForHeight = false;
+                else if (args[i] == "-nf")
+                    _bNoFiducial = true;
                 else if (args[i] == "-cammod")
                     _bUseCameraModel = true;
                 else if (args[i] == "-de")
@@ -138,6 +141,10 @@ namespace CyberStitchTester
                 _logger.Kill();
                 return;
             }
+
+            // Remove fiducial information from panel
+            if (_bNoFiducial)
+                _panel.ClearFiducials();
 
             if (_bUseCoreAPI) 
             {
@@ -589,7 +596,10 @@ namespace CyberStitchTester
                     
                     if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\jrhResults\\Cycle_" + (iCycleCount - 1) + "\\") == false)
                         Output("Could not save mosaic images");
-                    */
+                    //*/
+
+                    //if (_mosaicSet.SaveAllStitchedImagesToDirectory("c:\\temp\\Cycle_" + (iCycleCount - 1)) == false)
+                    //    Output("Could not save mosaic images");
                 }
 
                 _aligner.Save3ChannelImage("c:\\temp\\Aftercycle" + iCycleCount + ".bmp",

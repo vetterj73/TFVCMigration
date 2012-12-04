@@ -54,6 +54,8 @@ public:
 	double wZConstrain;
 	double wZConstrainZero;
 	double wXIndex;
+	double wXIndex_PinXY;
+	double wXINdex_PinTheta;
 	double wFidFlatBoardScale;
 	double wFidFlatBoardRotation;
 	double wFidFlatFiducialLateralShift;
