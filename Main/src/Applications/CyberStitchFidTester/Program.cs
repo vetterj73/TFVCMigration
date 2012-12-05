@@ -55,6 +55,7 @@ namespace CyberStitchFidTester
         private static bool _bUseTwoPassStitch = false;
         private static int _numberToRun = 1;
         private static bool _bMaskForDiffDevices = false;
+        
 
         // For stitched image as input
         private static string _stitchedImagePathPattern = "";
@@ -79,6 +80,7 @@ namespace CyberStitchFidTester
         private static int _numAcqsComplete = 0;
         private static int _cycleCount = 0;
         private static bool _bStitchedImageOnly = false;
+        private static bool _bNoFiducial = false;
 
         // Internal variable for stitched image as input
         private static ManagedFeatureLocationCheck _fidChecker = null;
@@ -144,6 +146,8 @@ namespace CyberStitchFidTester
                     _bSkipDemosaic = true;
                 else if (args[i] == "-twopass")
                     _bUseTwoPassStitch = true;
+                else if (args[i] == "-nf")
+                    _bNoFiducial = true;
                 else if (args[i] == "-s" && i < args.Length - 1)
                     _simulationFile = args[i + 1];
                 else if (args[i] == "-u" && i < args.Length - 1)

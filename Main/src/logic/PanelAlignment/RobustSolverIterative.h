@@ -52,6 +52,8 @@ public:
 	bool AddInputFidLocations(FiducialLocation* pLoc){return true;};
 	void OutputVectorXCSV(string filename) const;
 
+	void SetPinPanelWithCalibration(bool bVal) { _bPinPanelWithCalibration = bVal;};
+
 protected:
 	void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
 	void	SolveXOneIteration();
@@ -66,4 +68,6 @@ private:
 	double*			_dThetaEst;
 	fitInfo*		_fitInfo;
 	unsigned int	_iCorrelationNum;  // count into _fitInfo array
+
+	bool	_bPinPanelWithCalibration;
 };

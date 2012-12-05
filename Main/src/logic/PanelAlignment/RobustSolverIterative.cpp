@@ -41,6 +41,7 @@ RobustSolverIterative::RobustSolverIterative(
 	
 	_dThetaEst = new double[_iTotalNumberOfSubTriggers];
 	_fitInfo = new fitInfo[_iMaxNumCorrelations];
+	_bPinPanelWithCalibration = false;
 
 	ZeroTheSystem();
 }
@@ -167,7 +168,7 @@ void RobustSolverIterative::FillMatrixA()
 {
 	// fill in Matrix A,b
 	_iCurrentRow = 0;
-	AddAllLooseConstraints(false, true);
+	AddAllLooseConstraints(_bPinPanelWithCalibration, true);
 	
 	double* Zpoly;
 	Zpoly = new double[_iNumZTerms];
@@ -541,38 +542,47 @@ void RobustSolverIterative::ConstrainPerTrig(bool bPinPanelWithCalibration)
 			complexd xySensor;
 			camCal.SPix2XY(dFovOriginU, dFovOriginV, &xySensor.r, &xySensor.i);
 			
+			double dWeight = Weights.wXIndex;
+				// Pin the first sub-trig if it is necessary
+			if(bPinPanelWithCalibration && iTrigIndex == 0 && iCamIndex == 0)
+				dWeight = Weights.wXIndex_PinXY;
+			
 			// constrain x direction
 			double* begin_pin_in_image_center(&_dMatrixA[(_iCurrentRow) * _iMatrixWidth]);
 			unsigned int beginIndex( indexID * _iNumParamsPerIndex);
-			begin_pin_in_image_center[beginIndex+0] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			begin_pin_in_image_center[beginIndex+2] = -Weights.wXIndex * 
+			begin_pin_in_image_center[beginIndex+0] = dWeight;	// b VALUE IS NON_ZERO!!
+			begin_pin_in_image_center[beginIndex+2] = -dWeight * 
 				(xySensor.r*sin(_dThetaEst[indexID])
 				+ xySensor.i*cos(_dThetaEst[indexID])  );
-			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
+			_dVectorB[_iCurrentRow] = dWeight * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(2)
 				- xySensor.r*cos(_dThetaEst[indexID])
 				+ xySensor.i*sin(_dThetaEst[indexID]));
 			// ignoring the calibration drift terms, very small values for this lightly weighted equation
 
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+			_pdWeights[_iCurrentRow] = dWeight;
 			// constrain yTrig value
 			_iCurrentRow++;
 			begin_pin_in_image_center= &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			begin_pin_in_image_center[beginIndex+1] = Weights.wXIndex;	// b VALUE IS NON_ZERO!!
-			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex * 
+			begin_pin_in_image_center[beginIndex+1] = dWeight;	// b VALUE IS NON_ZERO!!
+			begin_pin_in_image_center[beginIndex+2] = dWeight * 
 				(xySensor.r*cos(_dThetaEst[indexID])
 				- xySensor.i*sin(_dThetaEst[indexID])  );
-			_dVectorB[_iCurrentRow] = Weights.wXIndex * 
+			_dVectorB[_iCurrentRow] = dWeight * 
 				(_pSet->GetLayer(iLayerIndex)->GetImage(iTrigIndex, iCamIndex)->GetNominalTransform().GetItem(5)
 				- xySensor.r*sin(_dThetaEst[indexID])
 				- xySensor.i*cos(_dThetaEst[indexID]));
 
 			// constrain theata to zero
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+				// Pin the first sub-trig if it is necessary
+			if(bPinPanelWithCalibration && iTrigIndex == 0 && iCamIndex == 0)
+				dWeight = Weights.wXINdex_PinTheta;
+
+			_pdWeights[_iCurrentRow] = dWeight;
 			_iCurrentRow++;
 			begin_pin_in_image_center= &_dMatrixA[(_iCurrentRow) * _iMatrixWidth];
-			begin_pin_in_image_center[beginIndex+2] = Weights.wXIndex;
-			_pdWeights[_iCurrentRow] = Weights.wXIndex;
+			begin_pin_in_image_center[beginIndex+2] = dWeight;
+			_pdWeights[_iCurrentRow] = dWeight;
 			_iCurrentRow++;
 		}
 	}

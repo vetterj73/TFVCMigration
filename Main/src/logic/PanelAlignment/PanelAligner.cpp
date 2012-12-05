@@ -694,6 +694,8 @@ bool PanelAligner::CreateTransforms()
 	{
 		bUseFiducials = false; 
 		bPinPanelWithCalibration = true;
+		if (CorrelationParametersInst.bUseCameraModelIterativeStitch)
+			((RobustSolverIterative*)_pSolver)->SetPinPanelWithCalibration(true);
 	}
 	AddOverlapResults2Solver(_pSolver, bUseFiducials, bPinPanelWithCalibration);
 	
