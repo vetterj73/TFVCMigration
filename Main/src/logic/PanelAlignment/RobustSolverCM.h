@@ -8,7 +8,6 @@
 #define CAL_ARRAY_X			1
 #define CAL_ARRAY_Y			0
 
-
 class RobustSolverCM: public RobustSolver
 {
 public:
@@ -52,7 +51,6 @@ protected:
 	
 	unsigned int	CountCameras();
 	virtual void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
-	void			LstSqFit(double *FidFitA, unsigned int FidFitRows, unsigned int FidFitCols, double *FidFitb, double *FidFitX, double *resid);
 	bool MatchProjeciveTransform(	
 		unsigned int iLayerIndex,
 		unsigned int iTriggerIndex,

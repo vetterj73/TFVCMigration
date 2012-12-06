@@ -1040,6 +1040,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 									(double*)_zCoef[deviceNum], xyBoard, LAB_TO_CAD);
 				fidFlat2D[nGoodFids].x = temp.x;
 				fidFlat2D[nGoodFids].y = temp.y;
+
 				nGoodFids++;
 			}
 		}
@@ -1180,88 +1181,6 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 		OutputBoardToCAD(s);
 	}
 }
-
-void RobustSolverCM::LstSqFit(double *A, unsigned int nRows, unsigned int nCols, double *b, double *X, double *resid)
-{
-	// a very generic least square solver wrapper
-	// takes input arrays in 'C' format and does the requried steps to call Eric's qr tools
-	// note that b is NOT overwritten (unlike a raw call to qr)
-	// resid is a vector of b-Ax values
-	double		*workspace;
-	double 		*bCopy;
-	bCopy = new double[nRows];
-	int SizeofFidFitA = nCols * nRows;
-	workspace = new double[SizeofFidFitA];
-	
-		
-	// transpose for Eric's code
-	for(unsigned int row(0); row<nRows; ++row)
-	{
-		bCopy[row] = b[row];
-		for(unsigned int col(0); col<nCols; ++col)
-			workspace[col*nRows+row] = A[row*nCols+col];
-	}
-	// solve copied from SolveX()
-	double*	sigma = new double[nCols];
-
-	// perform factorization of system A = QR
-	int qrdRet = 
-		qrd(
-				workspace,    /* System matrix, m-by-n */
-				sigma,      /* Diagonals of R (caller reserves n elements) */
-				nRows,      /* Number of rows in system matrix */
-				nRows,		/* Spacing between columns in system matrix */
-				nCols ); /* Number of columns in system matrix */
-
-							/* Return values
-
-								 0 - Normal completion.
-								 1 - Matrix was of incompatible dimensions.
-								 2 - Singular system matrix. */
-	//LOG.FireLogEntry(LogTypeSystem, "qrdRet %d", qrdRet);
-	//for (unsigned int row(0); row < nCols; row++)
-	//		LOG.FireLogEntry(LogTypeSystem, "sigma %d, %.3e",row, sigma[row]);
-   double condition =
-	   rcond(               /* Reciprocal condition number estimator */
-			   nCols,    /* Number of unknowns */
-			   workspace,     /* QR factorization returned from qrd() */
-			   nRows,       /* Spacing between columns of qr[] */
-			   sigma        /* R diagonals from qrd() */
-			);
-   //LOG.FireLogEntry(LogTypeSystem, "condition %f", condition);
-
-	qrsolv (
-				workspace,	/* Factored system matrix, from qrd() */
-				sigma,		/* Diagonal of R, from qrd() */
-				&bCopy[0],	/* Constant vector, overwritten by solution */
-				nRows,		/* Number of rows in system matrix */
-				nRows,		/* Spacing between columns in system matrix */
-				nCols,	/* Number of columns in system matrix */
-				1     );	/*	0 - premultiply  b  by Q
-								1 - premultiply  b  by inv(QR)
-								2 - premultiply  b  by QR
-								3 - premultiply  b  by inv(R^T R)
-								4 - premultiply  b  by Q inv(R^T)
-								5 - premultiply  b  by R
-								6 - premultiply  b  by inv(R)
-
-								 qrsolv() always returns 0 */
-
-
-	for (unsigned int j(0); j<nCols; ++j)
-		X[j] = bCopy[j];
-	
-	for(unsigned int row(0); row<nRows; ++row)
-	{
-		resid[row] = b[row] ;
-		for (unsigned int col(0); col<nCols; ++col)
-		  resid[row] -=  X[col]*A[row*nCols+col];
-	}
-	delete [] sigma;
-	delete [] workspace;
-	delete [] bCopy;
-}
-
 
 //  transpose Matrix A for solver
 // Don't reorder for this solver, only transpose to _iCurrentRow if bRemoveEmptyRows

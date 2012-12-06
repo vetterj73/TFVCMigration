@@ -14,6 +14,14 @@ void inverse3x3(
 	const double* inMatrix,
 	double* outMatrix);
 
+// Sove the least square problem AX = b
+// iRows and iCols: size of matrix A
+// X: output, the least square results
+// resid: output, residual
+void LstSqFit(
+	const double *A, unsigned int iRows, unsigned int iCols, 
+	const double *b, double *X, double *resid);
+
 // Fill a ROI of the output image with a height map by transforming the input image if heigh map exists
 // Support convert YCrCb seperate channel to BGR combined channels, or grayscale (one channel) only
 // Assume the center of image corresponding a vertical line from camera to object surface
