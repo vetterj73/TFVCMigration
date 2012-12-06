@@ -1035,11 +1035,14 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 				Pix2Board(pix, fovIndex, &xyBoard);
 					
 				// brdFlat from warpxy
-				POINT2D temp;
+				/*POINT2D temp;
 				temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
 									(double*)_zCoef[deviceNum], xyBoard, LAB_TO_CAD);
 				fidFlat2D[nGoodFids].x = temp.x;
-				fidFlat2D[nGoodFids].y = temp.y;
+				fidFlat2D[nGoodFids].y = temp.y;*/
+
+				fidFlat2D[nGoodFids].x = xyBoard.x;
+				fidFlat2D[nGoodFids].y = xyBoard.y;
 				nGoodFids++;
 			}
 		}
