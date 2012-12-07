@@ -272,7 +272,7 @@ namespace CyberStitchFidTester
                     CyberBitmapData cbd = new CyberBitmapData();
                     cbd.Lock(inputBmp);
 
-                    IntPtr dataPoint = new IntPtr((int)cbd.Scan0 + _iPanelOffsetInRows*cbd.Stride + _iPanelOffsetInCols);
+                    IntPtr dataPoint = new IntPtr((Int64)cbd.Scan0 + _iPanelOffsetInRows*cbd.Stride + _iPanelOffsetInCols);
                     IntPtr morphedData = _imageFidAligner.MorphImage(dataPoint, cbd.Stride, null);
 
                     cbd.Unlock();
@@ -940,8 +940,7 @@ namespace CyberStitchFidTester
             //convert meters to microns
             int iUnitCoverter = 1000000;
             // Find features on the board
-            IntPtr dataPoint = new IntPtr(data.ToInt64() + _iPanelOffsetInRows * stride + _iPanelOffsetInCols);
-            _featureChecker.CheckFeatureLocation(dataPoint, stride, dResults);
+            _featureChecker.CheckFeatureLocation(data, stride, dResults);
             //Record the processing time
             //DateTime dtEndTime = DateTime.Now;
             //TimeSpan tsRunTime = dtEndTime - _dtStartTime;

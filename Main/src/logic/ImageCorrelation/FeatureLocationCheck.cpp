@@ -499,7 +499,7 @@ Image* ImageFidAligner::MorphImage(Image* pImgIn, double* pZ)
 	// double check
 	ImgTransform trans(t);
 	trans = trans.Inverse()
-		*_pMorphedImage->GetTransform();
+		*_pMorphedImage->GetNominalTransform();
 	_pMorphedImage->SetTransform(trans);
 
 	// Fill the output image
