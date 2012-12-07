@@ -28,9 +28,9 @@ public:
 	ImageFidAligner(Panel* pPanel);
 	~ImageFidAligner();
 
-	bool CalculateTransform(Image* pImage, double t[3][3], double* pZ = NULL);
+	bool CalculateTransform(Image* pImage, double t[3][3], double* pZ= NULL);
 
-	bool MorphImage(Image* pImgIn, Image* pImgOut, double* pZ = NULL);
+	Image* MorphImage(Image* pImgIn, double* pZ=NULL);
 
 private:
 	Panel* _pPanel;

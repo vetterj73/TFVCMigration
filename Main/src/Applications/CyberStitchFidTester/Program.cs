@@ -71,8 +71,10 @@ namespace CyberStitchFidTester
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static ManagedMosaicSet _mosaicSet = null;
         private static CPanel _alignmentPanel = null;
+        private static CPanel _alignmentPanel_noFid = null;
         private static CPanel _featurePanel = null;
         private static ManagedFeatureLocationCheck _featureChecker = null;
+        private static ManagedImageFidAligner _imageFidAligner = null;
         private static LoggingThread _logger = new LoggingThread(null);
         private readonly static ManualResetEvent _mAlignedEvent = new ManualResetEvent(false);
         private static StreamWriter _writer = null;
@@ -81,10 +83,6 @@ namespace CyberStitchFidTester
         private static int _cycleCount = 0;
         private static bool _bStitchedImageOnly = false;
         private static bool _bNoFiducial = false;
-
-        // Internal variable for stitched image as input
-        private static ManagedFeatureLocationCheck _fidChecker = null;
-        private static double[] _dRefOffset = new double[] {0, 0};
         
         // For output analysis
         private const string headerLine = "Panel#, Fid#, X, Y ,XOffset, YOffset, CorrScore, Ambig";
@@ -208,10 +206,25 @@ namespace CyberStitchFidTester
             // Load panel, _alignmentPanel default is null 
             if (File.Exists(_alignmentPanelFile))
                 _alignmentPanel = LoadPanelDescription(_alignmentPanelFile, _dPixelSizeInMeters);
-
-            if (_bStitchedImageOnly && _alignmentPanel != null)
+            else
             {
-                _fidChecker = new ManagedFeatureLocationCheck(_alignmentPanel);
+                Output("Cannot load alignment fiducial file");
+                Terminate(false);
+                return;
+            }
+
+            // If panel need to be stitched without fiducials
+            if (!_bStitchedImageOnly && _bNoFiducial)
+            {
+                _alignmentPanel_noFid = LoadPanelDescription(_alignmentPanelFile, _dPixelSizeInMeters);
+                _alignmentPanel_noFid.ClearFiducials();
+            }
+
+            // If stitched image need be adjusted by fiducial
+            if ((_bStitchedImageOnly && _alignmentPanel != null) ||
+                (!_bStitchedImageOnly && _bNoFiducial))
+            {
+                _imageFidAligner = new ManagedImageFidAligner(_alignmentPanel);
             }
 
             // If no stitched image and panel information is not available
@@ -255,62 +268,32 @@ namespace CyberStitchFidTester
                     }
                     Console.WriteLine("Comparing fiducials on {0}...", stitchedImagePath[cycleId]);
 
-                    // This allows images to directly be sent in instead of using CyberStitch to create them
+                    // Adjust image based on fiducial results
                     CyberBitmapData cbd = new CyberBitmapData();
-
-                    // Calcaulate offsets
                     cbd.Lock(inputBmp);
 
-                    if (!PickReferenceFiducial(cbd.Scan0, cbd.Stride, _dRefOffset))
-                    {
-                        Output("Failed to find a reference fiducail in Image " + stitchedImagePath[cycleId]);
-                        Terminate(false);
-                        return;
-                    }
+                    IntPtr dataPoint = new IntPtr((int)cbd.Scan0 + _iPanelOffsetInRows*cbd.Stride + _iPanelOffsetInCols);
+                    IntPtr morphedData = _imageFidAligner.MorphImage(dataPoint, cbd.Stride, null);
 
-                    RunFiducialCompare(cbd.Scan0, cbd.Stride, _writer);
-                    
+                    cbd.Unlock();
+                        // It is safe to explicit release memory
+                    inputBmp.Dispose();
+
+                    // Calcaulate offsets
+                    RunFiducialCompare(morphedData, _featurePanel.GetNumPixelsInY(), _writer);
+
                     // Save panel image
                     if (_bSaveStitchedResultsImage)
                     {
-                        // Start buffer point in image
-                        int iImStartX = _iPanelOffsetInCols + (int)(_dRefOffset[0] / _dPixelSizeInMeters);
-                        int iImStartY = _iPanelOffsetInRows + (int)(_dRefOffset[1] / _dPixelSizeInMeters);
-                        // Start buffer point in CAD
-                        int iCadStartX = 0;
-                        int iCadStartY = 0;
-                        // Adjust if image top or left edge is inside CAD
-                        if(iImStartX < 0)
-                        {
-                            iCadStartX -= iImStartX;
-                            iImStartX = 0;
-                        }
-                        if(iImStartY < 0)
-                        {
-                            iCadStartY -= iImStartY;
-                            iImStartY = 0;
-                        }                        
-                        // record image size
-                        int iImWidth = inputBmp.Width;
-                        int iImHeight = inputBmp.Height;
-                        int iCadWidth = _featurePanel.GetNumPixelsInY();
-                        int iCadHeight = _featurePanel.GetNumPixelsInX();
-                        int iRecordWidth = iImWidth-iImStartX < iCadWidth-iCadStartX ? iImWidth-iImStartX : iCadWidth-iCadStartX;
-                        int iRecordHeight = iImHeight-iImStartY < iCadHeight-iCadStartY ? iImHeight-iImStartY : iCadHeight-iCadStartX;
-                       
                         // record debug image
                         string imageFilename = "c:\\Temp\\FeatureCompareImage-" + cycleId + ".bmp";
                         _aligner.Save3ChannelImage(imageFilename,
-                            cbd.Scan0 + iImStartY * cbd.Stride+iImStartX, cbd.Stride,
-                            cbd.Scan0 + iImStartY * cbd.Stride+iImStartX, cbd.Stride,
-                            _featurePanel.GetCADBuffer()+iCadStartY*iCadWidth+iCadStartX, iCadWidth,
-                            iRecordWidth, iRecordHeight);
-                        }
-                    cbd.Unlock();
-
-                    // It is safe to explicit release memory
-                    inputBmp.Dispose();
-
+                            morphedData, _featurePanel.GetNumPixelsInY(),
+                            morphedData, _featurePanel.GetNumPixelsInY(),
+                           _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
+                            _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
+                    }
+                
                     // Increment cycle and get bitmap, if available
                     cycleId++;
 
@@ -715,7 +698,11 @@ namespace CyberStitchFidTester
             //for (uint i = 0; i < _mosaicSet.GetNumMosaicLayers(); i++)
             //    _mosaicSet.GetCorrelationSet(i, i).SetTriggerToTrigger(true);
 
-            if (!_aligner.ChangeProduction(_mosaicSet, _alignmentPanel))
+            CPanel tempPanel = _alignmentPanel;
+                // If need stitch without fiducial
+            if (_bNoFiducial)
+                tempPanel = _alignmentPanel_noFid;
+            if (!_aligner.ChangeProduction(_mosaicSet, tempPanel))
             {
                 throw new ApplicationException("Aligner failed to change production");
             }
@@ -785,10 +772,27 @@ namespace CyberStitchFidTester
                 if (_mosaicSet.GetNumMosaicLayers() == 1)
                     iIndex2 = 0;
 
+                IntPtr data = _mosaicSet.GetLayer(0).GetGreyStitchedBuffer();
+                // If no fiducial used in alignment
+                if(_bNoFiducial)
+                {
+                    // Get path height info
+                    double[] zCof = new double[16];
+                    if (!_aligner.GetCamModelPanelHeight(0, zCof))
+                        zCof = null;
+
+                    // Adjust stitched image
+                    IntPtr tempData = _mosaicSet.GetLayer(0).GetGreyStitchedBuffer();
+                    data = _imageFidAligner.MorphImage(tempData, _alignmentPanel.GetNumPixelsInY(), zCof);
+                }
+
+                if (_featurePanel != null)
+                    RunFiducialCompare(data, _featurePanel.GetNumPixelsInY(), _writer);
+
                 if (_bSaveStitchedResultsImage)
                     _aligner.Save3ChannelImage("c:\\Temp\\FeatureCompareAfterCycle" + _cycleCount + ".bmp",
-                        _mosaicSet.GetLayer(iIndex1).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
-                        _mosaicSet.GetLayer(iIndex2).GetGreyStitchedBuffer(), _alignmentPanel.GetNumPixelsInY(),
+                        data, _alignmentPanel.GetNumPixelsInY(),
+                        data, _alignmentPanel.GetNumPixelsInY(),
                         _featurePanel.GetCADBuffer(), _featurePanel.GetNumPixelsInY(),
                         _featurePanel.GetNumPixelsInY(), _featurePanel.GetNumPixelsInX());
                 if (_cycleCount == 1)
@@ -797,9 +801,6 @@ namespace CyberStitchFidTester
                     //outline is the output file column names
                     _writer.WriteLine(headerLine);
                 }
-
-                if (_featurePanel != null)
-                    RunFiducialCompare(_mosaicSet.GetLayer(0).GetGreyStitchedBuffer(), _featurePanel.GetNumPixelsInY(), _writer);
 
                 if (_cycleCount >= numberToRun)
                     bDone = true;
@@ -945,13 +946,6 @@ namespace CyberStitchFidTester
             //DateTime dtEndTime = DateTime.Now;
             //TimeSpan tsRunTime = dtEndTime - _dtStartTime;
 
-            // Adjust results based on reference fiducial
-            for (int i = 0; i < iFidNums; i++)
-            {
-                dResults[i * iItems + 2] -= _dRefOffset[0];
-                dResults[i * iItems + 3] -= _dRefOffset[1];
-            }
-
             for (int i = 0; i < iFidNums; i++)
             {
                 if (dResults[i * iItems + 4] == 0 || dResults[i * iItems + 5] == 1) // Fiducial not found
@@ -994,47 +988,6 @@ namespace CyberStitchFidTester
            // _tsTotalRunTime += tsRunTime;
         } 
         
-        // Pick up reference fiducial 
-        // and calculate offest of real location-nominal one for reference fiducial
-        private static bool PickReferenceFiducial(IntPtr data, int stride, double[] dRefOffset)
-        {
-            int iFidNums = _alignmentPanel.NumberOfFiducials;
-            // Cad_x, cad_y, Loc_x, Loc_y, CorrScore, Ambig 
-            int iItems = 6;
-            double[] dResults = new double[iFidNums * iItems];
-            // Find fiducials on panel
-            IntPtr dataPoint = new IntPtr((int)data + _iPanelOffsetInRows*stride + _iPanelOffsetInCols);
-            _fidChecker.CheckFeatureLocation(dataPoint, stride, dResults);
-
-            // Pick fiducial with highest confidence
-            double dMaxConfidence = -1;
-            int iIndex = -1;
-            for (int i = 0; i < iFidNums; i++)
-            {
-                // CorrScore * (1-ambig)
-                double dConfidence = dResults[i * iItems + 4] * (1 - dResults[i * iItems + 5]);
-                if (dConfidence > 0.1 && dMaxConfidence < dConfidence)
-                {
-                    dMaxConfidence = dConfidence;
-                    iIndex = i;
-                }
-            }
-
-            // Failed to find a fiducial as reference
-            if (iIndex < 0)
-                return false;
-
-            // Offset between real location and nominal one
-            dRefOffset[0] = dResults[iIndex * iItems + 2] - dResults[iIndex * iItems + 0];
-            dRefOffset[1] = dResults[iIndex * iItems + 3] - dResults[iIndex * iItems + 1];
-
-            // For debug
-            //double d0 = dRefOffset[0] * 1e6;
-            //double d1 = dRefOffset[1] * 1e6;
-
-            return (true);
-        }
-
         #endregion
     }
 

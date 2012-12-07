@@ -487,15 +487,22 @@ bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3], double* 
 	return(true);
 }
 
-bool ImageFidAligner::MorphImage(Image* pImgIn, Image* pImgOut, double* pZ)
-{
-	double t[3][3];
 
+// Morph the input image based on fiducial and panel surface
+Image* ImageFidAligner::MorphImage(Image* pImgIn, double* pZ)
+{
+	// Calculate transform based on fiucial
+	double t[3][3];
 	CalculateTransform(pImgIn, t, pZ);
 
+	// Set output image transform
+	// double check
 	ImgTransform trans(t);
-
+	trans = trans.Inverse()
+		*_pMorphedImage->GetTransform();
 	_pMorphedImage->SetTransform(trans);
+
+	// Fill the output image
 	_pMorphedImage->ZeroBuffer();
 
 	bool bIsYCrCb = false;
@@ -508,9 +515,7 @@ bool ImageFidAligner::MorphImage(Image* pImgIn, Image* pImgOut, double* pZ)
 		0,
 		0);
 
-	pImgOut = _pMorphedImage;
-	
-	return(true);
+	return(_pMorphedImage);
 }
 
 #pragma endregion

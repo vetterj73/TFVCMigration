@@ -84,8 +84,8 @@ namespace PanelAlignM {
 		return(true);
 	}
 
-	bool ManagedImageFidAligner::MorphImage(System::IntPtr pDataIn, int iSpanIn,
-		array<double>^ zCof, System::IntPtr pDataOut)
+	System::IntPtr ManagedImageFidAligner::MorphImage(System::IntPtr pDataIn, int iSpanIn,
+		array<double>^ zCof)
 	{
 		// Create image for process
 		ImgTransform inputTransform;
@@ -110,15 +110,11 @@ namespace PanelAlignM {
 			for(int i=0; i<16; i++)
 				pZ[i] = zCof[i];
 		}
-		Image* pImgOut;
-		if(!_imageFidAligner->MorphImage(&image, pImgOut, pZ))
-			return(false);
-
-		pDataOut = (System::IntPtr)pImgOut->GetBuffer();
+		Image* pImgOut = _imageFidAligner->MorphImage(&image, pZ);
 
 		if(pZ!=NULL)
 			delete [] pZ;
 
-		return(true);
+		 return (System::IntPtr)(pImgOut->GetBuffer());
 	}
 }
