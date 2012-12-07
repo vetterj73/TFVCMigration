@@ -193,6 +193,9 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile Include="VsFinderCorrelation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
     </ProjectReference>

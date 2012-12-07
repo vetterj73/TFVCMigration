@@ -4,12 +4,16 @@
 #include "RenderShape.h"
 #include "VsFinderCorrelation.h"
 #include "Bitmap.h"
+extern "C" {
+#include "warpxy.h"
+}
+
 #include <map>
 using std::map;
 typedef map<int, Feature*> FeatureList;
 typedef FeatureList::iterator FeatureListIterator;
 
-
+#pragma region class FeatureLocationCheck
 // fiducial is placed in the exact center of the resulting image
 // this is important as SqRtCorrelation (used to build least squares table)
 // measures the positional difference between the center of the fiducial 
@@ -322,3 +326,191 @@ bool FeatureLocationCheck::CheckFeatureLocation(Image* pImage, double dResults[]
 
 	return(true);
 }
+
+#pragma endregion
+
+#pragma region class ImageFidAligner
+
+ImageFidAligner::ImageFidAligner(Panel* pPanel)
+{
+	_pPanel = pPanel;
+
+	// create fiducial finder
+	_pFidFinder = new FeatureLocationCheck(pPanel);
+
+	// Create image for process
+	ImgTransform inputTransform;
+	inputTransform.Config(pPanel->GetPixelSizeX(), 
+		pPanel->GetPixelSizeX(), 0, 0, 0);
+
+	_pMorphedImage = new Image
+			(pPanel->GetNumPixelsInY(),		// Columns
+			pPanel->GetNumPixelsInX(),		// Rows	
+			pPanel->GetNumPixelsInY(),		// stride In pixels
+			1,								// Bytes per pixel
+			inputTransform,					
+			inputTransform,		
+			true);							// Falg for whether create own buffer
+}
+
+ImageFidAligner::~ImageFidAligner()
+{
+	delete _pFidFinder;
+	delete _pMorphedImage;
+}
+
+bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3], double* pZ)
+{
+	// Settings
+	int iItems = 6;
+	double dMinScore = 0.3;
+	int NUMBER_Z_BASIS_FUNCTIONS = 4;
+	double wFidFlatBoardScale   = 1e3;
+	double wFidFlatBoardRotation = 1e2;
+	double wFidFlatFiducialLateralShift = 1e3;
+	double wFidFlatFlattenFiducial = 1e5;
+	
+// Find the fiducial and process them
+	// Do fiducial search
+	int iNumFids = _pPanel->NumberOfFiducials();
+	double* pdResults = new double[iItems*iNumFids]; 
+	_pFidFinder->CheckFeatureLocation(pImage, pdResults);
+
+	// Collect valid results
+	int iCount = 0;
+	POINT2D* pCadLoc = new POINT2D[iNumFids];
+	POINT2D* pPanelLoc = new POINT2D[iNumFids];
+	for(int i=0; i<iNumFids; i++)
+	{
+		double dScore = pdResults[i*6+4] * (1-pdResults[i*6+5]);
+		if(dScore < dMinScore)
+			continue;
+
+		pCadLoc[iCount].x = pdResults[i*6];
+		pCadLoc[iCount].y = pdResults[i*6+1];
+		pPanelLoc[iCount].x = pdResults[i*6+2];
+		pPanelLoc[iCount].y = pdResults[i*6+3];
+		iCount++;
+	}
+	int nGoodFids = iCount;
+
+	// Do flattern if it is necessary
+	if(pZ != NULL)
+	{
+		for(int i=0; i<nGoodFids; i++)
+		{
+			POINT2D temp;
+			temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
+						pZ, pPanelLoc[i], LAB_TO_CAD);
+
+			pPanelLoc[i].x = temp.x;
+			pPanelLoc[i].y = temp.y;
+		}
+	}
+
+// Fill the solver
+	// Total 8 constraints
+	int nContraints = 8;
+		
+	// Create A and b matrices, these are small so we can create/delete them without using big blocks of memory
+	double		*FidFitA;
+	double		*FidFitX;
+	double		*FidFitb;
+	double		*resid;
+	unsigned int FidFitCols = 6;
+	unsigned int FidFitRows = nGoodFids*2 + 8;
+	int SizeofFidFitA = FidFitCols * FidFitRows;
+	FidFitA = new double[SizeofFidFitA];
+	FidFitX = new double[FidFitCols];
+	FidFitb = new double[FidFitRows];
+	resid   = new double[FidFitRows];
+	// zeros the system
+	for(size_t s(0); s<SizeofFidFitA; ++s)
+		FidFitA[s] = 0.0;
+	for (size_t s(0); s<FidFitRows; ++s)
+		FidFitb[s] = 0.0;
+	for (size_t s(0); s<FidFitCols; ++s)
+		FidFitX[s] = 0.0;
+	// add constraints
+	FidFitb[0] = 1.0 * wFidFlatBoardScale;
+	FidFitA[0*FidFitCols + 0] =  1.0 * wFidFlatBoardScale;
+	FidFitb[1] = 1.0 * wFidFlatBoardScale;
+	FidFitA[1*FidFitCols + 4] =  1.0 * wFidFlatBoardScale;
+	FidFitb[2] = 0.0 * wFidFlatBoardScale;
+	FidFitA[2*FidFitCols + 0] =  1.0 * wFidFlatBoardScale;
+	FidFitA[2*FidFitCols + 4] = -1.0 * wFidFlatBoardScale;
+	FidFitb[3] = 0.0 * wFidFlatBoardScale;
+	FidFitA[3*FidFitCols + 1] =  1.0 * wFidFlatBoardScale;
+	FidFitA[3*FidFitCols + 3] =  1.0 * wFidFlatBoardScale;
+	FidFitb[4] = 0.0 * wFidFlatBoardRotation;
+	FidFitA[4*FidFitCols + 1] =  1.0 * wFidFlatBoardRotation;
+	FidFitb[5] = 0.0 * wFidFlatBoardRotation;
+	FidFitA[5*FidFitCols + 3] =  1.0 * wFidFlatBoardRotation;
+	FidFitb[6] = 0.0 * wFidFlatFiducialLateralShift;
+	FidFitA[6*FidFitCols + 2] =  1.0 * wFidFlatFiducialLateralShift;
+	FidFitb[7] = 0.0 * wFidFlatFiducialLateralShift;
+	FidFitA[7*FidFitCols + 5] =  1.0 * wFidFlatFiducialLateralShift;
+	// add the actual fiducial locations
+	int AStart(0);
+	for (int j(0); j< nGoodFids; j++)
+	{
+		FidFitb[8+j*2+0] = pCadLoc[j].x * wFidFlatFlattenFiducial;
+		FidFitb[8+j*2+1] = pCadLoc[j].y * wFidFlatFlattenFiducial;
+		AStart = (8+j*2+0)*FidFitCols;
+		FidFitA[AStart + 0] = pPanelLoc[j].x * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 1] = pPanelLoc[j].y * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 2] = wFidFlatFlattenFiducial;
+		AStart = (8+j*2+1)*FidFitCols;
+		FidFitA[AStart + 3] = pPanelLoc[j].x * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 4] = pPanelLoc[j].y * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 5] = wFidFlatFlattenFiducial;
+	}
+
+	// Calculate transform
+	LstSqFit(FidFitA, FidFitRows, FidFitCols, FidFitb, FidFitX, resid);
+
+	t[0][0] = FidFitX[0];
+	t[0][1] = FidFitX[1];
+	t[0][2] = FidFitX[2];
+	t[1][0] = FidFitX[3];
+	t[1][1] = FidFitX[4];
+	t[1][2] = FidFitX[5];
+	t[2][0] = 0;
+	t[2][1] = 0;
+	t[2][2] = 1;
+	
+	delete [] FidFitA;
+	delete [] FidFitb;
+	delete [] FidFitX;
+	delete [] resid;
+
+	return(true);
+}
+
+bool ImageFidAligner::MorphImage(Image* pImgIn, Image* pImgOut, double* pZ)
+{
+	double t[3][3];
+
+	CalculateTransform(pImgIn, t, pZ);
+
+	ImgTransform trans(t);
+
+	_pMorphedImage->SetTransform(trans);
+	_pMorphedImage->ZeroBuffer();
+
+	bool bIsYCrCb = false;
+	UIRect roi(0, 0,_pMorphedImage->Columns()-1, _pMorphedImage->Rows()-1); 
+	_pMorphedImage->MorphFrom(
+		pImgIn, 
+		bIsYCrCb,
+		roi,
+		NULL,
+		0,
+		0);
+
+	pImgOut = _pMorphedImage;
+	
+	return(true);
+}
+
+#pragma endregion

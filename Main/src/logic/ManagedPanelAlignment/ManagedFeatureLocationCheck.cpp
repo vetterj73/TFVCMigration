@@ -41,4 +41,84 @@ namespace PanelAlignM {
 		return true;
 	}
 
+	ManagedImageFidAligner::ManagedImageFidAligner(CPanel^ panel)
+	{
+		_pPanel  = (Panel*)(void*)panel->UnmanagedPanel;
+		_imageFidAligner = new ImageFidAligner(_pPanel);
+	}
+
+	bool ManagedImageFidAligner::CalculateTransform(System::IntPtr pData, int iSpan, array<double>^ zCof, array<double>^ trans)
+	{
+		// Create image for process
+		ImgTransform inputTransform;
+		inputTransform.Config(_pPanel->GetPixelSizeX(), 
+				_pPanel->GetPixelSizeX(), 0, 0, 0);
+
+		Image image
+			(_pPanel->GetNumPixelsInY(),	// Columns
+			_pPanel->GetNumPixelsInX(),		// Rows	
+			iSpan,							// In pixels
+			1,								// Bytes per pixel
+			inputTransform,					
+			inputTransform,		
+			false,							// Falg for whether create own buffer
+			(unsigned char*)(void*)pData);
+		
+		double* pZ = NULL;
+		if(zCof != nullptr)
+		{
+			pZ = new double[16];
+			for(int i=0; i<16; i++)
+				pZ[i] = zCof[i];
+		}
+		double t[3][3];
+		if(!_imageFidAligner->CalculateTransform(&image, t, pZ))
+			return(false);
+
+		for(int i=0; i<9; i++)
+			trans[i] = t[i/3][i%3];
+
+		if(pZ!=NULL)
+			delete [] pZ;
+
+		return(true);
+	}
+
+	bool ManagedImageFidAligner::MorphImage(System::IntPtr pDataIn, int iSpanIn,
+		array<double>^ zCof, System::IntPtr pDataOut)
+	{
+		// Create image for process
+		ImgTransform inputTransform;
+		inputTransform.Config(_pPanel->GetPixelSizeX(), 
+				_pPanel->GetPixelSizeX(), 0, 0, 0);
+
+		Image image
+			(_pPanel->GetNumPixelsInY(),	// Columns
+			_pPanel->GetNumPixelsInX(),		// Rows	
+			iSpanIn,							// In pixels
+			1,								// Bytes per pixel
+			inputTransform,					
+			inputTransform,		
+			false,							// Falg for whether create own buffer
+			(unsigned char*)(void*)pDataIn);
+
+		// transfer Z
+		double* pZ = NULL;
+		if(zCof != nullptr)
+		{
+			pZ = new double[16];
+			for(int i=0; i<16; i++)
+				pZ[i] = zCof[i];
+		}
+		Image* pImgOut;
+		if(!_imageFidAligner->MorphImage(&image, pImgOut, pZ))
+			return(false);
+
+		pDataOut = (System::IntPtr)pImgOut->GetBuffer();
+
+		if(pZ!=NULL)
+			delete [] pZ;
+
+		return(true);
+	}
 }
