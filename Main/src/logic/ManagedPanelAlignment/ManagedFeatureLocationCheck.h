@@ -22,9 +22,9 @@ namespace PanelAlignM {
 		public: 
 			ManagedImageFidAligner(CPanel^ panel);
 
-			bool CalculateTransform(System::IntPtr pData, int iSpan, array<double>^ zCof, array<double>^ trans);
+			bool CalculateTransform(System::IntPtr pData, int iSpan, array<double>^ trans);
 
-			System::IntPtr MorphImage(System::IntPtr pDataIn, int iSpanIn, array<double>^ zCof);
+			System::IntPtr MorphImage(System::IntPtr pDataIn, int iSpanIn);
 
 		private:
 			ImageFidAligner* _imageFidAligner;

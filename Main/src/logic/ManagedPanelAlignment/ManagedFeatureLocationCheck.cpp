@@ -47,7 +47,7 @@ namespace PanelAlignM {
 		_imageFidAligner = new ImageFidAligner(_pPanel);
 	}
 
-	bool ManagedImageFidAligner::CalculateTransform(System::IntPtr pData, int iSpan, array<double>^ zCof, array<double>^ trans)
+	bool ManagedImageFidAligner::CalculateTransform(System::IntPtr pData, int iSpan, array<double>^ trans)
 	{
 		// Create image for process
 		ImgTransform inputTransform;
@@ -64,28 +64,17 @@ namespace PanelAlignM {
 			false,							// Falg for whether create own buffer
 			(unsigned char*)(void*)pData);
 		
-		double* pZ = NULL;
-		if(zCof != nullptr)
-		{
-			pZ = new double[16];
-			for(int i=0; i<16; i++)
-				pZ[i] = zCof[i];
-		}
 		double t[3][3];
-		if(!_imageFidAligner->CalculateTransform(&image, t, pZ))
+		if(!_imageFidAligner->CalculateTransform(&image, t))
 			return(false);
 
 		for(int i=0; i<9; i++)
 			trans[i] = t[i/3][i%3];
 
-		if(pZ!=NULL)
-			delete [] pZ;
-
 		return(true);
 	}
 
-	System::IntPtr ManagedImageFidAligner::MorphImage(System::IntPtr pDataIn, int iSpanIn,
-		array<double>^ zCof)
+	System::IntPtr ManagedImageFidAligner::MorphImage(System::IntPtr pDataIn, int iSpanIn)
 	{
 		// Create image for process
 		ImgTransform inputTransform;
@@ -95,26 +84,15 @@ namespace PanelAlignM {
 		Image image
 			(_pPanel->GetNumPixelsInY(),	// Columns
 			_pPanel->GetNumPixelsInX(),		// Rows	
-			iSpanIn,							// In pixels
+			iSpanIn,						// In pixels
 			1,								// Bytes per pixel
 			inputTransform,					
 			inputTransform,		
 			false,							// Falg for whether create own buffer
 			(unsigned char*)(void*)pDataIn);
 
-		// transfer Z
-		double* pZ = NULL;
-		if(zCof != nullptr)
-		{
-			pZ = new double[16];
-			for(int i=0; i<16; i++)
-				pZ[i] = zCof[i];
-		}
-		Image* pImgOut = _imageFidAligner->MorphImage(&image, pZ);
+		Image* pImgOut = _imageFidAligner->MorphImage(&image);
 
-		if(pZ!=NULL)
-			delete [] pZ;
-
-		 return (System::IntPtr)(pImgOut->GetBuffer());
+		return (System::IntPtr)(pImgOut->GetBuffer());
 	}
 }

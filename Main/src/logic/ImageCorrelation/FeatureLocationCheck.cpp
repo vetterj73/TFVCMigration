@@ -359,7 +359,10 @@ ImageFidAligner::~ImageFidAligner()
 	delete _pMorphedImage;
 }
 
-bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3], double* pZ)
+// Calculate transform based on fiducial location
+// pImage: input, stitched image which is flatterned
+// t: output, calculated transform based on fiducial location
+bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3])
 {
 	// Settings
 	int iItems = 6;
@@ -393,20 +396,6 @@ bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3], double* 
 		iCount++;
 	}
 	int nGoodFids = iCount;
-
-	// Do flattern if it is necessary
-	if(pZ != NULL)
-	{
-		for(int i=0; i<nGoodFids; i++)
-		{
-			POINT2D temp;
-			temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
-						pZ, pPanelLoc[i], LAB_TO_CAD);
-
-			pPanelLoc[i].x = temp.x;
-			pPanelLoc[i].y = temp.y;
-		}
-	}
 
 // Fill the solver
 	// Total 8 constraints
@@ -489,11 +478,13 @@ bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3], double* 
 
 
 // Morph the input image based on fiducial and panel surface
-Image* ImageFidAligner::MorphImage(Image* pImgIn, double* pZ)
+// pImgIn: input, stitched image which is flatterned.
+// return morphed image
+Image* ImageFidAligner::MorphImage(Image* pImgIn)
 {
 	// Calculate transform based on fiucial
 	double t[3][3];
-	CalculateTransform(pImgIn, t, pZ);
+	CalculateTransform(pImgIn, t);
 
 	// Set output image transform
 	// double check

@@ -273,7 +273,7 @@ namespace CyberStitchFidTester
                     cbd.Lock(inputBmp);
 
                     IntPtr dataPoint = new IntPtr((Int64)cbd.Scan0 + _iPanelOffsetInRows*cbd.Stride + _iPanelOffsetInCols);
-                    IntPtr morphedData = _imageFidAligner.MorphImage(dataPoint, cbd.Stride, null);
+                    IntPtr morphedData = _imageFidAligner.MorphImage(dataPoint, cbd.Stride);
 
                     cbd.Unlock();
                         // It is safe to explicit release memory
@@ -661,6 +661,7 @@ namespace CyberStitchFidTester
 
             //_aligner.LogOverlaps(true);
             //_aligner.LogFiducialOverlaps(true);
+            //_aligner.LogTransformVectors(true);
 
             if (_bUseTwoPassStitch)
                 _aligner.SetUseTwoPassStitch(true);
@@ -776,14 +777,11 @@ namespace CyberStitchFidTester
                 // If no fiducial used in alignment
                 if(_bNoFiducial)
                 {
-                    // Get path height info
-                    double[] zCof = new double[16];
-                    if (!_aligner.GetCamModelPanelHeight(0, zCof))
-                        zCof = null;
-
                     // Adjust stitched image
+                    // Since stitched image has been flattened in camera model,
+                    // fiducial results need not be corrected by panel height
                     IntPtr tempData = _mosaicSet.GetLayer(0).GetGreyStitchedBuffer();
-                    data = _imageFidAligner.MorphImage(tempData, _alignmentPanel.GetNumPixelsInY(), zCof);
+                    data = _imageFidAligner.MorphImage(tempData, _alignmentPanel.GetNumPixelsInY());
                 }
 
                 if (_featurePanel != null)
