@@ -102,9 +102,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PanelEdgeDetectionSpeedAnal
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnmanagedStitchTester", "..\UnmanagedStitchTester\UnmanagedStitchTester.vcxproj", "{622B4B8D-8109-4062-9949-3C38C8C3AF87}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Install", "Install\Install.vdproj", "{BD8CD988-B7ED-4354-904B-24A3D5D2F715}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 24
+		SccNumberOfProjects = 25
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = http://tfs.cyberoptics.com:8080/tfs/tpc1
 		SccLocalPath0 = .
@@ -199,6 +201,10 @@ Global
 		SccProjectTopLevelParentUniqueName23 = CyberStitchTester.sln
 		SccProjectName23 = ../UnmanagedStitchTester
 		SccLocalPath23 = ..\\UnmanagedStitchTester
+		SccProjectUniqueName24 = Install\\Install.vdproj
+		SccProjectTopLevelParentUniqueName24 = CyberStitchTester.sln
+		SccProjectName24 = Install
+		SccLocalPath24 = Install
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = CyberStitchTester1.vsmdi
@@ -448,8 +454,8 @@ Global
 		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|Mixed Platforms.Build.0 = Release|x86
 		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|Win32.ActiveCfg = Release|x86
 		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|Win32.Build.0 = Release|x86
-		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x64.ActiveCfg = Release|x86
-		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x64.Build.0 = Release|x86
+		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x64.ActiveCfg = Release|x64
+		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x64.Build.0 = Release|x64
 		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x86.ActiveCfg = Release|x86
 		{9F21AF3E-7044-405B-AFFF-4DD68782C876}.Release|x86.Build.0 = Release|x86
 		{928F2EF7-3F5A-4B8C-A3D4-81B0AAD5CBAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -602,6 +608,16 @@ Global
 		{622B4B8D-8109-4062-9949-3C38C8C3AF87}.Release|x64.ActiveCfg = Release|x64
 		{622B4B8D-8109-4062-9949-3C38C8C3AF87}.Release|x64.Build.0 = Release|x64
 		{622B4B8D-8109-4062-9949-3C38C8C3AF87}.Release|x86.ActiveCfg = Release|Win32
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Debug|Any CPU.ActiveCfg = Debug
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Debug|Mixed Platforms.ActiveCfg = Debug
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Debug|Win32.ActiveCfg = Debug
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Debug|x64.ActiveCfg = Debug
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Debug|x86.ActiveCfg = Debug
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Release|Any CPU.ActiveCfg = Release
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Release|Mixed Platforms.ActiveCfg = Release
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Release|Win32.ActiveCfg = Release
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Release|x64.ActiveCfg = Release
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -610,6 +626,7 @@ Global
 		{13971E81-714F-4CED-BE9A-361B52C9CD11} = {ADDBB888-561E-4CC7-ADB6-5F31121AF107}
 		{889C54E2-0039-4413-9FF7-804880438C03} = {ADDBB888-561E-4CC7-ADB6-5F31121AF107}
 		{622B4B8D-8109-4062-9949-3C38C8C3AF87} = {ADDBB888-561E-4CC7-ADB6-5F31121AF107}
+		{BD8CD988-B7ED-4354-904B-24A3D5D2F715} = {ADDBB888-561E-4CC7-ADB6-5F31121AF107}
 		{7B804D93-5BED-44B3-94E6-4CC7F32F3B07} = {83A6E92A-C9C4-4634-B1E7-357467A9340E}
 		{8DBEA0B0-BA65-4EB3-B8E5-5D28020A55C5} = {2F4F2C92-5C87-45DD-A97D-2A35B9F05C80}
 		{3BD999A4-1ED7-4A98-9AEE-91EBA7D6CAF9} = {2F4F2C92-5C87-45DD-A97D-2A35B9F05C80}
