@@ -25,7 +25,7 @@ namespace CyberStitchTester
         private static bool _bUseDualIllumination = true;// default use dual illumination for live mode
         
         // Control parameters
-        private static double _dPixelSizeInMeters = 1.70e-5;
+        private static double _dPixelSizeInMeters = -1;
         private static uint _iInputImageColumns = 2592;
         private static uint _iInputImageRows = 1944;
         private static bool _bBayerPattern = false;
@@ -50,7 +50,7 @@ namespace CyberStitchTester
         
         // Internal variable
         private static ManagedMosaicSet _mosaicSet = null;
-        private static CPanel _panel = new CPanel(0, 0, _dPixelSizeInMeters, _dPixelSizeInMeters); 
+        private static CPanel _panel = null; 
         private static ManagedPanelAlignment _aligner = new ManagedPanelAlignment();
         private static LoggingThread _logger = new LoggingThread(null);
         
@@ -114,8 +114,6 @@ namespace CyberStitchTester
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     _panelFile = args[i + 1];
-                else if (args[i] == "-pixsize" && i < args.Length - 1)
-                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-imgcols" && i < args.Length - 1)
                     _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
@@ -133,7 +131,27 @@ namespace CyberStitchTester
             }
 
             if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
+            {
                 _bUseCoreAPI = false;
+                Output("Using a simualtion file that ends in .csv is not presently supported.");
+                Output("Because we have no way of knowing the pixel size with this approach.  Yet.  JRH");
+                _logger.Kill();
+                return;
+            }
+
+            if (_bUseCoreAPI)
+            {
+                // Initialize the SIM CoreAPI
+                // Includes determining nominal pixel size of SIM.
+                if (!InitializeSimCoreAPI())
+                {
+                    _logger.Kill();
+                    return;
+                }
+            }
+
+
+
 
             // Setup the panel based on panel file
             if (!LoadPanelDecription())
@@ -146,16 +164,14 @@ namespace CyberStitchTester
             if (_bNoFiducial)
                 _panel.ClearFiducials();
 
-            if (_bUseCoreAPI) 
+            // Finish SIM configuration (Must be done after panel defined, but before Mosaic and Aligner defined, as they
+            // use SIM configs to set up themselves.)
+            if (!SetupSIM())
             {
-                // Initialize the SIM CoreAPI
-                if (!InitializeSimCoreAPI())
-                {
-                    _logger.Kill();
-                    return;
-                }
+                Output("SIM Failed to configure!");
+                return;
             }
-            
+
             // Set up mosaic set
             if (!SetupMosaic())
             {
@@ -169,6 +185,7 @@ namespace CyberStitchTester
                 Output("Failed to setup aligner!");
                 return;
             }
+
 
             // Run stitch
             RunStitch();
@@ -294,6 +311,41 @@ namespace CyberStitchTester
                 return false;
             }
 
+            // Determine Pixel size on SIM.  Make sure they're all consistent.
+            _dPixelSizeInMeters = -1;
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                if (_dPixelSizeInMeters < 0)
+                {
+                    _dPixelSizeInMeters = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeX) / 1000000;
+                    double tmp = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeY) / 1000000;
+                    if (tmp != _dPixelSizeInMeters)
+                    {
+                        Output("Pixel Sizes don't match on SIM Device ID " + ix + _dPixelSizeInMeters + " " + tmp);
+                        return false;
+                    }
+                }
+                else
+                {
+                    double tmpX = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeX) / 1000000;
+                    double tmpY = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeY) / 1000000;
+                    if (tmpX != tmpY)
+                    {
+                        Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
+                        return false;
+                    }
+                    else if (tmpX != _dPixelSizeInMeters)
+                    {
+                        Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static bool SetupSIM()
+        {
             if (!_bSimulating)
             {
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
@@ -357,6 +409,7 @@ namespace CyberStitchTester
                 Output("No Device Defined");
                 return false;
             }
+
             _mosaicSet = new ManagedMosaicSet(
                 _panel.PanelSizeX, _panel.PanelSizeY, 
                 _iInputImageColumns, _iInputImageRows, _iInputImageColumns, 
