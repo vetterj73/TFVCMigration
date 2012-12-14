@@ -26,8 +26,8 @@ namespace CyberStitchTester
         
         // Control parameters
         private static double _dPixelSizeInMeters = -1;
-        private static uint _iInputImageColumns = 2592;
-        private static uint _iInputImageRows = 1944;
+        private static uint _iInputImageColumns = 0; // 2952 for SIM 110
+        private static uint _iInputImageRows = 0; // 1944 for SIM 110
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
         private static bool _bSkipDemosaic = false;  // true: Skip demosaic for Bayer image
@@ -114,10 +114,6 @@ namespace CyberStitchTester
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     _panelFile = args[i + 1];
-                else if (args[i] == "-imgcols" && i < args.Length - 1)
-                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
-                else if (args[i] == "-imgrows" && i < args.Length - 1)
-                    _iInputImageRows = Convert.ToUInt32(args[i + 1]);
 				else if (args[i] == "-overlap" && i < args.Length - 1)
                     _dTriggerOverlapInM = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-brightfield" && i < args.Length - 1)
@@ -284,8 +280,16 @@ namespace CyberStitchTester
         private static bool InitializeSimCoreAPI()
         {
             //bool bSimulating = false;
-            if (!string.IsNullOrEmpty(_simulationFile) && File.Exists(_simulationFile))
-                _bSimulating = true;
+            if (!string.IsNullOrEmpty(_simulationFile))
+            {
+                if (File.Exists(_simulationFile))
+                    _bSimulating = true;
+                else
+                {
+                    Output("Simulation file >> " + _simulationFile + " << does not exist, assuming you want to not run in simulation mode.");
+                    _bSimulating = false;
+                }
+            }
 
             if (_bSimulating)
             {
@@ -341,6 +345,35 @@ namespace CyberStitchTester
                     }
                 }
             }
+
+            // Determine pixels on SIM.  Make sure they're all consistent.
+            _iInputImageColumns = 0; //  2592;
+            _iInputImageRows = 0; //  1944;
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                for (int jx = 0; jx < device.NumberOfCameras; jx++)
+                {
+                    ManagedSIMCamera camera = device.GetSIMCamera(jx);
+                    if (_iInputImageColumns == 0)
+                    {
+                        _iInputImageColumns = (uint) camera.Columns();
+                        _iInputImageRows = (uint) camera.Rows();
+                    }
+                    else
+                    {
+                        if (_iInputImageColumns != (uint)camera.Columns()
+                            || _iInputImageRows != (uint)camera.Rows())
+                        {
+                            Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
+                            return false;
+                        }
+                    }
+                }
+            }
+
+
+
             return true;
         }
 
@@ -447,7 +480,7 @@ namespace CyberStitchTester
                 _mosaicSet.SetThreadNumber(_numThreads);
                 //_mosaicSet.SetThreadNumber(1);
                 //_aligner.LogOverlaps(true);
-                //_aligner.LogFiducialOverlaps(true);
+                _aligner.LogFiducialOverlaps(true);
                 //_aligner.UseCyberNgc4Fiducial();
                 //_aligner.LogPanelEdgeDebugImages(true);
                 _aligner.UseProjectiveTransform(_bUseProjective);
