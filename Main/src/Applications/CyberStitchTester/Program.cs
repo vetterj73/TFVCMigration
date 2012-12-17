@@ -319,30 +319,22 @@ namespace CyberStitchTester
             _dPixelSizeInMeters = -1;
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                double tmpX = Math.Round(1000000 * device.AveragePixelSizeX) / 1000000;
+                double tmpY = Math.Round(1000000 * device.AveragePixelSizeY) / 1000000;
+                if (tmpX != tmpY)
+                {
+                    Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
+                    return false;
+                }
                 if (_dPixelSizeInMeters < 0)
                 {
-                    _dPixelSizeInMeters = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeX) / 1000000;
-                    double tmp = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeY) / 1000000;
-                    if (tmp != _dPixelSizeInMeters)
-                    {
-                        Output("Pixel Sizes don't match on SIM Device ID " + ix + _dPixelSizeInMeters + " " + tmp);
-                        return false;
-                    }
+                    _dPixelSizeInMeters = tmpX;
                 }
-                else
+                else if (tmpX != _dPixelSizeInMeters)
                 {
-                    double tmpX = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeX) / 1000000;
-                    double tmpY = Math.Round(1000000 * ManagedCoreAPI.GetDevice(ix).AveragePixelSizeY) / 1000000;
-                    if (tmpX != tmpY)
-                    {
-                        Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
-                        return false;
-                    }
-                    else if (tmpX != _dPixelSizeInMeters)
-                    {
-                        Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
-                        return false;
-                    }
+                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
+                    return false;
                 }
             }
 

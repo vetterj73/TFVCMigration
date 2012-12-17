@@ -340,7 +340,7 @@ namespace SIMCalibrator
                 ManagedSIMCaptureSpec cs1 = _device.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, 0, .004);
                 if (cs1 == null)
                 {
-                    throw new ApplicationException("Could not setup captureSpec for calibration");
+                    throw new ApplicationException("Could not setup captureSpec for calibration. " + _panel.PanelSizeX + " " + _panel.PanelSizeY);
                 }
             }
             else

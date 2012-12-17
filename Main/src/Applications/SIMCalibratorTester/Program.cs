@@ -18,8 +18,8 @@ namespace SIMCalibratorTester
     /// </summary>
     class Program
     {
-        private const double cPixelSizeInMeters = 1.70e-5;
-        private static CPanel _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
+        private static double cPixelSizeInMeters = -1; // SIM110 1.70e-5, SIM120 1.20e-5
+        private static CPanel _panel = null;
         private static LoggingThread logger = new LoggingThread(null);
         private static PositionCalibrator _positionCalibrator = null;
         private static ManualResetEvent _calDoneEvent = new ManualResetEvent(false);
@@ -83,11 +83,16 @@ namespace SIMCalibratorTester
             }
 
             // Initialize the SIM CoreAPI
+            // find out pixel sizes.
             if (!InitializeSimCoreAPI(simulationFile))
             {
                 logger.Kill();
                 return;
             }
+
+            // Now that we know the pixel size, we can initialize the panel.
+            _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
+
 
             if(deviceIndex < 0 || deviceIndex >= ManagedCoreAPI.NumberOfDevices())
             {
@@ -168,6 +173,31 @@ namespace SIMCalibratorTester
                 Output("There are no SIM Devices attached!");
                 logger.Kill();
                 return false;
+            }
+
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                double tmpx = Math.Round(1000000 * device.AveragePixelSizeX) / 1000000;
+                double tmpy = Math.Round(1000000 * device.AveragePixelSizeY) / 1000000;
+                if (tmpx != tmpy)
+                {
+                    Output("SIM appears to be misconfigured, X and Y pixel sizes are different: " + ix + " " + tmpx + " " + tmpy);
+                    logger.Kill();
+                    return false;
+                }
+
+                if (cPixelSizeInMeters < 0)
+                {
+                    cPixelSizeInMeters = tmpx;
+                }
+                else
+                {
+                    if (cPixelSizeInMeters != tmpx)
+                    {
+                        Output("SIM appears to have devices with with different pixel sizes!: " + ix + " " + tmpx + " " + cPixelSizeInMeters);
+                    }
+                }
             }
 
             return true;
