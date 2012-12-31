@@ -38,9 +38,6 @@
     <ClCompile Include="UnmanagedStitchTester.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XmlUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ConfigMosaicSet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

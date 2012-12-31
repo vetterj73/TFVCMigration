@@ -26,8 +26,8 @@ namespace CyberStitchTester
         
         // Control parameters
         private static double _dPixelSizeInMeters = -1;
-        private static uint _iInputImageColumns = 0; // 2952 for SIM 110
-        private static uint _iInputImageRows = 0; // 1944 for SIM 110
+        private static uint _iInputImageColumns = 0; 
+        private static uint _iInputImageRows = 0;
         private static bool _bBayerPattern = false;
         private static int _iBayerType = 1; // GBRG
         private static bool _bSkipDemosaic = false;  // true: Skip demosaic for Bayer image
@@ -146,9 +146,6 @@ namespace CyberStitchTester
                 }
             }
 
-
-
-
             // Setup the panel based on panel file
             if (!LoadPanelDecription())
             {
@@ -255,7 +252,7 @@ namespace CyberStitchTester
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(_numAcqsComplete);
                 Output("Begin SIM" + _numAcqsComplete + " acquisition");
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
-                    return;
+                    Output("Start Acquisition Failed!");
             }
         }
 
@@ -320,20 +317,14 @@ namespace CyberStitchTester
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
                 ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                double tmpX = Math.Round(1000000 * device.AveragePixelSizeX) / 1000000;
-                double tmpY = Math.Round(1000000 * device.AveragePixelSizeY) / 1000000;
-                if (tmpX != tmpY)
-                {
-                    Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
-                    return false;
-                }
+
                 if (_dPixelSizeInMeters < 0)
                 {
-                    _dPixelSizeInMeters = tmpX;
+                    _dPixelSizeInMeters = device.NominalPixelSizeX;
                 }
-                else if (tmpX != _dPixelSizeInMeters)
+                else if (Math.Abs(device.NominalPixelSizeX - _dPixelSizeInMeters) > 0.00001)
                 {
-                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
+                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + device.NominalPixelSizeX + " " + _dPixelSizeInMeters);
                     return false;
                 }
             }
@@ -344,27 +335,21 @@ namespace CyberStitchTester
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
                 ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                for (int jx = 0; jx < device.NumberOfCameras; jx++)
+                ManagedSIMCamera camera = device.GetSIMCamera(device.FirstCameraEnabled);
+                if (_iInputImageColumns == 0)
                 {
-                    ManagedSIMCamera camera = device.GetSIMCamera(jx);
-                    if (_iInputImageColumns == 0)
-                    {
-                        _iInputImageColumns = (uint) camera.Columns();
-                        _iInputImageRows = (uint) camera.Rows();
-                    }
-                    else
-                    {
-                        if (_iInputImageColumns != (uint)camera.Columns()
-                            || _iInputImageRows != (uint)camera.Rows())
-                        {
-                            Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
-                            return false;
-                        }
-                    }
+                    _iInputImageColumns = (uint) camera.Columns();
+                    _iInputImageRows = (uint) camera.Rows();
+                }
+                else
+                {
+                     if (_iInputImageColumns != (uint)camera.Columns() || _iInputImageRows != (uint)camera.Rows())
+                     {
+                         Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
+                         return false;
+                     }
                 }
             }
-
-
 
             return true;
         }

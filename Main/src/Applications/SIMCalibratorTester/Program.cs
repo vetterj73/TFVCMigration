@@ -18,7 +18,7 @@ namespace SIMCalibratorTester
     /// </summary>
     class Program
     {
-        private static double cPixelSizeInMeters = -1; // SIM110 1.70e-5, SIM120 1.20e-5
+        private static double _pixelSizeInMeters = -1; // SIM110 1.70e-5, SIM120 1.20e-5
         private static CPanel _panel = null;
         private static LoggingThread logger = new LoggingThread(null);
         private static PositionCalibrator _positionCalibrator = null;
@@ -91,7 +91,7 @@ namespace SIMCalibratorTester
             }
 
             // Now that we know the pixel size, we can initialize the panel.
-            _panel = new CPanel(0, 0, cPixelSizeInMeters, cPixelSizeInMeters);
+            _panel = new CPanel(0, 0, _pixelSizeInMeters, _pixelSizeInMeters);
 
 
             if(deviceIndex < 0 || deviceIndex >= ManagedCoreAPI.NumberOfDevices())
@@ -178,24 +178,16 @@ namespace SIMCalibratorTester
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
                 ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                double tmpx = Math.Round(1000000 * device.AveragePixelSizeX) / 1000000;
-                double tmpy = Math.Round(1000000 * device.AveragePixelSizeY) / 1000000;
-                if (tmpx != tmpy)
-                {
-                    Output("SIM appears to be misconfigured, X and Y pixel sizes are different: " + ix + " " + tmpx + " " + tmpy);
-                    logger.Kill();
-                    return false;
-                }
 
-                if (cPixelSizeInMeters < 0)
+                if (_pixelSizeInMeters < 0)
                 {
-                    cPixelSizeInMeters = tmpx;
+                    _pixelSizeInMeters = device.NominalPixelSizeX;
                 }
                 else
                 {
-                    if (cPixelSizeInMeters != tmpx)
+                    if (Math.Abs(_pixelSizeInMeters - device.NominalPixelSizeX) > .00001)
                     {
-                        Output("SIM appears to have devices with with different pixel sizes!: " + ix + " " + tmpx + " " + cPixelSizeInMeters);
+                        Output("SIM appears to have devices with with different pixel sizes!: " + ix + " " + device.NominalPixelSizeX + " " + _pixelSizeInMeters);
                     }
                 }
             }
@@ -211,13 +203,13 @@ namespace SIMCalibratorTester
                 {
                     if (panelFile.EndsWith(".srf", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _panel = SRFToPanel.parseSRF(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        _panel = SRFToPanel.parseSRF(panelFile, _pixelSizeInMeters, _pixelSizeInMeters);
                         if (_panel == null)
                             throw new ApplicationException("Could not parse the SRF panel file");
                     }
                     else if (panelFile.EndsWith(".xml", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        _panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, cPixelSizeInMeters, cPixelSizeInMeters);
+                        _panel = XmlToPanel.CSIMPanelXmlToCPanel(panelFile, _pixelSizeInMeters, _pixelSizeInMeters);
                         if (_panel == null)
                             throw new ApplicationException("Could not convert xml panel file");
                     }

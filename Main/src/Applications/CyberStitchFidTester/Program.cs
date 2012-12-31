@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -34,9 +33,9 @@ namespace CyberStitchFidTester
     class ProgramfidChecker
     {
         // Control parameter
-        private static double _dPixelSizeInMeters = 1.70e-5;
-        private static uint _iInputImageColumns = 2592;
-        private static uint _iInputImageRows = 1944;
+        private static double _dPixelSizeInMeters = 1.70e-5; // This will be adjusted if using a Simulated or real device
+        private static uint _iInputImageColumns = 2592; // This will be adjusted if using a Simulated or real device
+        private static uint _iInputImageRows = 1944; // This will be adjusted if using a Simulated or real device
         private static bool _bDetectPanelEdge = false;
         private static int _iLayerIndex4Edge = 0;
         private static bool _bRtoL = false; // right to left conveyor direction indicator
@@ -417,13 +416,15 @@ namespace CyberStitchFidTester
 
             if (filePathPattern.Length > 0)
             {
-                string substitutedFilePathPattern = System.Environment.ExpandEnvironmentVariables(filePathPattern);
+                string substitutedFilePathPattern = Environment.ExpandEnvironmentVariables(filePathPattern);
 
                 string directory = Path.GetDirectoryName(substitutedFilePathPattern);
-                if (directory.Length == 0)
+                if (string.IsNullOrEmpty(directory))
                     directory = ".";
 
                 string filePattern = Path.GetFileName(substitutedFilePathPattern);
+                if (string.IsNullOrEmpty(filePattern))
+                    filePattern = "*";
 
                 foreach (string filePath in Directory.GetFiles(directory, filePattern))
                     fileList.Add(filePath);
@@ -576,6 +577,46 @@ namespace CyberStitchFidTester
                     }
                 }
             }
+
+            // Determine Pixel size on SIM.  Make sure they're all consistent.
+            _dPixelSizeInMeters = -1;
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+
+                if (_dPixelSizeInMeters < 0)
+                {
+                    _dPixelSizeInMeters = device.NominalPixelSizeX;
+                }
+                else if (Math.Abs(device.NominalPixelSizeX - _dPixelSizeInMeters) > 0.00001)
+                {
+                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + device.NominalPixelSizeX + " " + _dPixelSizeInMeters);
+                    return false;
+                }
+            }
+
+            // Determine pixels on SIM.  Make sure they're all consistent.
+            _iInputImageColumns = 0; 
+            _iInputImageRows = 0; 
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                ManagedSIMCamera camera = device.GetSIMCamera(device.FirstCameraEnabled);
+                if (_iInputImageColumns == 0)
+                {
+                    _iInputImageColumns = (uint)camera.Columns();
+                    _iInputImageRows = (uint)camera.Rows();
+                }
+                else
+                {
+                    if (_iInputImageColumns != (uint)camera.Columns() || _iInputImageRows != (uint)camera.Rows())
+                    {
+                        Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
+                        return false;
+                    }
+                }
+            }
+
             return true;
         }
 
@@ -588,7 +629,7 @@ namespace CyberStitchFidTester
             {
                 ManagedSIMDevice d = ManagedCoreAPI.GetDevice(_numAcqsComplete);
                 if (d.StartAcquisition(ACQUISITION_MODE.CAPTURESPEC_MODE) != 0)
-                    return;
+                    Output("Could not start acquisition for device " + device);
             }
         }
 
@@ -625,12 +666,11 @@ namespace CyberStitchFidTester
                 }
             }
 
-            bool bOwnBuffer = true;
             _mosaicSet = new ManagedMosaicSet(
                 _alignmentPanel.PanelSizeX, _alignmentPanel.PanelSizeY,
                 _iInputImageColumns, _iInputImageRows, _iInputImageColumns,
                 _dPixelSizeInMeters, _dPixelSizeInMeters,
-                bOwnBuffer,
+                true,
                 _bBayerPattern, _iBayerType, _bSkipDemosaic);
             _mosaicSet.OnLogEntry += OnLogEntryFromMosaic;
             _mosaicSet.SetLogType(MLOGTYPE.LogTypeDiagnostic, true);
@@ -767,11 +807,6 @@ namespace CyberStitchFidTester
                 Output("Panel Skew is: " + set.dPanelSkew);
                 Output("Panel dPanelXscale is: " + set.dPanelXscale);
                 Output("Panel dPanelYscale is: " + set.dPanelYscale);
-
-                uint iIndex1 = 0;
-                uint iIndex2 = 1;
-                if (_mosaicSet.GetNumMosaicLayers() == 1)
-                    iIndex2 = 0;
 
                 IntPtr data = _mosaicSet.GetLayer(0).GetGreyStitchedBuffer();
                 // If no fiducial used in alignment

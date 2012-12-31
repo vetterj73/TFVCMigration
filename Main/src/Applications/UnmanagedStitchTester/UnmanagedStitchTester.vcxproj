@@ -178,7 +178,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="UnmanagedStitchTester.cpp" />
-    <ClCompile Include="XmlUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj">
