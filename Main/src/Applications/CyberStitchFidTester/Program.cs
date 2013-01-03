@@ -116,6 +116,12 @@ namespace CyberStitchFidTester
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+
+            // Start the logger (showHelp() requires logger to be started)
+            _logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
+            _logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
+            
+            
             // Control parameter inputs
             for (int i = 0; i < args.Length; i++)
             {
@@ -163,12 +169,12 @@ namespace CyberStitchFidTester
                     _lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-le" && i < args.Length - 1)
                     _iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
-                else if (args[i] == "-pixsize" && i < args.Length - 1)
-                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
-                else if (args[i] == "-imgcols" && i < args.Length - 1)
-                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
-                else if (args[i] == "-imgrows" && i < args.Length - 1)
-                    _iInputImageRows = Convert.ToUInt32(args[i + 1]);
+//                else if (args[i] == "-pixsize" && i < args.Length - 1)
+//                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
+//                else if (args[i] == "-imgcols" && i < args.Length - 1)
+//                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
+//                else if (args[i] == "-imgrows" && i < args.Length - 1)
+//                   _iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-xoffset" && i < args.Length - 1)
@@ -185,14 +191,29 @@ namespace CyberStitchFidTester
             if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
                 _bUseCoreAPI = false;
 
-            // Start the logger
-            _logger.Start("Logger", @"c:\\", "CyberStitch.log", true, -1);
-            _logger.AddObjectToThreadQueue("CyberStitchFidTester Version: " + Assembly.GetExecutingAssembly().GetName().Version);
-
             // Panel images are from disc or from stitch
             string[] stitchedImagePath = ExpandFilePaths(_stitchedImagePathPattern);
             if (stitchedImagePath.Length > 0)
+            {
                 _bStitchedImageOnly = true;
+            }
+
+            if ((_bStitchedImageOnly || !_bUseCoreAPI) && _dPixelSizeInMeters < 0)
+            {
+                _logger.AddObjectToThreadQueue("If you're not using CoreAPI, or using stitched images, you must specify pixel size.");
+                Terminate(false);
+                return;
+            }
+
+            if (!_bStitchedImageOnly && _bUseCoreAPI)
+            {
+                if (!InitializeSimCoreAPI(_simulationFile))
+                {
+                    Console.WriteLine("Could not initialize Core API");
+                    Terminate(false);
+                    return;
+                }
+            }
 
             // Load offset Fiducial file
             if (!LoadFeatureFile())
@@ -305,11 +326,10 @@ namespace CyberStitchFidTester
             {
                 if (_bUseCoreAPI)
                 {
-                    // Initialize the SIM CoreAPI
-                    if (!InitializeSimCoreAPI(_simulationFile))
+                    if (!SetupSIMCaptureSpecs())
                     {
-                        Terminate(false);
-                        Console.WriteLine("Could not initialize Core API");
+                        Console.WriteLine("Error in setting up capture specs");
+                        Terminate(true);
                         return;
                     }
                 }
@@ -545,6 +565,70 @@ namespace CyberStitchFidTester
                 return false;
             }
 
+            Output("ManagedCoreAPI # Devices: " + ManagedCoreAPI.NumberOfDevices());
+
+            // Determine Pixel size on SIM.  Make sure they're all consistent.
+            if (_dPixelSizeInMeters > 0)
+            {
+                Output("Warning, Overwriting user defined pixel size from SIM settings.");
+            }
+            _dPixelSizeInMeters = -1;
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                Output("Device # " + ix);
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                double tmpX = device.NominalPixelSizeX;
+                double tmpY = device.NominalPixelSizeY;
+                if (tmpX != tmpY)
+                {
+                    Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
+                    return false;
+                }
+                if (_dPixelSizeInMeters < 0)
+                {
+                    _dPixelSizeInMeters = tmpX;
+                }
+                else if (tmpX != _dPixelSizeInMeters)
+                {
+                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
+                    return false;
+                }
+            }
+
+            // Determine pixels on SIM.  Make sure they're all consistent.
+            _iInputImageColumns = 0; //  SIM 110 -> 2592;
+            _iInputImageRows = 0; //     SIM 110 -> 1944;
+            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
+            {
+                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
+                for (int jx = 0; jx < device.NumberOfCameras; jx++)
+                {
+                    ManagedSIMCamera camera = device.GetSIMCamera(jx);
+                    if (camera == null)
+                    {
+                        Output("WARNING:  NULL Camera returned for Camera # " + jx);
+                    }
+                    else if (_iInputImageColumns == 0)
+                    {
+                        _iInputImageColumns = (uint)camera.Columns();
+                        _iInputImageRows = (uint)camera.Rows();
+                    }
+                    else
+                    {
+                        if (_iInputImageColumns != (uint)camera.Columns()
+                            || _iInputImageRows != (uint)camera.Rows())
+                        {
+                            Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        private static bool SetupSIMCaptureSpecs() 
+        {
             if (!_bSimulating)
             {
                 for (int i = 0; i < ManagedCoreAPI.NumberOfDevices(); i++)
