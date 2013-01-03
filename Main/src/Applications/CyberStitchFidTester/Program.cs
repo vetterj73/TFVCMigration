@@ -169,12 +169,12 @@ namespace CyberStitchFidTester
                     _lastOutputTextPath = args[i + 1];
                 else if (args[i] == "-le" && i < args.Length - 1)
                     _iLayerIndex4Edge = Convert.ToInt16(args[i + 1]);
-//                else if (args[i] == "-pixsize" && i < args.Length - 1)
-//                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
-//                else if (args[i] == "-imgcols" && i < args.Length - 1)
-//                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
-//                else if (args[i] == "-imgrows" && i < args.Length - 1)
-//                   _iInputImageRows = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-pixsize" && i < args.Length - 1)
+                    _dPixelSizeInMeters = Convert.ToDouble(args[i + 1]);
+                else if (args[i] == "-imgcols" && i < args.Length - 1)
+                    _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
+                else if (args[i] == "-imgrows" && i < args.Length - 1)
+                   _iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-xoffset" && i < args.Length - 1)
@@ -572,58 +572,45 @@ namespace CyberStitchFidTester
             {
                 Output("Warning, Overwriting user defined pixel size from SIM settings.");
             }
+            // Determine Pixel size on SIM.  Make sure they're all consistent.
             _dPixelSizeInMeters = -1;
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
-                Output("Device # " + ix);
                 ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                double tmpX = device.NominalPixelSizeX;
-                double tmpY = device.NominalPixelSizeY;
-                if (tmpX != tmpY)
-                {
-                    Output("Pixel Sizes don't match on SIM Device ID " + ix + " " + tmpX + " " + tmpY);
-                    return false;
-                }
+
                 if (_dPixelSizeInMeters < 0)
                 {
-                    _dPixelSizeInMeters = tmpX;
+                    _dPixelSizeInMeters = device.NominalPixelSizeX;
                 }
-                else if (tmpX != _dPixelSizeInMeters)
+                else if (Math.Abs(device.NominalPixelSizeX - _dPixelSizeInMeters) > 0.00001)
                 {
-                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + tmpX + " " + _dPixelSizeInMeters);
+                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + device.NominalPixelSizeX + " " + _dPixelSizeInMeters);
                     return false;
                 }
             }
 
             // Determine pixels on SIM.  Make sure they're all consistent.
-            _iInputImageColumns = 0; //  SIM 110 -> 2592;
-            _iInputImageRows = 0; //     SIM 110 -> 1944;
+            _iInputImageColumns = 0;
+            _iInputImageRows = 0;
             for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
             {
                 ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                for (int jx = 0; jx < device.NumberOfCameras; jx++)
+                ManagedSIMCamera camera = device.GetSIMCamera(device.FirstCameraEnabled);
+                if (_iInputImageColumns == 0)
                 {
-                    ManagedSIMCamera camera = device.GetSIMCamera(jx);
-                    if (camera == null)
+                    _iInputImageColumns = (uint)camera.Columns();
+                    _iInputImageRows = (uint)camera.Rows();
+                }
+                else
+                {
+                    if (_iInputImageColumns != (uint)camera.Columns() || _iInputImageRows != (uint)camera.Rows())
                     {
-                        Output("WARNING:  NULL Camera returned for Camera # " + jx);
-                    }
-                    else if (_iInputImageColumns == 0)
-                    {
-                        _iInputImageColumns = (uint)camera.Columns();
-                        _iInputImageRows = (uint)camera.Rows();
-                    }
-                    else
-                    {
-                        if (_iInputImageColumns != (uint)camera.Columns()
-                            || _iInputImageRows != (uint)camera.Rows())
-                        {
-                            Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
-                            return false;
-                        }
+                        Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
+                        return false;
                     }
                 }
             }
+
             return true;
         }
 
@@ -657,45 +644,6 @@ namespace CyberStitchFidTester
                     if (cs1 == null)
                     {
                         Output("Could not create capture spec.");
-                        return false;
-                    }
-                }
-            }
-
-            // Determine Pixel size on SIM.  Make sure they're all consistent.
-            _dPixelSizeInMeters = -1;
-            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
-            {
-                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-
-                if (_dPixelSizeInMeters < 0)
-                {
-                    _dPixelSizeInMeters = device.NominalPixelSizeX;
-                }
-                else if (Math.Abs(device.NominalPixelSizeX - _dPixelSizeInMeters) > 0.00001)
-                {
-                    Output("Pixel Sizes on SIM Device ID " + ix + " don't Match Device 0 " + device.NominalPixelSizeX + " " + _dPixelSizeInMeters);
-                    return false;
-                }
-            }
-
-            // Determine pixels on SIM.  Make sure they're all consistent.
-            _iInputImageColumns = 0; 
-            _iInputImageRows = 0; 
-            for (int ix = 0; ix < ManagedCoreAPI.NumberOfDevices(); ix++)
-            {
-                ManagedSIMDevice device = ManagedCoreAPI.GetDevice(ix);
-                ManagedSIMCamera camera = device.GetSIMCamera(device.FirstCameraEnabled);
-                if (_iInputImageColumns == 0)
-                {
-                    _iInputImageColumns = (uint)camera.Columns();
-                    _iInputImageRows = (uint)camera.Rows();
-                }
-                else
-                {
-                    if (_iInputImageColumns != (uint)camera.Columns() || _iInputImageRows != (uint)camera.Rows())
-                    {
-                        Output("Camera sizes are changing on SIM Device " + ix + " " + _iInputImageColumns + " " + _iInputImageRows + " " + camera.Columns() + " " + camera.Rows());
                         return false;
                     }
                 }
@@ -906,7 +854,7 @@ namespace CyberStitchFidTester
                 if (_featurePanel != null)
                     RunFiducialCompare(data, _featurePanel.GetNumPixelsInY(), _writer);
 
-                if (_bSaveStitchedResultsImage)
+                if (_bSaveStitchedResultsImage && _featurePanel!=null)
                     _aligner.Save3ChannelImage("c:\\Temp\\FeatureCompareAfterCycle" + _cycleCount + ".bmp",
                         data, _alignmentPanel.GetNumPixelsInY(),
                         data, _alignmentPanel.GetNumPixelsInY(),
