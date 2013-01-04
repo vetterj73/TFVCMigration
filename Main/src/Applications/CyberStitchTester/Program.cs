@@ -398,6 +398,11 @@ namespace CyberStitchTester
                         cs1.GetIllumination().DarkFieldIntensity(0);
 
                         ManagedSIMCaptureSpec cs2 = d.SetupCaptureSpec(_panel.PanelSizeX, _panel.PanelSizeY, _dTriggerStartOffsetInMCS2, _dTriggerOverlapInM);
+                        if (cs2 == null)
+                        {
+                            Output("Could not create capture spec.");
+                            return false;
+                        }
                         cs2.GetIllumination().BrightFieldIntensity(0);
                         cs2.GetIllumination().DarkFieldIntensity(_iDarkField);
                     }
