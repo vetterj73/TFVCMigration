@@ -28,7 +28,7 @@ namespace CyberStitchTester
         private static double _dPixelSizeInMeters = -1;
         private static uint _iInputImageColumns = 0; 
         private static uint _iInputImageRows = 0;
-        private static bool _bBayerPattern = false;
+        private static bool _bBayerPattern = true;
         private static int _iBayerType = 1; // GBRG
         private static bool _bSkipDemosaic = false;  // true: Skip demosaic for Bayer image
         private static bool _bDetectPanelEdge = false;
@@ -80,10 +80,8 @@ namespace CyberStitchTester
                     _numberToRun = Convert.ToInt16(args[i + 1]);
                 else if (args[i] == "-m")
                     _bMaskForDiffDevices = true;
-                else if (args[i] == "-b")
-                    _bBayerPattern = true;
-                else if (args[i] == "-w")
-                    _bUseProjective = true;
+                else if (args[i] == "-nb")
+                    _bBayerPattern = false;
                 else if (args[i] == "-nw")
                     _bUseProjective = false;
                 else if (args[i] == "-nh")

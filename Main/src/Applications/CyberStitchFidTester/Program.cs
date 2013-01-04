@@ -41,13 +41,13 @@ namespace CyberStitchFidTester
         private static bool _bRtoL = false; // right to left conveyor direction indicator
         private static bool _bFRR = false; // fixed rear rail indicator
         private static bool _bSkipDemosaic = true; // true: skip demosaic for bayer image
-        private static bool _bBayerPattern = false;
+        private static bool _bBayerPattern = true;
         private static int _iBayerType = 1; // GBRG
         private static string _simulationFile = "";
         private static string _alignmentPanelFile = "";
         private static string _featureFile = "";
         private static bool _bSimulating = false;
-        private static bool _bUseProjective = false;
+        private static bool _bUseProjective = true;
         private static bool _bUseCameraModel = false;
         private static bool _bUseIterativeCameraModel = false;
         private static bool _bSaveStitchedResultsImage = false;
@@ -125,14 +125,12 @@ namespace CyberStitchFidTester
             // Control parameter inputs
             for (int i = 0; i < args.Length; i++)
             {
-                if (args[i] == "-b")
-                    _bBayerPattern = true;
+                if (args[i] == "-nb")
+                    _bBayerPattern = false;
                 else if (args[i] == "-m")
                     _bMaskForDiffDevices = true;
                 else if (args[i] == "-r")
                     _bSaveStitchedResultsImage = true;
-                else if (args[i] == "-w")
-                    _bUseProjective = true;
                 else if (args[i] == "-nw")
                     _bUseProjective = false;
                 else if (args[i] == "-cammod")
