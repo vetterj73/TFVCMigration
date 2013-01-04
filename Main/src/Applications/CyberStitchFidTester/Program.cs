@@ -48,7 +48,7 @@ namespace CyberStitchFidTester
         private static string _featureFile = "";
         private static bool _bSimulating = false;
         private static bool _bUseProjective = true;
-        private static bool _bUseCameraModel = false;
+        private static bool _bUseCameraModel = true;
         private static bool _bUseIterativeCameraModel = false;
         private static bool _bSaveStitchedResultsImage = false;
         private static bool _bUseTwoPassStitch = false;
@@ -133,10 +133,13 @@ namespace CyberStitchFidTester
                     _bSaveStitchedResultsImage = true;
                 else if (args[i] == "-nw")
                     _bUseProjective = false;
-                else if (args[i] == "-cammod")
-                    _bUseCameraModel = true;
+                else if (args[i] == "-fov")
+                    _bUseCameraModel = false;
                 else if (args[i] == "-iter")
+                {
+                    _bUseCameraModel = false;
                     _bUseIterativeCameraModel = true;
+                }
                 else if (args[i] == "-rtol")
                     _bRtoL = true;
                 else if (args[i] == "-frr")
@@ -172,7 +175,7 @@ namespace CyberStitchFidTester
                 else if (args[i] == "-imgcols" && i < args.Length - 1)
                     _iInputImageColumns = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-imgrows" && i < args.Length - 1)
-                   _iInputImageRows = Convert.ToUInt32(args[i + 1]);
+                    _iInputImageRows = Convert.ToUInt32(args[i + 1]);
                 else if (args[i] == "-t" && i < args.Length - 1)
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-xoffset" && i < args.Length - 1)

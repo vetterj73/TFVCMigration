@@ -42,7 +42,7 @@ namespace CyberStitchTester
         private static bool _bMaskForDiffDevices = false;
         private static bool _bAdjustForHeight = true;
         private static bool _bUseProjective = true;
-        private static bool _bUseCameraModel = false;
+        private static bool _bUseCameraModel = true;
         private static bool _bUseIterativeCameraModel = false;
         private static bool _bSeperateProcessStages = false;
         private static bool _bUseTwoPassStitch = false;
@@ -88,12 +88,15 @@ namespace CyberStitchTester
                     _bAdjustForHeight = false;
                 else if (args[i] == "-nf")
                     _bNoFiducial = true;
-                else if (args[i] == "-cammod")
-                    _bUseCameraModel = true;
+                else if (args[i] == "-fov")
+                    _bUseCameraModel = false;
                 else if (args[i] == "-de")
                     _bDetectPanelEdge = true;
                 else if (args[i] == "-iter")
+                {
+                    _bUseCameraModel = false;
                     _bUseIterativeCameraModel = true;
+                }
                 else if (args[i] == "-rtol")
                     _bRtoL = true;
                 else if (args[i] == "-frr")
@@ -112,14 +115,14 @@ namespace CyberStitchTester
                     _numThreads = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-p" && i < args.Length - 1)
                     _panelFile = args[i + 1];
-				else if (args[i] == "-overlap" && i < args.Length - 1)
+                else if (args[i] == "-overlap" && i < args.Length - 1)
                     _dTriggerOverlapInM = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-brightfield" && i < args.Length - 1)
                     _iBrightField = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-darkfield" && i < args.Length - 1)
                     _iDarkField = Convert.ToUInt16(args[i + 1]);
                 else if (args[i] == "-sim1startoffset" && i < args.Length - 1)
-                   _dTriggerStartOffsetInMCS1 = Convert.ToDouble(args[i + 1]);
+                    _dTriggerStartOffsetInMCS1 = Convert.ToDouble(args[i + 1]);
                 else if (args[i] == "-sim2startoffset" && i < args.Length - 1)
                     _dTriggerStartOffsetInMCS2 = Convert.ToDouble(args[i + 1]);
             }
