@@ -190,6 +190,11 @@ REM DEK-VG board
 %APP% -fov	-nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsProjective.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsProjective.txt  -u .\Results\UnitTest\ 
 
 REM DEK-VG board with skewed calibration
+REM Same data set as RegressionTest9 except DeviceCalibration.xml
+REM Camera calibration in DeviceCalibration.xml is distubed to test the camera model iteration.
+set SIMDATA=E:\CyberStitchRegressionData\RegressionTest9b
+set CADDIR= E:\CyberStitchRegressionData\RegressionTest9b
+
 %APP%		-nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG.xml"       -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_4FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_4FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
 %APP%		-nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
 %APP%		-nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsCameraModel_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsCameraModel_offsetCal.txt  -u .\Results\UnitTest\ 
