@@ -205,7 +205,10 @@ set CADDIR= E:\CyberStitchRegressionData\RegressionTest9b
 %APP% -fov  -nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_3Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_3FidsProjective_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_3FidsProjective_offsetCal.txt  -u .\Results\UnitTest\ 
 %APP% -fov  -nb -n 1 -s "%SIMDATA%\DEK_VG\SIMScenario_offsetCal_01.xml" -p "%CADDIR%\DEK_VG\DEK_VG_2Fids.xml" -f "%CADDIR%\DEK_VG\DEK_VG.xml" -o %OUTPUTDIR%\DEK-VG_2FidsProjective_offsetCal.txt -l %OUTPUTBACKUP%\DEK-VG_2FidsProjective_offsetCal.txt  -u .\Results\UnitTest\ 
 
-
+REM SIM120(70001) test by using PPM panel 
+set SIMDATA=E:\CyberStitchRegressionData\RegresstionTest10
+set CADDIR=E:\CyberStitchRegressionData\RegressionTest2\PPM(colorSim)\RegressionTest2CAD
+%APP% -s "%SIMDATA%\PPM(SIM120SingleIllu)Overlap8mm\SIMScenario.xml" -p "%CADDIR%\PPMTestPanel-HighRes3Fids(triangle).xml"  -f "%CADDIR%\PPMTestPanel-HighResAllFidsNoPads.xml" -o  %OUTPUTDIR%\SIM120PPM3fids.txt  -l %OUTPUTBACKUP%\SIM120PPM3fids.txt    -u .\Results\UnitTest\ -n 5
 
  
 REM Get the current date and time in YYYY-MM-DD-HH-MM-SS format
