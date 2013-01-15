@@ -21,8 +21,11 @@ runTypes = [["Focus", "-4mm"      ,"Through Focus Runs"],
             ["Other", ""          ,"Other"]]
 
 # Oldest date to plot
-ignoreBefore = time.strptime("2012-04-23","%Y-%m-%d") 
-
+ignoreBefore = time.strptime("2012-04-23","%Y-%m-%d")
+# Data sampling interval for charting
+samplingInterval = 3
+# Number of latest datasets need to keep for charting 
+lastNumber = 10 
 # each runType containts a name (e.g. 'Proj'), a search string (e.g. find 'Projective' in file name)
 # and a label (e.g. "Projective Transform" a descriptive string for the plots)
 
@@ -64,6 +67,7 @@ def parseCsvString(line):
 markers = ['o' , 'D' , 'h' , 'H' , 'p' , '+' , '.' , 's' , '*' , 'd' , '1' , '3' , '4' , '2' , 'v' , '<' , '>' , '^' , ',' , 'x' ]
 # where to place plots ** this must match the location in the RunChart.htm web page
 destDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/RegressionRunCharts/"
+# destDir = "C://temp//RunCharts//"
 # location of regression test result text files ** use the projects directory **
 #srcDir = "C:/CyberStitchRegression/"
 srcDir = "//cyberfs.msp.cyberoptics.com/Projects/CyberStitch/CyberStitchRegression/"
@@ -170,7 +174,15 @@ for dirName in dirNames:
         except:
             pass # ignore empty data sets
     OverallResults[dirName]["runTime"] = clip(endTime - startTime, 0, 1e5)
-    
+
+#Do data sampling (Current setting: every 4th point plus all of the last 10))
+dirSampleNames = []
+if (len(dirNames) > lastNumber):
+    for i in range (0,len(dirNames)-lastNumber,samplingInterval):
+        dirSampleNames.append(dirNames[i])
+    for i in range (len(dirNames)-lastNumber,len(dirNames)):
+        dirSampleNames.append(dirNames[i])
+nSampleRuns = len(dirSampleNames)   
 #
 #plotBoxDims = [0.1,0.25,0.6,0.65]
 plotBoxDims = [0.08,0.25,0.6,0.65]
@@ -184,16 +196,15 @@ plotBoxDims = [0.08,0.25,0.6,0.65]
 xVals = [] # since every regression tset should have a time I could have written xVals = range(nRuns)
 timeVals = []
 panelCounts = []
-for x, dirName in enumerate(dirNames):
+for x, dirName in enumerate(dirSampleNames):
     xVals.append(x)
     timeVals.append( OverallResults[dirName]["runTime"] )
     panelCounts.append( OverallResults[dirName]["panelsPerRun"] )
-
 fig2 = pylab.figure(2, figsize=(16.8,10.5),dpi=75)
 # results in a 1680 x 1050 plot with reasonalble text sizes
 ax1 = pylab.axes(plotBoxDims) 
 pylab.plot( xVals, array(timeVals)/3600., "b-x", label="Execution Time (Hours)")
-pylab.xticks(range(nRuns), dirNames, rotation=90) # do this twice????
+pylab.xticks(range(nSampleRuns), dirSampleNames, rotation=90) # do this twice????
 pylab.title("CyberStitchFidTest Overall Regression Execution Time and Panel Count" )
 pylab.ylabel("Time (hours)" , color='b' )
 pylab.ylim( 0, 12)
@@ -201,8 +212,7 @@ ax2 = ax1.twinx() # second y axis
 pylab.plot( xVals, panelCounts, "g-x", label="Panel Count")
 limY = pylab.ylim()
 pylab.ylim( 0, limY[1]*1.1)
-pylab.xticks(range(nRuns), dirNames, rotation=90)
-
+pylab.xticks(range(nSampleRuns), dirSampleNames, rotation=90)
 pylab.ylabel("Total Panels" , color='g')
 #pylab.legend()
 #legends for both (if desired) need be done one at a time and manually positioned
@@ -213,7 +223,6 @@ for tl in ax2.get_yticklabels():
     tl.set_color('g')
 fig2.savefig(destDir + "Regression_ExecutionTime.png")
 pylab.close()
-
 
 # Plot RMS Errors
 ResultNames = copy.copy(AllResultNames)
@@ -226,7 +235,7 @@ for runName, searchPattern, Label  in runTypes:
     for item in group:
         xVals = []
         yVals = []
-        for x, dirName in enumerate(dirNames):
+        for x, dirName in enumerate(dirSampleNames):
             if OverallResults[dirName].has_key(item):
                 xVals.append(x)
                 yVals.append( OverallResults[dirName][item]['summary'][2] )
@@ -240,7 +249,7 @@ for runName, searchPattern, Label  in runTypes:
     #legend(loc='best' , #bbox_to_anchor=(0.5, 1.0),
     #          ncol=4, fancybox=True, shadow=True,
     #          prop={"size":10})
-    pylab.xticks(range(nRuns), dirNames, rotation=90)
+    pylab.xticks(range(nSampleRuns), dirSampleNames, rotation=90)
     pylab.title("CyberStitchFidTest Regression Results, " + Label )
     pylab.ylabel("RMS Offset (sqrt (XOffsetRMS**2 + YOffsetRMS**2))" )
     limY = pylab.ylim()
@@ -261,7 +270,7 @@ for runName, searchPattern, Label  in runTypes:
     for item in group:
         xVals = []
         yVals = []
-        for x, dirName in enumerate(dirNames):
+        for x, dirName in enumerate(dirSampleNames):
             if OverallResults[dirName].has_key(item):
                 xVals.append(x)
                 yVals.append( OverallResults[dirName][item]['summary'][3] )
@@ -275,7 +284,7 @@ for runName, searchPattern, Label  in runTypes:
     #legend(loc='best' , #bbox_to_anchor=(0.5, 1.0),
     #          ncol=4, fancybox=True, shadow=True,
     #          prop={"size":10})
-    pylab.xticks(range(nRuns), dirNames, rotation=90)
+    pylab.xticks(range(nSampleRuns), dirSampleNames, rotation=90)
     pylab.title("CyberStitchFidTest Regression Results - WORST CASE FIDS, " + Label )
     pylab.ylabel("Worst Fiducial Offset (um)" )
     limY = pylab.ylim()
