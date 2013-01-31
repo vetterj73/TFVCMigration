@@ -334,6 +334,16 @@ namespace MosaicDM
 		return _pStitchedImage;
 	}
 
+	void MosaicLayer::SaveStitchedImage(string sFile)
+	{
+		Image* pImage = GetStitchedImage();
+
+		if(_pMosaicSet->IsBayerPattern())
+			((ColorImage*)pImage)->Save(sFile);
+		else
+			pImage->Save(sFile);
+	}
+
 	void MosaicLayer::CreateStitchedImageIfNecessary()
 	{
 		if(_stitchedImageValid)

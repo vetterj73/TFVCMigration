@@ -130,10 +130,11 @@ namespace CyberStitchTester
             if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
             {
                 _bUseCoreAPI = false;
-                Output("Using a simualtion file that ends in .csv is not presently supported.");
-                Output("Because we have no way of knowing the pixel size with this approach.  Yet.  JRH");
-                _logger.Kill();
-                return;
+
+                // for SIM 110 only
+                _dPixelSizeInMeters = 1.7e-5;
+                _iInputImageColumns = 2592;
+                _iInputImageRows = 1944;
             }
 
             if (_bUseCoreAPI)

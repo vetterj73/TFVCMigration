@@ -128,6 +128,7 @@ namespace MosaicDM
 			///	Get the stitched buffer for the image... this needs to be filled in by alignment...
 			///
 			Image *GetStitchedImage(bool bRecreate = false);
+			void SaveStitchedImage(string sFile);
 
 			bool GetImagePatch(
 				unsigned char* pBuf,
