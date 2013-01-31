@@ -97,7 +97,7 @@
     </ClCompile>
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>lib\$(ProjectName)D.lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -117,7 +117,7 @@
     </ClCompile>
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>lib\$(Platform)\$(ProjectName)D.lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -131,7 +131,7 @@
     </ClCompile>
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>lib\$(ProjectName).lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
@@ -148,7 +148,7 @@
     </ClCompile>
     <Lib>
       <AdditionalDependencies>util.lib;libvdm.lib;vs_pci.lib;ddraw.lib;gdi32.lib;Advapi32.lib;vfw32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>lib\$(Platform)\$(ProjectName).lib</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\SensorVision\lib\$(Platform)_$(Configuration);..\..\..\DirectXSDK\Lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
