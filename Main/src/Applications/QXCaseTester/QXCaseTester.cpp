@@ -30,14 +30,14 @@ clock_t _startTime;
 int _iBayerType = 1; // GBRG, 
 int _iImCols = 2592;
 int _iImRows = 1944;
-double _dPanelX = 0;
-double _dPanelY = 0;
 double _dNominalPixelSize = 1.7e-5;
-int _iNumThreads = 8;
-int _iNumToRun = 1;
-
 
 string _sSimulationFile = "";	
+double _dPanelX = 0;
+double _dPanelY = 0;
+
+int _iNumThreads = 8;
+int _iNumToRun = 1;
 
 Panel* _pPanel = NULL;
 MosaicSet* _pMosaicSet = NULL;
@@ -157,9 +157,9 @@ bool SetMosaicSetConfig(string file, Panel* pPanel)
 	// Read offset X and Y
 	in.getline(temp, 100, ',');
 	in.getline(temp, 100, ',');
-	double dOffsetX = atof(temp);
+	double dOffsetX = -atof(temp);
 	in.getline(temp, 100, ',');
-	double dOffsetY = atof(temp);
+	double dOffsetY = -atof(temp);
 	
 	// Skip a line
 	for(int i=0; i<8; i++)
@@ -483,12 +483,13 @@ bool RunStitch()
             iCycleCount++;                   
 
 			// Do the moph and output stitched image
-            Output("Begin morph");			
+            Output("Begin creating and saving stitched image");			
 			string sStitchedImFile;
 			sprintf_s(cTemp, 100, "c:\\temp\\Stitched%d.bmp", iCycleCount);
 			sStitchedImFile.assign(cTemp);
-
+			
 			_pMosaicSet->GetLayer(0)->SaveStitchedImage(sStitchedImFile);
+			Output("End creating and saving stitched image");
 		}
 
         // should we do another cycle?
