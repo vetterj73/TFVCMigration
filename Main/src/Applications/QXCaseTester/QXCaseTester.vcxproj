@@ -88,6 +88,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\logic\ImageDefines;..\..\logic\Panel;..\..\logic\MosaicDataModel;..\..\logic\PanelAlignment;..\..\logic\ImageCorrelation;..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\SIMCoreAPI\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -101,12 +102,16 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\logic\ImageDefines;..\..\logic\Panel;..\..\logic\MosaicDataModel;..\..\logic\PanelAlignment;..\..\logic\ImageCorrelation;..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\SIMCoreAPI\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_debug\*.dll .\x64\Debug</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -116,6 +121,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\logic\ImageDefines;..\..\logic\Panel;..\..\logic\MosaicDataModel;..\..\logic\PanelAlignment;..\..\logic\ImageCorrelation;..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\SIMCoreAPI\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,6 +139,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\logic\ImageDefines;..\..\logic\Panel;..\..\logic\MosaicDataModel;..\..\logic\PanelAlignment;..\..\logic\ImageCorrelation;..\..\..\LoggableObject\include;..\..\..\RuddLib\include;..\..\..\SIMCoreAPI\include;..\..\..\Bitmap\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,6 +164,26 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\logic\ImageCorrelation\ImageCorrelation.vcxproj">
+      <Project>{8dbea0b0-ba65-4eb3-b8e5-5d28020a55c5}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\MosaicDataModel\MosaicDataModel.vcxproj">
+      <Project>{3bd999a4-1ed7-4a98-9aee-91eba7d6caf9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\PanelAlignment\PanelAlignment.vcxproj">
+      <Project>{c71ca433-5c57-43db-ba7e-1f4cbb229951}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\Panel\Panel.vcxproj">
+      <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\logic\VsFinderWrapper\VsFinderWrapper.vcxproj">
+      <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
