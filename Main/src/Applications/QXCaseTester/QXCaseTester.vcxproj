@@ -148,6 +148,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <PostBuildEvent>
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_release\*.dll .\x64\Release</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
