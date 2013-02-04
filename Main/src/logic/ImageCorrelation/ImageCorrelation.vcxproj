@@ -87,10 +87,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;opencv_highgui231d.lib;opencv_core231d.lib;opencv_imgproc231d.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;opencv_highgui231d.lib;opencv_core231d.lib;opencv_imgproc231d.lib;CyberNgc.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;..\..\..\OpenCV\lib\win32_debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;..\..\..\OpenCV\lib\win32_debug;..\..\..\CyberNgc\lib\Win32_Debug</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -107,10 +107,10 @@ copy *.h ..\..\..\pub\include</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;opencv_highgui231d.lib;opencv_core231d.lib;opencv_imgproc231d.lib</AdditionalDependencies>
+      <AdditionalDependencies>Ruddd.lib;BitmapD.lib;opencv_highgui231d.lib;opencv_core231d.lib;opencv_imgproc231d.lib;CyberNgc.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;..\..\..\OpenCV\lib\x64_debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;..\..\..\OpenCV\lib\x64_debug;..\..\..\CyberNgc\lib\X64_Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -131,10 +131,10 @@ copy *.h ..\..\..\pub\include</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;Bitmap.lib;opencv_highgui231.lib;opencv_core231.lib;opencv_imgproc231.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib;opencv_highgui231.lib;opencv_core231.lib;opencv_imgproc231.lib;CyberNgc.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\OpenCV\lib\win32_release;..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\OpenCV\lib\win32_release;..\..\..\RuddLib\lib;..\..\..\Bitmap\lib;..\..\..\CyberNgc\lib\Win32_Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -155,10 +155,10 @@ copy *.h ..\..\..\pub\include</Command>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>Rudd.lib;Bitmap.lib;opencv_highgui231.lib;opencv_core231.lib;opencv_imgproc231.lib</AdditionalDependencies>
+      <AdditionalDependencies>Rudd.lib;Bitmap.lib;opencv_highgui231.lib;opencv_core231.lib;opencv_imgproc231.lib;CyberNgc.lib</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;..\..\..\OpenCV\lib\x64_release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\Bitmap\lib\x64;..\..\..\OpenCV\lib\x64_release;..\..\..\CyberNgc\lib\X64_Release</AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
