@@ -74,8 +74,8 @@ int main(int argc, char* argv[])
 		Output("Panel Size is not available");
 		return(0);
 	}
-	if (_access (_sSimulationFile.c_str(), 0) == -1 ||
-		_sSimulationFile.find(".csv'") == string::npos)
+	if (_access (_sSimulationFile.c_str(), 0) == -1)
+		//||_sSimulationFile.find(".csv'") == string::npos)
 	{
 		Output("The simulation file doesn't exist or is invalid");
 		return(0);

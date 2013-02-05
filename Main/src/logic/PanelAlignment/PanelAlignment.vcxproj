@@ -166,8 +166,6 @@ copy *.h ..\..\..\pub\include</Command>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="EquationWeights.h" />
-    <ClInclude Include="Logger.h" />
     <ClInclude Include="PanelAligner.h" />
     <ClInclude Include="RobustSolver.h" />
     <ClInclude Include="RobustSolverCM.h" />
@@ -175,8 +173,6 @@ copy *.h ..\..\..\pub\include</Command>
     <ClInclude Include="RobustSolverIterative.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EquationWeights.cpp" />
-    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="PanelAligner.cpp" />
     <ClCompile Include="RobustSolver.cpp" />
     <ClCompile Include="RobustSolverCM.cpp" />
