@@ -114,7 +114,8 @@
       <AdditionalDependencies>CoreAPId.lib;LoggerD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_debug\*.dll .\x64\Debug</Command>
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -157,7 +158,8 @@
       <AdditionalDependencies>CoreAPI.lib;Logger.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\x64_release\*.dll .\x64\Release</Command>
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

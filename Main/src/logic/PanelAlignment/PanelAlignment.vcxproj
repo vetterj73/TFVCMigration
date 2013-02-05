@@ -28,23 +28,23 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
@@ -85,8 +85,9 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -105,8 +106,9 @@ copy *.h ..\..\..\pub\include</Command>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -129,8 +131,9 @@ copy *.h ..\..\..\pub\include</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
@@ -153,8 +156,9 @@ copy *.h ..\..\..\pub\include</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\ImageDefines\$(PlatformName)\$(ConfigurationName);..\ImageCorrelation\$(PlatformName)\$(ConfigurationName);..\MosaicDataModel\$(PlatformName)\$(ConfigurationName);..\VsNgcWrapper\$(PlatformName)\$(ConfigurationName);..\TransformsCreator\$(PlatformName)\$(ConfigurationName);..\Panel\$(PlatformName)\$(ConfigurationName)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>ImageDefines.lib;ImageCorrelation.lib;MosaicDataModel.lib;VsNgcWrapper.lib;TransformsCreator.lib;Panel.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>
+      </AdditionalLibraryDirectories>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include

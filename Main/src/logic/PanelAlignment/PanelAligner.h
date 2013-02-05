@@ -19,73 +19,79 @@ using namespace MosaicDM;
 
 typedef void (*ALIGNMENTDONE_CALLBACK)(bool status);
 
+#ifdef PANELALIGNER_EXPORTS
+#define PANELALIGNER_API __declspec(dllexport) 
+#else
+#define PANELALIGNER_API __declspec(dllimport) 
+#endif
+
 class PanelAligner
 {
 public:
-	PanelAligner(void);
-	~PanelAligner(void);
+	PANELALIGNER_API PanelAligner(void);
+	PANELALIGNER_API ~PanelAligner(void);
 
-	bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
+	PANELALIGNER_API bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
 
-	void ResetForNextPanel();
+	PANELALIGNER_API void ResetForNextPanel();
 
-	bool ImageAddedToMosaicCallback(
+	PANELALIGNER_API bool ImageAddedToMosaicCallback(
 		unsigned int iLayerIndex, 
 		unsigned int iTrigIndex, 
 		unsigned int iCamIndex);
 
-	LoggableObject* GetLogger();
+	PANELALIGNER_API LoggableObject* GetLogger();
 
 	///
 	///	Saves a 3 Channel image to disk.  This is somewhat of a helper function
 	/// for diagnostics.  The images are expected to be all of the same width, height and stride
 	/// 
-	bool Save3ChannelImage(
+	PANELALIGNER_API bool Save3ChannelImage(
 		string filePath, 
 		unsigned char *pChannel1, unsigned char* pChannel2, unsigned char* pChannel3, 
 		int numRows, int numColumns);
 
-	bool Save3ChannelImage(
+	PANELALIGNER_API bool Save3ChannelImage(
 		string filePath,
 		unsigned char *pChannel1, int iSpan1,
 		unsigned char* pChannel2, int iSpan2,
 		unsigned char* pChannel3, int iSpan3,
 		int numColumns, int numRows);
 
-	void LogFiducialOverlaps(bool bLog);
-	void LogOverlaps(bool bLog);
-	void LogTransformVectors(bool bLog);
-	void LogPanelEdgeDebugImages(bool bLog);
-	void NumThreads(unsigned int numThreads);
-	void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
-	void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
-	void UseCyberNgc4Fiducial();
-	void UseProjectiveTransform(bool bValue);
-	void UseCameraModelStitch(bool bValue);
-	void UseCameraModelIterativeStitch(bool bValue);
-	void SetUseTwoPassStitch(bool bValue);
-	void EnableFiducialAlignmentCheck(bool bValue);
-	void SetPanelEdgeDetection(
+	PANELALIGNER_API void LogFiducialOverlaps(bool bLog);
+	PANELALIGNER_API void LogOverlaps(bool bLog);
+	PANELALIGNER_API void LogTransformVectors(bool bLog);
+	PANELALIGNER_API void LogPanelEdgeDebugImages(bool bLog);
+	PANELALIGNER_API void NumThreads(unsigned int numThreads);
+	PANELALIGNER_API void FiducialSearchExpansionXInMeters(double fidSearchXInMeters);
+	PANELALIGNER_API void FiducialSearchExpansionYInMeters(double fidSearchYInMeters);
+	PANELALIGNER_API void UseCyberNgc4Fiducial();
+	PANELALIGNER_API void UseProjectiveTransform(bool bValue);
+	PANELALIGNER_API void UseCameraModelStitch(bool bValue);
+	PANELALIGNER_API void UseCameraModelIterativeStitch(bool bValue);
+	PANELALIGNER_API void SetUseTwoPassStitch(bool bValue);
+	PANELALIGNER_API void EnableFiducialAlignmentCheck(bool bValue);
+	PANELALIGNER_API void SetPanelEdgeDetection(
 		bool bDetectPanelEdge, 
 		int iLayer4Edge,
 		bool bConveyorLeft2Right,
 		bool bConveyorFixedFrontRail);
-	void SetCalibrationWeight(double dValue);
-	void SetSkipDemosaic(bool bValue);
+	PANELALIGNER_API void SetCalibrationWeight(double dValue);
+	PANELALIGNER_API void SetSkipDemosaic(bool bValue);
 
-	FidFovOverlapList* GetLastProcessedFids();
+	PANELALIGNER_API FidFovOverlapList* GetLastProcessedFids();
 	
-	PanelFiducialResultsSet* GetFidResultsSetPoint();
+	PANELALIGNER_API PanelFiducialResultsSet* GetFidResultsSetPoint();
 
-	void RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext);
-	void UnregisterAlignmentDoneCallback();
+	PANELALIGNER_API void RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext);
+	PANELALIGNER_API void UnregisterAlignmentDoneCallback();
 
-	MosaicSet* GetMosaicSet();
+	PANELALIGNER_API MosaicSet* GetMosaicSet();
 
 	// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
-	double GetAlignmentTime();
+	PANELALIGNER_API double GetAlignmentTime();
 	
-	bool GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
+	PANELALIGNER_API bool GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
 protected:
 	// CleanUp internal stuff for new production or desctructor
