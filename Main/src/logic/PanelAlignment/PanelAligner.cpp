@@ -35,6 +35,21 @@ void PanelAligner::FireAlignmentDone(bool status)
 		_registeredAlignmentDoneCallback(status);
 }
 
+LoggableObject* PanelAligner::GetLogger() 
+{
+	return &LOG;
+}
+
+MosaicSet* PanelAligner::GetMosaicSet() 
+{
+	return _pSet;
+}
+
+double PanelAligner::GetAlignmentTime() 
+{
+	return _dAlignmentTime;
+}
+
 // Add single image (single entry protected by mutex)
 bool PanelAligner::ImageAddedToMosaicCallback(
 	unsigned int iLayerIndex, 
@@ -874,6 +889,12 @@ FidFovOverlapList* PanelAligner::GetLastProcessedFids()
 {
 	return &_lastProcessedFids;
 }
+
+
+PanelFiducialResultsSet* PanelAligner::GetFidResultsSetPoint() 
+{
+	return _pOverlapManager->GetFidResultsSetPoint();
+};
 
 // For function CreateImageOrderInSolver()
 typedef pair<FovIndex, double> TriggerOffsetPair;

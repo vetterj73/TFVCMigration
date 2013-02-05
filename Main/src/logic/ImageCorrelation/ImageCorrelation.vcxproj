@@ -81,7 +81,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -101,7 +101,7 @@ copy *.h ..\..\..\pub\include</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,7 +123,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -147,7 +147,7 @@ copy *.h ..\..\..\pub\include</Command>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\PanelAlignment;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\RuddLib\include;..\..\..\Bitmap\include;..\..\..\LoggableObject\include;..\..\..\CyberNgc\include;..\..\..\OpenCV\include;..\ImageDefines;..\MosaicDataModel;..\Panel;..\VsFinderWrapper</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

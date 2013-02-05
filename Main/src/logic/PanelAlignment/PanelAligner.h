@@ -34,7 +34,7 @@ public:
 		unsigned int iTrigIndex, 
 		unsigned int iCamIndex);
 
-	LoggableObject* GetLogger() {return &LOG;};
+	LoggableObject* GetLogger();
 
 	///
 	///	Saves a 3 Channel image to disk.  This is somewhat of a helper function
@@ -75,15 +75,15 @@ public:
 
 	FidFovOverlapList* GetLastProcessedFids();
 	
-	PanelFiducialResultsSet* GetFidResultsSetPoint() {return _pOverlapManager->GetFidResultsSetPoint();};
+	PanelFiducialResultsSet* GetFidResultsSetPoint();
 
 	void RegisterAlignmentDoneCallback(ALIGNMENTDONE_CALLBACK pCallback, void* pContext);
 	void UnregisterAlignmentDoneCallback();
 
-	MosaicSet* GetMosaicSet() {return _pSet;};
+	MosaicSet* GetMosaicSet();
 
 	// Overall alignment time for a single panel (only valid when demosaic and alignment are seperated)
-	double GetAlignmentTime() {return _dAlignmentTime;};
+	double GetAlignmentTime();
 	
 	bool GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 

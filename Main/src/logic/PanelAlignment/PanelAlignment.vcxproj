@@ -192,6 +192,9 @@ copy *.h ..\..\..\pub\include</Command>
     <ProjectReference Include="..\Panel\Panel.vcxproj">
       <Project>{472145e5-f493-4dd4-ac4b-05ae3189245f}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\VsFinderWrapper\VsFinderWrapper.vcxproj">
+      <Project>{bf7d0622-e565-4dcb-9219-b767d56f2593}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
