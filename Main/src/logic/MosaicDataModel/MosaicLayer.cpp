@@ -137,7 +137,7 @@ namespace MosaicDM
 
 	unsigned int MosaicLayer::GetNumberOfSubTriggers()
 	{
-		return (GetSubTrigInfo().size()*GetNumberOfTriggers());
+		return ((int)(GetSubTrigInfo().size()*GetNumberOfTriggers()));
 	}
 
 	bool MosaicLayer::IsFirstCamOfSubTrigger(unsigned int iCamIndex)

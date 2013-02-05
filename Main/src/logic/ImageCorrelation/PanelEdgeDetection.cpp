@@ -64,13 +64,13 @@ bool FovPanelEdgeDetectJob::FindLeadingEdge(Image* pImage, StPanelEdgeInImage* p
 	// For debug
 	if(CorrelationParametersInst.bSavePanelEdgeDebugImages)
 	{
-		float dSlope = ptParam->dSlope;
-		float dRowOffsetInColumn0 = ptParam->dRowOffsetInColumn0;
+		double dSlope = ptParam->dSlope;
+		double dRowOffsetInColumn0 = ptParam->dRowOffsetInColumn0;
 		CvPoint pt1, pt2;
 		pt1.x = 0;
-		pt1.y = dRowOffsetInColumn0;
+		pt1.y = (int)dRowOffsetInColumn0;
 		pt2.x = 2500;
-		pt2.y = pt1.y +dSlope*pt2.x;
+		pt2.y = (int)(pt1.y +dSlope*pt2.x);
 		cvLine( pCvImage, pt1, pt2, CV_RGB(255,255,255), 1, 8 );
 		
 		char cTemp[100];

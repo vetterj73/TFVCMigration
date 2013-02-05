@@ -321,7 +321,7 @@ namespace MosaicDM
 				return false;
 
 			char buffer[20];
-			sprintf(buffer, "layer%d.bmp", i);
+			sprintf_s(buffer, 20, "layer%d.bmp", i);
 			string file = fullDir + buffer;
 
 			if(_bBayerPattern)
@@ -348,7 +348,7 @@ namespace MosaicDM
 			MosaicLayer *pLayer = GetLayer(i);
 
 			char buffer[20];
-			sprintf(buffer, "layer%d.bmp", i);
+			sprintf_s(buffer, 20, "layer%d.bmp", i);
 			string file = fullDir + buffer;
 			
 			Bitmap bmp;
@@ -572,6 +572,8 @@ namespace MosaicDM
 		_inputFidLocMap[iID].iCamIndex = iCam;
 		_inputFidLocMap[iID].dCol = dCol;
 		_inputFidLocMap[iID].dRow = dRow;
+
+		return(true);
 	}
 
 	bool MosaicSet::HasInputFidLocations()

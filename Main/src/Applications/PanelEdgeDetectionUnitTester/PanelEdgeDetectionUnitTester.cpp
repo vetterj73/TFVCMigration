@@ -40,13 +40,13 @@ bool DetectPanelFrontEdge(const char* filePath, const char* fileName)
 	}
 
 	//*/ Draw edge on image 
-	float dSlope = stParam.dSlope;
-	float dStartRow = stParam.dRowOffsetInColumn0;
+	double dSlope = stParam.dSlope;
+	double dStartRow = stParam.dRowOffsetInColumn0;
 	CvPoint pt1, pt2;
 	pt1.x = 0;
-	pt1.y = dStartRow;
+	pt1.y = (int)dStartRow;
 	pt2.x = 2500;
-	pt2.y = pt1.y +dSlope*pt2.x;
+	pt2.y = (int)(pt1.y +dSlope*pt2.x);
 	cvLine( pImage, pt1, pt2, CV_RGB(255,0,0), 1, 8 );
 	
 	//cvNamedWindow( "Hough", 1 );

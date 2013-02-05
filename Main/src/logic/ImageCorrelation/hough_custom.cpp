@@ -324,7 +324,6 @@ CV_IMPL CvSeq* cvHoughLines2_P_Custom(
     CvSeqBlock lines_block;
     int lineType, elemSize;
     int linesMax = INT_MAX;
-    int iparam1, iparam2;
 
     img = cvGetMat( img, &stub );
 

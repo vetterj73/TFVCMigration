@@ -156,7 +156,7 @@ bool FindLeadingEdge(IplImage* pImage, StPanelEdgeInImage* ptParam)
 
 		// Current line information
 		double dCurY = (line[0].y+line[1].y)/2.;
-		double dCurSize = sqrtf((double)((line[0].y-line[1].y)*(line[0].y-line[1].y)+(line[0].x-line[1].x)*(line[0].x-line[1].x)));
+		double dCurSize = sqrt((double)((line[0].y-line[1].y)*(line[0].y-line[1].y)+(line[0].x-line[1].x)*(line[0].x-line[1].x)));
 
 		if(ptParam->type == BOTTOMEDGE) // For leading edge on the bottom of panel
 		{	// Y is much bigger or Y is similar but size is bigger
@@ -335,7 +335,7 @@ bool PixelLineFit(
 		pSetX->size() != pSetY->size())
 		return(false);
 
-	int iNum = pSetX->size();
+	int iNum = (int)pSetX->size();
 	double sum_X=0, sum_Y=0, sum_XY=0, sum_X2=0;
 	list<int>::const_iterator i, j;
 	for(i = pSetX->begin(), j = pSetY->begin(); i!=pSetX->end(); i++, j++)
