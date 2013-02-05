@@ -116,8 +116,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(PlatformName)_$(ConfigurationName)\*.dll .\
-copy /Y $(ProjectDir)..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)\*.dll .\</PostBuildEvent>
+    <PostBuildEvent>if "$(PlatformName)"=="x86" goto x86COPY
+copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(PlatformName)_$(ConfigurationName)\*.dll .\
+copy /Y $(ProjectDir)..\..\..\pub\lib\$(PlatformName)\$(ConfigurationName)\*.dll .\
+goto END
+:x86COPY
+copy /Y $(ProjectDir)..\..\..\OpenCV\bin\Win32_$(ConfigurationName)\*.dll .\
+copy /Y $(ProjectDir)..\..\..\pub\lib\Win32\$(ConfigurationName)\*.dll .\
+:END</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
