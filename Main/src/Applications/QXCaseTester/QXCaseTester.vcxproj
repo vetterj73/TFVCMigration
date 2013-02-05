@@ -96,7 +96,7 @@
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
 copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -114,7 +114,7 @@ copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Pla
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
 copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -136,7 +136,7 @@ copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Pla
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
 copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -158,7 +158,7 @@ copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Pla
       <OutputFile>$(ProjectDir)$(Platform)\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
+      <Command>copy /Y $(ProjectDir)..\..\..\OpenCV\bin\$(Platform)_$(Configuration)\*.dll .\$(Platform)\$(Configuration)
 copy /Y $(ProjectDir)..\..\..\pub\lib\$(Platform)\$(Configuration)\*.dll .\$(Platform)\$(Configuration)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

@@ -1065,7 +1065,7 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 	double		*resid;
 	unsigned int FidFitCols = 6;
 	unsigned int FidFitRows = nGoodFids*2 + 8;
-	int SizeofFidFitA = FidFitCols * FidFitRows;
+	unsigned int SizeofFidFitA = FidFitCols * FidFitRows;
 	FidFitA = new double[SizeofFidFitA];
 	FidFitX = new double[FidFitCols];
 	FidFitb = new double[FidFitRows];
