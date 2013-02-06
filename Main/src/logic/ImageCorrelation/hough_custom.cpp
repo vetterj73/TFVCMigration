@@ -44,8 +44,7 @@
 // It doesn't reduce the memeory usage for a angle range smaller than PI
 //*/
 
-#include "opencv\cv.h"
-#include "opencv\cxcore.h"
+#include "hough_custom.h"
 
 #define halfPi ((float)(CV_PI*0.5))
 #define Pi     ((float)CV_PI)
