@@ -4,6 +4,7 @@
 #include "RenderShape.h"
 #include "VsFinderCorrelation.h"
 #include "Bitmap.h"
+#include "rtypes.h"
 extern "C" {
 #include "warpxy.h"
 }

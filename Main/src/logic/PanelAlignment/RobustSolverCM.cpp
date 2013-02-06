@@ -686,7 +686,7 @@ ImgTransform RobustSolverCM::GetResultTransform(
 	double angleStepY = PI / (iNumY - 1.0);
 	
 	POINTPIX* uv = new POINTPIX[iNumX*iNumY];
-	POINT2D* xy =  new POINT2D[iNumX*iNumY];
+	POINT2D_C* xy =  new POINT2D_C[iNumX*iNumY];
 	int i, j, k;
 	double dScale;
 	//LOG.FireLogEntry(LogTypeSystem, "ResultFOVCamModel m %d, %d, %d",
@@ -697,7 +697,7 @@ ImgTransform RobustSolverCM::GetResultTransform(
 			uv[i].v = (stopX - startX)* dScale + startX;
 	  		dScale = (cos(-PI + angleStepY*j) + 1.0 )/2.0; // scaled 0 to 1
 			uv[i].u = (stopY - startY)*dScale + startY;
-		 POINT2D xyBoard;
+		 POINT2D_C xyBoard;
 		 Pix2Board(uv[i], fovIndex, &xyBoard); 
 		// Now have position on flattened board,
 		// need to transform to CAD postion using board2CAD
@@ -742,6 +742,7 @@ bool RobustSolverCM::MatchProjeciveTransform(
 	complexd* q = new complexd[m];
 	complexd* resid = new complexd[m];
 	POINT2D xyBoard;
+	POINT2D_C xyBoard_C;
 	POINTPIX pix;  // data type needed by Pix2Board()
 	// Create match pairs for projective transform
 	// p will contain p.r = pixel row locations, p.i = pixel col locations
@@ -765,7 +766,9 @@ bool RobustSolverCM::MatchProjeciveTransform(
 			// pixel to xyBoard
 			pix.u = p[i].i;  // uv vs ri got ugly here
 			pix.v = p[i].r;
-			Pix2Board(pix, fovIndex, &xyBoard);
+			Pix2Board(pix, fovIndex, &xyBoard_C);
+			xyBoard.x = xyBoard_C.x;
+			xyBoard.y = xyBoard_C.y;
 			//xyBoard to CAD
 			POINT2D temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,
 								(double*)_zCoef[deviceNum], xyBoard, LAB_TO_CAD);
@@ -924,7 +927,7 @@ void RobustSolverCM::SolveXAlgH()
 /// <param name="fovindex"></param>
 /// <param name="xyBoard">Board pos (meters)</param>
 
-void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
+void  RobustSolverCM::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D_C *xyBoard)
 {
 	// p2Board translates between a pixel location (for a given Layer, trigger and camera defined by index) to xyBoard location
 	// remember that xyBoard is on a warped surface, so the xy distance between marks is likely to be less than the
@@ -1027,13 +1030,16 @@ void RobustSolverCM::FlattenFiducials(PanelFiducialResultsSet* fiducialSet)
 				double rowPeak( rowImg - regoffRow );
 				double colPeak( colImg - regoffCol ); 
 				POINT2D xyBoard;
+				POINT2D_C xyBoard_C;
 				POINTPIX pix;
 				pix.u = colPeak;  // Pix2Board uses u -> i, v -> r
 				pix.v = rowPeak;
 				FovIndex fovIndex( (*j)->GetMosaicLayer()->Index(), (*j)->GetTriggerIndex(), (*j)->GetCameraIndex() );
 				unsigned int deviceNum = _pSet->GetLayer(fovIndex.LayerIndex)->DeviceIndex();
-				Pix2Board(pix, fovIndex, &xyBoard);
-					
+				Pix2Board(pix, fovIndex, &xyBoard_C);
+				xyBoard.x = xyBoard_C.x;
+				xyBoard.y = xyBoard_C.y;
+
 				// brdFlat from warpxy
 				POINT2D temp;
 				temp = warpxy(NUMBER_Z_BASIS_FUNCTIONS-1, 2*NUMBER_Z_BASIS_FUNCTIONS, NUMBER_Z_BASIS_FUNCTIONS,

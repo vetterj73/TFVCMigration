@@ -55,7 +55,7 @@ public:
 	void SetPinPanelWithCalibration(bool bVal) { _bPinPanelWithCalibration = bVal;};
 
 protected:
-	void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
+	void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D_C *xyBoard);
 	void	SolveXOneIteration();
 	void	ZeroTheSystem();
 	void	FillMatrixA();

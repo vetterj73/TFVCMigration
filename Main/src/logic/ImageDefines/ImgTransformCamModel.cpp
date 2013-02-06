@@ -1,5 +1,11 @@
 #include "ImgTransformCamModel.h"
 
+#include "rtypes.h"
+#include "dot2d.h"
+#include "lsqrpoly.h"
+#include "morph.h"
+
+
 // TODO TODO remove hard coded values
 //#define NOM_CAM_ROWS	1944
 //#define NOM_CAM_COLS	2592
@@ -109,7 +115,7 @@ void TransformCamModel::CalculateInverse()
 	// tranform pts on grid in image to points in xy (which are within extents)
 	// scale xy location to 0,0 to m,n (image size)
 	// fit the xy values to the uv values (model after MorphCofs)
-	POINT2D  xy;
+	POINT2D_C  xy;
 	POINTPIX uv, uvtemp;
 	double *rhs, *sysmat, *sigma;
 	float *dots;
@@ -246,7 +252,7 @@ void TransformCamModel::CalculateInverse()
 }
 
 // given a field of points uv, xy, (assumed to include corners?) calc uv2xy transform (m), u/v/x/y Min/Max
-void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int npts)
+void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D_C* xy, unsigned int npts)
 {
 	// find min, max values
 	_uMin = _vMin = _yMin = _xMin = 100000;
@@ -445,7 +451,7 @@ void TransformCamModel::CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int np
 }
 
 // S for (col, row)->(y,x) in world space
-POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
+POINT2D_C TransformCamModel::SPix2XY(POINTPIX uv)
 {
 	float *xwarp;
 	float *ywarp;
@@ -453,7 +459,7 @@ POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 	ywarp = (float*)_S[0];		// Y in _S[0]
 		
 	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
-	POINT2D xy;
+	POINT2D_C xy;
 	xy.x = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin),		// u is col and v is row
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
@@ -481,13 +487,13 @@ POINT2D TransformCamModel::SPix2XY(POINTPIX uv)
 void TransformCamModel::SPix2XY(double u, double v, double* px, double* py)
 {
 	POINTPIX uv(u,v);
-	POINT2D xy = SPix2XY(uv);
+	POINT2D_C xy = SPix2XY(uv);
 	*px = xy.x;
 	*py = xy.y;
 }
 
 // dSdZ for (col, row)->(y,x) in world space
-POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
+POINT2D_C TransformCamModel::dSPix2XY(POINTPIX uv)
 {
 	float *xwarp;
 	float *ywarp;
@@ -495,7 +501,7 @@ POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
 	ywarp = (float*)_dSdz[0];		// Y in _dSdz[0]
 		
 	// transfrom a point at uv from pixel coord to xy coords.  Assume Z=0
-	POINT2D xy;
+	POINT2D_C xy;
 	xy.x = htcorrp((int)(_vMax-_vMin), (int)(_uMax-_uMin),		// u is col and v is row
 					uv.u,uv.v,
 					MORPH_BASES, MORPH_BASES, 
@@ -512,7 +518,7 @@ POINT2D TransformCamModel::dSPix2XY(POINTPIX uv)
 void TransformCamModel::dSPix2XY(double u, double v, double* px, double* py)
 {
 	POINTPIX uv(u,v);
-	POINT2D xy = dSPix2XY(uv);
+	POINT2D_C xy = dSPix2XY(uv);
 	*px = xy.x;
 	*py = xy.y;
 }

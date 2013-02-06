@@ -9,7 +9,6 @@
 #include "OverlapDefines.h"
 #include "FiducialResult.h"
 #include "Logger.h"
-#include "coord.h"
 #include <direct.h> //_mkdir
 
 #define NUMBER_Z_BASIS_FUNCTIONS 4

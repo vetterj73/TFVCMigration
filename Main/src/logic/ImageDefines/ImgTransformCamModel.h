@@ -1,10 +1,8 @@
 #pragma once
 #include "STL.h"
-#include "morph.h"
-#include "rtypes.h"
-#include "dot2d.h"
-#include "lsqrpoly.h"
 #include "ImgTransform.h"
+
+#define MORPH_BASES_C 4
 
 /*
 	Mapping between the two coordinate frames (image pixel and CAD meters)
@@ -34,6 +32,11 @@
 	
 
 */
+
+struct  POINT2D_C{
+   double x, y;
+};
+
 struct POINTPIX
 {
 	POINTPIX()
@@ -68,20 +71,20 @@ public:
 	void SetUMax(double dVal) {_uMax = dVal;};
 	void SetVMax(double dVal) {_vMax = dVal;};
 
-	POINT2D SPix2XY(POINTPIX uv);
+	POINT2D_C SPix2XY(POINTPIX uv);
 	void SPix2XY(double u, double v, double* px, double* py);
-	POINT2D dSPix2XY(POINTPIX uv);
+	POINT2D_C dSPix2XY(POINTPIX uv);
 	void dSPix2XY(double u, double v, double* px, double* py);	
 
 	void	CalculateInverse(); // THIS FUNCTION ISN'T NEEEDED
-	void	CalcTransform(POINTPIX* uv, POINT2D* xy, unsigned int npts);
+	void	CalcTransform(POINTPIX* uv, POINT2D_C* xy, unsigned int npts);
 
 private:
-	float			_S[2][MORPH_BASES][MORPH_BASES];
-	float			_dSdz[2][MORPH_BASES][MORPH_BASES];
+	float			_S[2][MORPH_BASES_C][MORPH_BASES_C];
+	float			_dSdz[2][MORPH_BASES_C][MORPH_BASES_C];
 
-	float			_SInverse[2][MORPH_BASES][MORPH_BASES];
-	float			_dSdzInverse[2][MORPH_BASES][MORPH_BASES];
+	float			_SInverse[2][MORPH_BASES_C][MORPH_BASES_C];
+	float			_dSdzInverse[2][MORPH_BASES_C][MORPH_BASES_C];
 	double			_uMin, _uMax, _vMin, _vMax;
 	double			_xMin, _xMax, _yMin, _yMax;
 

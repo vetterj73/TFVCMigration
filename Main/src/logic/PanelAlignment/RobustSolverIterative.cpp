@@ -617,7 +617,7 @@ void RobustSolverIterative::ConstrainPerTrig(bool bPinPanelWithCalibration)
 	}
 }
 
-void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D *xyBoard)
+void  RobustSolverIterative::Pix2Board(POINTPIX pix, FovIndex fovindex, POINT2D_C *xyBoard)
 {
 	// Pix2Board in Iterative overloads the same function in the CM version
 	// This function is called by the FlattenFiducial function, which is defined in CM

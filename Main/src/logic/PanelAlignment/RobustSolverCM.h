@@ -50,7 +50,7 @@ protected:
 	virtual void	ConstrainPerTrig(bool bPinPanelWithCalibration);
 	
 	unsigned int	CountCameras();
-	virtual void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D *xyBoard);
+	virtual void	Pix2Board(POINTPIX pix, FovIndex index, POINT2D_C *xyBoard);
 	bool MatchProjeciveTransform(	
 		unsigned int iLayerIndex,
 		unsigned int iTriggerIndex,

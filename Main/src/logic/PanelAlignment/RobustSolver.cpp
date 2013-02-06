@@ -9,6 +9,7 @@
 extern "C" {
 #include "ucxform.h"
 }
+#include "coord.h"
 
 #pragma region Operateors
 bool operator<(const FovIndex& a, const FovIndex& b)
