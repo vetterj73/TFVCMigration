@@ -91,7 +91,8 @@
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
-copy *.h ..\..\..\pub\include</Command>
+copy *.h ..\..\..\pub\include
+copy ..\..\..\LoggableObject\include\LoggableObject.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Debug</AdditionalLibraryDirectories>
@@ -112,7 +113,8 @@ copy *.h ..\..\..\pub\include</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
-copy *.h ..\..\..\pub\include</Command>
+copy *.h ..\..\..\pub\include
+copy ..\..\..\LoggableObject\include\LoggableObject.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <Lib>
       <AdditionalDependencies>Ruddd.lib;CyberNgc.lib</AdditionalDependencies>
@@ -137,7 +139,8 @@ copy *.h ..\..\..\pub\include</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
-copy *.h ..\..\..\pub\include</Command>
+copy *.h ..\..\..\pub\include
+copy ..\..\..\LoggableObject\include\LoggableObject.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib;..\..\..\CyberNgc\lib\Win32_Release</AdditionalLibraryDirectories>
@@ -162,7 +165,8 @@ copy *.h ..\..\..\pub\include</Command>
     </Link>
     <PostBuildEvent>
       <Command>mkdir ..\..\..\pub\include
-copy *.h ..\..\..\pub\include</Command>
+copy *.h ..\..\..\pub\include
+copy ..\..\..\LoggableObject\include\LoggableObject.h ..\..\..\pub\include</Command>
     </PostBuildEvent>
     <Lib>
       <AdditionalLibraryDirectories>..\..\..\RuddLib\lib\x64;..\..\..\CyberNgc\lib\X64_Release</AdditionalLibraryDirectories>
