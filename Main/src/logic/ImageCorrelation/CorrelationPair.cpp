@@ -6,6 +6,7 @@
 #include "CorrelationParameters.h"
 #include "Utilities.h"
 #include "OverlapDefines.h"
+#include "Bitmap.h"
 
 #pragma region CorrelationResult class
 

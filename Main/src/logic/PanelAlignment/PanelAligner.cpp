@@ -7,6 +7,7 @@
 #include "ColorImage.h"
 #include <direct.h> //_mkdir
 #include "EquationWeights.h"
+#include "Bitmap.h"
 
 
 #pragma region Constructor/Initialization/Call back

@@ -6,7 +6,7 @@
 
 #include "Image.h"
 #include "UIRect.h"
-#include "Bitmap.h"
+
 
 class Overlap;
 
