@@ -10,16 +10,8 @@
 #include <io.h>
 using namespace std;
 
-
-#include "Panel.h"
-#include "MosaicSet.h"
-#include "MosaicTile.h"
-#include "MosaicLayer.h"
-#include "CorrelationFlags.h"
 #include "Bitmap.h"
 #include "PanelAligner.h"
-
-using namespace MosaicDM;
 
 void Output(const char* message);
 bool SetupAligner();
