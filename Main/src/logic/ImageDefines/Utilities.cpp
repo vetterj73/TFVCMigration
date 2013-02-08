@@ -1496,3 +1496,52 @@ void Demosaic_Gaussian(
 	}
 }
 
+// leftM[8] * rightM[8] = outM[8]
+void MultiProjective2D(double* leftM, double* rightM, double* outM)
+{
+    outM[0] = leftM[0]*rightM[0]+leftM[1]*rightM[3]+leftM[2]*rightM[6];
+	outM[1] = leftM[0]*rightM[1]+leftM[1]*rightM[4]+leftM[2]*rightM[7];
+	outM[2] = leftM[0]*rightM[2]+leftM[1]*rightM[5]+leftM[2]*1;
+											 
+	outM[3] = leftM[3]*rightM[0]+leftM[4]*rightM[3]+leftM[5]*rightM[6];
+	outM[4] = leftM[3]*rightM[1]+leftM[4]*rightM[4]+leftM[5]*rightM[7];
+	outM[5] = leftM[3]*rightM[2]+leftM[4]*rightM[5]+leftM[5]*1;
+											 
+	outM[6] = leftM[6]*rightM[0]+leftM[7]*rightM[3]+1*rightM[6];
+	outM[7] = leftM[6]*rightM[1]+leftM[7]*rightM[4]+1*rightM[7];
+	double dScale = leftM[6]*rightM[2]+leftM[7]*rightM[5]+1*1;
+
+	if(dScale<0.01 && dScale>-0.01)
+		dScale = 0.01;
+
+	for(int i=0; i<8; i++)
+		outM[i] = outM[i]/dScale;
+}
+
+// (Row, Col) -> (x, y)
+void Pixel2World(double* trans, double row, double col, double* px, double* py)
+{
+    double dScale = 1+ trans[6]*row+trans[7]*col;
+    dScale = 1/dScale;
+    *px = trans[0] * row + trans[1] * col + trans[2];
+    *px *= dScale;
+    *py = trans[3] * row + trans[4] * col + trans[5];
+    *py *= dScale;
+}
+
+// Calculate half size of FOV in world space
+void CalFOVHalfSize(double* trans, unsigned int iImW, unsigned int iImH, float* pfHalfW, float* pfHalfH)
+{
+    // calcualte width
+    double dLeftx, dLefty, dRightx, dRighty;
+    Pixel2World(trans, (iImH - 1) / 2.0, 0, &dLeftx, &dLefty);
+    Pixel2World(trans, (iImH - 1) / 2.0, iImW-1, &dRightx, &dRighty);
+    *pfHalfW = (float)((dRighty-dLefty)/2.0);
+
+    // calcualte height
+    double dTopx, dTopy, dBottomx, dBottomy;
+    Pixel2World(trans, 0, (iImW-1)/2.0, &dTopx, &dTopy);
+    Pixel2World(trans, iImH - 1, (iImW-1)/2.0, &dBottomx, &dBottomy);
+    *pfHalfH = (float)((dBottomx-dTopx)/2.0);
+}
+

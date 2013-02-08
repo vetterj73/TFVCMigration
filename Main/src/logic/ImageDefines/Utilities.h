@@ -140,3 +140,13 @@ void Demosaic_Gaussian(
 										// or out[col + row*iOutStr + (ChannelIndex-1)*iOutStr*iNumRow] if channels are seperated
 	COLORSTYLE		type,				// Type of color BGR/YCrCb
 	bool			bChannelSeperate);	// true, the channel stored seperated)
+
+
+// leftM[8] * rightM[8] = outM[8]
+void MultiProjective2D(double* leftM, double* rightM, double* outM);
+
+// (Row, Col) -> (x, y)
+void Pixel2World(double* trans, double row, double col, double* px, double* py);
+
+// Calculate half size of FOV in world space
+void CalFOVHalfSize(double* trans, unsigned int iImW, unsigned int iImH, float* pfHalfW, float* pfHalfH);

@@ -105,6 +105,11 @@ PanelAligner::PanelAligner(void)
 
 	// for debug
 	_iPanelCount = 0;
+
+	// for QX
+	_bOwnMosaicSetPanel = false;
+	_pSet = NULL;
+	_pPanel = NULL;
 }
 
 PanelAligner::~PanelAligner(void)
@@ -127,6 +132,22 @@ void PanelAligner::CleanUp()
 	_pSolver = NULL;
 
 	_iNumFovProced = 0;
+
+	// for QX
+	if(_bOwnMosaicSetPanel)
+	{
+		if(_pSet != NULL)
+		{
+			delete _pSet;
+			_pSet = NULL;
+		}
+
+		if(_pPanel != NULL)
+		{
+			delete _pPanel;
+			_pPanel = NULL;
+		}
+	}
 }
 
 // Change production
@@ -136,7 +157,6 @@ void PanelAligner::CleanUp()
 /// <param name="pSet"></param>
 /// <param name="pPanel"></param>
 /// Creates a new solver (of type slected in CorrelationParametersInst) for panel and (if needed) panel mask
-
 bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
@@ -144,11 +164,16 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	CleanUp();
 
 	_pSet = pSet;
-	_pSet->RegisterImageAddedCallback(ImageAdded, this) ;
-
 	_pPanel = pPanel;
 
-	_pOverlapManager = new OverlapManager(_pSet, pPanel, CorrelationParametersInst.NumThreads);
+	return ChangeProduction();
+}
+	
+bool PanelAligner::ChangeProduction()
+{
+	_pSet->RegisterImageAddedCallback(ImageAdded, this) ;
+
+	_pOverlapManager = new OverlapManager(_pSet, _pPanel, CorrelationParametersInst.NumThreads);
 		
 	// Create solver for all layers
 	bool bProjectiveTrans = CorrelationParametersInst.bUseProjectiveTransform;
@@ -193,10 +218,16 @@ bool PanelAligner::ChangeProduction(MosaicSet* pSet, Panel* pPanel)
 	return(true);
 }
 
+
+
+
 //Reset for next panel
 void PanelAligner::ResetForNextPanel()
 {
 	_pOverlapManager->ResetforNewPanel();
+
+	if(_pSet != NULL)
+		_pSet->ClearAllImages();
 
 	_pSolver->Reset();
 
@@ -233,6 +264,9 @@ void PanelAligner::LogPanelEdgeDebugImages(bool bLog)
 void PanelAligner::NumThreads(unsigned int numThreads)
 {
 	CorrelationParametersInst.NumThreads = numThreads;
+
+	if(_pSet != NULL)
+		_pSet->SetThreadNumber(numThreads);
 }
 
 void PanelAligner::FiducialSearchExpansionXInMeters(double fidSearchXInMeters)
@@ -1654,3 +1688,198 @@ int FiducialResultCheck::CheckFiducialResults()
 }
 
 #pragma endregion
+
+#pragma region QX functions
+bool PanelAligner::CreateQXPanel(double dPanelSizeX, double dPanelSizeY, double dPixelSize)
+{
+	_bOwnMosaicSetPanel = true;
+	if(_pPanel != NULL) 
+		delete _pPanel;
+	_pPanel = new Panel(dPanelSizeX, dPanelSizeY, dPixelSize, dPixelSize);
+
+	return(true);
+}
+
+// Create mosaicset, must after CreateQXPanel()
+bool PanelAligner::CreateQXMosaicSet(
+	double* pdTrans, double *pdTrigs, 
+	unsigned int iNumTrigs, unsigned int iNumCams,
+	double dOffsetX, double dOffsetY,
+	unsigned int iTileCols, unsigned int iTileRows,
+	int iBayerType)
+{
+	// Validation check
+	if(_pPanel == NULL)
+		return(false);
+
+	// Delete the exist one 
+	if(_pSet != NULL)
+		delete _pSet;
+
+	// Create mosaicset
+	bool bSkipDemosaic = true;
+	bool bBayerPattern = true;
+	bool bOwnBuffers = false;
+	_pSet = new MosaicSet(
+		_pPanel->xLength(), _pPanel->yLength(), 
+        iTileCols, iTileRows, iTileCols, 
+		_pPanel->GetPixelSizeX(), _pPanel->GetPixelSizeY(), 
+        bOwnBuffers,
+        bBayerPattern, iBayerType, bSkipDemosaic);
+
+
+	// Add a mosaic layer
+    bool bFiducialAllowNegativeMatch = false; // Bright field not allow negavie match
+    bool bAlignWithCAD = false;
+    bool bAlignWithFiducial = true;
+    bool bFiducialBrighterThanBackground = true;
+    unsigned int deviceIndex = 0;
+	MosaicLayer* pLayer = _pSet->AddLayer(iNumCams, iNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+
+	// Set subDevice
+    if (iNumCams > 8)
+    {
+        list<unsigned int> iLastCams;
+		iLastCams.push_back(7); 
+		iLastCams.push_back(15);
+        _pSet->AddSubDeviceInfo(deviceIndex, iLastCams);
+    }
+
+	// QX (U, v)->(x,y) to Cyberstitch (U, v)->(x,y) conversion matrix
+	double dPanelHeight = _pPanel->xLength();
+	unsigned int iImageRows = _pSet->GetImageHeightInPixels();
+    double leftM[8] = { 
+        0, -1, dPanelHeight-dOffsetY, 
+        1, 0, dOffsetX,
+        0, 0};
+
+    double rightM[8] = {
+        0, 1, 0,
+        -1, 0, iImageRows-1,
+        0, 0};
+
+    double tempM[8];
+    double camM[8];
+    double fovM[9];	// Must be 9
+
+    for (unsigned int iCam = 0; iCam < iNumCams; iCam++) // For each camera
+    {
+        // Calculate camera transform for first trigger
+        MultiProjective2D(leftM, pdTrans+iCam*8, tempM);
+        MultiProjective2D(tempM, rightM, camM);
+		fovM[8] = 1;
+        for (int i = 0; i < 8; i++)
+            fovM[i] = camM[i];
+
+        for (unsigned int iTrig = 0; iTrig < iNumTrigs; iTrig++) // For each trigger
+        {
+            // Set transform for each trigger
+                fovM[2] -= pdTrigs[iTrig]; // This calcualtion is not very accurate
+            
+			MosaicTile* pTile = pLayer->GetTile(iTrig, iCam);
+            pTile->SetNominalTransform(fovM);
+
+            // For camera model 
+            pTile->ResetTransformCamCalibration();
+            pTile->ResetTransformCamModel();
+            pTile->SetTransformCamCalibrationUMax(_pSet->GetImageWidthInPixels());  // column
+            pTile->SetTransformCamCalibrationVMax(_pSet->GetImageHeightInPixels()); // row
+
+            float Sy[16];
+            float Sx[16];
+            float dSydz[16];
+            float dSxdz[16];
+            for (unsigned int m = 0; m < 16; m++)
+            {
+                Sy[m] = 0;
+                Sx[m] = 0;
+                dSydz[m] = 0;
+                dSxdz[m] = 0;
+            }
+                // S (Nonlinear Parameter for SIM 110 only)
+            Sy[3] = (float)-1.78e-5;
+            Sy[9] = (float)-1.6e-5;
+            Sx[6] = (float)-2.21e-5;
+            Sx[12] = (float)-7.1e-6;
+
+                // dS
+            double dPupilDistance = 0.3702;
+            float fHalfW, fHalfH;
+            CalFOVHalfSize(camM, _pSet->GetImageWidthInPixels(), _pSet->GetImageHeightInPixels(), &fHalfW, &fHalfH);
+            dSydz[1] = (float)(fHalfW / dPupilDistance);	// dY/dZ
+            dSxdz[4] = (float)(fHalfH / dPupilDistance);	// dX/dZ
+
+            pTile->SetTransformCamCalibrationS(0, Sy);
+            pTile->SetTransformCamCalibrationS(1, Sx);
+            pTile->SetTransformCamCalibrationdSdz(0, dSydz);
+            pTile->SetTransformCamCalibrationdSdz(1, dSxdz);
+                        
+                // Linear part
+            pTile->SetCamModelLinearCalib(camM);   
+        }
+    }
+
+	// Set correlation flag
+	CorrelationFlags* pFlag = _pSet->GetCorrelationFlags(0, 0);
+	pFlag->SetCameraToCamera(true);
+	pFlag->SetTriggerToTrigger(true);
+
+	return(true);
+}
+
+// Change production for QX
+bool PanelAligner::ChangeQXproduction(
+	double dPanelSizeX, double dPanelSizeY, double dPixelSize,
+	double* pdTrans, double *pdTrigs, 
+	unsigned int iNumTrigs, unsigned int iNumCams,
+	double dOffsetX, double dOffsetY,
+	unsigned int iTileCols, unsigned int iTileRows,
+	int iBayerType)
+{
+	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
+	// CleanUp internal stuff for new production
+	CleanUp();
+
+	if(!CreateQXPanel(dPanelSizeX, dPanelSizeY, dPixelSize))
+		return(false);
+
+	if(!CreateQXMosaicSet(
+		pdTrans, pdTrigs, 
+		iNumTrigs, iNumCams,
+		dOffsetX, dOffsetY,
+		iTileCols, iTileRows,
+		iBayerType))
+		return(false);
+
+	return(ChangeProduction());
+}
+
+// For debug
+void PanelAligner::SetSeperateProcessStages(bool bValue)
+{
+	if(_pSet != NULL)
+		_pSet->SetSeperateProcessStages(bValue);
+}
+
+// Add data to QX image tile
+bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam)
+{
+	return(_pSet->AddRawImage(pbBuf, 0, iCam, iTrig));
+}
+
+// Save QX stitched image 
+bool PanelAligner::SaveQXStitchedImage(string sStitchedImFile)
+{
+	_pSet->GetLayer(0)->SaveStitchedImage(sStitchedImFile);
+
+	return(true);
+}
+
+// Get transform of QX image tile
+bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9])
+{
+	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetTransform(dTrans);
+
+	return(true);
+}
+#pragma region end region

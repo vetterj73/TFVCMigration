@@ -32,7 +32,7 @@ public:
 	PANELALIGNER_API ~PanelAligner(void);
 
 	PANELALIGNER_API bool ChangeProduction(MosaicSet* pSet, Panel *pPanel);
-
+	
 	PANELALIGNER_API void ResetForNextPanel();
 
 	PANELALIGNER_API bool ImageAddedToMosaicCallback(
@@ -93,9 +93,28 @@ public:
 	
 	PANELALIGNER_API bool GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCoef[16]);
 
+	// Entry functions for QX
+	PANELALIGNER_API bool ChangeQXproduction(
+		double dPanelSizeX, double dPanelSizeY, double dPixelSize,
+		double* pdTrans, double *pdTrigs, 
+		unsigned int iNumTrigs, unsigned int iNumCams,
+		double dOffsetX, double dOffsetY,
+		unsigned int iTileCols, unsigned int iTileRows,
+		int iBayerType);
+
+	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
+
+	PANELALIGNER_API bool SaveQXStitchedImage(string sStitchedImFile);
+
+	PANELALIGNER_API bool GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9]);
+
+	PANELALIGNER_API void SetSeperateProcessStages(bool bValue);
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();
+
+	bool ChangeProduction();
 
 	bool CreateImageOrderInSolver(map<FovIndex, unsigned int>* pOrderMap) const;
 	bool CreateImageOrderInSolver(
@@ -128,6 +147,15 @@ protected:
 	void OutputTransforms(string fileName);
 	void OutputFiducialForSolver(string fileName);
 
+	// For QX
+	bool CreateQXPanel(double dPanelSizeX, double dPanelSizeY, double dPixelSize);
+	bool CreateQXMosaicSet(
+		double* pdTrans, double *pdTrigs, 
+		unsigned int iNumTrigs, unsigned int iNumCams, 
+		double dOffsetX, double dOffsetY,
+		unsigned int iTileCols, unsigned int iTileRows,
+		int iBayerType);
+
 private:
 	FidFovOverlapList _lastProcessedFids;
 
@@ -151,6 +179,9 @@ private:
 	int _iPanelCount;
 	clock_t _StartTime;
 	double _dAlignmentTime;
+
+	// for QX
+	bool _bOwnMosaicSetPanel;
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 
