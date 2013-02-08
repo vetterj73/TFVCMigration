@@ -187,6 +187,11 @@ copy *.h ..\..\..\pub\include</Command>
   <ItemGroup>
     <None Include="ReadMe.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ImageDefines\ImageDefines.vcxproj">
+      <Project>{2ff0a361-fc84-437c-95c9-7bf9b637aac9}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

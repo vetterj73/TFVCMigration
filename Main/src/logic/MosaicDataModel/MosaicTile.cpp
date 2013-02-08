@@ -48,7 +48,7 @@ namespace MosaicDM
 
 	}
 
-	/// Set nominal transform pTrans is a size 8 arrary for projecitve transform
+	/// Set nominal transform pTrans is a size 9 arrary for projecitve transform
 	void MosaicTile::SetNominalTransform(double dTrans[9])
 	{
 		ImgTransform inputTransform;
@@ -65,6 +65,12 @@ namespace MosaicDM
 			_pMosaicLayer->GetMosaicSet()->GetImageHeightInPixels(), 
 			_pMosaicLayer->GetMosaicSet()->GetImageStrideInPixels(), 
 			inputTransform, inputTransform, _pMosaicLayer->GetMosaicSet()->HasOwnBuffers(), NULL);
+	}
+
+	// Get transform from image to CAD
+	void MosaicTile::GetTransform(double dTrans[9])
+	{
+		_pImage->GetTransform().GetMatrix(dTrans);
 	}
 
 	///

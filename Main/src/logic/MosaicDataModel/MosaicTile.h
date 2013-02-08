@@ -63,8 +63,11 @@ namespace MosaicDM
 			void SetTransformParameters(double pixelSizeXInMeters, double pixelSizeYInMeters, 
 				double rotation, double centerOffsetXInMeters, double centerOffsetYInMeters);
 			
-			/// Set nominal transform pTrans is a size 8 arrary for projecitve transform
+			/// Set nominal transform pTrans is a size 9 arrary for projecitve transform
 			void SetNominalTransform(double dTrans[9]);
+			
+			// Get transform from image to CAD
+			void GetTransform(double dTrans[9]);
 
 			///
 			/// Set camera calibration parameters
