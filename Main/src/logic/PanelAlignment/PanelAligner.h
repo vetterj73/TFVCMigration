@@ -110,6 +110,8 @@ public:
 
 	PANELALIGNER_API void SetSeperateProcessStages(bool bValue);
 
+	PANELALIGNER_API void SaveQXTile(unsigned int iTrig, unsigned int iCam, string sFile);
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();

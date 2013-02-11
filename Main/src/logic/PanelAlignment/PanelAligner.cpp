@@ -1882,4 +1882,11 @@ bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, dou
 
 	return(true);
 }
+
+void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, string sFile)
+{
+	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
+}
+
+
 #pragma region end region
