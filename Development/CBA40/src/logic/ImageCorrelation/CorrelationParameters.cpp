@@ -101,8 +101,8 @@ CorrelationParameters::CorrelationParameters(void)
 	NumThreads = 8;
 
 	// debug flags
-	bSaveFiducialOverlaps = false;
-	bSaveOverlaps = true;
+	bSaveFiducialOverlaps = true;
+	bSaveOverlaps = false;
 	bSaveTransformVectors = true;
 	bSavePanelEdgeDebugImages = false; 
 	sDiagnosticPath = "C:\\Temp\\";

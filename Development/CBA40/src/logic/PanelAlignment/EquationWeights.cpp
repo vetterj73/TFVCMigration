@@ -14,11 +14,11 @@ EquationWeights::EquationWeights(void)
 {
 	// weights for calibration related constrains
 	dCalScale = 1.0;	// Scale of calibration weight
-	wRxy = 5e7;			// Rotation match (m1 = -m3)
-	wMxy = 5e7;			// Magnification match (m0 = m4)
+	wRxy = 5e9;			// Rotation match (m1 = -m3)
+	wMxy = 5e9;			// Magnification match (m0 = m4)
 	wRcal = 5e6;		// Rotation m1/m3 match calibration
-	wMcal = 2.5e6;		// Magnification m0/m4 (pixel size) match calibtation
-	wYRdelta = 5e6;		// Angle different for adjacent cameras(Y) should match calibration
+	wMcal = 1e8;		// Magnification m0/m4 (pixel size) match calibtation
+	wYRdelta = 5e7;		// Angle different for adjacent cameras(Y) should match calibration
 	wYcent = 1e3;		// Fov center Y position match calibration
 	wXcent = 1e-1;		// Fov center X position match calibration
 	wYdelta = 1e4;		// distance between cameras in Y match calibration
