@@ -104,13 +104,13 @@ public:
 
 	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
 
-	PANELALIGNER_API bool SaveQXStitchedImage(string sStitchedImFile);
+	PANELALIGNER_API bool SaveQXStitchedImage(char* pcFile);
 
 	PANELALIGNER_API bool GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9]);
 
 	PANELALIGNER_API void SetSeperateProcessStages(bool bValue);
 
-	PANELALIGNER_API void SaveQXTile(unsigned int iTrig, unsigned int iCam, string sFile);
+	PANELALIGNER_API void SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFile);
 
 protected:
 	// CleanUp internal stuff for new production or desctructor

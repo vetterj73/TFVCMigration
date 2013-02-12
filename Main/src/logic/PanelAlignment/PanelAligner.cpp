@@ -1868,8 +1868,10 @@ bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsi
 }
 
 // Save QX stitched image 
-bool PanelAligner::SaveQXStitchedImage(string sStitchedImFile)
+bool PanelAligner::SaveQXStitchedImage(char* pcFile)
 {
+	string sStitchedImFile;
+	sStitchedImFile.assign(pcFile);
 	_pSet->GetLayer(0)->SaveStitchedImage(sStitchedImFile);
 
 	return(true);
@@ -1883,8 +1885,10 @@ bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, dou
 	return(true);
 }
 
-void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, string sFile)
+void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFile)
 {
+	string sFile;
+	sFile.assign(pcFile);
 	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
 }
 

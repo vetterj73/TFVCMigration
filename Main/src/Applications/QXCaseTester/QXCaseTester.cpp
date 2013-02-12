@@ -340,7 +340,7 @@ bool RunStitch()
 		sprintf_s(cTemp, 100, "c:\\temp\\Stitched%d.bmp", iCycleCount);
 		sStitchedImFile.assign(cTemp);
 	
-		_pAligner->SaveQXStitchedImage(sStitchedImFile);
+		_pAligner->SaveQXStitchedImage(cTemp);
 		Output("End creating and saving stitched image");
 
 		ReleaseBmpBufs();  
