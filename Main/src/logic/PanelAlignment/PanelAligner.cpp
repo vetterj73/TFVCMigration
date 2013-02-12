@@ -1758,6 +1758,25 @@ bool PanelAligner::CreateQXMosaicSet(
         -1, 0, iImageRows-1,
         0, 0};
 
+
+	_dCS2QXLeft[0] = 0;
+	_dCS2QXLeft[1] = 1;
+	_dCS2QXLeft[2] = -dOffsetX;
+	_dCS2QXLeft[3] = -1;
+	_dCS2QXLeft[4] = 0;
+	_dCS2QXLeft[5] = dPanelHeight-dOffsetY;
+	_dCS2QXLeft[6] = 0;
+	_dCS2QXLeft[7] = 0;
+
+	_dCS2QXRight[0] = 0;
+	_dCS2QXRight[1] = -1;
+	_dCS2QXRight[2] = iImageRows-1;
+	_dCS2QXRight[3] = 1;
+	_dCS2QXRight[4] = 0;
+	_dCS2QXRight[5] = 0;
+	_dCS2QXRight[6] = 0;
+	_dCS2QXRight[7] = 0;
+
     double tempM[8];
     double camM[8];
     double fovM[9];	// Must be 9
@@ -1880,8 +1899,16 @@ bool PanelAligner::SaveQXStitchedImage(char* pcFile)
 // Get transform of QX image tile
 bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9])
 {
-	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetTransform(dTrans);
+	// Get Cyberstitch transform
+	double dCSTrans[9];
+	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetTransform(dCSTrans);
 
+	// Convert into QX
+	double dTempM[8];
+	MultiProjective2D(_dCS2QXLeft, dCSTrans, dTempM);
+    MultiProjective2D(dTempM, _dCS2QXRight, dTrans);
+	dTrans[8] = 1;
+	
 	return(true);
 }
 

@@ -184,6 +184,7 @@ private:
 
 	// for QX
 	bool _bOwnMosaicSetPanel;
+	double _dCS2QXLeft[8], _dCS2QXRight[8];
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 

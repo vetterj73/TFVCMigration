@@ -343,6 +343,9 @@ bool RunStitch()
 		_pAligner->SaveQXStitchedImage(cTemp);
 		Output("End creating and saving stitched image");
 
+		//double dTrans[9];
+		//_pAligner->GetQXTileTransform(0, 0,  dTrans);
+
 		ReleaseBmpBufs();  
 
         // should we do another cycle?
