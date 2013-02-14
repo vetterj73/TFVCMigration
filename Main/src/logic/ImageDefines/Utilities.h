@@ -142,7 +142,7 @@ void Demosaic_Gaussian(
 	bool			bChannelSeperate);	// true, the channel stored seperated)
 
 
-// leftM[8] * rightM[8] = outM[8]
+// leftM[9] * rightM[9] = outM[9]
 void MultiProjective2D(double* leftM, double* rightM, double* outM);
 
 // (Row, Col) -> (x, y)

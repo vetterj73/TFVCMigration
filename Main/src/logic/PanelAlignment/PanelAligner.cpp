@@ -1748,15 +1748,15 @@ bool PanelAligner::CreateQXMosaicSet(
 	// QX (U, v)->(x,y) to Cyberstitch (U, v)->(x,y) conversion matrix
 	double dPanelHeight = _pPanel->xLength();
 	unsigned int iImageRows = _pSet->GetImageHeightInPixels();
-    double leftM[8] = { 
+    double leftM[9] = { 
         0, -1, dPanelHeight-dOffsetY, 
         1, 0, dOffsetX,
-        0, 0};
+        0, 0, 1};
 
-    double rightM[8] = {
+    double rightM[9] = {
         0, 1, 0,
         -1, 0, iImageRows-1,
-        0, 0};
+        0, 0, 1};
 
 
 	_dCS2QXLeft[0] = 0;
@@ -1767,6 +1767,7 @@ bool PanelAligner::CreateQXMosaicSet(
 	_dCS2QXLeft[5] = dPanelHeight-dOffsetY;
 	_dCS2QXLeft[6] = 0;
 	_dCS2QXLeft[7] = 0;
+	_dCS2QXLeft[8] = 1;
 
 	_dCS2QXRight[0] = 0;
 	_dCS2QXRight[1] = -1;
@@ -1776,18 +1777,18 @@ bool PanelAligner::CreateQXMosaicSet(
 	_dCS2QXRight[5] = 0;
 	_dCS2QXRight[6] = 0;
 	_dCS2QXRight[7] = 0;
+	_dCS2QXRight[8] = 1;
 
-    double tempM[8];
-    double camM[8];
+    double tempM[9];
+    double camM[9];
     double fovM[9];	// Must be 9
 
     for (unsigned int iCam = 0; iCam < iNumCams; iCam++) // For each camera
     {
         // Calculate camera transform for first trigger
-        MultiProjective2D(leftM, pdTrans+iCam*8, tempM);
+        MultiProjective2D(leftM, pdTrans+iCam*9, tempM);
         MultiProjective2D(tempM, rightM, camM);
-		fovM[8] = 1;
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 9; i++)
             fovM[i] = camM[i];
 
         for (unsigned int iTrig = 0; iTrig < iNumTrigs; iTrig++) // For each trigger
@@ -1886,6 +1887,11 @@ bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsi
 	return(_pSet->AddRawImage(pbBuf, 0, iCam, iTrig));
 }
 
+bool PanelAligner::HasAllImageTile()
+{
+	return(_pSet->HasAllImages());
+}
+
 // Save QX stitched image 
 bool PanelAligner::SaveQXStitchedImage(char* pcFile)
 {
@@ -1904,10 +1910,9 @@ bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, dou
 	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetTransform(dCSTrans);
 
 	// Convert into QX
-	double dTempM[8];
+	double dTempM[9];
 	MultiProjective2D(_dCS2QXLeft, dCSTrans, dTempM);
     MultiProjective2D(dTempM, _dCS2QXRight, dTrans);
-	dTrans[8] = 1;
 	
 	return(true);
 }

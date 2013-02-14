@@ -1509,19 +1509,22 @@ void MultiProjective2D(double* leftM, double* rightM, double* outM)
 											 
 	outM[6] = leftM[6]*rightM[0]+leftM[7]*rightM[3]+1*rightM[6];
 	outM[7] = leftM[6]*rightM[1]+leftM[7]*rightM[4]+1*rightM[7];
-	double dScale = leftM[6]*rightM[2]+leftM[7]*rightM[5]+1*1;
+	double dScale = leftM[6]*rightM[2]+leftM[7]*rightM[5]+leftM[8]*rightM[8];
 
 	if(dScale<0.01 && dScale>-0.01)
 		dScale = 0.01;
 
+	dScale = 1/dScale;
 	for(int i=0; i<8; i++)
-		outM[i] = outM[i]/dScale;
+		outM[i] = outM[i]*dScale;
+
+	outM[8] = 1.0;
 }
 
 // (Row, Col) -> (x, y)
 void Pixel2World(double* trans, double row, double col, double* px, double* py)
 {
-    double dScale = 1+ trans[6]*row+trans[7]*col;
+    double dScale = trans[8]+ trans[6]*row+trans[7]*col;
     dScale = 1/dScale;
     *px = trans[0] * row + trans[1] * col + trans[2];
     *px *= dScale;

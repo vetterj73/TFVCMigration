@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 
-#pragma region Set mosaicSet
+#pragma region load mosaic information
 bool LoadNominalInfo(string file, QXNominalInfo* pInfo)
 {
 //*** Read data from file 
@@ -169,12 +169,19 @@ bool LoadNominalInfo(string file, QXNominalInfo* pInfo)
 
 	// Convert into array
 	pInfo->iNumCams = (unsigned int)(transList.size()/8);
-	pInfo->pdTrans = new double[transList.size()];
+	pInfo->pdTrans = new double[pInfo->iNumCams*9];
 	int iCount = 0;
 	for(list<double>::iterator i=transList.begin(); i!= transList.end(); i++)
 	{
 		pInfo->pdTrans[iCount] = *i;
 		iCount++;
+
+		// Add the last item for each transform
+		if(iCount%9 == 8)	
+		{
+			pInfo->pdTrans[iCount] = 1;
+			iCount++;
+		}
 	}
 
 	pInfo->iNumTrigs = (unsigned int)trigList.size()+1;
@@ -189,6 +196,8 @@ bool LoadNominalInfo(string file, QXNominalInfo* pInfo)
 
 	return(true);
 }
+
+#pragma endregion
 
 
 #pragma region image load, log and call back

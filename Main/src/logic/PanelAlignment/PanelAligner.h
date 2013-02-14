@@ -104,6 +104,8 @@ public:
 
 	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
 
+	PANELALIGNER_API bool HasAllImageTile();
+
 	PANELALIGNER_API bool SaveQXStitchedImage(char* pcFile);
 
 	PANELALIGNER_API bool GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9]);
@@ -184,7 +186,7 @@ private:
 
 	// for QX
 	bool _bOwnMosaicSetPanel;
-	double _dCS2QXLeft[8], _dCS2QXRight[8];
+	double _dCS2QXLeft[9], _dCS2QXRight[9];
 };
 
 // moved here because RobustSolver needs to use the PanelFiducialResultsSet class 
