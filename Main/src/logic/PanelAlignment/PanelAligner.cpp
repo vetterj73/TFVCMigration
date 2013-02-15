@@ -137,16 +137,14 @@ void PanelAligner::CleanUp()
 	if(_bOwnMosaicSetPanel)
 	{
 		if(_pSet != NULL)
-		{
 			delete _pSet;
-			_pSet = NULL;
-		}
-
+			
 		if(_pPanel != NULL)
-		{
 			delete _pPanel;
-			_pPanel = NULL;
-		}
+
+		_pSet = NULL;
+		_pPanel = NULL;
+		_bOwnMosaicSetPanel = false;
 	}
 }
 
@@ -1709,7 +1707,7 @@ bool PanelAligner::CreateQXMosaicSet(
 	int iBayerType)
 {
 	// Validation check
-	if(_pPanel == NULL)
+	if(_pPanel == NULL || !_bOwnMosaicSetPanel)
 		return(false);
 
 	// Delete the exist one 
@@ -1757,7 +1755,6 @@ bool PanelAligner::CreateQXMosaicSet(
         0, 1, 0,
         -1, 0, iImageRows-1,
         0, 0, 1};
-
 
 	_dCS2QXLeft[0] = 0;
 	_dCS2QXLeft[1] = 1;
