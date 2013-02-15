@@ -104,7 +104,7 @@ public:
 
 	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
 
-	PANELALIGNER_API bool HasAllImageTile();
+	PANELALIGNER_API bool HasAllImageTiles();
 
 	PANELALIGNER_API bool SaveQXStitchedImage(char* pcFile);
 

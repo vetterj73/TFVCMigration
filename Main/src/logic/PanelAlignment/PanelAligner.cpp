@@ -1688,6 +1688,8 @@ int FiducialResultCheck::CheckFiducialResults()
 #pragma endregion
 
 #pragma region QX functions
+
+// Create an empty panel for QX
 bool PanelAligner::CreateQXPanel(double dPanelSizeX, double dPanelSizeY, double dPixelSize)
 {
 	_bOwnMosaicSetPanel = true;
@@ -1724,7 +1726,6 @@ bool PanelAligner::CreateQXMosaicSet(
 		_pPanel->GetPixelSizeX(), _pPanel->GetPixelSizeY(), 
         bOwnBuffers,
         bBayerPattern, iBayerType, bSkipDemosaic);
-
 
 	// Add a mosaic layer
     bool bFiducialAllowNegativeMatch = false; // Bright field not allow negavie match
@@ -1884,7 +1885,8 @@ bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsi
 	return(_pSet->AddRawImage(pbBuf, 0, iCam, iTrig));
 }
 
-bool PanelAligner::HasAllImageTile()
+// Wheather aligner has all image tiles
+bool PanelAligner::HasAllImageTiles()
 {
 	return(_pSet->HasAllImages());
 }
@@ -1921,5 +1923,4 @@ void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFil
 	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
 }
 
-
-#pragma region end region
+#pragma endregion
