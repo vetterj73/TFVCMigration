@@ -190,7 +190,30 @@ namespace CyberStitchFidTester
             }
 
             if (_simulationFile.EndsWith(".csv", StringComparison.CurrentCultureIgnoreCase))
+            {
                 _bUseCoreAPI = false;
+
+                string sFile = Path.GetDirectoryName(_simulationFile) + "\\Cycle0\\Cam0_Trig0.bmp";
+                if (!File.Exists(sFile))
+                {
+                    Output("No image file exists!");
+                    return;
+                }
+                Bitmap fov = new Bitmap(sFile);
+                _iInputImageColumns = (uint)fov.Size.Width;
+                _iInputImageRows = (uint)fov.Size.Height;
+                // SIM120
+                if (_iInputImageColumns == 3664 && _iInputImageRows == 2748)
+                    _dPixelSizeInMeters = 1.2e-5;
+                // SIM 110
+                else if (_iInputImageColumns == 2592 && _iInputImageRows == 1944)
+                    _dPixelSizeInMeters = 1.7e-5;
+                else
+                {
+                    Output("Invalid image file !");
+                    return;
+                }
+            }
 
             // Panel images are from disc or from stitch
             string[] stitchedImagePath = ExpandFilePaths(_stitchedImagePathPattern);
