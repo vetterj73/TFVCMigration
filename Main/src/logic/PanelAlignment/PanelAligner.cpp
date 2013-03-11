@@ -1781,6 +1781,11 @@ bool PanelAligner::CreateQXMosaicSet(
     double camM[9];
     double fovM[9];	// Must be 9
 
+	bool bSIM110 = true; 
+	int iumPixelSize = (int)(pdTrans[0]*1e6+0.5);
+	if(iumPixelSize == 12) // SIM 120;
+		bSIM110 = false;
+
     for (unsigned int iCam = 0; iCam < iNumCams; iCam++) // For each camera
     {
         // Calculate camera transform for first trigger
@@ -1814,14 +1819,19 @@ bool PanelAligner::CreateQXMosaicSet(
                 dSydz[m] = 0;
                 dSxdz[m] = 0;
             }
+			
+			if(bSIM110)
+			{
                 // S (Nonlinear Parameter for SIM 110 only)
-            Sy[3] = (float)-1.78e-5;
-            Sy[9] = (float)-1.6e-5;
-            Sx[6] = (float)-2.21e-5;
-            Sx[12] = (float)-7.1e-6;
-
+				Sy[3] = (float)-1.78e-5;
+				Sy[9] = (float)-1.6e-5;
+				Sx[6] = (float)-2.21e-5;
+				Sx[12] = (float)-7.1e-6;
+			}
                 // dS
-            double dPupilDistance = 0.3702;
+            double dPupilDistance = 0.3702;		// For SIM 110
+			if(!bSIM110) 
+				dPupilDistance = 0.377;			// For SIM 120
             float fHalfW, fHalfH;
             CalFOVHalfSize(camM, _pSet->GetImageWidthInPixels(), _pSet->GetImageHeightInPixels(), &fHalfW, &fHalfH);
             dSydz[1] = (float)(fHalfW / dPupilDistance);	// dY/dZ

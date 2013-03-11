@@ -21,10 +21,6 @@ clock_t _startTime;
 
 // Default paramter for SIM install to front 
 int _iBayerType = 1; // GBRG, 
-// default parameter for SIM 110
-int _iImCols = 2592;
-int _iImRows = 1944;
-double _dNominalPixelSize = 1.7e-5;
 
 // Required inputs
 string _sSimulationFile = "";	
@@ -293,12 +289,35 @@ bool SetupAligner()
 
 		   // Set up production for aligner
 	LoadNominalInfo(_sSimulationFile, &_info);
+	
+	int iImCols, iImRows;
+	double dNominalPixelSize;
+	// Nominal pixelSize in um
+	int iumPixelSize = (int)(_info.pdTrans[0]*1e6+0.5);
+	// SIM120
+	if(iumPixelSize == 12)
+	{
+		iImCols = 3664;
+		iImRows = 2748;
+		dNominalPixelSize = 1.2e-5;
+	}
+	else if(iumPixelSize == 17) //SIM110
+	{
+		iImCols = 2592;
+		iImRows = 1944;
+		dNominalPixelSize = 1.7e-5;
+	}
+	else	// device is unknown
+	{
+		return(false);
+	}
+
 	if (!_pAligner->ChangeQXproduction(
-		_dPanelX, _dPanelY, _dNominalPixelSize,
+		_dPanelX, _dPanelY, dNominalPixelSize,
 		_info.pdTrans, _info.pdTrigs, 
 		_info.iNumTrigs, _info.iNumCams,
 		_info.dOffsetX, _info.dOffsetY,
-		_iImCols, _iImRows, _iBayerType))
+		iImCols, iImRows, _iBayerType))
 		return(false);
 
 	// Call after change production
@@ -310,7 +329,6 @@ bool SetupAligner()
         				
 	return(true);
 }
-
 
 bool RunStitch()
 {
