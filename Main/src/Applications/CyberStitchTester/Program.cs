@@ -693,7 +693,7 @@ namespace CyberStitchTester
                     _mosaicSet.GetLayer(_iLayerIndex1).GetGreyStitchedBuffer(),
                     _mosaicSet.GetLayer(_iLayerIndex2).GetGreyStitchedBuffer(),
                     _panel.GetCADBuffer(), //heightBuf,
-                    _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX()/2);
+                    _panel.GetNumPixelsInY(), _panel.GetNumPixelsInX());
 
                 if (_bUseDualIllumination)
                 {

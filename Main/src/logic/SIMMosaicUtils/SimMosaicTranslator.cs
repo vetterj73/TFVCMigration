@@ -355,14 +355,21 @@ namespace SIMMosaicUtils
                         dSydz[m] = 0;
                         dSxdz[m] = 0;
                     }
+
+                    int iumPixelSize = (int)(camM[0] * 1e6 + 0.5);
+                    if (iumPixelSize == 17)
+                    {
                         // S (Nonlinear Parameter for SIM 110 only)
-                    Sy[3] = -1.78e-5;
-                    Sy[9] = -1.6e-5;
-                    Sx[6] = -2.21e-5;
-                    Sx[12] = -7.1e-6;
+                        Sy[3] = -1.78e-5;
+                        Sy[9] = -1.6e-5;
+                        Sx[6] = -2.21e-5;
+                        Sx[12] = -7.1e-6;
+                    }
 
                         // dS
-                    double dPupilDistance = 0.3702;
+                    double dPupilDistance = 0.3702; // SIM 110
+                    if (iumPixelSize == 12)
+                        dPupilDistance = 0.377; // SIM 120
                     float fHalfW, fHalfH;
                     CalFOVHalfSize(camM, set.GetImageWidthInPixels(), set.GetImageLengthInPixels(), out fHalfW, out fHalfH);
                     dSydz[1] = fHalfW / dPupilDistance;   // dY/dZ
