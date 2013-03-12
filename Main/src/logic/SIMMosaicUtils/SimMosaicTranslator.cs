@@ -357,7 +357,9 @@ namespace SIMMosaicUtils
                     }
 
                     int iumPixelSize = (int)(camM[0] * 1e6 + 0.5);
-                    if (iumPixelSize == 17)
+                    /* Those values have little (often negative) influence of stitch for QX
+                    // SIM 110
+                    if (iumPixelSize == 17) 
                     {
                         // S (Nonlinear Parameter for SIM 110 only)
                         Sy[3] = -1.78e-5;
@@ -365,6 +367,15 @@ namespace SIMMosaicUtils
                         Sx[6] = -2.21e-5;
                         Sx[12] = -7.1e-6;
                     }
+                    // SIM 120 
+                    else if (iumPixelSize == 12)
+                    {
+                        Sy[3] = 7.2e-6;
+                        Sy[9] = 8.4e-6;
+                        Sx[6] = 9.6e-6;
+                        Sx[12] = 3.8e-6;
+                    }
+                    //*/
 
                         // dS
                     double dPupilDistance = 0.3702; // SIM 110

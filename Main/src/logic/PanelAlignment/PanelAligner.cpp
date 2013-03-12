@@ -1819,8 +1819,9 @@ bool PanelAligner::CreateQXMosaicSet(
                 dSydz[m] = 0;
                 dSxdz[m] = 0;
             }
-			
-			if(bSIM110)
+
+			/* Those values have little (often negative) influence of stitch for QX
+			if(bSIM110)	//SIM 110
 			{
                 // S (Nonlinear Parameter for SIM 110 only)
 				Sy[3] = (float)-1.78e-5;
@@ -1828,6 +1829,15 @@ bool PanelAligner::CreateQXMosaicSet(
 				Sx[6] = (float)-2.21e-5;
 				Sx[12] = (float)-7.1e-6;
 			}
+			else		// SIM 120
+			{
+				Sy[3] = 7.2e-6;
+                Sy[9] = 8.4e-6;
+                Sx[6] = 9.6e-6;
+                Sx[12] = 3.8e-6;
+            }
+			//*/
+
                 // dS
             double dPupilDistance = 0.3702;		// For SIM 110
 			if(!bSIM110) 
