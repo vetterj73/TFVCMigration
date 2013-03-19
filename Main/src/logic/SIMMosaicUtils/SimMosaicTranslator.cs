@@ -247,6 +247,11 @@ namespace SIMMosaicUtils
                 // Read X, Y offset
                 string sLine = reader.ReadLine();
                 string [] sSeg = sLine.Split(new char[] {','});
+                if (sSeg[0].Contains("PanelSize(x y)"))
+                {   // Skip the panel size line, this information is in Panel object
+                    sLine = reader.ReadLine();
+                    sSeg = sLine.Split(new char[] { ',' });
+                }
                 if (!sSeg[0].Contains("Offset(x y)")) return (-1);
                 dOx = -Convert.ToDouble(sSeg[1]);
                 dOy = -Convert.ToDouble(sSeg[2]);

@@ -24,8 +24,6 @@ int _iBayerType = 1; // GBRG,
 
 // Required inputs
 string _sSimulationFile = "";	
-double _dPanelX = 0;
-double _dPanelY = 0;
 
 // Optional inputs
 int _iNumThreads = 8;
@@ -35,6 +33,8 @@ int _iNumToRun = 1;
 class QXNominalInfo
 {
 public:
+	double dPanelSizeX;
+	double dPanelSizeY;
 	unsigned int iNumTrigs;
 	unsigned int iNumCams;
 	unsigned int iTileColumns;
@@ -57,10 +57,6 @@ int main(int argc, char* argv[])
 
 		if(cmd == "-s" && i <= argc-1)
 			_sSimulationFile = argv[i+1];
-		else if(cmd == "-xs" && i <= argc-1)
-			_dPanelX = atof(argv[i+1]);
-		else if(cmd == "-ys" && i <= argc-1)
-			_dPanelY = atof(argv[i+1]);
 		else if(cmd == "-t" && i <= argc-1)
 			_iNumThreads = atoi(argv[i+1]);
 		else if(cmd == "-n" && i <= argc-1)
@@ -68,11 +64,6 @@ int main(int argc, char* argv[])
 	}	
 	
 	// Input validation check
-	if(_dPanelX==0 || _dPanelY==0)
-	{
-		Output("Panel Size is not available");
-		return(0);
-	}
 	if (_access (_sSimulationFile.c_str(), 0) == -1)
 		//||_sSimulationFile.find(".csv'") == string::npos)
 	{
@@ -114,6 +105,15 @@ bool LoadNominalInfo(string file, QXNominalInfo* pInfo)
 //*** Read data from file 
 	char temp[1000];
 	ifstream in(file.c_str());
+
+	// Read panel size X and Y
+	in.getline(temp, 100, ',');
+	if(strcmp(temp, "PanelSize(x y)") != 0)
+		return(false);
+	in.getline(temp, 100, ',');
+	pInfo->dPanelSizeY = atof(temp);
+	in.getline(temp, 100, ',');
+	pInfo->dPanelSizeX = atof(temp);
 
 	// Read offset X and Y
 	in.getline(temp, 100, ',');
@@ -288,7 +288,11 @@ bool SetupAligner()
     //_pAligner->LogFiducialOverlaps(true);
 
 		   // Set up production for aligner
-	LoadNominalInfo(_sSimulationFile, &_info);
+	if(!LoadNominalInfo(_sSimulationFile, &_info))
+	{
+		Output("illegal nominal information file!");
+		return(false);
+	}
 	
 	int iImCols, iImRows;
 	double dNominalPixelSize;
@@ -313,7 +317,7 @@ bool SetupAligner()
 	}
 
 	if (!_pAligner->ChangeQXproduction(
-		_dPanelX, _dPanelY, dNominalPixelSize,
+		_info.dPanelSizeX, _info.dPanelSizeY, dNominalPixelSize,
 		_info.pdTrans, _info.pdTrigs, 
 		_info.iNumTrigs, _info.iNumCams,
 		_info.dOffsetX, _info.dOffsetY,
