@@ -368,7 +368,6 @@ bool ImageFidAligner::CalculateTransform(Image* pImage, double t[3][3])
 	// Settings
 	int iItems = 6;
 	double dMinScore = 0.3;
-	int NUMBER_Z_BASIS_FUNCTIONS = 4;
 	double wFidFlatBoardScale   = 1e3;
 	double wFidFlatBoardRotation = 1e2;
 	double wFidFlatFiducialLateralShift = 1e3;

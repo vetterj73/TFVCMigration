@@ -114,6 +114,8 @@ public:
 
 	PANELALIGNER_API void SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFile);
 
+	PANELALIGNER_API static void QXCalCadTransform(double* pdNominal, double* pdFound, unsigned int iNumFids, double dTrans[3][3]);
+
 protected:
 	// CleanUp internal stuff for new production or desctructor
 	void CleanUp();

@@ -1943,4 +1943,94 @@ void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFil
 	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
 }
 
+void PanelAligner::QXCalCadTransform(double* pdNominal, double* pdFound, unsigned int iNumFids, double dTrans[3][3])
+{
+	// Settings
+	double wFidFlatBoardScale   = 1e3;
+	double wFidFlatBoardRotation = 1e2;
+	double wFidFlatFiducialLateralShift = 1e3; 
+	// Increased wFidFlatFlattenFiducial from 1e5 to 1e7 
+	// since QX fiducial results should be trustable and at least 3 fids are provided
+	double wFidFlatFlattenFiducial = 1e7;
+	
+	// Create A and b matrices, 
+	// these are small so we can create/delete them without using big blocks of memory	
+	unsigned int FidFitCols = 6;
+	int nContraints = 8; // Total 8 constraints
+	unsigned int FidFitRows = iNumFids*2 + nContraints;
+	int SizeofFidFitA = FidFitCols * FidFitRows;
+	
+	double		*FidFitA;
+	double		*FidFitX;
+	double		*FidFitb;
+	double		*resid;
+
+	FidFitA = new double[SizeofFidFitA];
+	FidFitX = new double[FidFitCols];
+	FidFitb = new double[FidFitRows];
+	resid   = new double[FidFitRows];
+	
+	// zeros the system
+	for(size_t s(0); s<SizeofFidFitA; ++s)
+		FidFitA[s] = 0.0;
+	for (size_t s(0); s<FidFitRows; ++s)
+		FidFitb[s] = 0.0;
+	for (size_t s(0); s<FidFitCols; ++s)
+		FidFitX[s] = 0.0;
+	
+	// add constraints
+	FidFitb[0] = 1.0 * wFidFlatBoardScale;
+	FidFitA[0*FidFitCols + 0] =  1.0 * wFidFlatBoardScale;
+	FidFitb[1] = 1.0 * wFidFlatBoardScale;
+	FidFitA[1*FidFitCols + 4] =  1.0 * wFidFlatBoardScale;
+	FidFitb[2] = 0.0 * wFidFlatBoardScale;
+	FidFitA[2*FidFitCols + 0] =  1.0 * wFidFlatBoardScale;
+	FidFitA[2*FidFitCols + 4] = -1.0 * wFidFlatBoardScale;
+	FidFitb[3] = 0.0 * wFidFlatBoardScale;
+	FidFitA[3*FidFitCols + 1] =  1.0 * wFidFlatBoardScale;
+	FidFitA[3*FidFitCols + 3] =  1.0 * wFidFlatBoardScale;
+	FidFitb[4] = 0.0 * wFidFlatBoardRotation;
+	FidFitA[4*FidFitCols + 1] =  1.0 * wFidFlatBoardRotation;
+	FidFitb[5] = 0.0 * wFidFlatBoardRotation;
+	FidFitA[5*FidFitCols + 3] =  1.0 * wFidFlatBoardRotation;
+	FidFitb[6] = 0.0 * wFidFlatFiducialLateralShift;
+	FidFitA[6*FidFitCols + 2] =  1.0 * wFidFlatFiducialLateralShift;
+	FidFitb[7] = 0.0 * wFidFlatFiducialLateralShift;
+	FidFitA[7*FidFitCols + 5] =  1.0 * wFidFlatFiducialLateralShift;
+	
+	// add the actual fiducial locations
+	int AStart(0);
+	for (int j(0); j< iNumFids; j++)
+	{
+		FidFitb[8+j*2+0] = pdFound[2*j] * wFidFlatFlattenFiducial;
+		FidFitb[8+j*2+1] = pdFound[2*j+1] * wFidFlatFlattenFiducial;
+		AStart = (8+j*2+0)*FidFitCols;
+		FidFitA[AStart + 0] = pdNominal[2*j] * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 1] = pdNominal[2*j+1] * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 2] = wFidFlatFlattenFiducial;
+		AStart = (8+j*2+1)*FidFitCols;
+		FidFitA[AStart + 3] = pdNominal[2*j] * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 4] = pdNominal[2*j+1] * wFidFlatFlattenFiducial;
+		FidFitA[AStart + 5] = wFidFlatFlattenFiducial;
+	}
+
+	// Calculate transform
+	LstSqFit(FidFitA, FidFitRows, FidFitCols, FidFitb, FidFitX, resid);
+
+	dTrans[0][0] = FidFitX[0];
+	dTrans[0][1] = FidFitX[1];
+	dTrans[0][2] = FidFitX[2];
+	dTrans[1][0] = FidFitX[3];
+	dTrans[1][1] = FidFitX[4];
+	dTrans[1][2] = FidFitX[5];
+	dTrans[2][0] = 0;
+	dTrans[2][1] = 0;
+	dTrans[2][2] = 1;
+	
+	delete [] FidFitA;
+	delete [] FidFitb;
+	delete [] FidFitX;
+	delete [] resid;
+}
+
 #pragma endregion
