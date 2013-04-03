@@ -1717,7 +1717,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	double* pRowOffsetFromLine = new double[iNum];
 	double dMultiSdvTh = 1.1;
 	// Column check
-	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
+	double dMaxColInconsist = CorrelationParametersInst.dCoarseMaxColInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	bool bFlag = CalInconsistBasedOnLine(pdNominalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
@@ -1743,7 +1743,7 @@ int OverlapManager::FovFovCoarseInconsistCheck(list<FovFovOverlap*>* pList)
 	}
 
 	// Row check 
-	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
+	double dMaxRowInconsist = CorrelationParametersInst.dCoarseMaxRowInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	bFlag = CalInconsistBasedOnLine(pdNominalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);
@@ -1863,7 +1863,7 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 	double* pRowOffsetFromLine = new double[iNum];
 	double dMultiSdvTh = 1.1;
 	// Column check
-	double dMaxColInconsist = CorrelationParametersInst.dMaxColInconsistInPixel;
+	double dMaxColInconsist = CorrelationParametersInst.dFineMaxColInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxColInconsist += CorrelationParametersInst.dColAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNominalX, pdColOffsets, iNum, dMultiSdvTh, pColOffsetFromLine);
@@ -1890,7 +1890,7 @@ int OverlapManager::FovFovFineInconsistCheck(list<FovFovOverlap*>* pList, bool b
 	}
 
 	// Row check 
-	double dMaxRowInconsist = CorrelationParametersInst.dMaxRowInconsistInPixel;
+	double dMaxRowInconsist = CorrelationParametersInst.dFineMaxRowInconsistInPixel;
 	if(!bFromSameDevice) 
 		dMaxRowInconsist += CorrelationParametersInst.dRowAdjust4DiffDevice;
 	CalInconsistBasedOnLine(pdNominalY, pdRowOffsets, iNum, dMultiSdvTh, pRowOffsetFromLine);

@@ -50,8 +50,10 @@ CorrelationParameters::CorrelationParameters(void)
 	// FovFov Alignment result check for each trigger
 	bFovFovAlignCheck = true;			// Whether do FovFov alignment check for each trigger
 	// Those values should be big enough to ignore small angle difference and small enought to catch exception
-	dMaxColInconsistInPixel = 10;		// Max inconsist in pixel for columns and Rows for the same device
-	dMaxRowInconsistInPixel = 15;
+	dCoarseMaxColInconsistInPixel = 10;	// Max inconsist in pixel for columns and Rows for the same device
+	dCoarseMaxRowInconsistInPixel = 15;
+	dFineMaxColInconsistInPixel = 10;	// Max inconsist in pixel for columns and Rows for the same device
+	dFineMaxRowInconsistInPixel = 15;
 	dColAdjust4DiffDevice = 10;			// Adjust for the different device
 	dRowAdjust4DiffDevice = 10;
 

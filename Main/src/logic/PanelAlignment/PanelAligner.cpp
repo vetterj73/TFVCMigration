@@ -341,10 +341,16 @@ bool PanelAligner::GetCamModelPanelHeight(unsigned int iDeviceIndex, double pZCo
 	return ((RobustSolverCM*)_pSolver)->GetPanelHeight(iDeviceIndex, pZCoef);
 }
 
-void PanelAligner::SetConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel)
+void PanelAligner::SetCoarseConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel)
 {
-	CorrelationParametersInst.dMaxColInconsistInPixel = dMaxColInconsistInPixel;
-	CorrelationParametersInst.dMaxRowInconsistInPixel = dMaxRowInconsistInPixel;
+	CorrelationParametersInst.dCoarseMaxColInconsistInPixel = dMaxColInconsistInPixel;
+	CorrelationParametersInst.dCoarseMaxRowInconsistInPixel = dMaxRowInconsistInPixel;
+}
+
+void PanelAligner::SetFineConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel)
+{
+	CorrelationParametersInst.dFineMaxColInconsistInPixel = dMaxColInconsistInPixel;
+	CorrelationParametersInst.dFineMaxRowInconsistInPixel = dMaxRowInconsistInPixel;
 }
 
 #pragma endregion
