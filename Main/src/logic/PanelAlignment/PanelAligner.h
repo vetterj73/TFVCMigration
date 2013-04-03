@@ -78,6 +78,7 @@ public:
 		bool bConveyorFixedFrontRail);
 	PANELALIGNER_API void SetCalibrationWeight(double dValue);
 	PANELALIGNER_API void SetSkipDemosaic(bool bValue);
+	PANELALIGNER_API void SetConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel);
 
 	PANELALIGNER_API FidFovOverlapList* GetLastProcessedFids();
 	
