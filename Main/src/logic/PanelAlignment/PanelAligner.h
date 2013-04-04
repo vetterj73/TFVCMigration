@@ -102,7 +102,7 @@ public:
 		unsigned int iNumTrigs, unsigned int iNumCams,
 		double dOffsetX, double dOffsetY,
 		unsigned int iTileCols, unsigned int iTileRows,
-		int iBayerType);
+		int iBayerType, unsigned int iFirstPhysicalCam);
 
 	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
 
@@ -162,7 +162,7 @@ protected:
 		unsigned int iNumTrigs, unsigned int iNumCams, 
 		double dOffsetX, double dOffsetY,
 		unsigned int iTileCols, unsigned int iTileRows,
-		int iBayerType);
+		int iBayerType, unsigned int iFirstPhysicalCam);
 
 private:
 	FidFovOverlapList _lastProcessedFids;

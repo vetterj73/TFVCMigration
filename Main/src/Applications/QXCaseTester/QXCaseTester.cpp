@@ -321,7 +321,7 @@ bool SetupAligner()
 		_info.pdTrans, _info.pdTrigs, 
 		_info.iNumTrigs, _info.iNumCams,
 		_info.dOffsetX, _info.dOffsetY,
-		iImCols, iImRows, _iBayerType))
+		iImCols, iImRows, _iBayerType, 0))
 		return(false);
 
 	// Call after change production

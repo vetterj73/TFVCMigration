@@ -1718,7 +1718,7 @@ bool PanelAligner::CreateQXMosaicSet(
 	unsigned int iNumTrigs, unsigned int iNumCams,
 	double dOffsetX, double dOffsetY,
 	unsigned int iTileCols, unsigned int iTileRows,
-	int iBayerType)
+	int iBayerType, unsigned int iFirstPhysicalCam)
 {
 	// Validation check
 	if(_pPanel == NULL || !_bOwnMosaicSetPanel)
@@ -1748,11 +1748,11 @@ bool PanelAligner::CreateQXMosaicSet(
 	MosaicLayer* pLayer = _pSet->AddLayer(iNumCams, iNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
 
 	// Set subDevice
-    if (iNumCams > 8)
+    if (iNumCams > 8-iFirstPhysicalCam)
     {
         list<unsigned int> iLastCams;
-		iLastCams.push_back(7); 
-		iLastCams.push_back(15);
+		iLastCams.push_back(7-iFirstPhysicalCam); 
+		iLastCams.push_back(15-iFirstPhysicalCam);
         _pSet->AddSubDeviceInfo(deviceIndex, iLastCams);
     }
 
@@ -1884,7 +1884,7 @@ bool PanelAligner::ChangeQXproduction(
 	unsigned int iNumTrigs, unsigned int iNumCams,
 	double dOffsetX, double dOffsetY,
 	unsigned int iTileCols, unsigned int iTileRows,
-	int iBayerType)
+	int iBayerType, unsigned int iFirstPhysicalCam)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
 	// CleanUp internal stuff for new production
@@ -1898,7 +1898,7 @@ bool PanelAligner::ChangeQXproduction(
 		iNumTrigs, iNumCams,
 		dOffsetX, dOffsetY,
 		iTileCols, iTileRows,
-		iBayerType))
+		iBayerType, iFirstPhysicalCam))
 		return(false);
 
 	return(ChangeProduction());
