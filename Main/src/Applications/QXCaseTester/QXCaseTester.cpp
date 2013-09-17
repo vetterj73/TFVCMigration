@@ -217,7 +217,7 @@ bool LoadAllRawImages(string sFolder)
 			sFile.append(temp);
 
 			_pBmps[iTrig*iCamNum+iCam].read(sFile);
-			_pAligner->AddQXImageTile(_pBmps[iTrig*iCamNum+iCam].GetBuffer(), iTrig, iCam);
+			_pAligner->AddQXImageTile(_pBmps[iTrig*iCamNum+iCam].GetBuffer(), 0, iTrig, iCam);
         }
     }
 
@@ -319,7 +319,7 @@ bool SetupAligner()
 	if (!_pAligner->ChangeQXproduction(
 		_info.dPanelSizeX, _info.dPanelSizeY, dNominalPixelSize,
 		_info.pdTrans, _info.pdTrigs, 
-		_info.iNumTrigs, _info.iNumCams,
+		1, _info.iNumTrigs, _info.iNumCams,
 		_info.dOffsetX, _info.dOffsetY,
 		iImCols, iImRows, _iBayerType, 0))
 		return(false);
@@ -371,7 +371,7 @@ bool RunStitch()
 		sprintf_s(cTemp, 100, "c:\\temp\\Stitched%d.bmp", iCycleCount);
 		sStitchedImFile.assign(cTemp);
 	
-		_pAligner->SaveQXStitchedImage(cTemp);
+		_pAligner->SaveQXStitchedImage(cTemp, 0);
 		Output("End creating and saving stitched image");
 
 		//double dTrans[9];

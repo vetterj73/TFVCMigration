@@ -99,22 +99,22 @@ public:
 	PANELALIGNER_API bool ChangeQXproduction(
 		double dPanelSizeX, double dPanelSizeY, double dPixelSize,
 		double* pdTrans, double *pdTrigs, 
-		unsigned int iNumTrigs, unsigned int iNumCams,
+		unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams,
 		double dOffsetX, double dOffsetY,
 		unsigned int iTileCols, unsigned int iTileRows,
 		int iBayerType, unsigned int iFirstPhysicalCam);
 
-	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam);
+	PANELALIGNER_API bool AddQXImageTile(unsigned char* pbBuf, unsigned int iLayer, unsigned int iTrig, unsigned int iCam);
 
 	PANELALIGNER_API bool HasAllImageTiles();
 
-	PANELALIGNER_API bool SaveQXStitchedImage(char* pcFile);
+	PANELALIGNER_API bool SaveQXStitchedImage(char* pcFile, int iType);
 
-	PANELALIGNER_API bool GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9]);
+	PANELALIGNER_API bool GetQXTileTransform(unsigned int ilayer, unsigned int iTrig, unsigned int iCam, double dTrans[9]);
 
 	PANELALIGNER_API void SetSeperateProcessStages(bool bValue);
 
-	PANELALIGNER_API void SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFile);
+	PANELALIGNER_API void SaveQXTile(unsigned int iLayer, unsigned int iTrig, unsigned int iCam, char* pcFile);
 
 	PANELALIGNER_API static void QXCalCadTransform(double* pdNominal, double* pdFound, unsigned int iNumFids, double dTrans[3][3]);
 
@@ -159,7 +159,7 @@ protected:
 	bool CreateQXPanel(double dPanelSizeX, double dPanelSizeY, double dPixelSize);
 	bool CreateQXMosaicSet(
 		double* pdTrans, double *pdTrigs, 
-		unsigned int iNumTrigs, unsigned int iNumCams, 
+		unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams, 
 		double dOffsetX, double dOffsetY,
 		unsigned int iTileCols, unsigned int iTileRows,
 		int iBayerType, unsigned int iFirstPhysicalCam);

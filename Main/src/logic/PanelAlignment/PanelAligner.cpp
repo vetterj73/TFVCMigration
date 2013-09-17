@@ -1715,7 +1715,7 @@ bool PanelAligner::CreateQXPanel(double dPanelSizeX, double dPanelSizeY, double 
 // Create mosaicset, must after CreateQXPanel()
 bool PanelAligner::CreateQXMosaicSet(
 	double* pdTrans, double *pdTrigs, 
-	unsigned int iNumTrigs, unsigned int iNumCams,
+	unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams,
 	double dOffsetX, double dOffsetY,
 	unsigned int iTileCols, unsigned int iTileRows,
 	int iBayerType, unsigned int iFirstPhysicalCam)
@@ -1745,7 +1745,6 @@ bool PanelAligner::CreateQXMosaicSet(
     bool bAlignWithFiducial = true;
     bool bFiducialBrighterThanBackground = true;
     unsigned int deviceIndex = 0;
-	MosaicLayer* pLayer = _pSet->AddLayer(iNumCams, iNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
 
 	// Set subDevice
     if (iNumCams > 8-iFirstPhysicalCam)
@@ -1798,6 +1797,17 @@ bool PanelAligner::CreateQXMosaicSet(
 	if(iumPixelSize == 12) // SIM 120;
 		bSIM110 = false;
 
+	// Add mosaic layer
+	if(iNumIllums == 1)
+		_pSet->AddLayer(iNumCams, iTotalNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+	else // Dual illumination case
+	{
+		int iLayerNumTrigs =  (iTotalNumTrigs+1)/2;
+		_pSet->AddLayer(iNumCams, iLayerNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+		iLayerNumTrigs =  iTotalNumTrigs - iLayerNumTrigs;
+		_pSet->AddLayer(iNumCams, iLayerNumTrigs, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+	}
+
     for (unsigned int iCam = 0; iCam < iNumCams; iCam++) // For each camera
     {
         // Calculate camera transform for first trigger
@@ -1806,12 +1816,19 @@ bool PanelAligner::CreateQXMosaicSet(
         for (int i = 0; i < 9; i++)
             fovM[i] = camM[i];
 
-        for (unsigned int iTrig = 0; iTrig < iNumTrigs; iTrig++) // For each trigger
+        for (unsigned int iTrig = 0; iTrig < iTotalNumTrigs; iTrig++) // For each trigger
         {
             // Set transform for each trigger
-                fovM[2] -= pdTrigs[iTrig]; // This calcualtion is not very accurate
+            fovM[2] -= pdTrigs[iTrig]; // This calcualtion is not very accurate
             
-			MosaicTile* pTile = pLayer->GetTile(iTrig, iCam);
+			int iLayerIndex = 0;
+			int iLayerTrigIndex = iTrig;
+			if(iNumIllums == 2)
+			{
+				iLayerIndex = iTrig%2;
+				iLayerTrigIndex = iTrig/2;
+			}
+			MosaicTile* pTile = _pSet->GetLayer(iLayerIndex)->GetTile(iLayerTrigIndex, iCam);
             pTile->SetNominalTransform(fovM);
 
             // For camera model 
@@ -1870,10 +1887,29 @@ bool PanelAligner::CreateQXMosaicSet(
     }
 
 	// Set correlation flag
-	CorrelationFlags* pFlag = _pSet->GetCorrelationFlags(0, 0);
-	pFlag->SetCameraToCamera(true);
-	pFlag->SetTriggerToTrigger(true);
+	if(iNumIllums == 1)
+	{
+		CorrelationFlags* pFlag = _pSet->GetCorrelationFlags(0, 0);
+		pFlag->SetCameraToCamera(true);
+		pFlag->SetTriggerToTrigger(true);
+	}
+	else // Dual illumination
+	{
+		// Inside first layer
+		CorrelationFlags* pFlag = _pSet->GetCorrelationFlags(0, 0);
+		pFlag->SetCameraToCamera(true);
+		pFlag->SetTriggerToTrigger(false);
 
+		// Insider second layer
+		pFlag = _pSet->GetCorrelationFlags(1, 1);
+		pFlag->SetCameraToCamera(true);
+		pFlag->SetTriggerToTrigger(false);
+
+		// Between first and second layers
+		pFlag = _pSet->GetCorrelationFlags(0, 1);
+		pFlag->SetCameraToCamera(false);
+		pFlag->SetTriggerToTrigger(true);
+	}
 	return(true);
 }
 
@@ -1881,12 +1917,17 @@ bool PanelAligner::CreateQXMosaicSet(
 bool PanelAligner::ChangeQXproduction(
 	double dPanelSizeX, double dPanelSizeY, double dPixelSize,
 	double* pdTrans, double *pdTrigs, 
-	unsigned int iNumTrigs, unsigned int iNumCams,
+	unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams,
 	double dOffsetX, double dOffsetY,
 	unsigned int iTileCols, unsigned int iTileRows,
 	int iBayerType, unsigned int iFirstPhysicalCam)
 {
 	LOG.FireLogEntry(LogTypeSystem, "PanelAligner::ChangeProduction():Begin panel change over");
+
+	// Sanity check
+	if(iNumIllums<1 || iNumIllums>2)
+		return(false);
+
 	// CleanUp internal stuff for new production
 	CleanUp();
 
@@ -1895,7 +1936,7 @@ bool PanelAligner::ChangeQXproduction(
 
 	if(!CreateQXMosaicSet(
 		pdTrans, pdTrigs, 
-		iNumTrigs, iNumCams,
+		iNumIllums, iTotalNumTrigs, iNumCams,
 		dOffsetX, dOffsetY,
 		iTileCols, iTileRows,
 		iBayerType, iFirstPhysicalCam))
@@ -1912,9 +1953,9 @@ void PanelAligner::SetSeperateProcessStages(bool bValue)
 }
 
 // Add data to QX image tile
-bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iTrig, unsigned int iCam)
+bool PanelAligner::AddQXImageTile(unsigned char* pbBuf, unsigned int iLayer, unsigned int iTrig, unsigned int iCam)
 {
-	return(_pSet->AddRawImage(pbBuf, 0, iCam, iTrig));
+	return(_pSet->AddRawImage(pbBuf, iLayer, iCam, iTrig));
 }
 
 // Wheather aligner has all image tiles
@@ -1924,21 +1965,36 @@ bool PanelAligner::HasAllImageTiles()
 }
 
 // Save QX stitched image 
-bool PanelAligner::SaveQXStitchedImage(char* pcFile)
+// iType 0: layer 0; 1: layer 1; 2: mix of layers 0 and 1 
+bool PanelAligner::SaveQXStitchedImage(char* pcFile, int iType)
 {
+	// Sanity check
+	if(iType<0 || iType>2)
+		return(false);
+
 	string sStitchedImFile;
 	sStitchedImFile.assign(pcFile);
-	_pSet->GetLayer(0)->SaveStitchedImage(sStitchedImFile);
+	if(iType ==0)	// Layer 0
+		_pSet->GetLayer(0)->SaveStitchedImage(sStitchedImFile);
+	else if (iType==1 && _pSet->GetNumMosaicLayers()==2) // Layer 1
+		_pSet->GetLayer(1)->SaveStitchedImage(sStitchedImFile);
+	else if (iType==2 && _pSet->GetNumMosaicLayers()==2)	// Mixed image of layer0 and layer1
+		Save3ChannelImage(
+			sStitchedImFile,
+			_pSet->GetLayer(0)->GetGreyStitchedImage()->GetBuffer(),
+            _pSet->GetLayer(1)->GetGreyStitchedImage()->GetBuffer(),
+            _pSet->GetLayer(1)->GetGreyStitchedImage()->GetBuffer(),
+            _pPanel->GetNumPixelsInY(), _pPanel->GetNumPixelsInX());
 
 	return(true);
 }
 
 // Get transform of QX image tile
-bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, double dTrans[9])
+bool PanelAligner::GetQXTileTransform(unsigned int iLayer, unsigned int iTrig, unsigned int iCam, double dTrans[9])
 {
 	// Get Cyberstitch transform
 	double dCSTrans[9];
-	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetTransform(dCSTrans);
+	_pSet->GetLayer(iLayer)->GetTile(iTrig, iCam)->GetTransform(dCSTrans);
 
 	// Convert into QX
 	double dTempM[9];
@@ -1948,11 +2004,11 @@ bool PanelAligner::GetQXTileTransform(unsigned int iTrig, unsigned int iCam, dou
 	return(true);
 }
 
-void PanelAligner::SaveQXTile(unsigned int iTrig, unsigned int iCam, char* pcFile)
+void PanelAligner::SaveQXTile(unsigned int iLayer, unsigned int iTrig, unsigned int iCam, char* pcFile)
 {
 	string sFile;
 	sFile.assign(pcFile);
-	_pSet->GetLayer(0)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
+	_pSet->GetLayer(iLayer)->GetTile(iTrig, iCam)->GetImagPtr()->Save(sFile);
 }
 
 void PanelAligner::QXCalCadTransform(double* pdNominal, double* pdFound, unsigned int iNumFids, double dTrans[3][3])
