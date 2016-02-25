@@ -19,6 +19,7 @@ namespace PanelAlignM {
 
 		_alignmentDoneDelegate = gcnew AlignmentDoneDelegate(this, &ManagedPanelAlignment::RaiseAlignmentDone); 
 		_pAligner->RegisterAlignmentDoneCallback((ALIGNMENTDONE_CALLBACK)Marshal::GetFunctionPointerForDelegate(_alignmentDoneDelegate).ToPointer(), NULL);	
+		_pAligner->GetLogger()->SetAllLogTypes(true);
 	}
 
 	ManagedPanelAlignment::!ManagedPanelAlignment()
@@ -157,6 +158,41 @@ namespace PanelAlignM {
 	void ManagedPanelAlignment::LogTransformVectors(bool bLog)	
 	{
 		_pAligner->LogTransformVectors(bLog);
+	}
+
+	bool ManagedPanelAlignment::AddQXImageTile(System::IntPtr pbBuf, unsigned int iLayer, unsigned int iTrig, unsigned int iCam)	
+	{
+		_pAligner->AddQXImageTile((unsigned char*)(void*)pbBuf, iLayer, iTrig, iCam);
+		return true;
+	}
+	
+	bool ManagedPanelAlignment::GetQXTileTransform(unsigned int iLayer, unsigned int iTrig, unsigned int iCam, double dTrans[9])	
+	{
+		_pAligner->GetQXTileTransform(iLayer, iTrig, iCam, dTrans);
+		return true;
+	}
+
+	bool ManagedPanelAlignment::ChangeQXproduction(
+			double dPanelSizeX, double dPanelSizeY, double dPixelSize,
+			double pdTrans[], double pdTrigs[], 
+			unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams,
+			double dOffsetX, double dOffsetY,
+			unsigned int iTileCols, unsigned int iTileRows,
+			int iBayerType, unsigned int iFirstPhysicalCam)
+	{
+		_pAligner->ChangeQXproduction(
+		dPanelSizeX, dPanelSizeY, dPixelSize,
+		pdTrans, pdTrigs, 
+		iNumIllums, iTotalNumTrigs, iNumCams,
+		dOffsetX, dOffsetY,
+		iTileCols, iTileRows,
+		iBayerType, iFirstPhysicalCam);
+		return true;
+	}
+
+	void ManagedPanelAlignment::SetCoarseConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel)
+	{
+		_pAligner->SetCoarseConsistCheckToleranceInPixel(dMaxColInconsistInPixel, dMaxRowInconsistInPixel);
 	}
 
 	void ManagedPanelAlignment::LogPanelEdgeDebugImages(bool bLog)

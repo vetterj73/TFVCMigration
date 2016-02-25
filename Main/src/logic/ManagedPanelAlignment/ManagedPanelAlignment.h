@@ -97,6 +97,16 @@ namespace PanelAlignM {
 		///
 		bool ChangeProduction(ManagedMosaicSet^ set, CPanel^ panel);
 
+		bool AddQXImageTile(System::IntPtr pbBuf, unsigned int iLayer, unsigned int iTrig, unsigned int iCam);
+		bool GetQXTileTransform(unsigned int iLayer, unsigned int iTrig, unsigned int iCam, double dTrans[9]);
+		bool ChangeQXproduction(
+				double dPanelSizeX, double dPanelSizeY, double dPixelSize,
+				double pdTrans[], double pdTrigs[],
+				unsigned int iNumIllums, unsigned int iTotalNumTrigs, unsigned int iNumCams,
+				double dOffsetX, double dOffsetY,
+				unsigned int iTileCols, unsigned int iTileRows,
+				int iBayerType, unsigned int iFirstPhysicalCam);
+		void SetCoarseConsistCheckToleranceInPixel(double dMaxColInconsistInPixel, double dMaxRowInconsistInPixel);
 		///
 		///	Reset for the next cycle
 		///

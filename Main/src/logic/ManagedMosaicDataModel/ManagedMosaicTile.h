@@ -26,6 +26,11 @@ namespace MMosaicDM
 				return (System::IntPtr)_pMosaicTile->GetImagPtr()->GetBuffer();
 			}
 
+			void GetTransform(double* dTrans)
+			{
+				return _pMosaicTile->GetTransform(dTrans);
+			}
+
 			bool Bayer2Lum(int iType)
 			{
 				return _pMosaicTile->Bayer2Lum(iType);

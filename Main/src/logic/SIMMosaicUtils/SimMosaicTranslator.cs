@@ -407,6 +407,154 @@ namespace SIMMosaicUtils
             return (1);
         }
 
+        public static int InitializeMosaicFromNominalTrans_SQ(
+            ManagedMosaicSet set, string sFilename,
+            double dPanelHeight,
+            double dPanelWidth,
+            int camNums,
+            int trigNums)
+        {
+            // Read calibration and trig infomation
+            double dOx = 0.0;
+            double dOy = 0.0;
+            List<double[]> transList = new List<double[]>();
+            List<double> trigList = new List<double>();
+            using (System.IO.StreamReader reader = new System.IO.StreamReader(sFilename))
+            {
+                for(int j=0; j< camNums; j++)
+                {
+                    // Validation check 
+                    string sLine = reader.ReadLine();
+                    string[] sSeg = sLine.Split(new char[] { ',' });
+                    if (!sSeg[0].Contains("Camera"))
+                        return -1;
+                    // Read a transform
+                    double[] trans = new double[8];
+                    for (int i = 0; i < 8; i++)
+                        trans[i] = Convert.ToDouble(sSeg[i + 1]);
+                    transList.Add(trans);
+                }
+
+                // Add trigger list
+                //trigList.Add(0.0);
+                for(int j=1; j<trigNums; j++)
+                    trigList.Add(0.024);
+            }
+
+            // Add a mosaic layer
+            uint iNumCam = (uint)transList.Count;
+            uint iNumTrig = (uint)trigList.Count + 1;
+
+            bool bFiducialAllowNegativeMatch = false; // Bright field not allow negavie match
+            bool bAlignWithCAD = false;
+            bool bAlignWithFiducial = true;
+            bool bFiducialBrighterThanBackground = true;
+            uint deviceIndex = 0;
+            ManagedMosaicLayer layer = set.AddLayer(iNumCam, iNumTrig, bAlignWithCAD, bAlignWithFiducial, bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+
+            // Set subDevice
+            if (iNumCam > 8)
+            {
+                uint[] iLastCams = new uint[2] { 7, 15 };
+                set.AddSubDeviceInfo(deviceIndex, iLastCams);
+            }
+
+            // Set nominal transforms
+            uint iImageRows = set.GetImageLengthInPixels();
+            double[] leftM = new double[]{ 
+                0, -1, dPanelHeight-dOy, 
+                1, 0, dOx,
+                0, 0};
+
+            double[] rightM = new double[]{
+                0, 1, 0,
+                -1, 0, iImageRows-1,
+                0, 0, 1};
+
+            double[] tempM = new double[8];
+            double[] camM = new double[8];
+            double[] fovM = new double[8];
+
+            for (uint iCam = 0; iCam < iNumCam; iCam++)
+            {
+                // Calculate camera transform for first trigger
+                MultiProjective2D(leftM, transList[(int)iCam], tempM);
+                MultiProjective2D(tempM, rightM, camM);
+                for (int i = 0; i < 8; i++)
+                    fovM[i] = camM[i];
+
+                for (uint iTrig = 0; iTrig < iNumTrig; iTrig++)
+                {
+                    // Set transform for each trigger
+                    if (iTrig > 0)
+                        fovM[2] -= trigList[(int)iTrig - 1]; // This calcualtion is not very accurate
+                    ManagedMosaicTile mmt = layer.GetTile(iTrig, iCam);
+                    mmt.SetNominalTransform(fovM);
+
+                    // For camera model 
+                    mmt.ResetTransformCamCalibration();
+                    mmt.ResetTransformCamModel();
+                    mmt.SetTransformCamCalibrationUMax(set.GetImageWidthInPixels());  // column
+                    mmt.SetTransformCamCalibrationVMax(set.GetImageLengthInPixels()); // row
+
+                    double[] Sy = new double[16];
+                    double[] Sx = new double[16];
+                    double[] dSydz = new double[16];
+                    double[] dSxdz = new double[16];
+                    for (uint m = 0; m < 16; m++)
+                    {
+                        Sy[m] = 0;
+                        Sx[m] = 0;
+                        dSydz[m] = 0;
+                        dSxdz[m] = 0;
+                    }
+
+                    int iumPixelSize = (int)(camM[0] * 1e6 + 0.5);
+                    /* Those values have little (often negative) influence of stitch for QX
+                    // SIM 110
+                    if (iumPixelSize == 17) 
+                    {
+                        // S (Nonlinear Parameter for SIM 110 only)
+                        Sy[3] = -1.78e-5;
+                        Sy[9] = -1.6e-5;
+                        Sx[6] = -2.21e-5;
+                        Sx[12] = -7.1e-6;
+                    }
+                    // SIM 120 
+                    else if (iumPixelSize == 12)
+                    {
+                        Sy[3] = 7.2e-6;
+                        Sy[9] = 8.4e-6;
+                        Sx[6] = 9.6e-6;
+                        Sx[12] = 3.8e-6;
+                    }
+                    //*/
+
+                    // dS
+                    double dPupilDistance = 0.3702; // SIM 110
+                    if (iumPixelSize == 12)
+                        dPupilDistance = 0.377; // SIM 120
+                    float fHalfW, fHalfH;
+                    CalFOVHalfSize(camM, set.GetImageWidthInPixels(), set.GetImageLengthInPixels(), out fHalfW, out fHalfH);
+                    dSydz[1] = fHalfW / dPupilDistance;   // dY/dZ
+                    dSxdz[4] = fHalfH / dPupilDistance;  // dX/dZ
+
+                    mmt.SetTransformCamCalibrationS(0, Sy);
+                    mmt.SetTransformCamCalibrationS(1, Sx);
+                    mmt.SetTransformCamCalibrationdSdz(0, dSydz);
+                    mmt.SetTransformCamCalibrationdSdz(1, dSxdz);
+
+                    // Linear part
+                    mmt.SetCamModelLinearCalib(camM);
+                }
+            }
+
+            // Set correlation flags
+            SetDefaultCorrelationFlags(set, false);
+
+            return (1);
+        }
+
         // Raw buffers need to be hold until the demosaic or copy is done (maybe in multi-thread)
         // LoadAllRawImages() and ReleaseRawBufs() need to be called in pair 
         private static Bitmap[,] fovs = null;
