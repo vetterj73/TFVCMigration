@@ -126,6 +126,8 @@ namespace PanelAlignM {
 			System::IntPtr pChannel3, int iSpan3,
 			int numRows, int numColumns);
 
+		bool SaveQXStitchedImage(System::String^ imagePath, int iType);
+
 		void NumThreads(unsigned int numThreads);
 		void LogFiducialOverlaps(bool bLog);
 		void LogOverlaps(bool bLog);

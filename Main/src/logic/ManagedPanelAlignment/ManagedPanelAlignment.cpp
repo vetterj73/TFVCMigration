@@ -305,6 +305,16 @@ namespace PanelAlignM {
 		return bSaved;
 	}
 
+	bool ManagedPanelAlignment::SaveQXStitchedImage(System::String^ imagePath,int iType)
+	{
+		System::IntPtr stringPtr = System::Runtime::InteropServices::Marshal::StringToHGlobalAnsi(imagePath);	
+
+		bool bSaved = _pAligner->SaveQXStitchedImage((char*)(stringPtr.ToPointer()), iType);
+
+		System::Runtime::InteropServices::Marshal::FreeHGlobal(stringPtr);
+		return bSaved;
+	}
+
 	double ManagedPanelAlignment::GetAlignmentTime() 
 	{
 		return _pAligner->GetAlignmentTime(); 
