@@ -411,13 +411,15 @@ namespace SIMMosaicUtils
             ManagedMosaicSet set, string sFilename,
             double dPanelHeight,
             double dPanelWidth,
+            double dOffsetX,
+            double dOffsetY,
             int camNums,
             int trigNums,
             int iNumIllums)
         {
             // Read calibration and trig infomation
-            double dOx = 0.0;
-            double dOy = 0.0;
+            //double dOx = 0.0;
+           // double dOy = 0.0;
             List<double[]> transList = new List<double[]>();
             List<double> trigList = new List<double>();
             using (System.IO.StreamReader reader = new System.IO.StreamReader(sFilename))
@@ -482,8 +484,8 @@ namespace SIMMosaicUtils
             // Set nominal transforms
             uint iImageRows = set.GetImageLengthInPixels();
             double[] leftM = new double[]{ 
-                0, -1, dPanelHeight-dOy, 
-                1, 0, dOx,
+                0, -1, dPanelHeight-dOffsetY, 
+                1, 0, dOffsetX,
                 0, 0};
 
             double[] rightM = new double[]{
