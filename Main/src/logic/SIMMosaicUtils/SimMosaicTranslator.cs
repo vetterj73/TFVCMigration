@@ -415,7 +415,9 @@ namespace SIMMosaicUtils
             double dOffsetY,
             int camNums,
             int trigNums,
-            int iNumIllums)
+            int iNumIllums,
+            int[] illumTrigs,
+            double trig2TrigDistInMeter)
         {
             // Read calibration and trig infomation
             //double dOx = 0.0;
@@ -441,12 +443,7 @@ namespace SIMMosaicUtils
                 // Add trigger list
                 //trigList.Add(0.0);
                 for (int j = 1; j < trigNums; j++)
-                {
-                    if (iNumIllums == 1)
-                        trigList.Add(0.024);
-                    else
-                        trigList.Add(0.015);
-                }
+                    trigList.Add(trig2TrigDistInMeter);
             }
 
             // Add a mosaic layer
@@ -458,19 +455,34 @@ namespace SIMMosaicUtils
             bool bAlignWithFiducial = true;
             bool bFiducialBrighterThanBackground = true;
             uint deviceIndex = 0;
-            ManagedMosaicLayer[] layer = new ManagedMosaicLayer[2];
+            ManagedMosaicLayer[] layer = new ManagedMosaicLayer[4];
             if (iNumIllums == 1)
                 layer[0] = set.AddLayer(iNumCam, iNumTrig, bAlignWithCAD, bAlignWithFiducial,
                     bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
-            else
+            else if (iNumIllums == 2)
             {
                 //illumination 1
-                uint iLayerNumTrigs = (iNumTrig + 1)/ 2;
+                uint iLayerNumTrigs = (uint)illumTrigs[0];//(iNumTrig + 1)/ 2;
                 layer[0] = set.AddLayer(iNumCam, iLayerNumTrigs, bAlignWithCAD, bAlignWithFiducial,
                     bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
                 //illumination 2
-                iLayerNumTrigs = iNumTrig - iLayerNumTrigs;
+                iLayerNumTrigs = (uint)illumTrigs[1];//iNumTrig - iLayerNumTrigs;
                 layer[1] = set.AddLayer(iNumCam, iLayerNumTrigs, bAlignWithCAD, bAlignWithFiducial,
+                    bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+            }
+            else if (iNumIllums == 3)
+            {
+                //illumination 1
+                uint iLayerNumTrigs1 = (uint)illumTrigs[0];//(iNumTrig + 2) / 3;
+                layer[0] = set.AddLayer(iNumCam, iLayerNumTrigs1, bAlignWithCAD, bAlignWithFiducial,
+                    bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+                //illumination 2
+                uint iLayerNumTrigs2 = (uint)illumTrigs[1];//(iNumTrig - iLayerNumTrigs1 + 1) / 2;
+                layer[1] = set.AddLayer(iNumCam, iLayerNumTrigs2, bAlignWithCAD, bAlignWithFiducial,
+                    bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
+                //illumination 2
+                uint iLayerNumTrigs3 = (uint)illumTrigs[2];//iNumTrig - iLayerNumTrigs1 - iLayerNumTrigs2;
+                layer[2] = set.AddLayer(iNumCam, iLayerNumTrigs3, bAlignWithCAD, bAlignWithFiducial,
                     bFiducialBrighterThanBackground, bFiducialAllowNegativeMatch, deviceIndex);
             }
 
@@ -511,13 +523,8 @@ namespace SIMMosaicUtils
                     if (iTrig > 0)
                         fovM[2] -= trigList[(int)iTrig - 1]; // This calculation is not very accurate
 
-                    uint iLayerIndex = 0;
-                    uint iLayerTrigIndex = iTrig;
-                    if (iNumIllums == 2)
-                    {
-                        iLayerIndex = iTrig % 2;
-                        iLayerTrigIndex = iTrig / 2;
-                    }
+                    uint iLayerIndex = (uint)(iTrig % iNumIllums);
+                    uint iLayerTrigIndex = (uint)(iTrig / iNumIllums);
                     
                     ManagedMosaicTile mmt = layer[iLayerIndex].GetTile(iLayerTrigIndex, iCam);
                     mmt.SetNominalTransform(fovM);
